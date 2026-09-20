@@ -1,0 +1,13 @@
+com.jtech:jtech-backend:jar:0.0.1-SNAPSHOT
++- org.springframework.boot:spring-boot-starter-websocket:jar:3.3.2:compile
+|  +- org.springframework:spring-messaging:jar:6.1.11:compile
+|  \- org.springframework:spring-websocket:jar:6.1.11:compile
++- org.springframework.boot:spring-boot-starter-security:jar:3.3.2:compile
+|  +- org.springframework.security:spring-security-config:jar:6.3.1:compile
+|  \- org.springframework.security:spring-security-web:jar:6.3.1:compile
+\- org.springframework.boot:spring-boot-starter-oauth2-client:jar:3.3.2:compile
+   +- org.springframework.security:spring-security-core:jar:6.3.1:compile
+   |  \- org.springframework.security:spring-security-crypto:jar:6.3.1:compile
+   +- org.springframework.security:spring-security-oauth2-client:jar:6.3.1:compile
+   |  \- org.springframework.security:spring-security-oauth2-core:jar:6.3.1:compile
+   \- org.springframework.security:spring-security-oauth2-jose:jar:6.3.1:compile
