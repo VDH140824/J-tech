@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: jtech-backend
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/jtech?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=utf8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:hungvu140804@gmail.com}
+    password: ${MAIL_PASSWORD:bbvpglyebdqmppkl}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 861857930033-6bjua4o1gtsetdq18tr1qksf9g7i8lea.apps.googleusercontent.com
+            client-secret: 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
+            redirect-uri: "http://localhost:8080/api/login/oauth2/code/google"
+            scope:
+              - email
+              - profile
+
+cloudinary:
+  cloud-name: keticbsk
+  api-key: 783866647651171
+  api-secret: dwBfbS4euFzKILrkP3g7y7sWkbM
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+app:
+  jwt:
+    secret: jtech-japanese-learning-website-jwt-secret-key-2026
+    expiration-ms: 604800000 # 7 days
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: INFO

@@ -1,0 +1,76 @@
+/* J-Tech Homepage - J-Tech Japanese Learning Website */
+
+.home-container {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(180, 83, 9, 0.14), transparent 30%),
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.12), transparent 32%),
+    linear-gradient(180deg, #fbf7f0 0%, #f4ede2 48%, #efe5d6 100%);
+  color: #2f261d;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-header { position: sticky; top: 0; z-index: 100; background: rgba(251, 247, 240, 0.88); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(107, 70, 41, 0.12); padding: 12px 24px; }
+.home-nav, .home-main { max-width: 1280px; width: 100%; margin: 0 auto; }
+.home-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer; border: 0; background: transparent; color: inherit; }
+.brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #7c2d12, #b45309); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 10px 24px rgba(124, 45, 18, 0.22); }
+.brand-text { display: flex; flex-direction: column; text-align: left; }
+.brand-title { font-size: 1.2rem; font-weight: 800; color: #5b3116; letter-spacing: -0.02em; }
+.brand-subtitle { font-size: 0.74rem; color: #8b6b53; }
+.nav-links { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; justify-content: center; }
+.nav-item-btn { background: transparent; border: 1px solid transparent; color: #6f5844; padding: 8px 14px; border-radius: 999px; font-size: 0.92rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease; text-decoration: none; }
+.nav-item-btn:hover, .nav-item-btn.active { color: #7c2d12; background: rgba(180, 83, 9, 0.08); border-color: rgba(180, 83, 9, 0.15); }
+.user-profile-menu { display: flex; align-items: center; gap: 12px; }
+.user-badge { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.7); padding: 6px 14px 6px 6px; border-radius: 999px; border: 1px solid rgba(107, 70, 41, 0.12); }
+.user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #b45309, #d97706); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 15px; }
+.user-name { font-size: 0.9rem; font-weight: 700; color: #4b3627; }
+.logout-btn { background: #7c2d12; color: #fff7ed; border: 0; padding: 10px 16px; border-radius: 999px; font-size: 0.86rem; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(124, 45, 18, 0.16); }
+.home-main { flex: 1; padding: 28px 24px 40px; box-sizing: border-box; }
+.hero-section { position: relative; display: grid; grid-template-columns: 1.4fr 0.8fr; gap: 22px; align-items: stretch; margin-bottom: 22px; }
+.hero-glow { position: absolute; inset: 30px 12% auto; height: 260px; background: radial-gradient(circle, rgba(180, 83, 9, 0.18), transparent 70%); filter: blur(10px); pointer-events: none; }
+.hero-copy, .continue-card, .stat-card, .feature-card, .word-of-day-card, .roadmap-card { background: rgba(255,255,255,0.72); border: 1px solid rgba(107, 70, 41, 0.12); box-shadow: 0 18px 40px rgba(107, 70, 41, 0.08); backdrop-filter: blur(10px); }
+.hero-copy { position: relative; z-index: 1; border-radius: 28px; padding: 34px; }
+.hero-greeting-chip, .continue-tag, .wotd-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(180, 83, 9, 0.08); color: #7c2d12; border: 1px solid rgba(180, 83, 9, 0.12); border-radius: 999px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; }
+.hero-title { font-size: clamp(2rem, 4vw, 4rem); line-height: 1.05; margin: 18px 0 14px; color: #2e1f14; letter-spacing: -0.04em; }
+.hero-desc { color: #6b5644; font-size: 1.02rem; max-width: 66ch; }
+.topic-pills { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.topic-pill { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; border: 1px solid rgba(107, 70, 41, 0.12); background: rgba(255,255,255,0.72); color: inherit; text-align: left; }
+.topic-pill strong, .topic-pill small { display: block; }
+.topic-pill strong { font-size: 0.95rem; color: #4a2d1a; } .topic-pill small { color: #8b6b53; font-size: 0.78rem; }
+.hero-actions { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+.btn-primary, .btn-secondary { border-radius: 999px; padding: 12px 18px; font-weight: 700; cursor: pointer; border: 0; }
+.btn-primary { background: linear-gradient(135deg, #7c2d12, #b45309); color: #fff7ed; box-shadow: 0 14px 24px rgba(124, 45, 18, 0.18); }
+.btn-secondary { background: rgba(255,255,255,0.8); color: #5b3116; border: 1px solid rgba(107, 70, 41, 0.14); }
+.continue-card { position: relative; z-index: 1; border-radius: 28px; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; }
+.continue-title { margin: 0; font-size: 1.6rem; color: #2e1f14; } .continue-subtitle { color: #6b5644; }
+.progress-bar-bg { height: 12px; background: rgba(180, 83, 9, 0.12); border-radius: 999px; overflow: hidden; } .progress-bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #b45309, #d97706); }
+.progress-info, .mini-stats { display: flex; justify-content: space-between; gap: 12px; color: #6b5644; font-size: 0.92rem; } .mini-stats strong { display: block; color: #2e1f14; font-size: 1.35rem; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+.stat-card { border-radius: 22px; padding: 20px; display: flex; align-items: center; gap: 14px; }
+.stat-icon-wrapper { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; background: rgba(180, 83, 9, 0.1); }
+.stat-value { display: block; font-size: 1.35rem; font-weight: 800; color: #2e1f14; } .stat-label { color: #7a6554; font-size: 0.9rem; }
+.features-grid, .bottom-grid { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
+.bottom-grid { grid-template-columns: 1fr 1fr; margin-top: 16px; }
+.feature-card, .word-of-day-card, .roadmap-card { border-radius: 24px; padding: 24px; }
+.feature-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.feature-icon { width: 52px; height: 52px; border-radius: 18px; background: rgba(180, 83, 9, 0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.feature-tag { font-size: 0.74rem; font-weight: 800; color: #7c2d12; background: rgba(180, 83, 9, 0.08); padding: 6px 10px; border-radius: 999px; }
+.feature-title { font-size: 1.15rem; font-weight: 800; margin: 0 0 10px; color: #2e1f14; } .feature-desc { color: #6b5644; }
+.feature-action { margin-top: 18px; color: #7c2d12; font-weight: 800; display: flex; gap: 8px; align-items: center; }
+.wotd-header { margin-bottom: 12px; } .wotd-main { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px dashed rgba(107, 70, 41, 0.16); }
+.wotd-kanji { font-size: 3rem; font-weight: 900; color: #7c2d12; line-height: 1; } .wotd-furigana { font-size: 1rem; color: #b45309; font-weight: 700; text-align: right; }
+.wotd-meaning { font-size: 1.02rem; font-weight: 500; color: #4b3627; margin-top: 14px; } .wotd-example { background: rgba(180, 83, 9, 0.06); padding: 14px; border-radius: 14px; margin-top: 14px; border-left: 3px solid #b45309; }
+.wotd-jp-sentence { color: #3b2a1d; font-weight: 500; margin-bottom: 6px; } .wotd-vi-sentence { color: #7a6554; font-size: 0.92rem; }
+.section-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; } .section-title { margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; } .section-link { color: #b45309; font-weight: 700; font-size: 0.9rem; }
+.roadmap-list { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.roadmap-item { display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.62); padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(107, 70, 41, 0.08); }
+.roadmap-item.completed { border-color: rgba(22, 163, 74, 0.16); } .roadmap-item.current { border-color: rgba(180, 83, 9, 0.18); } .roadmap-item.locked { opacity: 0.8; }
+.roadmap-status-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; background: rgba(180, 83, 9, 0.12); color: #7c2d12; }
+.roadmap-details { flex: 1; display: flex; flex-direction: column; } .roadmap-step-title { font-size: 0.95rem; font-weight: 800; color: #2e1f14; } .roadmap-step-desc { font-size: 0.84rem; color: #7a6554; }
+.roadmap-badge { font-size: 0.75rem; font-weight: 800; color: #7c2d12; background: rgba(180, 83, 9, 0.08); padding: 6px 10px; border-radius: 999px; white-space: nowrap; }
+.home-footer { margin-top: auto; border-top: 1px solid rgba(107, 70, 41, 0.12); background: rgba(251, 247, 240, 0.9); padding: 22px; text-align: center; font-size: 0.9rem; color: #7a6554; }
+@media (max-width: 1024px) { .home-nav { flex-wrap: wrap; justify-content: center; } .hero-section, .bottom-grid, .features-grid, .stats-grid { grid-template-columns: 1fr 1fr; } .hero-section, .bottom-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .home-header, .home-main { padding-left: 16px; padding-right: 16px; } .nav-links { display: none; } .stats-grid, .features-grid, .bottom-grid { grid-template-columns: 1fr; } .hero-copy, .continue-card, .feature-card, .word-of-day-card, .roadmap-card { padding: 20px; } }
