@@ -23,18 +23,6 @@ public class UserProfile {
     @Column(name = "birthday")
     private LocalDate birthday;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
-    private Gender gender;
-
-    @Column(name = "country", length = 100)
-    private String country;
-
-    @Column(name = "native_language", length = 100)
-    private String nativeLanguage;
-
-    @Column(name = "bio", columnDefinition = "TEXT")
-    private String bio;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -54,17 +42,6 @@ public class UserProfile {
     public LocalDate getBirthday() { return birthday; }
     public void setBirthday(LocalDate birthday) { this.birthday = birthday; }
 
-    public Gender getGender() { return gender; }
-    public void setGender(Gender gender) { this.gender = gender; }
-
-    public String getCountry() { return country; }
-    public void setCountry(String country) { this.country = country; }
-
-    public String getNativeLanguage() { return nativeLanguage; }
-    public void setNativeLanguage(String nativeLanguage) { this.nativeLanguage = nativeLanguage; }
-
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

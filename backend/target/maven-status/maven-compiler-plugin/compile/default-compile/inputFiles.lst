@@ -11,7 +11,6 @@ D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\respon
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\response\CloudinaryUploadResponse.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\response\UserResponse.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\response\UserSearchResponse.java
-D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\entity\Gender.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\entity\LoginHistory.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\entity\RefreshToken.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\entity\Role.java

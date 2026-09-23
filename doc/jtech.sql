@@ -13,8 +13,13 @@ COLLATE utf8mb4_unicode_ci;
 
 USE jtech;
 
--- Existing non-destructive local database migration (run separately, do not rerun the schema):
+-- Existing non-destructive local database migrations (run separately, do not rerun the schema):
 -- ALTER TABLE users MODIFY COLUMN status ENUM('PENDING', 'ACTIVE', 'INACTIVE', 'LOCKED', 'BANNED') DEFAULT 'ACTIVE';
+-- ALTER TABLE users ADD COLUMN display_name VARCHAR(255) NULL AFTER email;
+-- UPDATE users SET display_name = username WHERE (display_name IS NULL OR display_name = '') AND username IS NOT NULL;
+-- ALTER TABLE users DROP INDEX username;
+-- ALTER TABLE users DROP COLUMN username;
+-- ALTER TABLE users DROP COLUMN email_verified;
 
 -- =========================================================
 -- ROLES
@@ -43,9 +48,9 @@ CREATE TABLE users (
 
     role_id BIGINT NOT NULL,
 
-    username VARCHAR(50) NOT NULL UNIQUE,
-
     email VARCHAR(100) NOT NULL UNIQUE,
+
+    display_name VARCHAR(255),
 
     phone VARCHAR(30) NULL UNIQUE,
 
@@ -58,8 +63,6 @@ CREATE TABLE users (
         'LOCKED',
         'BANNED'
     ) DEFAULT 'ACTIVE',
-
-    email_verified BOOLEAN DEFAULT FALSE,
 
     last_login DATETIME NULL,
 
@@ -87,16 +90,6 @@ CREATE TABLE user_profiles (
     full_name VARCHAR(100),
 
     birthday DATE,
-
-    gender ENUM(
-        'MALE',
-        'FEMALE',
-        'OTHER'
-    ),
-
-    country VARCHAR(100),
-
-    bio TEXT,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

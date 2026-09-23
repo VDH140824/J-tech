@@ -18,9 +18,6 @@ export interface UserResponse {
   createdAt?: string | null;
   updatedAt?: string | null;
   birthday?: string | null;
-  country?: string | null;
-  nativeLanguage?: string | null;
-  bio?: string | null;
   accessToken?: string;
   refreshToken?: string;
 }
@@ -28,9 +25,6 @@ export interface UserResponse {
 export interface UpdateProfileRequest {
   fullName?: string | null;
   birthday?: string | null;
-  country?: string | null;
-  nativeLanguage?: string | null;
-  bio?: string | null;
 }
 
 // ─── Auth State ───────────────────────────────────────────────────────────────

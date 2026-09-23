@@ -79,9 +79,6 @@ public class AuthServiceImpl implements AuthService {
         UserProfile profile = userProfileRepository.findByUserUserId(userId).orElseGet(() -> UserProfile.builder().user(user).build());
         if (request.getFullName() != null) { profile.setFullName(request.getFullName()); user.setDisplayName(request.getFullName()); }
         if (request.getBirthday() != null) profile.setBirthday(request.getBirthday());
-        if (request.getCountry() != null) profile.setCountry(request.getCountry());
-        if (request.getNativeLanguage() != null) profile.setNativeLanguage(request.getNativeLanguage());
-        if (request.getBio() != null) profile.setBio(request.getBio());
         userRepository.save(user); userProfileRepository.save(profile);
         return mapToUserResponse(user, profile);
     }
@@ -99,7 +96,7 @@ public class AuthServiceImpl implements AuthService {
     private UserResponse mapToUserResponse(User user, UserProfile profile) {
         UserResponse response = new UserResponse(); response.setId(user.getUserId()); response.setDisplayName(user.getDisplayName()); response.setEmail(user.getEmail()); response.setAvatarUrl(user.getAvatarUrl()); response.setStatus(user.getStatus() != null ? user.getStatus().name() : "ACTIVE");
         if (user.getRole() != null) { response.setRoleId(user.getRole().getRoleId()); response.setRole(user.getRole().getRoleName()); }
-        if (profile != null) { response.setBirthday(profile.getBirthday()); response.setCountry(profile.getCountry()); response.setNativeLanguage(profile.getNativeLanguage()); response.setBio(profile.getBio()); }
+        if (profile != null) { response.setBirthday(profile.getBirthday()); }
         response.setLastLogin(user.getLastLogin()); response.setCreatedAt(user.getCreatedAt()); response.setUpdatedAt(user.getUpdatedAt()); return response;
     }
 }

@@ -42,9 +42,6 @@ export function ProfilePage() {
 
   const [fullName, setFullName] = useState("");
   const [birthday, setBirthday] = useState("");
-  const [country, setCountry] = useState("");
-  const [nativeLanguage, setNativeLanguage] = useState("");
-  const [bio, setBio] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -52,9 +49,6 @@ export function ProfilePage() {
   useEffect(() => {
     setFullName(user?.displayName ?? "");
     setBirthday(formatDateInput(user?.birthday ?? null));
-    setCountry(user?.country ?? "");
-    setNativeLanguage(user?.nativeLanguage ?? "");
-    setBio(user?.bio ?? "");
   }, [user]);
 
   const initial = useMemo(() => {
@@ -73,9 +67,6 @@ export function ProfilePage() {
     const payload: UpdateProfileRequest = {
       fullName: fullName.trim() || null,
       birthday: birthday || null,
-      country: country.trim() || null,
-      nativeLanguage: nativeLanguage.trim() || null,
-      bio: bio.trim() || null,
     };
 
     try {
@@ -166,20 +157,6 @@ export function ProfilePage() {
                 <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />
               </label>
 
-              <label>
-                Quốc gia
-                <input value={country} onChange={(e) => setCountry(e.target.value)} />
-              </label>
-
-              <label>
-                Ngôn ngữ mẹ đẻ
-                <input value={nativeLanguage} onChange={(e) => setNativeLanguage(e.target.value)} />
-              </label>
-
-              <label className="profile-edit-wide">
-                Giới thiệu
-                <textarea rows={5} value={bio} onChange={(e) => setBio(e.target.value)} />
-              </label>
             </div>
 
             <div className="profile-actions">

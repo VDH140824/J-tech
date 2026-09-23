@@ -58,10 +58,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         User user = userRepository.findByEmail(email).map(existingUser -> {
             existingUser.setLastLogin(LocalDateTime.now());
-            if (picture != null && !picture.isBlank()) {
-                existingUser.setAvatarUrl(picture);
-            }
-            if (displayName != null && !displayName.isBlank()) {
+            if ((existingUser.getDisplayName() == null || existingUser.getDisplayName().isBlank())
+                    && displayName != null && !displayName.isBlank()) {
                 existingUser.setDisplayName(displayName);
             }
             return userRepository.save(existingUser);
