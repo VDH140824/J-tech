@@ -75,7 +75,10 @@ Error generating stack: `+i.message+`
           overflow: hidden;
           background: #020d1a;
           display: flex;
-          justify-content: flex-end;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          box-sizing: border-box;
         }
 
         /* Video background across the full page (left 2/3 focus) */
@@ -181,48 +184,72 @@ Error generating stack: `+i.message+`
           box-shadow: 0 8px 30px rgba(0,0,0,0.4);
         }
 
-        /* Right 1/3 Sidebar Login Panel anchored to the far right with ultra-transparent glass & hover illumination */
+        /* Centered login dialog */
         .auth-form-right {
           position: relative;
           z-index: 4;
-          width: 460px;
-          max-width: 90vw;
-          height: 100vh;
-          background: rgba(2, 8, 18, 0.10);
-          backdrop-filter: blur(4px);
-          border-left: 1px solid rgba(255, 255, 255, 0.12);
-          box-shadow: -6px 0 24px rgba(0, 0, 0, 0.1);
+          width: 420px;
+          max-width: min(420px, calc(100vw - 32px));
+          background: linear-gradient(135deg, rgba(8, 20, 35, 0.38), rgba(8, 20, 35, 0.18));
+          color: #f8fafc;
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          border-radius: 28px;
+          box-shadow: 0 30px 90px rgba(0, 0, 0, 0.44), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+          backdrop-filter: blur(18px) saturate(140%);
+          -webkit-backdrop-filter: blur(18px) saturate(140%);
           display: flex;
           flex-direction: column;
           justify-content: center;
-          padding: 1.5rem 2.25rem;
-          overflow-y: auto;
-          transition: background 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+          padding: 34px;
+          overflow: hidden;
         }
-        .auth-form-right:hover {
-          background: rgba(2, 12, 28, 0.38);
-          backdrop-filter: blur(12px);
-          border-left-color: rgba(56, 189, 248, 0.35);
-          box-shadow: -10px 0 40px rgba(14, 165, 233, 0.12);
+        .auth-form-right::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 20% 0%, rgba(56, 189, 248, 0.18), transparent 34%),
+            radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.12), transparent 32%);
+          pointer-events: none;
         }
-
+        .auth-dialog-content {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+        }
+        .auth-logo-mark {
+          width: 54px;
+          height: 54px;
+          margin: 0 auto 16px;
+          border-radius: 18px;
+          display: grid;
+          place-items: center;
+          font-size: 28px;
+          background: rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+        .auth-dialog-subtitle {
+          color: rgba(241, 245, 249, 0.86);
+          font-size: 14px;
+          line-height: 1.55;
+          margin: 0 0 22px;
+          text-align: center;
+          text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+        }
 
         @media (max-width: 900px) {
           .auth-fullscreen-root {
-            flex-direction: column;
+            min-height: 100vh;
+            height: auto;
             overflow-y: auto;
-          }
-          .auth-hero-left {
-            padding: 2rem 1.5rem;
-            min-height: auto;
+            padding: 18px;
           }
           .auth-form-right {
             width: 100%;
-            max-width: 100vw;
-            height: auto;
-            min-height: 100vh;
-            border-left: none;
-            border-top: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 28px 22px;
+            border-radius: 24px;
           }
         }
 
@@ -395,31 +422,32 @@ Error generating stack: `+i.message+`
           transform: none; animation: none;
         }
 
-        /* Google button with hover highlight */
+        /* Google button */
         .auth-google-btn {
           width: 100%;
           padding: 13px 14px;
-          border-radius: 14px;
-          border: 1.5px solid rgba(255,255,255,0.22);
-          background: rgba(255,255,255,0.08);
-          color: #f0f9ff;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.34);
+          background: rgba(255, 255, 255, 0.14);
+          color: #f8fafc;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 700;
           font-family: inherit;
           cursor: pointer;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 10px;
-          backdrop-filter: blur(8px);
-          text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-          transition: border-color 0.25s, background 0.25s, transform 0.2s, box-shadow 0.25s;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+          transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
         }
         .auth-google-btn:hover {
-          border-color: #38bdf8;
-          background: rgba(14,165,233,0.25);
+          border-color: rgba(255, 255, 255, 0.58);
+          background: rgba(255, 255, 255, 0.24);
           transform: translateY(-1px);
-          box-shadow: 0 0 24px rgba(14,165,233,0.35);
+          box-shadow: 0 12px 26px rgba(0, 0, 0, 0.26);
         }
         .auth-google-btn:disabled { cursor: not-allowed; opacity: 0.55; }
 
@@ -452,7 +480,7 @@ Error generating stack: `+i.message+`
           transition: color 0.2s;
         }
         .auth-link:hover { color: #7dd3fc; }
-      `}),o.jsx("video",{className:"auth-bg-video",src:"https://res.cloudinary.com/keticbsk/video/upload/v1785993263/M%C3%80N_H%C3%8CNH_CH%E1%BB%8CN_T%C6%AF%E1%BB%9ANG_-_%C4%90I%C3%8AU_THUY%E1%BB%80N_NH%E1%BA%ACT_NGUY%E1%BB%86T_TH%C3%81NH_LINH_-_Garena_Li%C3%AAn_Qu%C3%A2n_Mobile_1_ac7jpy.mp4",autoPlay:!0,loop:!0,muted:!0,playsInline:!0}),o.jsx("div",{className:"auth-bg-overlay"}),o.jsx(hx,{}),o.jsx("div",{className:"auth-form-right",children:o.jsxs("div",{style:{width:"100%",maxWidth:380,margin:"0 auto"},children:[o.jsxs("div",{style:{marginBottom:"0.85rem"},children:[o.jsxs("div",{className:"auth-brand-badge",style:{marginBottom:"0.5rem",background:"linear-gradient(135deg, rgba(236, 72, 153, 0.25) 0%, rgba(56, 189, 248, 0.25) 100%)",border:"1px solid rgba(244, 114, 182, 0.45)",boxShadow:"0 4px 20px rgba(236, 72, 153, 0.25)"},children:[o.jsx("span",{style:{fontSize:16},children:"🌸"}),o.jsx("span",{style:{fontSize:13,fontWeight:800,background:"linear-gradient(135deg, #ffffff 0%, #f472b6 60%, #38bdf8 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.08em",textTransform:"uppercase"},children:"J-Tech • Japanese Learning"})]}),o.jsx("h1",{style:{fontSize:27,fontWeight:800,margin:"0 0 6px",letterSpacing:"-0.6px",lineHeight:1.2,background:"linear-gradient(135deg, #ffffff 0%, #38bdf8 50%, #f472b6 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",filter:"drop-shadow(0 2px 8px rgba(14, 165, 233, 0.3))"},children:"Xây dựng cộng đồng lịch sử Việt Nam"}),o.jsx("div",{style:{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginTop:6},children:[{label:"📰 Lịch sử Việt Nam",color:"#38bdf8",bg:"rgba(56,189,248,0.15)",border:"rgba(56,189,248,0.3)"},{label:"👥 Cộng đồng",color:"#f472b6",bg:"rgba(244,114,182,0.15)",border:"rgba(244,114,182,0.3)"},{label:"🔒 Bảo mật JWT",color:"#fbbf24",bg:"rgba(251,191,36,0.15)",border:"rgba(251,191,36,0.3)"}].map(({label:s,color:i,bg:l,border:a})=>o.jsx("span",{style:{fontSize:10,fontWeight:700,color:i,background:l,border:`1px solid ${a}`,borderRadius:999,padding:"2px 8px",letterSpacing:"0.03em",backdropFilter:"blur(6px)"},children:s},s))})]}),o.jsx("div",{style:{height:2,borderRadius:2,background:"linear-gradient(90deg, #f472b6 0%, #38bdf8 50%, transparent 100%)",marginBottom:"0.75rem",boxShadow:"0 0 10px rgba(56, 189, 248, 0.5)"}}),o.jsxs("div",{className:"auth-secure-badge",style:{marginBottom:"0.4rem",background:"linear-gradient(90deg, rgba(52, 211, 153, 0.15), rgba(56, 189, 248, 0.15))",border:"1px solid rgba(52, 211, 153, 0.4)",color:"#6ee7b7"},children:[o.jsx("span",{className:"auth-secure-dot"}),"Secure access"]}),o.jsx("h2",{className:"auth-form-title",style:{fontSize:23,fontWeight:800,background:"linear-gradient(135deg, #ffffff 30%, #7dd3fc 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"},children:e}),o.jsx("p",{style:{fontSize:12,color:"rgba(186, 230, 253, 0.85)",marginBottom:"0.75rem",lineHeight:1.4},children:t}),n,r?o.jsx("div",{style:{marginTop:"0.75rem"},children:r}):null]})})]})}const mx=N.forwardRef(({label:e,error:t,icon:n,className:r="",type:s,...i},l)=>{const[a,u]=N.useState(!1),c=s==="password",d=c?a?"text":"password":s;return o.jsxs("label",{className:"block",style:{marginBottom:4},children:[o.jsx("span",{className:"auth-field-label",children:e}),o.jsxs("div",{className:"auth-input-wrap",children:[n&&o.jsx("span",{className:"auth-input-icon",children:n}),o.jsx("input",{...i,ref:l,type:d,className:`auth-input${t?" error":""}${c?" has-toggle":""}${r}`,style:{paddingLeft:n?42:14}}),c&&o.jsx("button",{type:"button",className:"auth-eye-btn",onClick:()=>u(p=>!p),tabIndex:-1,"aria-label":a?"Hide password":"Show password",children:o.jsx(fx,{open:a})})]}),t?o.jsx(gx,{message:t}):null]})});mx.displayName="TextField";function gx({message:e}){return e?o.jsxs("p",{style:{marginTop:6,fontSize:12,color:"#f87171",display:"flex",alignItems:"center",gap:4},children:[o.jsx("svg",{viewBox:"0 0 20 20",fill:"currentColor",style:{width:13,height:13,flexShrink:0},children:o.jsx("path",{fillRule:"evenodd",d:"M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z",clipRule:"evenodd"})}),e]}):null}function yx({children:e,isLoading:t,className:n="",disabled:r,...s}){return o.jsxs("button",{...s,disabled:r||t,className:`auth-google-btn ${n}`,children:[o.jsx("span",{style:{width:20,height:20,borderRadius:"50%",background:"white",display:"grid",placeItems:"center",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"},children:o.jsxs("svg",{viewBox:"0 0 48 48","aria-hidden":"true",style:{width:14,height:14},children:[o.jsx("path",{fill:"#FFC107",d:"M43.611 20.083H42V20H24v8h11.303C33.654 32.659 29.325 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.967 3.038l5.657-5.657C34.956 6.053 29.715 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.652-.389-3.917z"}),o.jsx("path",{fill:"#FF3D00",d:"M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.967 3.038l5.657-5.657C34.956 6.053 29.715 4 24 4c-7.682 0-14.373 4.33-17.694 10.691z"}),o.jsx("path",{fill:"#4CAF50",d:"M24 44c5.623 0 10.72-2.154 14.606-5.657l-6.735-5.382C29.803 34.411 27.028 36 24 36c-5.304 0-9.625-3.319-11.288-7.946l-6.52 5.025C9.466 39.556 16.227 44 24 44z"}),o.jsx("path",{fill:"#1976D2",d:"M43.611 20.083H42V20H24v8h11.303a12.05 12.05 0 0 1-4.432 5.961l.003-.002 6.735 5.382C37.129 36.989 40 31.058 40 24c0-1.341-.138-2.652-.389-3.917z"})]})}),t?"Loading...":e]})}function vx(){const e=()=>{const t="http://localhost:8080/api";window.location.href=`${t}/oauth2/authorization/google`};return o.jsx(px,{title:"Ch�o m?ng tr? l?i ??",description:"�ang nh?p b?ng Google d? ti?p t?c tham gia c?ng d?ng l?ch s? Vi?t Nam tr�n J-Tech.",footer:o.jsx("p",{style:{textAlign:"center",fontSize:12,color:"rgba(100,116,139,0.8)",marginTop:4},children:"?? Connected with Spring Boot backend API."}),children:o.jsx(yx,{type:"button",onClick:e,children:"Continue with Google"})})}const xx={},Hd=e=>{let t;const n=new Set,r=(d,p)=>{const m=typeof d=="function"?d(t):d;if(!Object.is(m,t)){const w=t;t=p??(typeof m!="object"||m===null)?m:Object.assign({},t,m),n.forEach(j=>j(t,w))}},s=()=>t,u={setState:r,getState:s,getInitialState:()=>c,subscribe:d=>(n.add(d),()=>n.delete(d)),destroy:()=>{(xx?"production":void 0)!=="production"&&console.warn("[DEPRECATED] The `destroy` method will be unsupported in a future version. Instead use unsubscribe function returned by subscribe. Everything will be garbage-collected if store is garbage-collected."),n.clear()}},c=t=e(r,s,u);return u},wx=e=>e?Hd(e):Hd;var ym={exports:{}},vm={},xm={exports:{}},wm={};/**
+      `}),o.jsx("video",{className:"auth-bg-video",src:"https://res.cloudinary.com/keticbsk/video/upload/v1785993263/M%C3%80N_H%C3%8CNH_CH%E1%BB%8CN_T%C6%AF%E1%BB%9ANG_-_%C4%90I%C3%8AU_THUY%E1%BB%80N_NH%E1%BA%ACT_NGUY%E1%BB%86T_TH%C3%81NH_LINH_-_Garena_Li%C3%AAn_Qu%C3%A2n_Mobile_1_ac7jpy.mp4",autoPlay:!0,loop:!0,muted:!0,playsInline:!0}),o.jsx("div",{className:"auth-bg-overlay"}),o.jsx(hx,{}),o.jsx("div",{className:"auth-form-right",children:o.jsxs("div",{className:"auth-dialog-content",children:[o.jsx("div",{className:"auth-logo-mark",children:"🏯"}),o.jsx("h1",{className:"auth-form-title",style:{color:"#f8fafc",fontSize:28,fontWeight:800,margin:"0 0 8px",textAlign:"center",background:"none",WebkitTextFillColor:"#f8fafc",textShadow:"none"},children:e}),o.jsx("p",{className:"auth-dialog-subtitle",children:t}),n,r?o.jsx("div",{style:{marginTop:18},children:r}):null]})})]})}const mx=N.forwardRef(({label:e,error:t,icon:n,className:r="",type:s,...i},l)=>{const[a,u]=N.useState(!1),c=s==="password",d=c?a?"text":"password":s;return o.jsxs("label",{className:"block",style:{marginBottom:4},children:[o.jsx("span",{className:"auth-field-label",children:e}),o.jsxs("div",{className:"auth-input-wrap",children:[n&&o.jsx("span",{className:"auth-input-icon",children:n}),o.jsx("input",{...i,ref:l,type:d,className:`auth-input${t?" error":""}${c?" has-toggle":""}${r}`,style:{paddingLeft:n?42:14}}),c&&o.jsx("button",{type:"button",className:"auth-eye-btn",onClick:()=>u(p=>!p),tabIndex:-1,"aria-label":a?"Hide password":"Show password",children:o.jsx(fx,{open:a})})]}),t?o.jsx(gx,{message:t}):null]})});mx.displayName="TextField";function gx({message:e}){return e?o.jsxs("p",{style:{marginTop:6,fontSize:12,color:"#f87171",display:"flex",alignItems:"center",gap:4},children:[o.jsx("svg",{viewBox:"0 0 20 20",fill:"currentColor",style:{width:13,height:13,flexShrink:0},children:o.jsx("path",{fillRule:"evenodd",d:"M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z",clipRule:"evenodd"})}),e]}):null}function yx({children:e,isLoading:t,className:n="",disabled:r,...s}){return o.jsxs("button",{...s,disabled:r||t,className:`auth-google-btn ${n}`,children:[o.jsx("span",{style:{width:20,height:20,borderRadius:"50%",background:"white",display:"grid",placeItems:"center",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"},children:o.jsxs("svg",{viewBox:"0 0 48 48","aria-hidden":"true",style:{width:14,height:14},children:[o.jsx("path",{fill:"#FFC107",d:"M43.611 20.083H42V20H24v8h11.303C33.654 32.659 29.325 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.967 3.038l5.657-5.657C34.956 6.053 29.715 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.652-.389-3.917z"}),o.jsx("path",{fill:"#FF3D00",d:"M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.967 3.038l5.657-5.657C34.956 6.053 29.715 4 24 4c-7.682 0-14.373 4.33-17.694 10.691z"}),o.jsx("path",{fill:"#4CAF50",d:"M24 44c5.623 0 10.72-2.154 14.606-5.657l-6.735-5.382C29.803 34.411 27.028 36 24 36c-5.304 0-9.625-3.319-11.288-7.946l-6.52 5.025C9.466 39.556 16.227 44 24 44z"}),o.jsx("path",{fill:"#1976D2",d:"M43.611 20.083H42V20H24v8h11.303a12.05 12.05 0 0 1-4.432 5.961l.003-.002 6.735 5.382C37.129 36.989 40 31.058 40 24c0-1.341-.138-2.652-.389-3.917z"})]})}),t?"Loading...":e]})}function vx(){const e=()=>{const t="http://localhost:8080/api";window.location.href=`${t}/oauth2/authorization/google`};return o.jsx(px,{title:"こにちは! Chào mừng bạn đến với J-Tech",description:"Đăng nhập bằng Google để tiếp tục luyện tập tiếng Nhật cùng J-Tech.",footer:o.jsx("p",{style:{textAlign:"center",fontSize:12,color:"rgba(241, 245, 249, 0.78)",marginTop:4},children:"Kết nối an toàn với Spring Boot backend API."}),children:o.jsx(yx,{type:"button",onClick:e,children:"Tiếp tục với Google"})})}const xx={},Hd=e=>{let t;const n=new Set,r=(d,p)=>{const m=typeof d=="function"?d(t):d;if(!Object.is(m,t)){const w=t;t=p??(typeof m!="object"||m===null)?m:Object.assign({},t,m),n.forEach(j=>j(t,w))}},s=()=>t,u={setState:r,getState:s,getInitialState:()=>c,subscribe:d=>(n.add(d),()=>n.delete(d)),destroy:()=>{(xx?"production":void 0)!=="production"&&console.warn("[DEPRECATED] The `destroy` method will be unsupported in a future version. Instead use unsubscribe function returned by subscribe. Everything will be garbage-collected if store is garbage-collected."),n.clear()}},c=t=e(r,s,u);return u},wx=e=>e?Hd(e):Hd;var ym={exports:{}},vm={},xm={exports:{}},wm={};/**
  * @license React
  * use-sync-external-store-shim.production.js
  *

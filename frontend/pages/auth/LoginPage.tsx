@@ -9,16 +9,23 @@ export function LoginPage() {
 
   return (
     <AuthShell
-      title="Ch�o m?ng tr? l?i ??"
-      description="�ang nh?p b?ng Google d? ti?p t?c tham gia c?ng d?ng l?ch s? Vi?t Nam tr�n J-Tech."
+      title="こにちは! Chào mừng bạn đến với J-Tech"
+      description="Đăng nhập bằng Google để tiếp tục luyện tập tiếng Nhật cùng J-Tech."
       footer={
-        <p style={{ textAlign: "center", fontSize: 12, color: "rgba(100,116,139,0.8)", marginTop: 4 }}>
-          ?? Connected with Spring Boot backend API.
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: 12,
+            color: "rgba(241, 245, 249, 0.78)",
+            marginTop: 4,
+          }}
+        >
+          Kết nối an toàn với Spring Boot backend API.
         </p>
       }
     >
       <GoogleButton type="button" onClick={handleGoogleSignIn}>
-        Continue with Google
+        Tiếp tục với Google
       </GoogleButton>
     </AuthShell>
   );

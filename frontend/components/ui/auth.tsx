@@ -33,7 +33,13 @@ type AuthShellProps = {
 /* ─── SVG Icon helpers ─────────────────────────────────────────── */
 export function EmailIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4 text-sky-400">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className="h-4 w-4 text-sky-400"
+    >
       <rect x="2" y="4" width="20" height="16" rx="3" />
       <path d="M2 7l10 7 10-7" />
     </svg>
@@ -41,7 +47,13 @@ export function EmailIcon() {
 }
 export function LockIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4 text-sky-400">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className="h-4 w-4 text-sky-400"
+    >
       <rect x="5" y="11" width="14" height="10" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
       <circle cx="12" cy="16" r="1.5" fill="currentColor" />
@@ -50,7 +62,13 @@ export function LockIcon() {
 }
 export function UserIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4 text-sky-400">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className="h-4 w-4 text-sky-400"
+    >
       <circle cx="12" cy="8" r="4" />
       <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" />
     </svg>
@@ -58,12 +76,24 @@ export function UserIcon() {
 }
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className="h-4 w-4"
+    >
       <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
   ) : (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className="h-4 w-4"
+    >
       <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19C5 19 1 12 1 12a18.2 18.2 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
       <line x1="1" y1="1" x2="23" y2="23" />
     </svg>
@@ -73,23 +103,76 @@ function EyeIcon({ open }: { open: boolean }) {
 /* ─── Floating animated particles ──────────────────────────────── */
 function Particles() {
   const items = [
-    { char: "日", x: "8%",  y: "18%", size: "text-3xl", delay: "0s",   dur: "8s" },
-    { char: "本",  x: "48%", y: "12%", size: "text-2xl", delay: "1.5s", dur: "10s" },
-    { char: "語",  x: "15%", y: "72%", size: "text-4xl", delay: "2.5s", dur: "9s"  },
-    { char: "学",  x: "52%", y: "65%", size: "text-2xl", delay: "0.8s", dur: "11s" },
-    { char: "習",  x: "30%", y: "8%",  size: "text-xl",  delay: "3.2s", dur: "7s"  },
-    { char: "文",  x: "58%", y: "45%", size: "text-3xl", delay: "1.9s", dur: "12s" },
-    { char: "字",  x: "3%",  y: "45%", size: "text-2xl", delay: "4s",   dur: "8.5s"},
-    { char: "話",  x: "40%", y: "88%", size: "text-3xl", delay: "2s",   dur: "9.5s"},
+    { char: "日", x: "8%", y: "18%", size: "text-3xl", delay: "0s", dur: "8s" },
+    {
+      char: "本",
+      x: "48%",
+      y: "12%",
+      size: "text-2xl",
+      delay: "1.5s",
+      dur: "10s",
+    },
+    {
+      char: "語",
+      x: "15%",
+      y: "72%",
+      size: "text-4xl",
+      delay: "2.5s",
+      dur: "9s",
+    },
+    {
+      char: "学",
+      x: "52%",
+      y: "65%",
+      size: "text-2xl",
+      delay: "0.8s",
+      dur: "11s",
+    },
+    {
+      char: "習",
+      x: "30%",
+      y: "8%",
+      size: "text-xl",
+      delay: "3.2s",
+      dur: "7s",
+    },
+    {
+      char: "文",
+      x: "58%",
+      y: "45%",
+      size: "text-3xl",
+      delay: "1.9s",
+      dur: "12s",
+    },
+    {
+      char: "字",
+      x: "3%",
+      y: "45%",
+      size: "text-2xl",
+      delay: "4s",
+      dur: "8.5s",
+    },
+    {
+      char: "話",
+      x: "40%",
+      y: "88%",
+      size: "text-3xl",
+      delay: "2s",
+      dur: "9.5s",
+    },
   ];
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" style={{ zIndex: 2 }}>
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{ zIndex: 2 }}
+    >
       {items.map(({ char, x, y, size, delay, dur }, i) => (
         <span
           key={i}
           className={`absolute ${size} font-bold select-none`}
           style={{
-            left: x, top: y,
+            left: x,
+            top: y,
             color: "rgba(255,255,255,0.22)",
             textShadow: "0 0 12px rgba(56,189,248,0.5)",
             animationName: "floatKanji",
@@ -108,7 +191,12 @@ function Particles() {
 }
 
 /* ─── AuthShell ─────────────────────────────────────────────────── */
-export function AuthShell({ title, description, children, footer }: AuthShellProps) {
+export function AuthShell({
+  title,
+  description,
+  children,
+  footer,
+}: AuthShellProps) {
   return (
     <div className="auth-fullscreen-root">
       <style>{`
@@ -122,7 +210,10 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
           overflow: hidden;
           background: #020d1a;
           display: flex;
-          justify-content: flex-end;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          box-sizing: border-box;
         }
 
         /* Video background across the full page (left 2/3 focus) */
@@ -228,48 +319,72 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
           box-shadow: 0 8px 30px rgba(0,0,0,0.4);
         }
 
-        /* Right 1/3 Sidebar Login Panel anchored to the far right with ultra-transparent glass & hover illumination */
+        /* Centered login dialog */
         .auth-form-right {
           position: relative;
           z-index: 4;
-          width: 460px;
-          max-width: 90vw;
-          height: 100vh;
-          background: rgba(2, 8, 18, 0.10);
-          backdrop-filter: blur(4px);
-          border-left: 1px solid rgba(255, 255, 255, 0.12);
-          box-shadow: -6px 0 24px rgba(0, 0, 0, 0.1);
+          width: 420px;
+          max-width: min(420px, calc(100vw - 32px));
+          background: linear-gradient(135deg, rgba(8, 20, 35, 0.38), rgba(8, 20, 35, 0.18));
+          color: #f8fafc;
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          border-radius: 28px;
+          box-shadow: 0 30px 90px rgba(0, 0, 0, 0.44), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+          backdrop-filter: blur(18px) saturate(140%);
+          -webkit-backdrop-filter: blur(18px) saturate(140%);
           display: flex;
           flex-direction: column;
           justify-content: center;
-          padding: 1.5rem 2.25rem;
-          overflow-y: auto;
-          transition: background 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+          padding: 34px;
+          overflow: hidden;
         }
-        .auth-form-right:hover {
-          background: rgba(2, 12, 28, 0.38);
-          backdrop-filter: blur(12px);
-          border-left-color: rgba(56, 189, 248, 0.35);
-          box-shadow: -10px 0 40px rgba(14, 165, 233, 0.12);
+        .auth-form-right::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 20% 0%, rgba(56, 189, 248, 0.18), transparent 34%),
+            radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.12), transparent 32%);
+          pointer-events: none;
         }
-
+        .auth-dialog-content {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+        }
+        .auth-logo-mark {
+          width: 54px;
+          height: 54px;
+          margin: 0 auto 16px;
+          border-radius: 18px;
+          display: grid;
+          place-items: center;
+          font-size: 28px;
+          background: rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+        .auth-dialog-subtitle {
+          color: rgba(241, 245, 249, 0.86);
+          font-size: 14px;
+          line-height: 1.55;
+          margin: 0 0 22px;
+          text-align: center;
+          text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+        }
 
         @media (max-width: 900px) {
           .auth-fullscreen-root {
-            flex-direction: column;
+            min-height: 100vh;
+            height: auto;
             overflow-y: auto;
-          }
-          .auth-hero-left {
-            padding: 2rem 1.5rem;
-            min-height: auto;
+            padding: 18px;
           }
           .auth-form-right {
             width: 100%;
-            max-width: 100vw;
-            height: auto;
-            min-height: 100vh;
-            border-left: none;
-            border-top: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 28px 22px;
+            border-radius: 24px;
           }
         }
 
@@ -442,31 +557,32 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
           transform: none; animation: none;
         }
 
-        /* Google button with hover highlight */
+        /* Google button */
         .auth-google-btn {
           width: 100%;
           padding: 13px 14px;
-          border-radius: 14px;
-          border: 1.5px solid rgba(255,255,255,0.22);
-          background: rgba(255,255,255,0.08);
-          color: #f0f9ff;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.34);
+          background: rgba(255, 255, 255, 0.14);
+          color: #f8fafc;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 700;
           font-family: inherit;
           cursor: pointer;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 10px;
-          backdrop-filter: blur(8px);
-          text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-          transition: border-color 0.25s, background 0.25s, transform 0.2s, box-shadow 0.25s;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+          transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
         }
         .auth-google-btn:hover {
-          border-color: #38bdf8;
-          background: rgba(14,165,233,0.25);
+          border-color: rgba(255, 255, 255, 0.58);
+          background: rgba(255, 255, 255, 0.24);
           transform: translateY(-1px);
-          box-shadow: 0 0 24px rgba(14,165,233,0.35);
+          box-shadow: 0 12px 26px rgba(0, 0, 0, 0.26);
         }
         .auth-google-btn:disabled { cursor: not-allowed; opacity: 0.55; }
 
@@ -513,129 +629,35 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
       <div className="auth-bg-overlay" />
       <Particles />
 
-      {/* 1/3 Right Sidebar Login Panel (Contains Title & Form) */}
+      {/* Center login dialog */}
       <div className="auth-form-right">
-        <div style={{ width: "100%", maxWidth: 380, margin: "0 auto" }}>
-          {/* Brand Header */}
-          <div style={{ marginBottom: "0.85rem" }}>
-            <div
-              className="auth-brand-badge"
-              style={{
-                marginBottom: "0.5rem",
-                background: "linear-gradient(135deg, rgba(236, 72, 153, 0.25) 0%, rgba(56, 189, 248, 0.25) 100%)",
-                border: "1px solid rgba(244, 114, 182, 0.45)",
-                boxShadow: "0 4px 20px rgba(236, 72, 153, 0.25)",
-              }}
-            >
-              <span style={{ fontSize: 16 }}>🌸</span>
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  background: "linear-gradient(135deg, #ffffff 0%, #f472b6 60%, #38bdf8 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-              >
-                J-Tech • Japanese Learning
-              </span>
-            </div>
+        <div className="auth-dialog-content">
+          <div className="auth-logo-mark">🏯</div>
 
-            <h1
-              style={{
-                fontSize: 27,
-                fontWeight: 800,
-                margin: "0 0 6px",
-                letterSpacing: "-0.6px",
-                lineHeight: 1.2,
-                background: "linear-gradient(135deg, #ffffff 0%, #38bdf8 50%, #f472b6 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                filter: "drop-shadow(0 2px 8px rgba(14, 165, 233, 0.3))",
-              }}
-            >
-Xây dựng cộng đồng lịch sử Việt Nam
-            </h1>
-
-            {/* Quick feature micro-badges */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
-              {[
-                { label: "📰 Lịch sử Việt Nam", color: "#38bdf8", bg: "rgba(56,189,248,0.15)", border: "rgba(56,189,248,0.3)" },
-                { label: "👥 Cộng đồng", color: "#f472b6", bg: "rgba(244,114,182,0.15)", border: "rgba(244,114,182,0.3)" },
-                { label: "🔒 Bảo mật JWT", color: "#fbbf24", bg: "rgba(251,191,36,0.15)", border: "rgba(251,191,36,0.3)" },
-              ].map(({ label, color, bg, border }) => (
-                <span
-                  key={label}
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color,
-                    background: bg,
-                    border: `1px solid ${border}`,
-                    borderRadius: 999,
-                    padding: "2px 8px",
-                    letterSpacing: "0.03em",
-                    backdropFilter: "blur(6px)",
-                  }}
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div
-            style={{
-              height: 2,
-              borderRadius: 2,
-              background: "linear-gradient(90deg, #f472b6 0%, #38bdf8 50%, transparent 100%)",
-              marginBottom: "0.75rem",
-              boxShadow: "0 0 10px rgba(56, 189, 248, 0.5)",
-            }}
-          />
-
-          {/* Secure badge */}
-          <div
-            className="auth-secure-badge"
-            style={{
-              marginBottom: "0.4rem",
-              background: "linear-gradient(90deg, rgba(52, 211, 153, 0.15), rgba(56, 189, 248, 0.15))",
-              border: "1px solid rgba(52, 211, 153, 0.4)",
-              color: "#6ee7b7",
-            }}
-          >
-            <span className="auth-secure-dot" />
-            Secure access
-          </div>
-
-          {/* Form Page Title (Sign in / Register) */}
-          <h2
+          <h1
             className="auth-form-title"
             style={{
-              fontSize: 23,
+              color: "#f8fafc",
+              fontSize: 28,
               fontWeight: 800,
-              background: "linear-gradient(135deg, #ffffff 30%, #7dd3fc 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              margin: "0 0 8px",
+              textAlign: "center",
+              background: "none",
+              WebkitTextFillColor: "#f8fafc",
+              textShadow: "none",
             }}
           >
             {title}
-          </h2>
-          <p style={{ fontSize: 12, color: "rgba(186, 230, 253, 0.85)", marginBottom: "0.75rem", lineHeight: 1.4 }}>
-            {description}
-          </p>
+          </h1>
+
+          <p className="auth-dialog-subtitle">{description}</p>
 
           {children}
 
-          {footer ? <div style={{ marginTop: "0.75rem" }}>{footer}</div> : null}
-
+          {footer ? <div style={{ marginTop: 18 }}>{footer}</div> : null}
         </div>
       </div>
     </div>
-
-
   );
 }
 
@@ -644,7 +666,11 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ({ label, error, icon, className = "", type: typeProp, ...props }, ref) => {
     const [showPwd, setShowPwd] = useState(false);
     const isPassword = typeProp === "password";
-    const resolvedType = isPassword ? (showPwd ? "text" : "password") : typeProp;
+    const resolvedType = isPassword
+      ? showPwd
+        ? "text"
+        : "password"
+      : typeProp;
 
     return (
       <label className="block" style={{ marginBottom: 4 }}>
@@ -673,7 +699,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         {error ? <FieldError message={error} /> : null}
       </label>
     );
-  }
+  },
 );
 
 TextField.displayName = "TextField";
@@ -681,9 +707,26 @@ TextField.displayName = "TextField";
 export function FieldError({ message }: FieldErrorProps) {
   if (!message) return null;
   return (
-    <p style={{ marginTop: 6, fontSize: 12, color: "#f87171", display: "flex", alignItems: "center", gap: 4 }}>
-      <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: 13, height: 13, flexShrink: 0 }}>
-        <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" clipRule="evenodd" />
+    <p
+      style={{
+        marginTop: 6,
+        fontSize: 12,
+        color: "#f87171",
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      <svg
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        style={{ width: 13, height: 13, flexShrink: 0 }}
+      >
+        <path
+          fillRule="evenodd"
+          d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+          clipRule="evenodd"
+        />
       </svg>
       {message}
     </p>
@@ -691,32 +734,106 @@ export function FieldError({ message }: FieldErrorProps) {
 }
 
 /* ─── AuthButton ────────────────────────────────────────────────── */
-export function AuthButton({ children, isLoading, className = "", disabled, ...props }: ButtonProps) {
+export function AuthButton({
+  children,
+  isLoading,
+  className = "",
+  disabled,
+  ...props
+}: ButtonProps) {
   return (
-    <button {...props} disabled={disabled || isLoading} className={`auth-submit-btn ${className}`}>
+    <button
+      {...props}
+      disabled={disabled || isLoading}
+      className={`auth-submit-btn ${className}`}
+    >
       {isLoading ? (
-        <span style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
-          <svg style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3" />
-            <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            justifyContent: "center",
+          }}
+        >
+          <svg
+            style={{
+              width: 16,
+              height: 16,
+              animation: "spin 1s linear infinite",
+            }}
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="rgba(255,255,255,0.3)"
+              strokeWidth="3"
+            />
+            <path
+              d="M12 2a10 10 0 0 1 10 10"
+              stroke="white"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
           </svg>
           Loading...
         </span>
-      ) : children}
+      ) : (
+        children
+      )}
     </button>
   );
 }
 
 /* ─── GoogleButton ──────────────────────────────────────────────── */
-export function GoogleButton({ children, isLoading, className = "", disabled, ...props }: GoogleButtonProps) {
+export function GoogleButton({
+  children,
+  isLoading,
+  className = "",
+  disabled,
+  ...props
+}: GoogleButtonProps) {
   return (
-    <button {...props} disabled={disabled || isLoading} className={`auth-google-btn ${className}`}>
-      <span style={{ width: 20, height: 20, borderRadius: "50%", background: "white", display: "grid", placeItems: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}>
-        <svg viewBox="0 0 48 48" aria-hidden="true" style={{ width: 14, height: 14 }}>
-          <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.654 32.659 29.325 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.967 3.038l5.657-5.657C34.956 6.053 29.715 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.652-.389-3.917z" />
-          <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.967 3.038l5.657-5.657C34.956 6.053 29.715 4 24 4c-7.682 0-14.373 4.33-17.694 10.691z" />
-          <path fill="#4CAF50" d="M24 44c5.623 0 10.72-2.154 14.606-5.657l-6.735-5.382C29.803 34.411 27.028 36 24 36c-5.304 0-9.625-3.319-11.288-7.946l-6.52 5.025C9.466 39.556 16.227 44 24 44z" />
-          <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.05 12.05 0 0 1-4.432 5.961l.003-.002 6.735 5.382C37.129 36.989 40 31.058 40 24c0-1.341-.138-2.652-.389-3.917z" />
+    <button
+      {...props}
+      disabled={disabled || isLoading}
+      className={`auth-google-btn ${className}`}
+    >
+      <span
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          background: "white",
+          display: "grid",
+          placeItems: "center",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+        }}
+      >
+        <svg
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+          style={{ width: 14, height: 14 }}
+        >
+          <path
+            fill="#FFC107"
+            d="M43.611 20.083H42V20H24v8h11.303C33.654 32.659 29.325 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.967 3.038l5.657-5.657C34.956 6.053 29.715 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.652-.389-3.917z"
+          />
+          <path
+            fill="#FF3D00"
+            d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.967 3.038l5.657-5.657C34.956 6.053 29.715 4 24 4c-7.682 0-14.373 4.33-17.694 10.691z"
+          />
+          <path
+            fill="#4CAF50"
+            d="M24 44c5.623 0 10.72-2.154 14.606-5.657l-6.735-5.382C29.803 34.411 27.028 36 24 36c-5.304 0-9.625-3.319-11.288-7.946l-6.52 5.025C9.466 39.556 16.227 44 24 44z"
+          />
+          <path
+            fill="#1976D2"
+            d="M43.611 20.083H42V20H24v8h11.303a12.05 12.05 0 0 1-4.432 5.961l.003-.002 6.735 5.382C37.129 36.989 40 31.058 40 24c0-1.341-.138-2.652-.389-3.917z"
+          />
         </svg>
       </span>
       {isLoading ? "Loading..." : children}
