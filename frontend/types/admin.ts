@@ -1,21 +1,5 @@
 import type { UserResponse } from "./auth";
 
-export interface AdminCreateUserRequest {
-  username: string;
-  email: string;
-  password?: string;
-  roleId: number;
-  status?: string;
-}
-
-export interface AdminUpdateUserRequest {
-  username: string;
-  email: string;
-  password?: string;
-  roleId?: number;
-  status?: string;
-}
-
 export interface AdminUserStatusRequest {
   status: "PENDING" | "ACTIVE" | "INACTIVE" | "LOCKED" | "BANNED";
 }

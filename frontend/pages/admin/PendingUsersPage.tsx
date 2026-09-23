@@ -45,9 +45,9 @@ export function PendingUsersPage() {
     {loading ? <div className="admin-loading-container"><div className="admin-spinner" /><p>Loading pending accounts...</p></div> :
       <div className="admin-table-wrapper"><table className="admin-table"><thead><tr><th>User</th><th>Email</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead><tbody>
         {users.length === 0 ? <tr><td colSpan={5} className="text-center py-6 text-gray-400">There are no accounts waiting for approval.</td></tr> : users.map((user) => {
-          const id = user.userId ?? user.id;
+          const id = user.id;
           const processing = processingId === id;
-          return <tr key={id}><td><div className="user-table-cell"><div className="user-table-avatar">{user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} /> : <span>{user.username.charAt(0).toUpperCase()}</span>}</div><span className="user-table-name">{user.username}</span></div></td><td>{user.email}</td><td>{user.createdAt ? new Date(user.createdAt).toLocaleString() : "—"}</td><td><span className="status-badge status-pending">PENDING</span></td><td><div className="action-buttons-group"><button type="button" className="btn-action btn-edit" disabled={processing} onClick={() => changeStatus(id, "approve")}>Approve</button><button type="button" className="btn-action btn-delete" disabled={processing} onClick={() => changeStatus(id, "reject")}>Reject</button></div></td></tr>;
+          return <tr key={id}><td><div className="user-table-cell"><div className="user-table-avatar">{user.avatarUrl ? <img src={user.avatarUrl} alt={user.displayName || user.email} /> : <span>{(user.displayName || user.email).charAt(0).toUpperCase()}</span>}</div><span className="user-table-name">{user.displayName || user.email}</span></div></td><td>{user.email}</td><td>{user.createdAt ? new Date(user.createdAt).toLocaleString() : "—"}</td><td><span className="status-badge status-pending">PENDING</span></td><td><div className="action-buttons-group"><button type="button" className="btn-action btn-edit" disabled={processing} onClick={() => changeStatus(id, "approve")}>Approve</button><button type="button" className="btn-action btn-delete" disabled={processing} onClick={() => changeStatus(id, "reject")}>Reject</button></div></td></tr>;
         })}</tbody></table></div>}
   </section>;
 }

@@ -1,7 +1,5 @@
 package com.jtech.controller;
 
-import com.jtech.dto.request.AdminCreateUserRequest;
-import com.jtech.dto.request.AdminUpdateUserRequest;
 import com.jtech.dto.request.AdminUserStatusRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.service.AdminUserService;
@@ -11,7 +9,6 @@ import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,17 +51,6 @@ public class AdminUserController {
         return ResponseEntity.ok(adminUserService.rejectUser(id));
     }
 
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody AdminCreateUserRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(adminUserService.createUser(request));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody AdminUpdateUserRequest request) {
-        return ResponseEntity.ok(adminUserService.updateUser(id, request));
-    }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<UserResponse> updateUserStatus(

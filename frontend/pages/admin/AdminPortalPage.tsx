@@ -78,10 +78,10 @@ export function AdminPortalPage() {
           <div className="topbar-right">
             <div className="admin-user-profile">
               <div className="admin-avatar">
-                {user?.username ? user.username.charAt(0).toUpperCase() : "A"}
+                {user?.displayName ? user.displayName.charAt(0).toUpperCase() : "A"}
               </div>
               <div className="admin-info">
-                <span className="admin-name">{user?.username || user?.email || "Admin"}</span>
+                <span className="admin-name">{user?.displayName || user?.email || "Admin"}</span>
                 <span className="admin-role-tag">ROLE_ADMIN</span>
               </div>
             </div>

@@ -14,7 +14,6 @@ import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-
     private final UserRepository userRepository;
 
     public CustomUserDetailsService(UserRepository userRepository) {
@@ -23,21 +22,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseGet(() -> userRepository.findByEmail(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username)));
-
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                "",
-                getAuthorities(user));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), "", getAuthorities(user));
     }
 
     private Collection<? extends GrantedAuthority> getAuthorities(User user) {
-        if (user.getRole() == null || user.getRole().getRoleName() == null) {
-            return List.of();
-        }
+        if (user.getRole() == null || user.getRole().getRoleName() == null) return List.of();
         return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().getRoleName()));
     }
 }

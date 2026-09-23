@@ -54,10 +54,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             return;
         }
 
+        String displayName = oAuth2User.getAttribute("name");
+
         User user = userRepository.findByEmail(email).map(existingUser -> {
             existingUser.setLastLogin(LocalDateTime.now());
             if (picture != null && !picture.isBlank()) {
                 existingUser.setAvatarUrl(picture);
+            }
+            if (displayName != null && !displayName.isBlank()) {
+                existingUser.setDisplayName(displayName);
             }
             return userRepository.save(existingUser);
         }).orElseGet(() -> {
@@ -69,18 +74,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                         return roleRepository.save(role);
                     });
 
-            String username = email;
-            if (userRepository.existsByUsername(username)) {
-                username = email.split("@")[0] + "_" + UUID.randomUUID().toString().substring(0, 5);
-            }
-
             User newUser = new User();
             newUser.setRole(userRole);
-            newUser.setUsername(username);
             newUser.setEmail(email);
+            newUser.setDisplayName(displayName != null && !displayName.isBlank() ? displayName : email);
             newUser.setAvatarUrl(picture);
             newUser.setStatus(UserStatus.PENDING);
-            newUser.setEmailVerified(true);
             newUser.setLastLogin(LocalDateTime.now());
 
             return userRepository.save(newUser);
@@ -102,7 +101,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .revoked(false)
                 .build());
 
-        String token = jwtService.generateToken(user.getUsername());
+        String token = jwtService.generateToken(user.getEmail());
         String targetUrl = frontendUrl
                 + "/oauth2/redirect?token=" + token
                 + "&refreshToken=" + refreshToken.getToken();

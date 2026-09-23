@@ -4,8 +4,6 @@ D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\controller
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\controller\AdminUserController.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\controller\AuthController.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\controller\UserController.java
-D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\request\AdminCreateUserRequest.java
-D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\request\AdminUpdateUserRequest.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\request\AdminUserStatusRequest.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\request\RefreshTokenRequest.java
 D:\FPT\K9_FALL2026\SEP401\code\J-tech\backend\src\main\java\com\jtech\dto\request\UpdateProfileRequest.java

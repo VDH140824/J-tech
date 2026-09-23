@@ -8,12 +8,10 @@ export interface RefreshTokenRequest {
 
 export interface UserResponse {
   id: number;
-  userId?: number;
   roleId?: number | null;
-  username: string;
+  displayName?: string | null;
   email: string;
   role?: string | null;
-  emailVerified: boolean;
   avatarUrl?: string;
   status?: string | null;
   lastLogin?: string | null;
