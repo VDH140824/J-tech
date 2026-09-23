@@ -287,7 +287,7 @@ export function HomePage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const displayName = user?.username ?? user?.email ?? "";
+  const displayName = user?.displayName ?? user?.email ?? "";
   const userName = isAuthenticated ? (displayName ? displayName : "Học viên") : "Khách";
   const avatarInitial = displayName ? displayName.charAt(0).toUpperCase() : "H";
   const normalizedRole = user?.role?.trim().toUpperCase();

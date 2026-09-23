@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Account is not active");
         }
         UserResponse response = mapToUserResponse(user);
-        response.setAccessToken(jwtService.generateToken(user.getUsername()));
+        response.setAccessToken(jwtService.generateToken(user.getEmail()));
         response.setRefreshToken(storedToken.getToken());
         return response;
     }
@@ -77,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         UserProfile profile = userProfileRepository.findByUserUserId(userId).orElseGet(() -> UserProfile.builder().user(user).build());
-        if (request.getFullName() != null) { profile.setFullName(request.getFullName()); user.setUsername(request.getFullName()); }
+        if (request.getFullName() != null) { profile.setFullName(request.getFullName()); user.setDisplayName(request.getFullName()); }
         if (request.getBirthday() != null) profile.setBirthday(request.getBirthday());
         if (request.getCountry() != null) profile.setCountry(request.getCountry());
         if (request.getNativeLanguage() != null) profile.setNativeLanguage(request.getNativeLanguage());
@@ -90,14 +90,14 @@ public class AuthServiceImpl implements AuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) throw new AuthenticationCredentialsNotFoundException("Authenticated user is required");
         Object principal = authentication.getPrincipal();
-        String username = principal instanceof UserDetails details ? details.getUsername() : authentication.getName();
-        if (username == null || username.isBlank()) throw new AuthenticationCredentialsNotFoundException("Authenticated user is required");
-        return userRepository.findByUsername(username).orElseGet(() -> userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found")));
+        String email = principal instanceof UserDetails details ? details.getUsername() : authentication.getName();
+        if (email == null || email.isBlank()) throw new AuthenticationCredentialsNotFoundException("Authenticated user is required");
+        return userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     private UserResponse mapToUserResponse(User user) { return mapToUserResponse(user, userProfileRepository.findByUserUserId(user.getUserId()).orElse(null)); }
     private UserResponse mapToUserResponse(User user, UserProfile profile) {
-        UserResponse response = new UserResponse(); response.setId(user.getUserId()); response.setUsername(user.getUsername()); response.setEmail(user.getEmail()); response.setAvatarUrl(user.getAvatarUrl()); response.setStatus(user.getStatus() != null ? user.getStatus().name() : "ACTIVE"); response.setEmailVerified(user.getEmailVerified());
+        UserResponse response = new UserResponse(); response.setId(user.getUserId()); response.setDisplayName(user.getDisplayName()); response.setEmail(user.getEmail()); response.setAvatarUrl(user.getAvatarUrl()); response.setStatus(user.getStatus() != null ? user.getStatus().name() : "ACTIVE");
         if (user.getRole() != null) { response.setRoleId(user.getRole().getRoleId()); response.setRole(user.getRole().getRoleName()); }
         if (profile != null) { response.setBirthday(profile.getBirthday()); response.setCountry(profile.getCountry()); response.setNativeLanguage(profile.getNativeLanguage()); response.setBio(profile.getBio()); }
         response.setLastLogin(user.getLastLogin()); response.setCreatedAt(user.getCreatedAt()); response.setUpdatedAt(user.getUpdatedAt()); return response;

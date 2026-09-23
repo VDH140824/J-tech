@@ -50,7 +50,7 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setFullName(user?.username ?? "");
+    setFullName(user?.displayName ?? "");
     setBirthday(formatDateInput(user?.birthday ?? null));
     setCountry(user?.country ?? "");
     setNativeLanguage(user?.nativeLanguage ?? "");
@@ -58,7 +58,7 @@ export function ProfilePage() {
   }, [user]);
 
   const initial = useMemo(() => {
-    const base = user?.username ?? user?.email ?? "U";
+    const base = user?.displayName ?? user?.email ?? "U";
     return base.charAt(0).toUpperCase();
   }, [user]);
 
@@ -107,7 +107,7 @@ export function ProfilePage() {
           <div className="profile-avatar">{initial}</div>
           <div>
             <h1>Hồ sơ cá nhân</h1>
-            <p>{user?.username ?? "Chưa có tên"}</p>
+            <p>{user?.displayName ?? "Chưa có tên"}</p>
             <p>{user?.email ?? ""}</p>
             <p>Vai trò: {user?.role ?? "User"}</p>
           </div>
@@ -139,10 +139,7 @@ export function ProfilePage() {
                 <span>Trạng thái</span>
                 <strong>{formatDisplayValue(user?.status)}</strong>
               </div>
-              <div className="profile-detail-item">
-                <span>Email xác thực</span>
-                <strong>{user?.emailVerified ? "Đã xác thực" : "Chưa xác thực"}</strong>
-              </div>
+
               <div className="profile-detail-item">
                 <span>Đăng nhập gần nhất</span>
                 <strong>{formatDateTime(user?.lastLogin)}</strong>
@@ -155,7 +152,7 @@ export function ProfilePage() {
 
             <div className="profile-edit-grid">
               <label>
-                Username
+                Tên hiển thị
                 <input value={fullName} onChange={(e) => setFullName(e.target.value)} />
               </label>
 

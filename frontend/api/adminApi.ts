@@ -1,8 +1,6 @@
 import { apiClient } from "../services/api";
 import type {
-  AdminCreateUserRequest,
   AdminDashboardStatsResponse,
-  AdminUpdateUserRequest,
   AdminUserStatusRequest,
   AdminUsersPageResponse,
 } from "../types/admin";
@@ -31,9 +29,6 @@ export async function getAdminUsers(params: {
 }
 
 /**
- * POST /api/admin/users
- */
-/**
  * GET /api/admin/users/pending
  */
 export async function getPendingAdminUsers(params: { page?: number; size?: number } = {}): Promise<AdminUsersPageResponse> {
@@ -50,22 +45,6 @@ export async function approvePendingUser(userId: number): Promise<UserResponse> 
 /** PUT /api/admin/users/:id/reject */
 export async function rejectPendingUser(userId: number): Promise<UserResponse> {
   const { data } = await apiClient.put<UserResponse>(`/admin/users/${userId}/reject`);
-  return data;
-}
-
-export async function createAdminUser(payload: AdminCreateUserRequest): Promise<UserResponse> {
-  const { data } = await apiClient.post<UserResponse>("/admin/users", payload);
-  return data;
-}
-
-/**
- * PUT /api/admin/users/:id
- */
-export async function updateAdminUser(
-  userId: number,
-  payload: AdminUpdateUserRequest
-): Promise<UserResponse> {
-  const { data } = await apiClient.put<UserResponse>(`/admin/users/${userId}`, payload);
   return data;
 }
 

@@ -4,22 +4,16 @@ import com.jtech.dto.response.UserResponse;
 import com.jtech.entity.User;
 
 public final class UserMapper {
-
-    private UserMapper() {
-    }
+    private UserMapper() {}
 
     public static UserResponse toResponse(User user) {
-        if (user == null) {
-            return null;
-        }
-
+        if (user == null) return null;
         UserResponse response = new UserResponse();
         response.setId(user.getUserId());
-        response.setUsername(user.getUsername());
+        response.setDisplayName(user.getDisplayName());
         response.setEmail(user.getEmail());
         response.setAvatarUrl(user.getAvatarUrl());
         response.setStatus(user.getStatus() != null ? user.getStatus().name() : null);
-        response.setEmailVerified(user.getEmailVerified());
         response.setRole(user.getRole() != null ? user.getRole().getRoleName() : null);
         response.setRoleId(user.getRole() != null ? user.getRole().getRoleId() : null);
         response.setLastLogin(user.getLastLogin());
@@ -27,5 +21,4 @@ public final class UserMapper {
         response.setUpdatedAt(user.getUpdatedAt());
         return response;
     }
-
 }

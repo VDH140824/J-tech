@@ -43,14 +43,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authorizationHeader.substring(7);
         try {
-            String username = jwtService.extractUsername(token);
-            var user = username == null ? java.util.Optional.<com.jtech.entity.User>empty()
-                    : userRepository.findByUsername(username)
-                            .or(() -> userRepository.findByEmail(username));
+            String email = jwtService.extractUsername(token);
+            var user = email == null ? java.util.Optional.<com.jtech.entity.User>empty()
+                    : userRepository.findByEmail(email);
             if (user.isPresent()
                     && user.get().getStatus() == UserStatus.ACTIVE
-                    && jwtService.isTokenValid(token, username)) {
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                    && jwtService.isTokenValid(token, email)) {
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,

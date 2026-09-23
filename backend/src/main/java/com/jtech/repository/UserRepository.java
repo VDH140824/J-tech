@@ -13,12 +13,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = {"role"})
-    Optional<User> findByUsername(String username);
-
-    @EntityGraph(attributePaths = {"role"})
     Optional<User> findByEmail(String email);
-
-    boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
 
@@ -30,11 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByStatus(UserStatus status);
 
     @EntityGraph(attributePaths = {"role"})
-    Page<User> findByStatus(UserStatus status, Pageable pageable);
-
-    @EntityGraph(attributePaths = {"role"})
     @Query("SELECT u FROM User u WHERE " +
-           "(:search IS NULL OR :search = '' OR LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:search IS NULL OR :search = '' OR LOWER(u.displayName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
            "(:roleId IS NULL OR u.role.roleId = :roleId) AND " +
            "(:status IS NULL OR u.status = :status)")
     Page<User> findAdminUsers(@Param("search") String search,
@@ -42,4 +34,3 @@ public interface UserRepository extends JpaRepository<User, Long> {
                               @Param("status") UserStatus status,
                               Pageable pageable);
 }
-
