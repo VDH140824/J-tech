@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { LoginPage } from "../pages/auth/LoginPage";
+import { LandingPage } from "../pages/landing/LandingPage";
 import { OAuth2RedirectPage } from "../pages/auth/OAuth2RedirectPage";
 import { PendingApprovalPage } from "../pages/auth/PendingApprovalPage";
 import { AccountRejectedPage } from "../pages/auth/AccountRejectedPage";
@@ -16,6 +17,7 @@ export function AppRouter() {
       <BackgroundMusic />
       <Routes>
         {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/oauth2/redirect" element={<OAuth2RedirectPage />} />
         <Route path="/pending-approval" element={<PendingApprovalPage />} />
