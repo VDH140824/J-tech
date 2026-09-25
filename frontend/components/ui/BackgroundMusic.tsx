@@ -5,7 +5,7 @@ const MUSIC_URL =
   "https://res.cloudinary.com/keticbsk/video/upload/v1785996208/Japanese_Music_Nh%E1%BA%A1c_Nh%E1%BA%ADt_B%E1%BA%A3n_Hay_Nh%E1%BA%A5t_Nh%E1%BA%A1c_Anime_Bu%E1%BB%93n_Nh%E1%BA%B9_Nh%C3%A0ng_om5uhw.mp3";
 
 /** Routes where background music should play */
-const MUSIC_ROUTES = ["/", "/home", "/login", "/register", "/verify-email"];
+const MUSIC_ROUTES = ["/", "/home", "/login"];
 
 export function BackgroundMusic() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -19,35 +19,20 @@ export function BackgroundMusic() {
       location.pathname === route || location.pathname.startsWith(`${route}/`),
   );
 
-  // Create audio el once
+  // Create audio element once. Playback starts only from the music button.
   useEffect(() => {
     const audio = new Audio(MUSIC_URL);
     audio.loop = true;
     audio.volume = volume;
     audioRef.current = audio;
 
-    // Try autoplay on first user interaction
-    const handleInteraction = () => {
-      if (!audioRef.current) return;
-      audioRef.current
-        .play()
-        .then(() => setPlaying(true))
-        .catch(() => {});
-      document.removeEventListener("click", handleInteraction);
-      document.removeEventListener("keydown", handleInteraction);
-    };
-    document.addEventListener("click", handleInteraction);
-    document.addEventListener("keydown", handleInteraction);
-
     return () => {
-      document.removeEventListener("click", handleInteraction);
-      document.removeEventListener("keydown", handleInteraction);
       audio.pause();
       audio.src = "";
     };
   }, []);
 
-  // Pause/resume based on route
+  // Pause when leaving music-enabled routes; resume only if already playing.
   useEffect(() => {
     if (!audioRef.current) return;
     if (!shouldPlay) {
@@ -56,27 +41,32 @@ export function BackgroundMusic() {
     } else if (playing) {
       audioRef.current.play().catch(() => {});
     }
-  }, [shouldPlay]);
+  }, [shouldPlay, playing]);
 
-  // Sync volume
+  // Keep the audio element volume in sync with the slider.
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
   if (!shouldPlay) return null;
 
-  const toggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!audioRef.current) return;
+  const toggle = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+
+    const audio = audioRef.current;
+    if (!audio) return;
+
     if (playing) {
-      audioRef.current.pause();
+      audio.pause();
       setPlaying(false);
-    } else {
-      audioRef.current
-        .play()
-        .then(() => setPlaying(true))
-        .catch(() => {});
+      return;
     }
+
+    // Playback is initiated exclusively by an explicit click on this button.
+    audio
+      .play()
+      .then(() => setPlaying(true))
+      .catch(() => setPlaying(false));
   };
 
   return (
