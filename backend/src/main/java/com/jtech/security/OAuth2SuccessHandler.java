@@ -64,11 +64,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             }
             return userRepository.save(existingUser);
         }).orElseGet(() -> {
-            Role userRole = roleRepository.findByRoleName("USER")
+            Role userRole = roleRepository.findByRoleName("STUDENT")
                     .orElseGet(() -> {
                         Role role = new Role();
-                        role.setRoleName("USER");
-                        role.setDescription("Default user role");
+                        role.setRoleName("STUDENT");
+                        role.setDescription("Default student role");
                         return roleRepository.save(role);
                     });
 

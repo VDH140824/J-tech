@@ -130,35 +130,6 @@ CREATE TABLE refresh_tokens (
 
 
 -- =========================================================
--- LOGIN HISTORY
--- =========================================================
-
-CREATE TABLE login_history (
-
-    login_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-    user_id BIGINT NOT NULL,
-
-    login_time DATETIME NOT NULL,
-
-    logout_time DATETIME NULL,
-
-    ip_address VARCHAR(45),
-
-    device VARCHAR(255),
-
-    browser VARCHAR(255),
-
-    success BOOLEAN DEFAULT TRUE,
-
-    CONSTRAINT fk_login_user
-        FOREIGN KEY (user_id)
-        REFERENCES users(user_id)
-        ON DELETE CASCADE
-);
-
-
--- =========================================================
 -- DEFAULT ROLES
 -- =========================================================
 
@@ -166,6 +137,10 @@ INSERT INTO roles (role_name, description)
 VALUES
 ('ADMIN', 'System Administrator'),
 ('MODERATOR', 'Content Moderator'),
-('USER', 'Normal User');
+('STUDENT', 'Student account');
+
+-- Safe migration for existing installations (role_id foreign keys remain unchanged):
+-- UPDATE roles SET role_name = 'STUDENT', description = 'Student account'
+-- WHERE role_name = 'USER';
 
 

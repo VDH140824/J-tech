@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  changeAdminUserRole,
   deleteAdminUser,
   getAdminUsers,
   updateAdminUserStatus,
@@ -9,7 +10,13 @@ import type { AdminUserStatusRequest } from "../../types/admin";
 
 type UserStatus = AdminUserStatusRequest["status"];
 
-const STATUS_OPTIONS: UserStatus[] = ["PENDING", "ACTIVE", "INACTIVE", "LOCKED", "BANNED"];
+const STATUS_OPTIONS: UserStatus[] = [
+  "PENDING",
+  "ACTIVE",
+  "INACTIVE",
+  "LOCKED",
+  "BANNED",
+];
 
 function getDisplayName(user: UserResponse): string {
   return user.displayName || user.email;
@@ -27,6 +34,10 @@ export function AdminUsersTab() {
   const [error, setError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserResponse | null>(null);
+  const [changingRoleUser, setChangingRoleUser] = useState<UserResponse | null>(
+    null,
+  );
+  const [roleLoadingId, setRoleLoadingId] = useState<number | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -43,7 +54,9 @@ export function AdminUsersTab() {
       setTotalPages(res.totalPages || 1);
       setTotalElements(res.totalElements || 0);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Không thể tải danh sách tài khoản.");
+      setError(
+        err?.response?.data?.message || "Không thể tải danh sách tài khoản.",
+      );
     } finally {
       setLoading(false);
     }
@@ -70,7 +83,29 @@ export function AdminUsersTab() {
       showNotification(`Đã đổi trạng thái tài khoản sang ${newStatus}!`);
       fetchUsers();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Không thể đổi trạng thái tài khoản.");
+      setError(
+        err?.response?.data?.message || "Không thể đổi trạng thái tài khoản.",
+      );
+    }
+  };
+
+  const handleChangeRole = async (
+    targetUser: UserResponse,
+    role: "STUDENT" | "MODERATOR" | "ADMIN",
+  ) => {
+    if (targetUser.role === role) return;
+    try {
+      setRoleLoadingId(targetUser.id);
+      const updated = await changeAdminUserRole(targetUser.id, role);
+      setUsers((current) =>
+        current.map((user) => (user.id === updated.id ? updated : user)),
+      );
+      showNotification(`Đã đổi role sang ${role}!`);
+      setChangingRoleUser(null);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Không thể đổi role tài khoản.");
+    } finally {
+      setRoleLoadingId(null);
     }
   };
 
@@ -92,11 +127,13 @@ export function AdminUsersTab() {
       <div className="admin-section-header">
         <div>
           <h2>Quản lý tài khoản</h2>
-          <p>Google OAuth2 là phương thức đăng nhập duy nhất. Admin quản lý danh sách, trạng thái và xóa tài khoản.</p>
+          <p>Admin quản lý danh sách, trạng thái và quyền tài khoản.</p>
         </div>
       </div>
 
-      {actionSuccess && <div className="admin-success-message">✅ {actionSuccess}</div>}
+      {actionSuccess && (
+        <div className="admin-success-message">✅ {actionSuccess}</div>
+      )}
       {error && <div className="admin-error-message">⚠️ {error}</div>}
 
       <form className="admin-toolbar" onSubmit={handleSearchSubmit}>
@@ -107,17 +144,37 @@ export function AdminUsersTab() {
           onChange={(e) => setSearch(e.target.value)}
           className="admin-search-input"
         />
-        <select value={roleIdFilter} onChange={(e) => { setRoleIdFilter(e.target.value); setPage(0); }} className="admin-filter-select">
+        <select
+          value={roleIdFilter}
+          onChange={(e) => {
+            setRoleIdFilter(e.target.value);
+            setPage(0);
+          }}
+          className="admin-filter-select"
+        >
           <option value="ALL">Tất cả vai trò</option>
           <option value="1">Admin</option>
-          <option value="2">User</option>
+          <option value="2">Student</option>
           <option value="3">Moderator</option>
         </select>
-        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }} className="admin-filter-select">
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(0);
+          }}
+          className="admin-filter-select"
+        >
           <option value="ALL">Tất cả trạng thái</option>
-          {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
+          {STATUS_OPTIONS.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
         </select>
-        <button type="submit" className="admin-btn-primary">Tìm kiếm</button>
+        <button type="submit" className="admin-btn-primary">
+          Tìm kiếm
+        </button>
       </form>
 
       {loading ? (
@@ -138,40 +195,112 @@ export function AdminUsersTab() {
             </thead>
             <tbody>
               {users.length === 0 ? (
-                <tr><td colSpan={7} className="admin-empty">Không có tài khoản phù hợp.</td></tr>
-              ) : users.map((user) => {
-                const userId = user.id;
-                return (
-                  <tr key={userId}>
-                    <td>#{userId}</td>
-                    <td>{getDisplayName(user)}</td>
-                    <td>{user.email}</td>
-                    <td>{user.role || "USER"}</td>
-                    <td>
-                      <select
-                        value={(user.status as UserStatus) || "PENDING"}
-                        onChange={(e) => handleChangeStatus(userId, e.target.value as UserStatus)}
-                        className="status-select"
-                      >
-                        {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
-                      </select>
-                    </td>
-                    <td>{user.lastLogin ? new Date(user.lastLogin).toLocaleString("vi-VN") : "Chưa có"}</td>
-                    <td>
-                      <button type="button" className="btn-action btn-delete" onClick={() => setDeletingUser(user)}>Xóa</button>
-                    </td>
-                  </tr>
-                );
-              })}
+                <tr>
+                  <td colSpan={7} className="admin-empty">
+                    Không có tài khoản phù hợp.
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => {
+                  const userId = user.id;
+                  return (
+                    <tr key={userId}>
+                      <td>#{userId}</td>
+                      <td>{getDisplayName(user)}</td>
+                      <td>{user.email}</td>
+                      <td>
+                        <select
+                          value={
+                            user.role === "ADMIN"
+                              ? "ADMIN"
+                              : user.role === "MODERATOR"
+                                ? "MODERATOR"
+                                : "STUDENT"
+                          }
+                          disabled={roleLoadingId === user.id}
+                          onChange={(e) => {
+                            const nextRole = e.target.value as
+                              | "STUDENT"
+                              | "MODERATOR"
+                              | "ADMIN";
+                            if (
+                              window.confirm(
+                                `Bạn có chắc muốn đổi role từ ${user.role || "STUDENT"} sang ${nextRole}?`,
+                              )
+                            ) {
+                              setChangingRoleUser(user);
+                              void handleChangeRole(user, nextRole);
+                            }
+                          }}
+                          className="status-select"
+                        >
+                          <option value="STUDENT">STUDENT</option>
+                          <option value="MODERATOR">MODERATOR</option>
+                          <option value="ADMIN">ADMIN</option>
+                        </select>
+                        {roleLoadingId === user.id && (
+                          <small> Đang lưu...</small>
+                        )}
+                      </td>
+                      <td>
+                        <select
+                          value={(user.status as UserStatus) || "PENDING"}
+                          onChange={(e) =>
+                            handleChangeStatus(
+                              userId,
+                              e.target.value as UserStatus,
+                            )
+                          }
+                          className="status-select"
+                        >
+                          {STATUS_OPTIONS.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        {user.lastLogin
+                          ? new Date(user.lastLogin).toLocaleString("vi-VN")
+                          : "Chưa có"}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn-action btn-delete"
+                          onClick={() => setDeletingUser(user)}
+                        >
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       )}
 
       <div className="admin-pagination">
-        <button type="button" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>Trang trước</button>
-        <span>Trang {page + 1}/{totalPages} • {totalElements} tài khoản</span>
-        <button type="button" disabled={page + 1 >= totalPages} onClick={() => setPage((p) => p + 1)}>Trang sau</button>
+        <button
+          type="button"
+          disabled={page === 0}
+          onClick={() => setPage((p) => Math.max(0, p - 1))}
+        >
+          Trang trước
+        </button>
+        <span>
+          Trang {page + 1}/{totalPages} • {totalElements} tài khoản
+        </span>
+        <button
+          type="button"
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Trang sau
+        </button>
       </div>
 
       {deletingUser && (
@@ -179,12 +308,33 @@ export function AdminUsersTab() {
           <div className="admin-modal-card modal-sm">
             <div className="admin-modal-header">
               <h3>⚠️ Xác nhận xóa tài khoản</h3>
-              <button type="button" onClick={() => setDeletingUser(null)} className="btn-close-modal">✕</button>
+              <button
+                type="button"
+                onClick={() => setDeletingUser(null)}
+                className="btn-close-modal"
+              >
+                ✕
+              </button>
             </div>
-            <p>Bạn chắc chắn muốn xóa tài khoản <strong>{getDisplayName(deletingUser)}</strong>?</p>
+            <p>
+              Bạn chắc chắn muốn xóa tài khoản{" "}
+              <strong>{getDisplayName(deletingUser)}</strong>?
+            </p>
             <div className="admin-modal-footer">
-              <button type="button" onClick={() => setDeletingUser(null)} className="admin-btn-cancel">Hủy</button>
-              <button type="button" onClick={handleDeleteUser} className="admin-btn-delete">Xóa</button>
+              <button
+                type="button"
+                onClick={() => setDeletingUser(null)}
+                className="admin-btn-cancel"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteUser}
+                className="admin-btn-delete"
+              >
+                Xóa
+              </button>
             </div>
           </div>
         </div>

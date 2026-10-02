@@ -25,14 +25,6 @@ export function AppRouter() {
 
         {/* Protected routes */}
         <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <HomePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/home"
           element={
             <ProtectedRoute>

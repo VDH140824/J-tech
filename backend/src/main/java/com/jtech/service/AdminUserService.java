@@ -1,6 +1,7 @@
 package com.jtech.service;
 
 import com.jtech.dto.request.AdminUserStatusRequest;
+import com.jtech.dto.request.ChangeUserRoleRequest;
 import com.jtech.dto.response.UserResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,5 +12,6 @@ public interface AdminUserService {
     UserResponse approveUser(Long userId);
     UserResponse rejectUser(Long userId);
     UserResponse updateUserStatus(Long userId, AdminUserStatusRequest request);
+    UserResponse changeUserRole(Long userId, ChangeUserRoleRequest request, String currentUserEmail);
     void deleteUser(Long userId);
 }

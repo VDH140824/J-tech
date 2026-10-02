@@ -51,6 +51,11 @@ export async function rejectPendingUser(userId: number): Promise<UserResponse> {
 /**
  * PATCH /api/admin/users/:id/status
  */
+export async function changeAdminUserRole(userId: number, role: "STUDENT" | "MODERATOR" | "ADMIN"): Promise<UserResponse> {
+  const { data } = await apiClient.put<UserResponse>(`/admin/users/${userId}/role`, { role });
+  return data;
+}
+
 export async function updateAdminUserStatus(
   userId: number,
   payload: AdminUserStatusRequest

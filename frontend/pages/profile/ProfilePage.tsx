@@ -100,7 +100,7 @@ export function ProfilePage() {
             <h1>Hồ sơ cá nhân</h1>
             <p>{user?.displayName ?? "Chưa có tên"}</p>
             <p>{user?.email ?? ""}</p>
-            <p>Vai trò: {user?.role ?? "User"}</p>
+            <p>Vai trò: {user?.role ?? "STUDENT"}</p>
           </div>
         </section>
 

@@ -1,6 +1,7 @@
 package com.jtech.controller;
 
 import com.jtech.dto.request.AdminUserStatusRequest;
+import com.jtech.dto.request.ChangeUserRoleRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.service.AdminUserService;
 import jakarta.validation.Valid;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/admin/users")
@@ -57,6 +60,15 @@ public class AdminUserController {
             @PathVariable Long id,
             @Valid @RequestBody AdminUserStatusRequest request) {
         return ResponseEntity.ok(adminUserService.updateUserStatus(id, request));
+    }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<UserResponse> changeUserRole(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangeUserRoleRequest request,
+            Principal principal) {
+        return ResponseEntity.ok(adminUserService.changeUserRole(id, request,
+                principal != null ? principal.getName() : null));
     }
 
     @DeleteMapping("/{id}")
