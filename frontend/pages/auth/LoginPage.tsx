@@ -20,7 +20,7 @@ export function LoginPage() {
             marginTop: 4,
           }}
         >
-          Kết nối an toàn với Spring Boot backend API.
+          
         </p>
       }
     >
