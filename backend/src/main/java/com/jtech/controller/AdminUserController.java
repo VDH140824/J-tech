@@ -2,6 +2,7 @@ package com.jtech.controller;
 
 import com.jtech.dto.request.AdminUserStatusRequest;
 import com.jtech.dto.request.ChangeUserRoleRequest;
+import com.jtech.dto.request.PreCreateUserRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.service.AdminUserService;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,6 +71,13 @@ public class AdminUserController {
             Principal principal) {
         return ResponseEntity.ok(adminUserService.changeUserRole(id, request,
                 principal != null ? principal.getName() : null));
+    }
+
+    @PostMapping("/pre-create")
+    public ResponseEntity<UserResponse> preCreateUser(
+            @Valid @RequestBody PreCreateUserRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(adminUserService.preCreateUser(request));
     }
 
     @DeleteMapping("/{id}")

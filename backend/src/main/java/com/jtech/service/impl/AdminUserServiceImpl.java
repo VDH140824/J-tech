@@ -2,6 +2,7 @@ package com.jtech.service.impl;
 
 import com.jtech.dto.request.AdminUserStatusRequest;
 import com.jtech.dto.request.ChangeUserRoleRequest;
+import com.jtech.dto.request.PreCreateUserRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.entity.User;
 import com.jtech.entity.Role;
@@ -65,7 +66,6 @@ public class AdminUserServiceImpl implements AdminUserService {
         return UserMapper.toResponse(userRepository.save(user));
     }
 
-
     @Override
     @Transactional
     public UserResponse updateUserStatus(Long userId, AdminUserStatusRequest request) {
@@ -107,5 +107,33 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId);
         }
         userRepository.deleteById(userId);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse preCreateUser(PreCreateUserRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalStateException("Email đã tồn tại trong hệ thống: " + email);
+        }
+
+        String roleName = request.getRole() == null ? "" : request.getRole().trim().toUpperCase();
+        if (!roleName.equals("ADMIN") && !roleName.equals("STUDENT") && !roleName.equals("MODERATOR")) {
+            throw new IllegalArgumentException("Role không hợp lệ. Chỉ chấp nhận ADMIN, STUDENT hoặc MODERATOR.");
+        }
+
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy role: " + roleName));
+
+        String displayName = email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
+
+        User user = new User();
+        user.setEmail(email);
+        user.setRole(role);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setDisplayName(displayName);
+
+        return UserMapper.toResponse(userRepository.save(user));
     }
 }

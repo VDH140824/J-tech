@@ -71,3 +71,13 @@ export async function deleteAdminUser(userId: number): Promise<void> {
   await apiClient.delete(`/admin/users/${userId}`);
 }
 
+/**
+ * POST /api/admin/users/pre-create
+ */
+export async function preCreateAdminUser(payload: {
+  email: string;
+  role: "STUDENT" | "MODERATOR" | "ADMIN";
+}): Promise<UserResponse> {
+  const { data } = await apiClient.post<UserResponse>("/admin/users/pre-create", payload);
+  return data;
+}

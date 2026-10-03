@@ -3,6 +3,7 @@ import {
   changeAdminUserRole,
   deleteAdminUser,
   getAdminUsers,
+  preCreateAdminUser,
   updateAdminUserStatus,
 } from "../../api/adminApi";
 import type { UserResponse } from "../../types/auth";
@@ -38,6 +39,10 @@ export function AdminUsersTab() {
     null,
   );
   const [roleLoadingId, setRoleLoadingId] = useState<number | null>(null);
+  const [showPreCreate, setShowPreCreate] = useState(false);
+  const [preCreateEmail, setPreCreateEmail] = useState("");
+  const [preCreateRole, setPreCreateRole] = useState<"STUDENT" | "MODERATOR" | "ADMIN">("MODERATOR");
+  const [preCreateLoading, setPreCreateLoading] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -70,6 +75,24 @@ export function AdminUsersTab() {
     e.preventDefault();
     setPage(0);
     fetchUsers();
+  };
+
+  const handlePreCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!preCreateEmail.trim()) return;
+    try {
+      setPreCreateLoading(true);
+      await preCreateAdminUser({ email: preCreateEmail.trim(), role: preCreateRole });
+      showNotification(`Đã tạo tài khoản ${preCreateEmail.trim()} với role ${preCreateRole}!`);
+      setShowPreCreate(false);
+      setPreCreateEmail("");
+      setPreCreateRole("MODERATOR");
+      fetchUsers();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Không thể tạo tài khoản.");
+    } finally {
+      setPreCreateLoading(false);
+    }
   };
 
   const showNotification = (msg: string) => {
@@ -129,6 +152,13 @@ export function AdminUsersTab() {
           <h2>Quản lý tài khoản</h2>
           <p>Admin quản lý danh sách, trạng thái và quyền tài khoản.</p>
         </div>
+        <button
+          type="button"
+          className="admin-btn-primary"
+          onClick={() => setShowPreCreate(true)}
+        >
+          ➕ Tạo tài khoản
+        </button>
       </div>
 
       {actionSuccess && (
@@ -336,6 +366,72 @@ export function AdminUsersTab() {
                 Xóa
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showPreCreate && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal-card modal-sm">
+            <div className="admin-modal-header">
+              <h3>➕ Tạo tài khoản trước</h3>
+              <button
+                type="button"
+                onClick={() => { setShowPreCreate(false); setPreCreateEmail(""); setError(null); }}
+                className="btn-close-modal"
+              >
+                ✕
+              </button>
+            </div>
+            <p style={{ fontSize: "0.85rem", color: "#8b949e", margin: "0 0 16px" }}>
+              Nhập email Google và chọn role. Tài khoản sẽ được set <strong style={{color:"#3fb950"}}>ACTIVE</strong> ngay lập tức — người dùng có thể đăng nhập vào hệ thống với đúng role đã chọn.
+            </p>
+            <form onSubmit={handlePreCreate} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.82rem", color: "#8b949e", marginBottom: 6 }}>Email Google *</label>
+                <input
+                  id="pre-create-email"
+                  type="email"
+                  required
+                  placeholder="example@gmail.com"
+                  value={preCreateEmail}
+                  onChange={(e) => setPreCreateEmail(e.target.value)}
+                  className="admin-search-input"
+                  style={{ width: "100%", boxSizing: "border-box" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.82rem", color: "#8b949e", marginBottom: 6 }}>Role *</label>
+                <select
+                  id="pre-create-role"
+                  value={preCreateRole}
+                  onChange={(e) => setPreCreateRole(e.target.value as "STUDENT" | "MODERATOR" | "ADMIN")}
+                  className="admin-filter-select"
+                  style={{ width: "100%" }}
+                >
+                  <option value="STUDENT">STUDENT</option>
+                  <option value="MODERATOR">MODERATOR</option>
+                  <option value="ADMIN">ADMIN</option>
+                </select>
+              </div>
+              <div className="admin-modal-footer">
+                <button
+                  type="button"
+                  onClick={() => { setShowPreCreate(false); setPreCreateEmail(""); setError(null); }}
+                  className="admin-btn-cancel"
+                  disabled={preCreateLoading}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="admin-btn-primary"
+                  disabled={preCreateLoading}
+                >
+                  {preCreateLoading ? "Đang tạo..." : "Tạo tài khoản"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
