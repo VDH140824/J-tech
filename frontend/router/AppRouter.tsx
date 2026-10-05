@@ -10,6 +10,7 @@ import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { AdminProtectedRoute } from "../components/auth/AdminProtectedRoute";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { AdminPortalPage } from "../pages/admin/AdminPortalPage";
+import { MainLayout } from "../layouts/MainLayout";
 
 export function AppRouter() {
   return (
@@ -23,15 +24,19 @@ export function AppRouter() {
         <Route path="/pending-approval" element={<PendingApprovalPage />} />
         <Route path="/account-rejected" element={<AccountRejectedPage />} />
 
-        {/* Protected routes */}
+        {/* Authenticated main application routes sharing MainLayout */}
         <Route
-          path="/home"
           element={
             <ProtectedRoute>
-              <HomePage />
+              <MainLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
+
+        {/* Admin routes (Admin has its own dedicated portal layout) */}
         <Route
           path="/admin"
           element={
@@ -46,14 +51,6 @@ export function AppRouter() {
             <AdminProtectedRoute>
               <AdminPortalPage />
             </AdminProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
           }
         />
 

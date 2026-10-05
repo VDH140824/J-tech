@@ -1,0 +1,91 @@
+/* Topbar Header */
+.dekiru-topbar {
+  height: 64px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 8px 18px;
+  width: 400px;
+  transition: all 0.2s ease;
+}
+
+.topbar-search:focus-within {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.08);
+}
+
+.search-icon {
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+.search-input {
+  border: 0;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.88rem;
+  color: #1e293b;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.notif-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 1.05rem;
+  transition: background-color 0.2s;
+}
+
+.notif-btn:hover {
+  background-color: #f8fafc;
+}
+
+.notif-badge-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background-color: #f43f5e;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+}
+
+@media (max-width: 768px) {
+  .topbar-search {
+    width: 200px;
+  }
+}

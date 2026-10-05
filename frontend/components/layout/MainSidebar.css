@@ -1,0 +1,156 @@
+/* ==========================================================================
+   LEFT SIDEBAR
+   ========================================================================== */
+.dekiru-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  border-right: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.brand-titles {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.dekiru-brand-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.dekiru-brand-sub {
+  font-size: 0.85rem;
+  color: #f43f5e;
+  font-weight: 700;
+  font-family: "Yu Gothic", "Meiryo", sans-serif;
+}
+
+.sidebar-tagline {
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-top: 2px;
+  margin-bottom: 22px;
+  padding-left: 2px;
+  text-align: left;
+}
+
+.sidebar-nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-link-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.nav-link-btn:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.nav-link-btn.active {
+  background-color: #fff0f3;
+  color: #f43f5e;
+  font-weight: 700;
+}
+
+.nav-link-icon {
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-link-text {
+  flex: 1;
+}
+
+/* Admin portal special nav button */
+.admin-nav-wrapper {
+  margin-top: 8px;
+}
+
+.nav-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 8px 0;
+}
+
+.admin-portal-btn {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
+}
+
+.admin-portal-btn:hover {
+  background-color: #ffedd5;
+  color: #9a3412;
+}
+
+.admin-badge-pill {
+  font-size: 0.65rem;
+  background-color: #ea580c;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* Bottom Cat Decoration */
+.sidebar-cat-widget {
+  margin-top: auto;
+  padding-top: 12px;
+  text-align: center;
+  border-top: 1px dashed #f1f5f9;
+}
+
+.cat-japanese-text {
+  font-size: 0.82rem;
+  color: #f43f5e;
+  font-weight: 700;
+  margin-top: -8px;
+  font-family: "Yu Gothic", "Meiryo", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 768px) {
+  .dekiru-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+  }
+}

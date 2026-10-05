@@ -1,34 +1,7 @@
-import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/authStore";
-import { useCurrentUser, useLogout } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
 // SVG Graphic Components for pixel-perfect modern rendering
-function DekiruLogoIcon() {
-  return (
-    <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M20 3C20 3 23 9.5 28.5 9.5C34 9.5 37 14 34.5 19.5C32 25 26.5 26.5 26.5 26.5C26.5 26.5 27 33 22.5 35.5C18 38 14 34.5 14 34.5C14 34.5 9.5 36.5 6 32.5C2.5 28.5 6.5 23.5 6.5 23.5C6.5 23.5 2.5 18 6 13C9.5 8 15 10 15 10C15 10 16.5 3 20 3Z"
-        fill="#FF4B72"
-        opacity="0.15"
-      />
-      {/* 5-Petal Sakura Flower */}
-      <g transform="translate(20, 20)">
-        {[0, 72, 144, 216, 288].map((angle, i) => (
-          <path
-            key={i}
-            transform={`rotate(${angle})`}
-            d="M 0 0 C -5 -9, -7 -16, 0 -18 C 7 -16, 5 -9, 0 0 Z"
-            fill="#FF4B72"
-          />
-        ))}
-        <circle cx="0" cy="0" r="3.5" fill="#FFF5F7" />
-        <circle cx="0" cy="0" r="2" fill="#FF8CA3" />
-      </g>
-    </svg>
-  );
-}
 
 function HeroBannerIllustration() {
   return (
@@ -152,59 +125,6 @@ function CourseCardArt({ type }: { type: 1 | 2 | 3 | 4 }) {
   );
 }
 
-function SidebarCatDecoration() {
-  return (
-    <div className="sidebar-cat-widget">
-      <svg width="180" height="130" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Sakura Branch */}
-        <path d="M 0 30 C 50 20, 90 45, 140 15 C 160 5, 180 10, 200 0" stroke="#78350F" strokeWidth="3.5" strokeLinecap="round" opacity="0.4" />
-        <path d="M 70 28 C 90 10, 110 5, 125 0" stroke="#78350F" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
-        <path d="M 120 20 C 135 30, 150 35, 165 30" stroke="#78350F" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
-
-        {/* Sakura Flowers on Branch */}
-        <circle cx="65" cy="24" r="7" fill="#FF8CA3" opacity="0.8" />
-        <circle cx="65" cy="24" r="3" fill="#FFF" />
-        <circle cx="100" cy="12" r="8" fill="#FF4B72" opacity="0.85" />
-        <circle cx="100" cy="12" r="3.5" fill="#FFF" />
-        <circle cx="140" cy="15" r="7.5" fill="#FF8CA3" opacity="0.8" />
-        <circle cx="140" cy="15" r="3" fill="#FFF" />
-        <circle cx="155" cy="32" r="6" fill="#FF4B72" opacity="0.75" />
-        <circle cx="180" cy="8" r="7" fill="#FF8CA3" opacity="0.8" />
-
-        {/* Cute Neko / Kitten Sitting */}
-        <g transform="translate(60, 45)">
-          {/* Tail */}
-          <path d="M 75 75 Q 95 70 90 50 Q 85 45 80 52" stroke="#475569" strokeWidth="6" strokeLinecap="round" fill="none" />
-          {/* Body */}
-          <ellipse cx="50" cy="65" rx="28" ry="24" fill="#FFFFFF" stroke="#334155" strokeWidth="3.5" />
-          {/* Paws */}
-          <ellipse cx="36" cy="84" rx="8" ry="5" fill="#FFFFFF" stroke="#334155" strokeWidth="3" />
-          <ellipse cx="64" cy="84" rx="8" ry="5" fill="#FFFFFF" stroke="#334155" strokeWidth="3" />
-          {/* Head */}
-          <circle cx="50" cy="38" r="25" fill="#FFFFFF" stroke="#334155" strokeWidth="3.5" />
-          {/* Ears */}
-          <path d="M 30 24 L 20 4 L 40 17 Z" fill="#FFFFFF" stroke="#334155" strokeWidth="3" strokeLinejoin="round" />
-          <path d="M 31 22 L 24 9 L 38 18 Z" fill="#FFB1C1" />
-          <path d="M 70 24 L 80 4 L 60 17 Z" fill="#FFFFFF" stroke="#334155" strokeWidth="3" strokeLinejoin="round" />
-          <path d="M 69 22 L 76 9 L 62 18 Z" fill="#FFB1C1" />
-          {/* Eyes (Happy Closed Curves) */}
-          <path d="M 37 36 Q 42 30 46 36" stroke="#334155" strokeWidth="3" strokeLinecap="round" fill="none" />
-          <path d="M 54 36 Q 58 30 63 36" stroke="#334155" strokeWidth="3" strokeLinecap="round" fill="none" />
-          {/* Nose & Mouth */}
-          <polygon points="50,40 48,42 52,42" fill="#FF7E95" />
-          <path d="M 46 44 Q 50 47 54 44" stroke="#334155" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-          {/* Cheeks */}
-          <ellipse cx="34" cy="40" rx="5" ry="3" fill="#FFB1C1" opacity="0.7" />
-          <ellipse cx="66" cy="40" rx="5" ry="3" fill="#FFB1C1" opacity="0.7" />
-          {/* Open Japanese Book */}
-          <path d="M 28 72 Q 50 68 50 78 Q 50 68 72 72 L 72 84 Q 50 80 50 86 Q 50 80 28 84 Z" fill="#FFEFF3" stroke="#F43F5E" strokeWidth="2" />
-        </g>
-      </svg>
-      <div className="cat-japanese-text">がんばりましょう</div>
-    </div>
-  );
-}
-
 function MotivationCatArt() {
   return (
     <svg width="90" height="90" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -277,221 +197,11 @@ function ProgressDonutSvg({ percentage }: { percentage: number }) {
 
 export function HomePage() {
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  useCurrentUser();
-  const { mutate: logout } = useLogout();
-
-  const [activeTab, setActiveTab] = useState("trang-chu");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const profileRef = useRef<HTMLDivElement>(null);
-
-  const displayName = user?.displayName ?? user?.email ?? "";
-  const userName = isAuthenticated ? (displayName ? displayName : "Học viên") : "Khách";
-  const avatarInitial = displayName ? displayName.charAt(0).toUpperCase() : "H";
-  const normalizedRole = user?.role?.trim().toUpperCase();
-  const normalizedRoleId = String(user?.roleId ?? "");
-  const isAdmin = normalizedRoleId === "1" || normalizedRole === "ADMIN" || normalizedRole === "ROLE_ADMIN";
-
-  // Close profile dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setIsProfileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
-    <div className="dekiru-app-container">
-      {/* LEFT NAVIGATION SIDEBAR */}
-      <aside className="dekiru-sidebar">
-        <div className="sidebar-brand" onClick={() => navigate("/home")}>
-          <DekiruLogoIcon />
-          <div className="brand-titles">
-            <span className="dekiru-brand-name">Dekiru</span>
-            <span className="dekiru-brand-sub">できる</span>
-          </div>
-        </div>
-        <div className="sidebar-tagline">Luyện tiếng Nhật cùng Dekiru</div>
-
-        <nav className="sidebar-nav-menu">
-          <button
-            type="button"
-            className={`nav-link-btn ${activeTab === "trang-chu" ? "active" : ""}`}
-            onClick={() => setActiveTab("trang-chu")}
-          >
-            <span className="nav-link-icon">🌸</span>
-            <span className="nav-link-text">Trang chủ</span>
-          </button>
-
-          <button
-            type="button"
-            className={`nav-link-btn ${activeTab === "bai-hoc" ? "active" : ""}`}
-            onClick={() => setActiveTab("bai-hoc")}
-          >
-            <span className="nav-link-icon">📖</span>
-            <span className="nav-link-text">Bài học</span>
-          </button>
-
-          <button
-            type="button"
-            className={`nav-link-btn ${activeTab === "tu-vung" ? "active" : ""}`}
-            onClick={() => setActiveTab("tu-vung")}
-          >
-            <span className="nav-link-icon">🎴</span>
-            <span className="nav-link-text">Từ vựng</span>
-          </button>
-
-          <button
-            type="button"
-            className={`nav-link-btn ${activeTab === "ngu-phap" ? "active" : ""}`}
-            onClick={() => setActiveTab("ngu-phap")}
-          >
-            <span className="nav-link-icon">📑</span>
-            <span className="nav-link-text">Ngữ pháp</span>
-          </button>
-
-          <button
-            type="button"
-            className={`nav-link-btn ${activeTab === "luyen-de" ? "active" : ""}`}
-            onClick={() => setActiveTab("luyen-de")}
-          >
-            <span className="nav-link-icon">📝</span>
-            <span className="nav-link-text">Luyện đề</span>
-          </button>
-
-          <button
-            type="button"
-            className={`nav-link-btn ${activeTab === "thong-ke" ? "active" : ""}`}
-            onClick={() => setActiveTab("thong-ke")}
-          >
-            <span className="nav-link-icon">📊</span>
-            <span className="nav-link-text">Thống kê</span>
-          </button>
-
-          <button
-            type="button"
-            className={`nav-link-btn ${activeTab === "cai-dat" ? "active" : ""}`}
-            onClick={() => setActiveTab("cai-dat")}
-          >
-            <span className="nav-link-icon">⚙️</span>
-            <span className="nav-link-text">Cài đặt</span>
-          </button>
-
-          {/* ADMIN PORTAL SPECIAL ITEM (Only visible if user has ADMIN privileges) */}
-          {isAdmin && (
-            <div className="admin-nav-wrapper">
-              <div className="nav-divider" />
-              <button
-                type="button"
-                className="nav-link-btn admin-portal-btn"
-                onClick={() => navigate("/admin")}
-                title="Truy cập Trang quản trị Admin"
-              >
-                <span className="nav-link-icon">🛠️</span>
-                <span className="nav-link-text">Quản trị Admin</span>
-                <span className="admin-badge-pill">ADMIN</span>
-              </button>
-            </div>
-          )}
-        </nav>
-
-        {/* Bottom Sidebar Decorative Illustration */}
-        <SidebarCatDecoration />
-      </aside>
-
-      {/* RIGHT WORKSPACE AREA */}
-      <div className="dekiru-main-area">
-        {/* TOP HEADER BAR */}
-        <header className="dekiru-topbar">
-          <div className="topbar-search">
-            <span className="search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="Tìm kiếm bài học, từ vựng, ngữ pháp..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-          </div>
-
-          <div className="topbar-actions">
-            {/* Notification Bell */}
-            <button type="button" className="icon-btn notif-btn" title="Thông báo">
-              <span className="bell-icon">🔔</span>
-              <span className="notif-badge-dot" />
-            </button>
-
-            {/* User Profile Menu */}
-            <div className="user-profile-wrapper" ref={profileRef}>
-              <button
-                type="button"
-                className="user-profile-trigger"
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-              >
-                <div className="user-avatar-circle">{avatarInitial}</div>
-                <span className="user-display-name">{userName}</span>
-                <span className={`dropdown-arrow ${isProfileOpen ? "open" : ""}`}>▾</span>
-              </button>
-
-              {isProfileOpen && (
-                <div className="profile-dropdown-card">
-                  <div className="dropdown-user-header">
-                    <div className="dropdown-user-name">{displayName || "Học viên"}</div>
-                    <div className="dropdown-user-email">{user?.email || "user@jtech.edu.vn"}</div>
-                    {isAdmin && <span className="admin-role-badge">ADMIN SYSTEM</span>}
-                  </div>
-
-                  <div className="dropdown-menu-list">
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        className="dropdown-item admin-item"
-                        onClick={() => {
-                          setIsProfileOpen(false);
-                          navigate("/admin");
-                        }}
-                      >
-                        🛠️ Quản trị Admin
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      className="dropdown-item"
-                      onClick={() => {
-                        setIsProfileOpen(false);
-                        navigate("/profile");
-                      }}
-                    >
-                      👤 Hồ sơ cá nhân
-                    </button>
-
-                    <button
-                      type="button"
-                      className="dropdown-item logout-item"
-                      onClick={() => {
-                        setIsProfileOpen(false);
-                        logout();
-                      }}
-                    >
-                      🚪 Đăng xuất
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* CONTENT GRID */}
-        <main className="dekiru-content-grid">
-          {/* MAIN COLUMN (LEFT SIDE OF WORKSPACE) */}
-          <div className="dekiru-left-workspace">
+    <div className="dekiru-content-grid">
+      {/* MAIN COLUMN (LEFT SIDE OF WORKSPACE) */}
+      <div className="dekiru-left-workspace">
             {/* HERO BANNER SECTION */}
             <section className="dekiru-hero-banner">
               <HeroBannerIllustration />
@@ -814,8 +524,6 @@ export function HomePage() {
               </a>
             </div>
           </aside>
-        </main>
-      </div>
     </div>
   );
 }

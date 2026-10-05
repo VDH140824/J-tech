@@ -10,64 +10,64 @@ import banner2 from "../../assets/banner/banner2.png";
 const practiceCards = [
   {
     icon: "あ",
-    title: "Vocabulary",
-    subtitle: "Từ vựng",
+    title: "Từ vựng",
+    subtitle: "Vocabulary",
     description: "Luyện tập từ vựng tiếng Nhật theo chủ đề và cấp độ, gắn liền với ngữ cảnh thực tế.",
     color: "#4A90D9",
     bg: "#EBF4FF",
   },
   {
     icon: "文",
-    title: "Grammar",
-    subtitle: "Ngữ pháp",
+    title: "Ngữ pháp",
+    subtitle: "Grammar",
     description: "Ôn tập và luyện tập ngữ pháp qua các bài tập có cấu trúc rõ ràng, dễ nắm bắt.",
     color: "#7C5CBF",
     bg: "#F3EEFF",
   },
   {
     icon: "漢",
-    title: "Kanji",
-    subtitle: "Hán tự",
+    title: "Hán tự",
+    subtitle: "Kanji",
     description: "Luyện tập và ghi nhớ Kanji theo bộ thủ, nét viết và ý nghĩa một cách hệ thống.",
     color: "#E05A2B",
     bg: "#FFF0EB",
   },
   {
     icon: "🎧",
-    title: "Listening",
-    subtitle: "Luyện nghe",
+    title: "Luyện nghe",
+    subtitle: "Listening",
     description: "Luyện nghe hiểu tiếng Nhật qua các đoạn hội thoại và bài nghe đa dạng cấp độ.",
     color: "#16A34A",
     bg: "#EDFDF4",
   },
   {
     icon: "📖",
-    title: "Reading",
-    subtitle: "Luyện đọc",
+    title: "Luyện đọc",
+    subtitle: "Reading",
     description: "Luyện đọc hiểu tiếng Nhật qua các đoạn văn ngắn, bài báo và ngữ liệu thực tế.",
     color: "#D97706",
     bg: "#FFFBEB",
   },
   {
     icon: "🎤",
-    title: "Speaking",
-    subtitle: "Luyện nói",
+    title: "Luyện nói",
+    subtitle: "Speaking",
     description: "Thực hành nói và giao tiếp tiếng Nhật, rèn phát âm và ngữ điệu tự nhiên.",
     color: "#DB2777",
     bg: "#FFF0F7",
   },
   {
     icon: "🎮",
-    title: "Practice Games",
-    subtitle: "Luyện tập qua trò chơi",
+    title: "Trò chơi học tập",
+    subtitle: "Practice Games",
     description: "Củng cố kiến thức qua các trò chơi tương tác thú vị, nâng cao động lực luyện tập.",
     color: "#0891B2",
     bg: "#ECFEFF",
   },
   {
     icon: "🤖",
-    title: "AI Speaking",
-    subtitle: "Luyện nói với AI",
+    title: "Luyện nói với AI",
+    subtitle: "AI Speaking",
     description: "Thực hành nói tiếng Nhật với AI và nhận kết quả phản hồi sau mỗi lần luyện tập.",
     color: "#6366F1",
     bg: "#EEF2FF",
@@ -359,7 +359,7 @@ export function LandingPage() {
                 <span className="lp-about-kanji">練</span>
               </div>
               <div className="lp-about-tag lp-about-tag--1">🎯 Luyện tập chủ động</div>
-              <div className="lp-about-tag lp-about-tag--2">💡 IT-oriented</div>
+              <div className="lp-about-tag lp-about-tag--2">💡 Định hướng IT</div>
             </div>
 
             <div className="lp-about-text">
@@ -375,9 +375,9 @@ export function LandingPage() {
               </p>
               <div className="lp-about-pills">
                 <span className="lp-pill">🇯🇵 Tiếng Nhật</span>
-                <span className="lp-pill">💻 IT-Focused</span>
+                <span className="lp-pill">💻 Chuyên sâu IT</span>
                 <span className="lp-pill">🏫 FPT University</span>
-                <span className="lp-pill">🤖 AI-Powered</span>
+                <span className="lp-pill">🤖 Tích hợp AI</span>
               </div>
             </div>
           </div>
@@ -546,7 +546,7 @@ export function LandingPage() {
             </div>
 
             <div className="lp-ai-text">
-              <div className="lp-section-eyebrow">AI Speaking</div>
+              <div className="lp-section-eyebrow">Luyện nói AI</div>
               <h2 id="ai-title" className="lp-section-title">
                 Luyện nói cùng AI
               </h2>

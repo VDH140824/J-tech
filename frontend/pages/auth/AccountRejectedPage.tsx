@@ -15,10 +15,10 @@ export function AccountRejectedPage() {
     <main style={styles.page}>
       <section style={styles.card}>
         <div style={styles.icon}>🚫</div>
-        <h1 style={styles.title}>Account access unavailable</h1>
-        <p style={styles.message}>Your account was not approved or is currently blocked.</p>
-        <p style={styles.description}>This account cannot access the system. Please contact an administrator if you believe this is a mistake.</p>
-        <button type="button" style={styles.button} onClick={backToLogin}>Back to Google sign-in</button>
+        <h1 style={styles.title}>Không thể truy cập tài khoản</h1>
+        <p style={styles.message}>Tài khoản của bạn chưa được duyệt hoặc đang bị khóa.</p>
+        <p style={styles.description}>Tài khoản này hiện không thể truy cập hệ thống. Vui lòng liên hệ quản trị viên nếu bạn cho rằng đây là sự nhầm lẫn.</p>
+        <button type="button" style={styles.button} onClick={backToLogin}>Quay lại đăng nhập Google</button>
       </section>
     </main>
   );

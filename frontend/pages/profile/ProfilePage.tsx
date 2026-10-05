@@ -25,9 +25,29 @@ function formatDisplayValue(value?: string | null) {
   return value?.trim() ? value : "—";
 }
 
+function formatRoleLabel(role?: string | null) {
+  if (!role) return "—";
+  const r = role.toUpperCase();
+  if (r === "ADMIN" || r === "ROLE_ADMIN") return "Quản trị viên";
+  if (r === "MODERATOR") return "Kiểm duyệt viên";
+  if (r === "STUDENT") return "Học viên";
+  return role;
+}
+
+function formatStatusLabel(status?: string | null) {
+  if (!status) return "—";
+  const s = status.toUpperCase();
+  if (s === "ACTIVE") return "Đang hoạt động";
+  if (s === "PENDING") return "Chờ duyệt";
+  if (s === "INACTIVE") return "Chưa kích hoạt";
+  if (s === "LOCKED") return "Tạm khóa";
+  if (s === "BANNED") return "Bị cấm";
+  return status;
+}
+
 function formatAvatarLabel(value?: string | null) {
   if (value?.trim()) return value.trim();
-  return "—";
+  return "Mặc định hệ thống";
 }
 
 export function ProfilePage() {
@@ -100,7 +120,7 @@ export function ProfilePage() {
             <h1>Hồ sơ cá nhân</h1>
             <p>{user?.displayName ?? "Chưa có tên"}</p>
             <p>{user?.email ?? ""}</p>
-            <p>Vai trò: {user?.role ?? "STUDENT"}</p>
+            <p>Vai trò: {formatRoleLabel(user?.role)}</p>
           </div>
         </section>
 
@@ -119,16 +139,16 @@ export function ProfilePage() {
           <form className="profile-form" onSubmit={handleSubmit}>
             <div className="profile-details-grid">
               <div className="profile-detail-item">
-                <span>Avatar URL</span>
+                <span>Ảnh đại diện</span>
                 <strong>{formatAvatarLabel(user?.avatarUrl)}</strong>
               </div>
               <div className="profile-detail-item">
                 <span>Vai trò</span>
-                <strong>{formatDisplayValue(user?.role)}</strong>
+                <strong>{formatRoleLabel(user?.role)}</strong>
               </div>
               <div className="profile-detail-item">
                 <span>Trạng thái</span>
-                <strong>{formatDisplayValue(user?.status)}</strong>
+                <strong>{formatStatusLabel(user?.status)}</strong>
               </div>
 
               <div className="profile-detail-item">

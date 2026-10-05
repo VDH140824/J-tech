@@ -45,7 +45,7 @@ export function OAuth2RedirectPage() {
         });
     } else if (error) {
       clearAuth();
-      alert("Google Sign-In failed: " + error);
+      alert("Đăng nhập bằng Google không thành công: " + error);
       navigate("/login", { replace: true });
     } else {
       navigate("/login", { replace: true });
@@ -66,7 +66,7 @@ export function OAuth2RedirectPage() {
     >
       <div style={{ fontSize: 40 }}>🔄</div>
       <p style={{ fontSize: 16, color: "#94a3b8" }}>
-        Processing Google login, please wait...
+        Đang xử lý đăng nhập Google, vui lòng chờ trong giây lát...
       </p>
     </div>
   );

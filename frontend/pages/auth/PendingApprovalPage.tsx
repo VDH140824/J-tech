@@ -8,11 +8,11 @@ export function PendingApprovalPage() {
     <main style={styles.page}>
       <section style={styles.card}>
         <div style={styles.icon}>⏳</div>
-        <h1 style={styles.title}>Account approval pending</h1>
-        <p style={styles.message}>Your account is waiting for administrator approval.</p>
-        <p style={styles.description}>Please wait until an administrator reviews your account, then sign in with Google again.</p>
+        <h1 style={styles.title}>Tài khoản đang chờ xét duyệt</h1>
+        <p style={styles.message}>Tài khoản của bạn đang chờ quản trị viên phê duyệt.</p>
+        <p style={styles.description}>Vui lòng chờ ban quản trị kiểm tra và cấp quyền truy cập, sau đó đăng nhập lại bằng Google.</p>
         <button type="button" style={styles.button} onClick={() => navigate("/login", { replace: true })}>
-          Back to Google sign-in
+          Quay lại đăng nhập Google
         </button>
       </section>
     </main>

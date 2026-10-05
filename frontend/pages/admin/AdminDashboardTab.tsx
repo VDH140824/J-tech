@@ -26,139 +26,174 @@ export function AdminDashboardTab() {
 
   if (loading) {
     return (
-      <div className="admin-loading-container">
-        <div className="admin-spinner" />
-        <p>Đang tải dữ liệu sơ đồ & thống kê...</p>
+      <div className="admin-page-container">
+        <div className="admin-table-loading">
+          <div className="admin-spinner" />
+          <p>Đang tải dữ liệu sơ đồ & thống kê hệ thống...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="admin-error-box">
-        <span>⚠️ {error}</span>
-        <button type="button" onClick={fetchStats} className="admin-retry-btn">Thử lại</button>
+      <div className="admin-page-container">
+        <div className="admin-alert-banner error">
+          <span>⚠️ {error}</span>
+          <button type="button" onClick={fetchStats} className="admin-retry-btn">
+            Thử lại
+          </button>
+        </div>
       </div>
     );
   }
 
-  const maxGrowthValue = Math.max(...(stats?.userGrowthStats.map(g => g.value) || [1]), 1);
+  const maxGrowthValue = Math.max(...(stats?.userGrowthStats.map((g) => g.value) || [1]), 1);
 
   return (
-    <div className="admin-tab-content">
-      {/* Header Banner */}
-      <div className="admin-tab-header">
-        <div>
-          <h2 className="admin-tab-title">📊 Sơ Đồ & Thống Kê Hệ Thống</h2>
-          <p className="admin-tab-subtitle">Tổng quan dữ liệu người dùng và biểu đồ tăng trưởng nền tảng J-Tech</p>
+    <div className="admin-page-container">
+      {/* 1. Header */}
+      <div className="admin-page-header">
+        <div className="admin-header-titles">
+          <h2 className="admin-main-title">Sơ đồ & Thống kê sinh thái</h2>
+          <p className="admin-main-subtitle">
+            Tổng quan dữ liệu người dùng, biểu đồ tăng trưởng và trạng thái hệ thống J-Tech.
+          </p>
         </div>
-        <button type="button" onClick={fetchStats} className="admin-refresh-btn" title="Cập nhật dữ liệu mới nhất">
-          🔄 Tải lại
+        <button
+          type="button"
+          onClick={fetchStats}
+          className="admin-btn-refresh-clean"
+          title="Cập nhật dữ liệu mới nhất"
+        >
+          <span className="btn-icon">🔄</span>
+          <span>Tải lại dữ liệu</span>
         </button>
       </div>
 
-      {/* Primary KPI Cards Grid */}
-      <div className="kpi-grid">
-        <div className="kpi-card kpi-users">
-          <div className="kpi-icon-wrapper">👥</div>
-          <div className="kpi-details">
-            <span className="kpi-label">Tổng người dùng</span>
-            <span className="kpi-value">{stats?.totalUsers.toLocaleString()}</span>
-            <div className="kpi-subtext">
-              <span className="text-success">● {stats?.activeUsers} Hoạt động</span>
-              <span className="text-danger">● {stats?.bannedUsers} Bị cấm</span>
+      {/* 2. KPI Summary Cards Grid */}
+      <div className="admin-kpi-grid">
+        {/* Card 1: Tổng người dùng */}
+        <div className="admin-kpi-card-clean kpi-pink">
+          <div className="kpi-icon-bubble bubble-pink">👥</div>
+          <div className="kpi-info-group">
+            <span className="kpi-title-label">Tổng người dùng</span>
+            <span className="kpi-number-val">{stats?.totalUsers.toLocaleString()}</span>
+            <div className="kpi-sub-pills">
+              <span className="pill-mini pill-mini-success">● {stats?.activeUsers} Hoạt động</span>
+              <span className="pill-mini pill-mini-danger">● {stats?.bannedUsers} Bị cấm</span>
             </div>
           </div>
         </div>
 
-        <div className="kpi-card kpi-videos">
-          <div className="kpi-icon-wrapper">✅</div>
-          <div className="kpi-details">
-            <span className="kpi-label">Tài khoản hoạt động</span>
-            <span className="kpi-value">{stats?.activeUsers.toLocaleString()}</span>
-            <div className="kpi-subtext">
-              <span className="text-success">● Đang hoạt động</span>
+        {/* Card 2: Tài khoản hoạt động */}
+        <div className="admin-kpi-card-clean kpi-green">
+          <div className="kpi-icon-bubble bubble-green">✅</div>
+          <div className="kpi-info-group">
+            <span className="kpi-title-label">Đang hoạt động</span>
+            <span className="kpi-number-val">{stats?.activeUsers.toLocaleString()}</span>
+            <div className="kpi-sub-pills">
+              <span className="pill-mini pill-mini-success">Sẵn sàng truy cập</span>
             </div>
           </div>
         </div>
 
-        <div className="kpi-card kpi-views">
-          <div className="kpi-icon-wrapper">🔒</div>
-          <div className="kpi-details">
-            <span className="kpi-label">Tài khoản bị hạn chế</span>
-            <span className="kpi-value">{((stats?.lockedUsers || 0) + (stats?.bannedUsers || 0)).toLocaleString()}</span>
-            <div className="kpi-subtext">
-              <span>Khóa: {stats?.lockedUsers} · Cấm: {stats?.bannedUsers}</span>
+        {/* Card 3: Tài khoản bị hạn chế */}
+        <div className="admin-kpi-card-clean kpi-red">
+          <div className="kpi-icon-bubble bubble-red">🔒</div>
+          <div className="kpi-info-group">
+            <span className="kpi-title-label">Tài khoản bị hạn chế</span>
+            <span className="kpi-number-val">
+              {((stats?.lockedUsers || 0) + (stats?.bannedUsers || 0)).toLocaleString()}
+            </span>
+            <div className="kpi-sub-pills">
+              <span className="pill-mini pill-mini-warning">Khóa: {stats?.lockedUsers}</span>
+              <span className="pill-mini pill-mini-danger">Cấm: {stats?.bannedUsers}</span>
             </div>
           </div>
         </div>
 
-        <div className="kpi-card kpi-comments">
-          <div className="kpi-icon-wrapper">⏸️</div>
-          <div className="kpi-details">
-            <span className="kpi-label">Tài khoản chưa kích hoạt</span>
-            <span className="kpi-value">{stats?.inactiveUsers.toLocaleString()}</span>
-            <div className="kpi-subtext">
-              <span className="text-info">Cần theo dõi trạng thái</span>
+        {/* Card 4: Tài khoản chưa kích hoạt */}
+        <div className="admin-kpi-card-clean kpi-amber">
+          <div className="kpi-icon-bubble bubble-amber">⏳</div>
+          <div className="kpi-info-group">
+            <span className="kpi-title-label">Chờ kích hoạt / Chưa kích hoạt</span>
+            <span className="kpi-number-val">{stats?.inactiveUsers.toLocaleString()}</span>
+            <div className="kpi-sub-pills">
+              <span className="pill-mini pill-mini-info">Cần theo dõi</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Visual Charts & Diagrams Section */}
-      <div className="charts-grid">
-        {/* User Growth Bar Chart */}
-        <div className="chart-card">
-          <div className="chart-card-header">
-            <h3>📈 Tăng Trưởng Người Dùng (6 Tháng)</h3>
-            <span className="chart-badge">Thời gian thực</span>
+      {/* 3. Bar Chart Card: Tăng trưởng người dùng */}
+      <div className="admin-chart-card">
+        <div className="chart-card-header">
+          <div className="chart-title-group">
+            <h3 className="chart-title">📈 Biểu đồ tăng trưởng người dùng</h3>
+            <span className="chart-subtitle">Thống kê theo chu kỳ 6 tháng gần nhất</span>
           </div>
-          <div className="bar-chart-container">
-            {stats?.userGrowthStats.map((item) => {
-              const heightPercent = Math.round((item.value / maxGrowthValue) * 100);
-              return (
-                <div key={item.label} className="bar-column">
-                  <div className="bar-val-tooltip">{item.value}</div>
-                  <div className="bar-track">
-                    <div
-                      className="bar-fill"
-                      style={{ height: `${Math.max(heightPercent, 8)}%` }}
-                    />
-                  </div>
-                  <span className="bar-label">{item.label}</span>
+          <span className="chart-realtime-badge">● Thời gian thực</span>
+        </div>
+
+        <div className="admin-barchart-container">
+          {stats?.userGrowthStats.map((item) => {
+            const heightPercent = Math.round((item.value / maxGrowthValue) * 100);
+            return (
+              <div key={item.label} className="barchart-column">
+                <span className="barchart-tooltip">{item.value}</span>
+                <div className="barchart-track">
+                  <div
+                    className="barchart-fill"
+                    style={{ height: `${Math.max(heightPercent, 12)}%` }}
+                  />
                 </div>
-              );
-            })}
+                <span className="barchart-label">{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 4. Status Breakdown Grid */}
+      <div className="admin-chart-card">
+        <div className="chart-card-header">
+          <div className="chart-title-group">
+            <h3 className="chart-title">🛡️ Phân bổ trạng thái tài khoản hệ thống</h3>
+            <span className="chart-subtitle">Chi tiết mức độ phân bổ quyền & an toàn tài khoản</span>
           </div>
         </div>
 
-      </div>
-
-      {/* Category Breakdown & Account Status Breakdown Grid */}
-      <div className="charts-grid second-row">
-
-        {/* Account Status Breakdown */}
-        <div className="chart-card">
-          <div className="chart-card-header">
-            <h3>🛡️ Phân Loại Trạng Thái Tài Khoản</h3>
-            <span className="chart-badge">Bảo mật</span>
+        <div className="admin-status-boxes-grid">
+          <div className="status-metric-box box-active">
+            <div className="box-indicator-dot dot-green" />
+            <div className="box-metric-info">
+              <span className="box-label">Đang hoạt động</span>
+              <span className="box-number">{stats?.activeUsers}</span>
+            </div>
           </div>
-          <div className="status-grid">
-            <div className="status-box status-active">
-              <span className="sb-label">Hoạt động (Active)</span>
-              <span className="sb-value">{stats?.activeUsers}</span>
+
+          <div className="status-metric-box box-inactive">
+            <div className="box-indicator-dot dot-amber" />
+            <div className="box-metric-info">
+              <span className="box-label">Chưa kích hoạt</span>
+              <span className="box-number">{stats?.inactiveUsers}</span>
             </div>
-            <div className="status-box status-inactive">
-              <span className="sb-label">Chưa kích hoạt (Inactive)</span>
-              <span className="sb-value">{stats?.inactiveUsers}</span>
+          </div>
+
+          <div className="status-metric-box box-locked">
+            <div className="box-indicator-dot dot-orange" />
+            <div className="box-metric-info">
+              <span className="box-label">Tạm khóa</span>
+              <span className="box-number">{stats?.lockedUsers}</span>
             </div>
-            <div className="status-box status-locked">
-              <span className="sb-label">Tạm khóa (Locked)</span>
-              <span className="sb-value">{stats?.lockedUsers}</span>
-            </div>
-            <div className="status-box status-banned">
-              <span className="sb-label">Bị cấm (Banned)</span>
-              <span className="sb-value">{stats?.bannedUsers}</span>
+          </div>
+
+          <div className="status-metric-box box-banned">
+            <div className="box-indicator-dot dot-red" />
+            <div className="box-metric-info">
+              <span className="box-label">Bị cấm</span>
+              <span className="box-number">{stats?.bannedUsers}</span>
             </div>
           </div>
         </div>

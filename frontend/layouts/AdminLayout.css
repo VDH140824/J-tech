@@ -1,0 +1,35 @@
+/* ==========================================================================
+   ADMIN LAYOUT - DEKIRU LIGHT THEME TEMPLATE
+   ========================================================================== */
+.admin-dekiru-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  color: #1e293b;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.admin-dekiru-workspace {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-dekiru-page-body {
+  flex: 1;
+  padding: 28px 32px 48px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .admin-dekiru-layout {
+    flex-direction: column;
+  }
+  .admin-dekiru-page-body {
+    padding: 16px;
+  }
+}
