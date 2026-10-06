@@ -11,6 +11,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -27,6 +29,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
+    private final OAuth2ExchangeStore oAuth2ExchangeStore;
+    private final CookieService cookieService;
     private final String frontendUrl;
 
     public OAuth2SuccessHandler(
@@ -34,11 +38,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             RoleRepository roleRepository,
             RefreshTokenRepository refreshTokenRepository,
             JwtService jwtService,
+            OAuth2ExchangeStore oAuth2ExchangeStore,
+            CookieService cookieService,
             @Value("${app.frontend.url:http://localhost:5173}") String frontendUrl) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtService = jwtService;
+        this.oAuth2ExchangeStore = oAuth2ExchangeStore;
+        this.cookieService = cookieService;
         this.frontendUrl = frontendUrl;
     }
 
@@ -100,9 +108,20 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build());
 
         String token = jwtService.generateToken(user.getEmail());
-        String targetUrl = frontendUrl
-                + "/oauth2/redirect?token=" + token
-                + "&refreshToken=" + refreshToken.getToken();
+        String exchangeCode = oAuth2ExchangeStore.createExchangeCode(
+                user.getUserId(), token, refreshToken.getToken());
+
+        ResponseCookie refreshCookie = cookieService.createRefreshTokenCookie(refreshToken.getToken());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        ResponseCookie exchangeCookie = cookieService.createExchangeCookie(exchangeCode);
+        response.addHeader(HttpHeaders.SET_COOKIE, exchangeCookie.toString());
+
+        if (request.getSession(false) != null) {
+            request.getSession().setAttribute("AUTH_EXCHANGE_CODE", exchangeCode);
+        }
+
+        String targetUrl = frontendUrl + "/oauth2/redirect";
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }

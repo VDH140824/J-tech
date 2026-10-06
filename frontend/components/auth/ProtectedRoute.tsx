@@ -15,11 +15,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const user = useAuthStore((s) => s.user);
   const location = useLocation();
 
-  // Zustand persist can hydrate asynchronously, so use localStorage as a
-  // fallback to avoid incorrectly sending logged-in users back to /login.
-  const hasStoredToken = !!localStorage.getItem("accessToken");
-
-  if (!isAuthenticated && !hasStoredToken) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

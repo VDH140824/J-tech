@@ -29,19 +29,22 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserProfileRepository userProfileRepository;
     private final JwtService jwtService;
+    private final com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore;
 
     public AuthServiceImpl(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository,
-                           UserProfileRepository userProfileRepository, JwtService jwtService) {
+                           UserProfileRepository userProfileRepository, JwtService jwtService,
+                           com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.userProfileRepository = userProfileRepository;
         this.jwtService = jwtService;
+        this.oAuth2ExchangeStore = oAuth2ExchangeStore;
     }
 
     @Override @Transactional
-    public UserResponse refreshToken(RefreshTokenRequest request) {
-        if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) throw new IllegalArgumentException("Refresh token is required");
-        RefreshToken storedToken = refreshTokenRepository.findByToken(request.getRefreshToken()).orElseThrow(() -> new IllegalArgumentException("Invalid or expired refresh token"));
+    public UserResponse refreshToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) throw new IllegalArgumentException("Refresh token is required");
+        RefreshToken storedToken = refreshTokenRepository.findByToken(refreshToken).orElseThrow(() -> new IllegalArgumentException("Invalid or expired refresh token"));
         if (Boolean.TRUE.equals(storedToken.getRevoked()) || (storedToken.getExpiresAt() != null && storedToken.getExpiresAt().isBefore(LocalDateTime.now()))) {
             storedToken.setRevoked(true); refreshTokenRepository.save(storedToken); throw new IllegalArgumentException("Invalid or expired refresh token");
         }
@@ -53,8 +56,13 @@ public class AuthServiceImpl implements AuthService {
         }
         UserResponse response = mapToUserResponse(user);
         response.setAccessToken(jwtService.generateToken(user.getEmail()));
-        response.setRefreshToken(storedToken.getToken());
+        response.setRefreshToken(null);
         return response;
+    }
+
+    @Override @Transactional
+    public UserResponse refreshToken(RefreshTokenRequest request) {
+        return refreshToken(request != null ? request.getRefreshToken() : null);
     }
 
     @Override @Transactional
@@ -81,6 +89,27 @@ public class AuthServiceImpl implements AuthService {
         if (request.getBirthday() != null) profile.setBirthday(request.getBirthday());
         userRepository.save(user); userProfileRepository.save(profile);
         return mapToUserResponse(user, profile);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse exchangeOAuth2Code(String code) {
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("Exchange code is required");
+        }
+        com.jtech.security.OAuth2ExchangeStore.ExchangePayload payload = oAuth2ExchangeStore.consume(code);
+        if (payload == null) {
+            throw new IllegalArgumentException("Invalid or expired exchange code");
+        }
+        User user = userRepository.findById(payload.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("Account is not active");
+        }
+        UserResponse response = mapToUserResponse(user);
+        response.setAccessToken(payload.getAccessToken());
+        response.setRefreshToken(null);
+        return response;
     }
 
     private User getAuthenticatedUser() {

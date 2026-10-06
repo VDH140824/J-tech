@@ -46,8 +46,12 @@ server:
 
 app:
   jwt:
-    secret: jtech-japanese-learning-website-jwt-secret-key-2026
-    expiration-ms: 604800000 # 7 days
+    secret: ${APP_JWT_SECRET:jtech-japanese-learning-website-jwt-secret-key-2026}
+    expiration-ms: 1800000 # 30 minutes
+  cookie:
+    secure: ${APP_COOKIE_SECURE:false}
+    same-site: Lax
+    path: /api/auth
 
 logging:
   level:

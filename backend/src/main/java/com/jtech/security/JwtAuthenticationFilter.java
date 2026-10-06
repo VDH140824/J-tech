@@ -44,19 +44,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authorizationHeader.substring(7);
         try {
             String email = jwtService.extractUsername(token);
-            var user = email == null ? java.util.Optional.<com.jtech.entity.User>empty()
-                    : userRepository.findByEmail(email);
-            if (user.isPresent()
-                    && user.get().getStatus() == UserStatus.ACTIVE
+            if (email != null && !email.isBlank()
+                    && SecurityContextHolder.getContext().getAuthentication() == null
                     && jwtService.isTokenValid(token, email)) {
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities());
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                var userOptional = userRepository.findByEmail(email);
+                if (userOptional.isPresent()) {
+                    var user = userOptional.get();
+                    if (user.getStatus() == UserStatus.ACTIVE) {
+                        UserDetails userDetails = customUserDetailsService.buildUserDetails(user);
+                        UsernamePasswordAuthenticationToken authenticationToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities());
+                        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    }
+                }
             }
         } catch (Exception ignored) {
             SecurityContextHolder.clearContext();

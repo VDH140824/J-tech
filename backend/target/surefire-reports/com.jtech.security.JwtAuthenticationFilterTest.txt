@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.jtech.security.JwtAuthenticationFilterTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.066 s -- in com.jtech.security.JwtAuthenticationFilterTest

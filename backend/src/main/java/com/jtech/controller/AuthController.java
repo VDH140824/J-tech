@@ -24,33 +24,29 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final com.jtech.security.CookieService cookieService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, com.jtech.security.CookieService cookieService) {
         this.authService = authService;
+        this.cookieService = cookieService;
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @RequestBody(required = false) RefreshTokenRequest request,
-            @CookieValue(value = "refreshToken", required = false) String refreshTokenCookie,
+            @CookieValue(value = com.jtech.security.CookieService.REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshTokenCookie,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        String refreshToken = request != null && request.getRefreshToken() != null && !request.getRefreshToken().isBlank()
-                ? request.getRefreshToken()
-                : refreshTokenCookie;
+        String refreshToken = (refreshTokenCookie != null && !refreshTokenCookie.isBlank())
+                ? refreshTokenCookie
+                : (request != null ? request.getRefreshToken() : null);
         authService.logout(refreshToken);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         new SecurityContextLogoutHandler().logout(httpRequest, httpResponse, authentication);
         new CookieClearingLogoutHandler("JSESSIONID").logout(httpRequest, httpResponse, authentication);
 
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Strict")
-                .build();
+        ResponseCookie deleteCookie = cookieService.clearRefreshTokenCookie();
 
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
@@ -58,7 +54,51 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<UserResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        return ResponseEntity.ok(authService.refreshToken(request));
+    public ResponseEntity<UserResponse> refresh(
+            @RequestBody(required = false) RefreshTokenRequest request,
+            @CookieValue(value = com.jtech.security.CookieService.REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshTokenCookie) {
+        String refreshToken = (refreshTokenCookie != null && !refreshTokenCookie.isBlank())
+                ? refreshTokenCookie
+                : (request != null ? request.getRefreshToken() : null);
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserResponse userResponse = authService.refreshToken(refreshToken);
+        userResponse.setRefreshToken(null);
+        return ResponseEntity.ok(userResponse);
+    }
+
+    @PostMapping("/exchange")
+    public ResponseEntity<UserResponse> exchange(
+            @RequestBody(required = false) com.jtech.dto.request.ExchangeTokenRequest request,
+            @CookieValue(value = com.jtech.security.CookieService.AUTH_EXCHANGE_COOKIE_NAME, required = false) String cookieCode,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+        String code = (request != null && request.getCode() != null && !request.getCode().isBlank())
+                ? request.getCode()
+                : cookieCode;
+
+        if ((code == null || code.isBlank()) && httpRequest.getSession(false) != null) {
+            Object sessionCode = httpRequest.getSession(false).getAttribute("AUTH_EXCHANGE_CODE");
+            if (sessionCode instanceof String sc && !sc.isBlank()) {
+                code = sc;
+                httpRequest.getSession(false).removeAttribute("AUTH_EXCHANGE_CODE");
+            }
+        }
+
+        if (code == null || code.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        UserResponse response = authService.exchangeOAuth2Code(code);
+        response.setRefreshToken(null);
+
+        ResponseCookie clearCookie = cookieService.clearExchangeCookie();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
+                .body(response);
     }
 }

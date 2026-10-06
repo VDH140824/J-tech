@@ -14,8 +14,7 @@ export const apiClient = axios.create({
 
 // ─── Request interceptor: attach access token ─────────────────────────────────
 apiClient.interceptors.request.use((config) => {
-  const token =
-    useAuthStore.getState().accessToken ?? localStorage.getItem("accessToken");
+  const token = useAuthStore.getState().accessToken;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -54,17 +53,13 @@ apiClient.interceptors.response.use(
     };
 
     // Only attempt refresh for 401 errors that haven't already been retried
-    if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
-    }
-
-    const refreshToken =
-      useAuthStore.getState().refreshToken ??
-      localStorage.getItem("refreshToken");
-
-    // No refresh token available — log out and reject
-    if (!refreshToken) {
-      useAuthStore.getState().clearAuth();
+    // Avoid refreshing if the failing request is itself an auth endpoint
+    if (
+      error.response?.status !== 401 ||
+      originalRequest._retry ||
+      originalRequest.url?.includes("/auth/refresh") ||
+      originalRequest.url?.includes("/auth/logout")
+    ) {
       return Promise.reject(error);
     }
 
@@ -84,15 +79,13 @@ apiClient.interceptors.response.use(
     try {
       const { data } = await axios.post(
         `${baseURL}/auth/refresh`,
-        { refreshToken },
+        {},
         { withCredentials: true },
       );
 
       const newAccessToken: string = data.accessToken ?? data.token;
-      const newRefreshToken: string | undefined =
-        data.refreshToken ?? undefined;
 
-      useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
+      useAuthStore.getState().setTokens(newAccessToken);
 
       processQueue(null, newAccessToken);
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

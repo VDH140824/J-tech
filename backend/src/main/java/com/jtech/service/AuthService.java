@@ -8,6 +8,8 @@ import java.security.Principal;
 
 public interface AuthService {
 
+    UserResponse refreshToken(String refreshToken);
+
     UserResponse refreshToken(RefreshTokenRequest request);
 
 
@@ -16,5 +18,7 @@ public interface AuthService {
     UserResponse getCurrentUser(Principal principal);
 
     UserResponse updateProfile(Long userId, UpdateProfileRequest request);
+
+    UserResponse exchangeOAuth2Code(String code);
 }
 

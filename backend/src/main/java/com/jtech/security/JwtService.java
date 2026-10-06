@@ -1,116 +1,76 @@
 package com.jtech.security;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.Base64;
+import java.security.Key;
 import java.util.Date;
 
 @Service
 public class JwtService {
 
-    private static final String HMAC_ALGORITHM = "HmacSHA256";
-
-    private final String secret;
+    private final Key signingKey;
     private final long expirationMs;
 
     public JwtService(
-            @Value("${app.jwt.secret:change-me-secret-change-me-secret}") String secret,
-            @Value("${app.jwt.expiration-ms:86400000}") long expirationMs) {
-        this.secret = secret;
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${app.jwt.expiration-ms:1800000}") long expirationMs) {
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
     }
 
     public String generateToken(String username) {
-        long issuedAt = System.currentTimeMillis();
-        long expiresAt = issuedAt + expirationMs;
-        String header = base64Url("{\"alg\":\"HS256\",\"typ\":\"JWT\"}");
-        String payload = base64Url(
-                "{\"sub\":\"" + escapeJson(username) + "\",\"iat\":" + issuedAt + ",\"exp\":" + expiresAt + "}");
-        String signature = sign(header + "." + payload);
-        return header + "." + payload + "." + signature;
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expirationMs);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public String extractUsername(String token) {
-        String[] parts = splitToken(token);
-        String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-        return readJsonStringValue(payloadJson, "sub");
+        Claims claims = extractAllClaims(token);
+        return claims != null ? claims.getSubject() : null;
     }
 
     public boolean isTokenValid(String token, String username) {
+        if (token == null || token.isBlank() || username == null || username.isBlank()) {
+            return false;
+        }
         try {
-            String[] parts = splitToken(token);
-            String signedContent = parts[0] + "." + parts[1];
-            String expectedSignature = sign(signedContent);
-            if (!MessageDigest.isEqual(
-                    expectedSignature.getBytes(StandardCharsets.UTF_8),
-                    parts[2].getBytes(StandardCharsets.UTF_8))) {
+            Claims claims = extractAllClaims(token);
+            if (claims == null) {
                 return false;
             }
-
-            String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-            String subject = readJsonStringValue(payloadJson, "sub");
-            long exp = readJsonLongValue(payloadJson, "exp");
-            return username.equals(subject) && new Date().getTime() < exp;
+            String subject = claims.getSubject();
+            Date expiration = claims.getExpiration();
+            return username.equals(subject) && expiration != null && expiration.after(new Date());
         } catch (Exception ex) {
             return false;
         }
     }
 
-    private String sign(String content) {
-        try {
-            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), HMAC_ALGORITHM));
-            byte[] rawSignature = mac.doFinal(content.getBytes(StandardCharsets.UTF_8));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(rawSignature);
-        } catch (Exception ex) {
-            throw new IllegalStateException("Unable to sign token", ex);
-        }
-    }
-
-    private String[] splitToken(String token) {
-        String[] parts = token.split("\\.");
-        if (parts.length != 3) {
-            throw new IllegalArgumentException("Invalid token");
-        }
-        return parts;
-    }
-
-    private String base64Url(String value) {
-        return Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(value.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private String escapeJson(String value) {
-        return value == null ? "" : value.replace("\\", "\\\\").replace("\"", "\\\"");
-    }
-
-    private String readJsonStringValue(String json, String key) {
-        String token = "\"" + key + "\":\"";
-        int start = json.indexOf(token);
-        if (start < 0) {
+    private Claims extractAllClaims(String token) {
+        if (token == null || token.isBlank()) {
             return null;
         }
-        start += token.length();
-        int end = json.indexOf("\"", start);
-        return end < 0 ? null : json.substring(start, end);
-    }
-
-    private long readJsonLongValue(String json, String key) {
-        String token = "\"" + key + "\":";
-        int start = json.indexOf(token);
-        if (start < 0) {
-            return 0L;
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(signingKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException | IllegalArgumentException ex) {
+            return null;
         }
-        start += token.length();
-        int end = start;
-        while (end < json.length() && Character.isDigit(json.charAt(end))) {
-            end++;
-        }
-        return Long.parseLong(json.substring(start, end));
     }
 }
