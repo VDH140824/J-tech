@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import sidebarCatImg from "../../assets/sidebar-cat.png";
 import "./MainSidebar.css";
 
 // SVG Graphic Component for logo
@@ -32,52 +33,11 @@ function DekiruLogoIcon() {
 function SidebarCatDecoration() {
   return (
     <div className="sidebar-cat-widget">
-      <svg width="180" height="130" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Sakura Branch */}
-        <path d="M 0 30 C 50 20, 90 45, 140 15 C 160 5, 180 10, 200 0" stroke="#78350F" strokeWidth="3.5" strokeLinecap="round" opacity="0.4" />
-        <path d="M 70 28 C 90 10, 110 5, 125 0" stroke="#78350F" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
-        <path d="M 120 20 C 135 30, 150 35, 165 30" stroke="#78350F" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
-
-        {/* Sakura Flowers on Branch */}
-        <circle cx="65" cy="24" r="7" fill="#FF8CA3" opacity="0.8" />
-        <circle cx="65" cy="24" r="3" fill="#FFF" />
-        <circle cx="100" cy="12" r="8" fill="#FF4B72" opacity="0.85" />
-        <circle cx="100" cy="12" r="3.5" fill="#FFF" />
-        <circle cx="140" cy="15" r="7.5" fill="#FF8CA3" opacity="0.8" />
-        <circle cx="140" cy="15" r="3" fill="#FFF" />
-        <circle cx="155" cy="32" r="6" fill="#FF4B72" opacity="0.75" />
-        <circle cx="180" cy="8" r="7" fill="#FF8CA3" opacity="0.8" />
-
-        {/* Cute Neko / Kitten Sitting */}
-        <g transform="translate(60, 45)">
-          {/* Tail */}
-          <path d="M 75 75 Q 95 70 90 50 Q 85 45 80 52" stroke="#475569" strokeWidth="6" strokeLinecap="round" fill="none" />
-          {/* Body */}
-          <ellipse cx="50" cy="65" rx="28" ry="24" fill="#FFFFFF" stroke="#334155" strokeWidth="3.5" />
-          {/* Paws */}
-          <ellipse cx="36" cy="84" rx="8" ry="5" fill="#FFFFFF" stroke="#334155" strokeWidth="3" />
-          <ellipse cx="64" cy="84" rx="8" ry="5" fill="#FFFFFF" stroke="#334155" strokeWidth="3" />
-          {/* Head */}
-          <circle cx="50" cy="38" r="25" fill="#FFFFFF" stroke="#334155" strokeWidth="3.5" />
-          {/* Ears */}
-          <path d="M 30 24 L 20 4 L 40 17 Z" fill="#FFFFFF" stroke="#334155" strokeWidth="3" strokeLinejoin="round" />
-          <path d="M 31 22 L 24 9 L 38 18 Z" fill="#FFB1C1" />
-          <path d="M 70 24 L 80 4 L 60 17 Z" fill="#FFFFFF" stroke="#334155" strokeWidth="3" strokeLinejoin="round" />
-          <path d="M 69 22 L 76 9 L 61 17 Z" fill="#FFB1C1" />
-          {/* Eyes (Happy Closed Curves) */}
-          <path d="M 37 36 Q 42 30 46 36" stroke="#334155" strokeWidth="3" strokeLinecap="round" fill="none" />
-          <path d="M 54 36 Q 58 30 63 36" stroke="#334155" strokeWidth="3" strokeLinecap="round" fill="none" />
-          {/* Nose & Mouth */}
-          <polygon points="50,40 48,42 52,42" fill="#FF7E95" />
-          <path d="M 46 44 Q 50 47 54 44" stroke="#334155" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-          {/* Cheeks */}
-          <ellipse cx="34" cy="40" rx="5" ry="3" fill="#FFB1C1" opacity="0.7" />
-          <ellipse cx="66" cy="40" rx="5" ry="3" fill="#FFB1C1" opacity="0.7" />
-          {/* Open Japanese Book */}
-          <path d="M 28 72 Q 50 68 50 78 Q 50 68 72 72 L 72 84 Q 50 80 50 86 Q 50 80 28 84 Z" fill="#FFEFF3" stroke="#F43F5E" strokeWidth="2" />
-        </g>
-      </svg>
-      <div className="cat-japanese-text">がんばりましょう</div>
+      <img
+        src={sidebarCatImg}
+        alt="一緒にがんばろう！"
+        className="sidebar-cat-img"
+      />
     </div>
   );
 }

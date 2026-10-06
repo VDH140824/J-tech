@@ -133,18 +133,30 @@
 /* Bottom Cat Decoration */
 .sidebar-cat-widget {
   margin-top: auto;
-  padding-top: 12px;
-  text-align: center;
-  border-top: 1px dashed #f1f5f9;
+  margin-bottom: 4px;
+  padding: 6px;
+  background: #0f172a;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.cat-japanese-text {
-  font-size: 0.82rem;
-  color: #f43f5e;
-  font-weight: 700;
-  margin-top: -8px;
-  font-family: "Yu Gothic", "Meiryo", sans-serif;
-  letter-spacing: 0.05em;
+.sidebar-cat-widget:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.25);
+}
+
+.sidebar-cat-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  object-fit: contain;
 }
 
 @media (max-width: 768px) {

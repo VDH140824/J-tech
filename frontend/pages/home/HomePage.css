@@ -21,44 +21,52 @@
    ========================================================================== */
 .dekiru-hero-banner {
   position: relative;
-  background: linear-gradient(135deg, #e0f2fe 0%, #fce7f3 55%, #eff6ff 100%);
+  background: linear-gradient(135deg, #09112e 0%, #0d1a49 50%, #112361 100%);
   border-radius: 24px;
   padding: 32px 36px;
   overflow: hidden;
-  min-height: 200px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 30px rgba(10, 20, 60, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .hero-banner-art {
   position: absolute;
-  right: -10px;
+  right: 0;
+  top: 0;
   bottom: 0;
-  width: 440px;
   height: 100%;
+  width: auto;
+  max-width: 55%;
+  object-fit: cover;
+  object-position: right center;
   pointer-events: none;
+  mask-image: linear-gradient(to right, transparent 0%, black 15%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%);
 }
 
 .hero-banner-content {
   position: relative;
   z-index: 2;
+  max-width: 52%;
 }
 
 .hero-jp-script {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #f43f5e;
+  color: #c4b5fd;
   margin-bottom: 6px;
   font-family: "Yu Gothic", "Meiryo", cursive, sans-serif;
+  letter-spacing: 0.05em;
 }
 
 .hero-heading {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #ffffff;
   margin: 0 0 10px;
   line-height: 1.25;
   max-width: 22ch;
@@ -67,7 +75,7 @@
 
 .hero-subtext {
   font-size: 0.9rem;
-  color: #475569;
+  color: #cbd5e1;
   margin: 0 0 22px;
   max-width: 44ch;
   line-height: 1.5;
@@ -75,7 +83,7 @@
 
 .hero-cta-button {
   align-self: flex-start;
-  background-color: #f43f5e;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
   color: #ffffff;
   border: 0;
   border-radius: 999px;
@@ -86,14 +94,14 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
+  box-shadow: 0 8px 20px rgba(168, 85, 247, 0.35);
   transition: all 0.2s ease;
 }
 
 .hero-cta-button:hover {
-  background-color: #e11d48;
+  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(244, 63, 94, 0.4);
+  box-shadow: 0 12px 24px rgba(168, 85, 247, 0.5);
 }
 
 .play-icon {

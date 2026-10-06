@@ -1,68 +1,15 @@
 import { useNavigate } from "react-router-dom";
+import bannerCatImg from "../../assets/banner-cat.png";
 import "./HomePage.css";
 
-// SVG Graphic Components for pixel-perfect modern rendering
-
+// Graphic Component for Hero Banner
 function HeroBannerIllustration() {
   return (
-    <svg className="hero-banner-art" viewBox="0 0 500 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="skyGrad" x1="0" y1="0" x2="500" y2="240" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#E0F2FE" stopOpacity="0.8" />
-          <stop offset="0.5" stopColor="#FCE7F3" stopOpacity="0.9" />
-          <stop offset="1" stopColor="#F0F9FF" stopOpacity="0.6" />
-        </linearGradient>
-        <linearGradient id="fujiGrad" x1="250" y1="80" x2="250" y2="220" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#93C5FD" stopOpacity="0.5" />
-          <stop offset="1" stopColor="#C084FC" stopOpacity="0.2" />
-        </linearGradient>
-        <linearGradient id="sunGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop stopColor="#FF7E95" stopOpacity="0.4" />
-          <stop offset="1" stopColor="#FFB1C1" stopOpacity="0.1" />
-        </linearGradient>
-      </defs>
-
-      {/* Sun glow */}
-      <circle cx="360" cy="110" r="75" fill="url(#sunGrad)" />
-
-      {/* Clouds */}
-      <path d="M 50 70 Q 75 55 100 70 Q 120 70 130 85 Q 40 85 50 70 Z" fill="#FFFFFF" opacity="0.7" />
-      <path d="M 380 50 Q 400 38 420 50 Q 435 50 445 62 Q 370 62 380 50 Z" fill="#FFFFFF" opacity="0.6" />
-
-      {/* Mount Fuji */}
-      <path d="M 240 220 L 330 100 Q 360 100 390 220 Z" fill="url(#fujiGrad)" />
-      {/* Fuji Snow Cap */}
-      <path d="M 330 100 Q 345 118 360 100 Q 375 125 390 220 L 330 100 Z" fill="#FFFFFF" opacity="0.85" />
-      <path d="M 330 100 Q 345 125 350 130 Q 355 120 360 132 Q 370 120 390 220 L 240 220 Z" fill="#FFFFFF" opacity="0.6" />
-
-      {/* Torii Gate Outline */}
-      <g opacity="0.35" transform="translate(190, 140)">
-        <rect x="10" y="20" width="6" height="55" fill="#F43F5E" />
-        <rect x="44" y="20" width="6" height="55" fill="#F43F5E" />
-        <rect x="0" y="15" width="60" height="7" rx="2" fill="#F43F5E" />
-        <rect x="4" y="10" width="52" height="6" rx="2" fill="#BE123C" />
-        <rect x="8" y="28" width="44" height="5" fill="#F43F5E" />
-        <rect x="27" y="20" width="6" height="13" fill="#BE123C" />
-      </g>
-
-      {/* Japanese Pagoda Silhouette */}
-      <g opacity="0.4" transform="translate(410, 110)">
-        <path d="M 25 0 L 27 15 L 23 15 Z" fill="#475569" />
-        <path d="M 10 20 L 40 20 L 35 15 L 15 15 Z" fill="#475569" />
-        <rect x="17" y="20" width="16" height="12" fill="#475569" />
-        <path d="M 5 35 L 45 35 L 40 32 L 10 32 Z" fill="#475569" />
-        <rect x="14" y="35" width="22" height="15" fill="#475569" />
-        <path d="M 0 53 L 50 53 L 44 50 L 6 50 Z" fill="#475569" />
-        <rect x="10" y="53" width="30" height="25" fill="#475569" />
-      </g>
-
-      {/* Floating Sakura Petals */}
-      <circle cx="120" cy="140" r="4" fill="#FF4B72" opacity="0.5" />
-      <circle cx="210" cy="90" r="3" fill="#FF4B72" opacity="0.6" />
-      <circle cx="450" cy="160" r="5" fill="#FF8CA3" opacity="0.7" />
-      <circle cx="280" cy="60" r="3.5" fill="#FF4B72" opacity="0.4" />
-      <circle cx="80" cy="180" r="4.5" fill="#FF8CA3" opacity="0.5" />
-    </svg>
+    <img
+      src={bannerCatImg}
+      alt="Dekiru cat banner illustration"
+      className="hero-banner-art"
+    />
   );
 }
 
