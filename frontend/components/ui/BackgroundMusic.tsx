@@ -209,18 +209,15 @@ export function BackgroundMusic() {
           }
         >
           <span className={`bg-music-icon ${playing ? "playing" : ""}`}>
-            {playing ? "🎵" : "🎶"}
+            ♫
           </span>
-
-          {playing ? (
-            <div className="bg-music-equalizer">
-              <div className="bg-music-bar" />
-              <div className="bg-music-bar" />
-              <div className="bg-music-bar" />
-            </div>
-          ) : (
-            <span>Nhạc Nhật</span>
-          )}
+          <span>Nhạc Nhật</span>
+          <div className="bg-music-equalizer">
+            <div className="bg-music-bar" style={{ animationPlayState: playing ? "running" : "paused" }} />
+            <div className="bg-music-bar" style={{ animationPlayState: playing ? "running" : "paused" }} />
+            <div className="bg-music-bar" style={{ animationPlayState: playing ? "running" : "paused" }} />
+            <div className="bg-music-bar" style={{ animationPlayState: playing ? "running" : "paused" }} />
+          </div>
         </div>
       </div>
     </>
