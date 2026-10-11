@@ -1,4 +1,4 @@
-﻿# 🇯🇵 J-Tech Japanese Practice Website
+# 🇯🇵 J-Tech Japanese Practice Website
 
 ## 1. Giới thiệu dự án
 
@@ -305,8 +305,7 @@ File schema chính: **`doc/jtech.sql`**.
 Các bảng hiện có trong schema tài liệu:
 
 - `roles`: lưu quyền hệ thống (`ADMIN`, `MODERATOR`, `USER`).
-- `users`: tài khoản người dùng, email, display name, phone, avatar, trạng thái và thời gian đăng nhập gần nhất.
-- `user_profiles`: thông tin hồ sơ mở rộng hiện đang gồm `full_name`, `birthday`, timestamps.
+- `users`: tài khoản người dùng, email, display name, phone, birthday, avatar, trạng thái, thời gian đăng nhập gần nhất (thông tin hồ sơ người dùng lưu trực tiếp tại bảng này).
 - `refresh_tokens`: refresh token dùng cho cơ chế JWT.
 - `login_history`: lịch sử đăng nhập, thiết bị, trình duyệt, IP và trạng thái thành công/thất bại.
 

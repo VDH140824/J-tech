@@ -1,7 +1,8 @@
 import type { UserResponse } from "./auth";
 
 export interface AdminUserStatusRequest {
-  status: "PENDING" | "ACTIVE" | "INACTIVE" | "LOCKED" | "BANNED";
+  status: "PENDING" | "ACTIVE" | "REJECTED" | "LOCKED";
+  statusReason?: string | null;
 }
 
 export interface CategoryStat {
@@ -22,8 +23,8 @@ export interface MonthlyStat {
 export interface AdminDashboardStatsResponse {
   totalUsers: number;
   activeUsers: number;
-  inactiveUsers: number;
-  bannedUsers: number;
+  pendingUsers: number;
+  rejectedUsers: number;
   lockedUsers: number;
   userGrowthStats: MonthlyStat[];
 }

@@ -18,7 +18,6 @@ D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\Log
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\RefreshToken.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\Role.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\User.java
-D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\UserProfile.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\UserStatus.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\exception\GlobalExceptionHandler.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\JTechApplication.java
@@ -27,7 +26,6 @@ D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\mapper\Use
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\LoginHistoryRepository.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\RefreshTokenRepository.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\RoleRepository.java
-D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\UserProfileRepository.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\UserRepository.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\security\CookieService.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\security\CustomUserDetailsService.java

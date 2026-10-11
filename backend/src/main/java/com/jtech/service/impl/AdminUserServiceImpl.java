@@ -54,6 +54,8 @@ public class AdminUserServiceImpl implements AdminUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
         user.setStatus(UserStatus.ACTIVE);
+        user.setStatusReason(null);
+        user.setReviewedAt(java.time.LocalDateTime.now());
         return UserMapper.toResponse(userRepository.save(user));
     }
 
@@ -62,7 +64,8 @@ public class AdminUserServiceImpl implements AdminUserService {
     public UserResponse rejectUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
-        user.setStatus(UserStatus.BANNED);
+        user.setStatus(UserStatus.REJECTED);
+        user.setReviewedAt(java.time.LocalDateTime.now());
         return UserMapper.toResponse(userRepository.save(user));
     }
 
@@ -74,6 +77,10 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         try {
             user.setStatus(UserStatus.valueOf(request.getStatus().toUpperCase()));
+            user.setStatusReason(request.getStatusReason() == null || request.getStatusReason().isBlank()
+                    ? null
+                    : request.getStatusReason().trim());
+            user.setReviewedAt(java.time.LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ: " + request.getStatus());
         }
@@ -132,7 +139,8 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setEmail(email);
         user.setRole(role);
         user.setStatus(UserStatus.ACTIVE);
-        user.setDisplayName(displayName);
+        user.setDisplayName(displayName.length() > 50 ? displayName.substring(0, 50) : displayName);
+        user.setCoinBalance(0);
 
         return UserMapper.toResponse(userRepository.save(user));
     }

@@ -1,146 +1,54 @@
--- =========================================================
--- J-Tech Japanese Learning Website
--- Database schema for current backend foundation
--- Current scope: roles, users, profiles, Google OAuth2 authentication tokens,
--- refresh tokens, and login history.
--- Social modules such as posts, follows, chat, notifications,
--- documents, and history topics will be added in later migrations.
--- =========================================================
-
-CREATE DATABASE IF NOT EXISTS jtech
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
-
+﻿CREATE DATABASE IF NOT EXISTS jtech CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE jtech;
 
--- Existing non-destructive local database migrations (run separately, do not rerun the schema):
--- ALTER TABLE users MODIFY COLUMN status ENUM('PENDING', 'ACTIVE', 'INACTIVE', 'LOCKED', 'BANNED') DEFAULT 'ACTIVE';
--- ALTER TABLE users ADD COLUMN display_name VARCHAR(255) NULL AFTER email;
--- UPDATE users SET display_name = username WHERE (display_name IS NULL OR display_name = '') AND username IS NOT NULL;
--- ALTER TABLE users DROP INDEX username;
--- ALTER TABLE users DROP COLUMN username;
--- ALTER TABLE users DROP COLUMN email_verified;
 
--- =========================================================
--- ROLES
--- =========================================================
+DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS user_account;
+DROP TABLE IF EXISTS role;
 
-CREATE TABLE roles (
-    role_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE role (
+  id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  name VARCHAR(50) NOT NULL UNIQUE,
+  description VARCHAR(255) NULL
+) ENGINE=InnoDB;
 
-    role_name VARCHAR(30) NOT NULL UNIQUE,
-
-    description VARCHAR(255),
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP
-);
-
-
--- =========================================================
--- USERS
--- =========================================================
-
-CREATE TABLE users (
-    user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-    role_id BIGINT NOT NULL,
-
-    email VARCHAR(100) NOT NULL UNIQUE,
-
-    display_name VARCHAR(255),
-
-    phone VARCHAR(30) NULL UNIQUE,
-
-    avatar_url VARCHAR(500),
-
-    status ENUM(
-        'PENDING',
-        'ACTIVE',
-        'INACTIVE',
-        'LOCKED',
-        'BANNED'
-    ) DEFAULT 'ACTIVE',
-
-    last_login DATETIME NULL,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_users_role
-        FOREIGN KEY (role_id)
-        REFERENCES roles(role_id)
-);
-
-
--- =========================================================
--- USER PROFILE
--- =========================================================
-
-CREATE TABLE user_profiles (
-
-    profile_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-    user_id BIGINT NOT NULL UNIQUE,
-
-    full_name VARCHAR(100),
-
-    birthday DATE,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_profile_user
-        FOREIGN KEY (user_id)
-        REFERENCES users(user_id)
-        ON DELETE CASCADE
-);
-
-
--- =========================================================
--- REFRESH TOKENS
--- =========================================================
+CREATE TABLE user_account (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  role_id TINYINT UNSIGNED NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  google_sub VARCHAR(64) NULL UNIQUE,
+  full_name VARCHAR(50) NULL,
+  avatar_url VARCHAR(500) NULL,
+  avatar_public_id VARCHAR(255) NULL,
+  date_of_birth DATE NULL,
+  status ENUM('PENDING','ACTIVE','REJECTED','LOCKED') NOT NULL DEFAULT 'PENDING',
+  status_reason VARCHAR(500) NULL,
+  coin_balance INT UNSIGNED NOT NULL DEFAULT 0,
+  reviewed_by BIGINT UNSIGNED NULL,
+  reviewed_at DATETIME NULL,
+  created_by BIGINT UNSIGNED NULL,
+  last_login_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_user_account_role FOREIGN KEY (role_id) REFERENCES role(id),
+  CONSTRAINT fk_user_account_reviewer FOREIGN KEY (reviewed_by) REFERENCES user_account(id),
+  CONSTRAINT fk_user_account_creator FOREIGN KEY (created_by) REFERENCES user_account(id)
+) ENGINE=InnoDB;
 
 CREATE TABLE refresh_tokens (
-
-    token_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-    user_id BIGINT NOT NULL,
-
-    token VARCHAR(512) NOT NULL,
-
-    expires_at DATETIME NOT NULL,
-
-    revoked BOOLEAN DEFAULT FALSE,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_refresh_user
-        FOREIGN KEY (user_id)
-        REFERENCES users(user_id)
-        ON DELETE CASCADE
+  token_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  token VARCHAR(512) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  revoked BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_refresh_user FOREIGN KEY (user_id) REFERENCES user_account(id) ON DELETE CASCADE
 );
 
 
 
--- =========================================================
--- DEFAULT ROLES
--- =========================================================
-
-INSERT INTO roles (role_name, description)
-VALUES
-('ADMIN', 'System Administrator'),
-('MODERATOR', 'Content Moderator'),
-('STUDENT', 'Student account');
-
--- Safe migration for existing installations (role_id foreign keys remain unchanged):
--- UPDATE roles SET role_name = 'STUDENT', description = 'Student account'
--- WHERE role_name = 'USER';
-
-
+INSERT INTO role (id, code, name, description) VALUES
+(1, 'STUDENT', 'Học viên', 'Tài khoản học viên'),
+(2, 'MODERATOR', 'Kiểm duyệt viên', 'Quản lý nội dung'),
+(3, 'ADMIN', 'Quản trị viên', 'Quản trị hệ thống');

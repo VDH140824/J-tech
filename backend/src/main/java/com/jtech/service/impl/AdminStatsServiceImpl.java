@@ -27,14 +27,14 @@ public class AdminStatsServiceImpl implements AdminStatsService {
 
         long totalUsers = userRepository.count();
         long activeUsers = userRepository.countByStatus(UserStatus.ACTIVE);
-        long inactiveUsers = userRepository.countByStatus(UserStatus.INACTIVE);
-        long bannedUsers = userRepository.countByStatus(UserStatus.BANNED);
+        long pendingUsers = userRepository.countByStatus(UserStatus.PENDING);
+        long rejectedUsers = userRepository.countByStatus(UserStatus.REJECTED);
         long lockedUsers = userRepository.countByStatus(UserStatus.LOCKED);
 
         stats.setTotalUsers(totalUsers);
         stats.setActiveUsers(activeUsers);
-        stats.setInactiveUsers(inactiveUsers);
-        stats.setBannedUsers(bannedUsers);
+        stats.setPendingUsers(pendingUsers);
+        stats.setRejectedUsers(rejectedUsers);
         stats.setLockedUsers(lockedUsers);
 
         List<AdminDashboardStatsResponse.MonthlyStat> growthStats = new ArrayList<>();

@@ -81,7 +81,7 @@ export function AdminDashboardTab() {
             <span className="kpi-number-val">{stats?.totalUsers.toLocaleString()}</span>
             <div className="kpi-sub-pills">
               <span className="pill-mini pill-mini-success">● {stats?.activeUsers} Hoạt động</span>
-              <span className="pill-mini pill-mini-danger">● {stats?.bannedUsers} Bị cấm</span>
+              <span className="pill-mini pill-mini-danger">● {stats?.rejectedUsers} Bị từ chối</span>
             </div>
           </div>
         </div>
@@ -104,11 +104,11 @@ export function AdminDashboardTab() {
           <div className="kpi-info-group">
             <span className="kpi-title-label">Tài khoản bị hạn chế</span>
             <span className="kpi-number-val">
-              {((stats?.lockedUsers || 0) + (stats?.bannedUsers || 0)).toLocaleString()}
+              {((stats?.lockedUsers || 0) + (stats?.rejectedUsers || 0)).toLocaleString()}
             </span>
             <div className="kpi-sub-pills">
               <span className="pill-mini pill-mini-warning">Khóa: {stats?.lockedUsers}</span>
-              <span className="pill-mini pill-mini-danger">Cấm: {stats?.bannedUsers}</span>
+              <span className="pill-mini pill-mini-danger">Từ chối: {stats?.rejectedUsers}</span>
             </div>
           </div>
         </div>
@@ -117,8 +117,8 @@ export function AdminDashboardTab() {
         <div className="admin-kpi-card-clean kpi-amber">
           <div className="kpi-icon-bubble bubble-amber">⏳</div>
           <div className="kpi-info-group">
-            <span className="kpi-title-label">Chờ kích hoạt / Chưa kích hoạt</span>
-            <span className="kpi-number-val">{stats?.inactiveUsers.toLocaleString()}</span>
+            <span className="kpi-title-label">Chờ duyệt</span>
+            <span className="kpi-number-val">{stats?.pendingUsers.toLocaleString()}</span>
             <div className="kpi-sub-pills">
               <span className="pill-mini pill-mini-info">Cần theo dõi</span>
             </div>
@@ -176,8 +176,8 @@ export function AdminDashboardTab() {
           <div className="status-metric-box box-inactive">
             <div className="box-indicator-dot dot-amber" />
             <div className="box-metric-info">
-              <span className="box-label">Chưa kích hoạt</span>
-              <span className="box-number">{stats?.inactiveUsers}</span>
+              <span className="box-label">Chờ duyệt</span>
+              <span className="box-number">{stats?.pendingUsers}</span>
             </div>
           </div>
 
@@ -192,8 +192,8 @@ export function AdminDashboardTab() {
           <div className="status-metric-box box-banned">
             <div className="box-indicator-dot dot-red" />
             <div className="box-metric-info">
-              <span className="box-label">Bị cấm</span>
-              <span className="box-number">{stats?.bannedUsers}</span>
+              <span className="box-label">Bị từ chối</span>
+              <span className="box-number">{stats?.rejectedUsers}</span>
             </div>
           </div>
         </div>

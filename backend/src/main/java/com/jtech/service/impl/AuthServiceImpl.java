@@ -5,10 +5,8 @@ import com.jtech.dto.request.UpdateProfileRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.entity.RefreshToken;
 import com.jtech.entity.User;
-import com.jtech.entity.UserProfile;
 import com.jtech.entity.UserStatus;
 import com.jtech.repository.RefreshTokenRepository;
-import com.jtech.repository.UserProfileRepository;
 import com.jtech.repository.UserRepository;
 import com.jtech.security.JwtService;
 import com.jtech.service.AuthService;
@@ -27,16 +25,14 @@ import java.time.LocalDateTime;
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final UserProfileRepository userProfileRepository;
     private final JwtService jwtService;
     private final com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore;
 
     public AuthServiceImpl(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository,
-                           UserProfileRepository userProfileRepository, JwtService jwtService,
+                           JwtService jwtService,
                            com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
-        this.userProfileRepository = userProfileRepository;
         this.jwtService = jwtService;
         this.oAuth2ExchangeStore = oAuth2ExchangeStore;
     }
@@ -83,12 +79,25 @@ public class AuthServiceImpl implements AuthService {
 
     @Override @Transactional
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        UserProfile profile = userProfileRepository.findByUserUserId(userId).orElseGet(() -> UserProfile.builder().user(user).build());
-        if (request.getFullName() != null) { profile.setFullName(request.getFullName()); user.setDisplayName(request.getFullName()); }
-        if (request.getBirthday() != null) profile.setBirthday(request.getBirthday());
-        userRepository.save(user); userProfileRepository.save(profile);
-        return mapToUserResponse(user, profile);
+        User user = (userId != null)
+                ? userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"))
+                : getAuthenticatedUser();
+
+        String name = request.getDisplayName();
+        if (name != null) {
+            user.setDisplayName(name.trim());
+        }
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
+        if (request.getAvatarPublicId() != null) {
+            user.setAvatarPublicId(request.getAvatarPublicId().trim().isEmpty() ? null : request.getAvatarPublicId().trim());
+        }
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl().trim().isEmpty() ? null : request.getAvatarUrl().trim());
+        }
+        user = userRepository.save(user);
+        return mapToUserResponse(user);
     }
 
     @Override
@@ -121,11 +130,29 @@ public class AuthServiceImpl implements AuthService {
         return userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    private UserResponse mapToUserResponse(User user) { return mapToUserResponse(user, userProfileRepository.findByUserUserId(user.getUserId()).orElse(null)); }
-    private UserResponse mapToUserResponse(User user, UserProfile profile) {
-        UserResponse response = new UserResponse(); response.setId(user.getUserId()); response.setDisplayName(user.getDisplayName()); response.setEmail(user.getEmail()); response.setAvatarUrl(user.getAvatarUrl()); response.setStatus(user.getStatus() != null ? user.getStatus().name() : "ACTIVE");
-        if (user.getRole() != null) { response.setRoleId(user.getRole().getRoleId()); response.setRole(user.getRole().getRoleName()); }
-        if (profile != null) { response.setBirthday(profile.getBirthday()); }
-        response.setLastLogin(user.getLastLogin()); response.setCreatedAt(user.getCreatedAt()); response.setUpdatedAt(user.getUpdatedAt()); return response;
+    private UserResponse mapToUserResponse(User user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getUserId());
+        response.setFullName(user.getFullName());
+        response.setDisplayName(user.getFullName());
+        response.setEmail(user.getEmail());
+        response.setGoogleSub(user.getGoogleSub());
+        response.setDateOfBirth(user.getDateOfBirth());
+        response.setAvatarUrl(user.getAvatarUrl());
+        response.setAvatarPublicId(user.getAvatarPublicId());
+        response.setStatus(user.getStatus() != null ? user.getStatus().name() : "PENDING");
+        response.setStatusReason(user.getStatusReason());
+        response.setCoinBalance(user.getCoinBalance());
+        if (user.getRole() != null) {
+            response.setRoleId(user.getRole().getRoleId());
+            response.setRole(user.getRole().getRoleName());
+            response.setRoleName(user.getRole().getName());
+        }
+        response.setReviewedAt(user.getReviewedAt());
+        response.setLastLoginAt(user.getLastLogin());
+        response.setLastLogin(user.getLastLogin());
+        response.setCreatedAt(user.getCreatedAt());
+        response.setUpdatedAt(user.getUpdatedAt());
+        return response;
     }
 }

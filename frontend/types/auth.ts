@@ -4,20 +4,35 @@ export interface UserResponse {
   id: number;
   roleId?: number | null;
   displayName?: string | null;
+  fullName?: string | null;
   email: string;
+  googleSub?: string | null;
   role?: string | null;
+  roleName?: string | null;
   avatarUrl?: string;
+  avatarPublicId?: string | null;
   status?: string | null;
+  statusReason?: string | null;
+  coinBalance?: number | null;
   lastLogin?: string | null;
+  lastLoginAt?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
-  birthday?: string | null;
+  dateOfBirth?: string | null;
+  reviewedById?: number | null;
+  reviewedByEmail?: string | null;
+  reviewedAt?: string | null;
+  createdById?: number | null;
+  createdByEmail?: string | null;
   accessToken?: string;
 }
 
 export interface UpdateProfileRequest {
+  displayName?: string | null;
   fullName?: string | null;
-  birthday?: string | null;
+  dateOfBirth?: string | null;
+  avatarUrl?: string | null;
+  avatarPublicId?: string | null;
 }
 
 // ─── Auth State ───────────────────────────────────────────────────────────────

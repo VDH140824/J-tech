@@ -21,6 +21,13 @@ function formatDateTime(value?: string | null) {
   return date.toLocaleString("vi-VN");
 }
 
+function formatDateDisplay(value?: string | null) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("vi-VN");
+}
+
 function formatDisplayValue(value?: string | null) {
   return value?.trim() ? value : "—";
 }
@@ -39,9 +46,8 @@ function formatStatusLabel(status?: string | null) {
   const s = status.toUpperCase();
   if (s === "ACTIVE") return "Đang hoạt động";
   if (s === "PENDING") return "Chờ duyệt";
-  if (s === "INACTIVE") return "Chưa kích hoạt";
   if (s === "LOCKED") return "Tạm khóa";
-  if (s === "BANNED") return "Bị cấm";
+  if (s === "REJECTED") return "Bị từ chối";
   return status;
 }
 
@@ -61,14 +67,14 @@ export function ProfilePage() {
   const user = currentUser ?? storedUser;
 
   const [fullName, setFullName] = useState("");
-  const [birthday, setBirthday] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setFullName(user?.displayName ?? "");
-    setBirthday(formatDateInput(user?.birthday ?? null));
+    setDateOfBirth(formatDateInput(user?.dateOfBirth ?? null));
   }, [user]);
 
   const initial = useMemo(() => {
@@ -85,17 +91,18 @@ export function ProfilePage() {
     setError("");
 
     const payload: UpdateProfileRequest = {
+      displayName: fullName.trim() || null,
       fullName: fullName.trim() || null,
-      birthday: birthday || null,
+      dateOfBirth: dateOfBirth || null,
     };
 
     try {
       const updated = await authApi.updateProfile(user.id, payload);
       queryClient.setQueryData(["auth", "me"], updated);
       setUser(updated);
-      setMessage("Cập nhật profile thành công.");
+      setMessage("Cập nhật thông tin thành công.");
     } catch {
-      setError("Không thể cập nhật profile. Vui lòng thử lại.");
+      setError("Không thể cập nhật thông tin. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
@@ -115,9 +122,15 @@ export function ProfilePage() {
 
       <main className="profile-shell">
         <section className="profile-card profile-summary">
-          <div className="profile-avatar">{initial}</div>
+          <div className="profile-avatar">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.displayName ?? "Avatar"} className="profile-avatar-img" />
+            ) : (
+              initial
+            )}
+          </div>
           <div>
-            <h1>Hồ sơ cá nhân</h1>
+            <h1>Hồ sơ người dùng</h1>
             <p>{user?.displayName ?? "Chưa có tên"}</p>
             <p>{user?.email ?? ""}</p>
             <p>Vai trò: {formatRoleLabel(user?.role)}</p>
@@ -128,9 +141,15 @@ export function ProfilePage() {
           <div className="profile-card-header">
             <div>
               <h2>Thông tin tài khoản</h2>
-              <p>Xem và chỉnh sửa thông tin có sẵn của tài khoản đang đăng nhập.</p>
+              <p>Xem và chỉnh sửa thông tin trực tiếp từ tài khoản người dùng.</p>
             </div>
-            <div className="profile-avatar preview">{initial}</div>
+            <div className="profile-avatar preview">
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt={user.displayName ?? "Avatar"} className="profile-avatar-img" />
+              ) : (
+                initial
+              )}
+            </div>
           </div>
 
           {isLoading && <p>Đang tải dữ liệu...</p>}
@@ -150,7 +169,14 @@ export function ProfilePage() {
                 <span>Trạng thái</span>
                 <strong>{formatStatusLabel(user?.status)}</strong>
               </div>
-
+              <div className="profile-detail-item">
+                <span>Số dư xu</span>
+                <strong>{(user?.coinBalance ?? 0).toLocaleString()} xu</strong>
+              </div>
+              <div className="profile-detail-item">
+                <span>Ngày sinh</span>
+                <strong>{formatDateDisplay(user?.dateOfBirth)}</strong>
+              </div>
               <div className="profile-detail-item">
                 <span>Đăng nhập gần nhất</span>
                 <strong>{formatDateTime(user?.lastLogin)}</strong>
@@ -159,12 +185,20 @@ export function ProfilePage() {
                 <span>Tạo lúc</span>
                 <strong>{formatDateTime(user?.createdAt)}</strong>
               </div>
+              <div className="profile-detail-item">
+                <span>Cập nhật lúc</span>
+                <strong>{formatDateTime(user?.updatedAt)}</strong>
+              </div>
             </div>
 
             <div className="profile-edit-grid">
               <label>
                 Tên hiển thị
-                <input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                <input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Nhập tên hiển thị"
+                />
               </label>
 
               <label>
@@ -172,11 +206,15 @@ export function ProfilePage() {
                 <input value={user?.email ?? ""} disabled />
               </label>
 
+
               <label>
                 Ngày sinh
-                <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />
+                <input
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                />
               </label>
-
             </div>
 
             <div className="profile-actions">

@@ -49,7 +49,7 @@ public class UserController {
 
     @PutMapping("/profile")
     public ResponseEntity<UserResponse> updateProfile(
-            @RequestParam("userId") Long userId,
+            @RequestParam(value = "userId", required = false) Long userId,
             @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(authService.updateProfile(userId, request));
     }

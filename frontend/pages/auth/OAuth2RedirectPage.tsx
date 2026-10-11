@@ -36,9 +36,9 @@ export function OAuth2RedirectPage() {
         const role = user.role?.toUpperCase();
         if (status === "PENDING") {
           navigate("/pending-approval", { replace: true });
-        } else if (status === "INACTIVE" || status === "LOCKED" || status === "BANNED") {
+        } else if (status === "REJECTED" || status === "LOCKED") {
           navigate("/account-rejected", { replace: true });
-        } else if (role === "ADMIN" || role === "ROLE_ADMIN" || user.roleId === 1) {
+        } else if (role === "ADMIN" || role === "ROLE_ADMIN") {
           navigate("/admin", { replace: true });
         } else {
           navigate("/home", { replace: true });

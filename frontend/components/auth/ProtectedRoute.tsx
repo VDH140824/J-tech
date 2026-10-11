@@ -23,7 +23,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (status === "PENDING") {
     return <Navigate to="/pending-approval" replace />;
   }
-  if (status === "INACTIVE" || status === "LOCKED" || status === "BANNED") {
+  if (status === "REJECTED" || status === "LOCKED") {
     return <Navigate to="/account-rejected" replace />;
   }
 

@@ -8,13 +8,11 @@ com\jtech\dto\response\UserResponse.class
 com\jtech\entity\RefreshToken.class
 com\jtech\controller\UserController.class
 com\jtech\controller\AdminStatsController.class
-com\jtech\repository\UserProfileRepository.class
 com\jtech\entity\LoginHistory$LoginHistoryBuilder.class
 com\jtech\config\SecurityConfig.class
 com\jtech\mapper\UserMapper.class
 com\jtech\security\CookieService.class
 com\jtech\security\RestAuthenticationEntryPoint.class
-com\jtech\entity\UserProfile.class
 com\jtech\mapper\RefreshTokenMapper.class
 com\jtech\repository\UserRepository.class
 com\jtech\dto\response\AdminDashboardStatsResponse$MonthlyStat.class
@@ -33,7 +31,6 @@ com\jtech\security\JwtService.class
 com\jtech\service\AdminUserService.class
 com\jtech\dto\request\PreCreateUserRequest.class
 com\jtech\exception\GlobalExceptionHandler.class
-com\jtech\entity\UserProfile$UserProfileBuilder.class
 com\jtech\dto\request\ChangeUserRoleRequest.class
 com\jtech\security\CustomUserDetailsService.class
 com\jtech\dto\response\UserSearchResponse$UserSearchResponseBuilder.class

@@ -6,8 +6,8 @@ public class AdminDashboardStatsResponse {
 
     private long totalUsers;
     private long activeUsers;
-    private long inactiveUsers;
-    private long bannedUsers;
+    private long pendingUsers;
+    private long rejectedUsers;
     private long lockedUsers;
 
     private List<MonthlyStat> userGrowthStats;
@@ -33,11 +33,11 @@ public class AdminDashboardStatsResponse {
     public long getActiveUsers() { return activeUsers; }
     public void setActiveUsers(long activeUsers) { this.activeUsers = activeUsers; }
 
-    public long getInactiveUsers() { return inactiveUsers; }
-    public void setInactiveUsers(long inactiveUsers) { this.inactiveUsers = inactiveUsers; }
+    public long getPendingUsers() { return pendingUsers; }
+    public void setPendingUsers(long pendingUsers) { this.pendingUsers = pendingUsers; }
 
-    public long getBannedUsers() { return bannedUsers; }
-    public void setBannedUsers(long bannedUsers) { this.bannedUsers = bannedUsers; }
+    public long getRejectedUsers() { return rejectedUsers; }
+    public void setRejectedUsers(long rejectedUsers) { this.rejectedUsers = rejectedUsers; }
 
     public long getLockedUsers() { return lockedUsers; }
     public void setLockedUsers(long lockedUsers) { this.lockedUsers = lockedUsers; }

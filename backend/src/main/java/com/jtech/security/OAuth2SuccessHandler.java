@@ -56,6 +56,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
         String picture = oAuth2User.getAttribute("picture");
+        String googleSub = oAuth2User.getAttribute("sub");
 
         if (email == null || email.isBlank()) {
             getRedirectStrategy().sendRedirect(request, response, frontendUrl + "/login?error=no_email");
@@ -66,6 +67,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         User user = userRepository.findByEmail(email).map(existingUser -> {
             existingUser.setLastLogin(LocalDateTime.now());
+            if ((existingUser.getGoogleSub() == null || existingUser.getGoogleSub().isBlank()) && googleSub != null && !googleSub.isBlank()) {
+                existingUser.setGoogleSub(googleSub);
+            }
             if ((existingUser.getDisplayName() == null || existingUser.getDisplayName().isBlank())
                     && displayName != null && !displayName.isBlank()) {
                 existingUser.setDisplayName(displayName);
@@ -76,6 +80,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .orElseGet(() -> {
                         Role role = new Role();
                         role.setRoleName("STUDENT");
+                        role.setName("Học viên");
                         role.setDescription("Default student role");
                         return roleRepository.save(role);
                     });
@@ -83,9 +88,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             User newUser = new User();
             newUser.setRole(userRole);
             newUser.setEmail(email);
-            newUser.setDisplayName(displayName != null && !displayName.isBlank() ? displayName : email);
+            newUser.setGoogleSub(googleSub);
+            String resolvedName = displayName != null && !displayName.isBlank() ? displayName : email;
+            newUser.setDisplayName(resolvedName.length() > 50 ? resolvedName.substring(0, 50) : resolvedName);
             newUser.setAvatarUrl(picture);
             newUser.setStatus(UserStatus.PENDING);
+            newUser.setCoinBalance(0);
             newUser.setLastLogin(LocalDateTime.now());
 
             return userRepository.save(newUser);

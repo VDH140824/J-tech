@@ -14,17 +14,15 @@ type UserStatus = AdminUserStatusRequest["status"];
 const STATUS_OPTIONS: UserStatus[] = [
   "PENDING",
   "ACTIVE",
-  "INACTIVE",
   "LOCKED",
-  "BANNED",
+  "REJECTED",
 ];
 
 const STATUS_NAME_MAP: Record<UserStatus, string> = {
   ACTIVE: "Đang hoạt động",
   PENDING: "Chờ duyệt",
-  INACTIVE: "Chưa kích hoạt",
   LOCKED: "Tạm khóa",
-  BANNED: "Bị cấm",
+  REJECTED: "Bị từ chối",
 };
 
 function getRoleLabel(role?: string | null): string {
@@ -39,9 +37,8 @@ function getStatusLabel(status?: string | null): string {
   const s = (status || "").toUpperCase();
   if (s === "ACTIVE") return "HOẠT ĐỘNG";
   if (s === "PENDING") return "CHỜ DUYỆT";
-  if (s === "INACTIVE") return "CHƯA KÍCH HOẠT";
   if (s === "LOCKED") return "TẠM KHÓA";
-  if (s === "BANNED") return "BỊ CẤM";
+  if (s === "REJECTED") return "BỊ TỪ CHỐI";
   return status || "CHỜ DUYỆT";
 }
 
@@ -218,7 +215,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   // Quick stats calculation
   const activeCount = users.filter((u) => u.status === "ACTIVE").length;
   const pendingCount = users.filter((u) => u.status === "PENDING").length;
-  const lockedCount = users.filter((u) => u.status === "LOCKED" || u.status === "BANNED").length;
+  const lockedCount = users.filter((u) => u.status === "LOCKED" || u.status === "REJECTED").length;
 
   return (
     <div className="admin-page-container">
