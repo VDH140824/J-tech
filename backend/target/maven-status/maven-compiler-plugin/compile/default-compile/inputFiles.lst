@@ -14,7 +14,6 @@ D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\respon
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\response\CloudinaryUploadResponse.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\response\UserResponse.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\response\UserSearchResponse.java
-D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\LoginHistory.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\RefreshToken.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\Role.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\entity\User.java
@@ -23,7 +22,6 @@ D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\exception\
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\JTechApplication.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\mapper\RefreshTokenMapper.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\mapper\UserMapper.java
-D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\LoginHistoryRepository.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\RefreshTokenRepository.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\RoleRepository.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\repository\UserRepository.java
