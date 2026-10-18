@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "user_account")
@@ -36,14 +37,36 @@ public class User {
     private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private UserStatus status;
+    @Column(name = "status", nullable = false, length = 20,
+            columnDefinition = "ENUM('PENDING','ACTIVE','REJECTED','LOCKED') NOT NULL DEFAULT 'PENDING'")
+    @Builder.Default
+    private UserStatus status = UserStatus.PENDING;
+
+    @Column(name = "coin_balance", nullable = false, columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0")
+    @Builder.Default
+    private Integer coinBalance = 0;
+
+    @Column(name = "current_streak", nullable = false, columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0")
+    @Builder.Default
+    private Integer currentStreak = 0;
+
+    @Column(name = "longest_streak", nullable = false, columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0")
+    @Builder.Default
+    private Integer longestStreak = 0;
+
+    @Column(name = "last_study_date")
+    private LocalDate lastStudyDate;
+
+    @Column(name = "reminder_enabled", nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT FALSE")
+    @Builder.Default
+    private Boolean reminderEnabled = false;
+
+    @Column(name = "reminder_time", nullable = false, columnDefinition = "TIME NOT NULL DEFAULT '20:00:00'")
+    @Builder.Default
+    private LocalTime reminderTime = LocalTime.of(20, 0);
 
     @Column(name = "status_reason", length = 500)
     private String statusReason;
-
-    @Column(name = "coin_balance", nullable = false, columnDefinition = "INT UNSIGNED")
-    private Integer coinBalance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewed_by", referencedColumnName = "id")

@@ -143,6 +143,11 @@ public class AuthServiceImpl implements AuthService {
         response.setStatus(user.getStatus() != null ? user.getStatus().name() : "PENDING");
         response.setStatusReason(user.getStatusReason());
         response.setCoinBalance(user.getCoinBalance());
+        response.setCurrentStreak(user.getCurrentStreak());
+        response.setLongestStreak(user.getLongestStreak());
+        response.setLastStudyDate(user.getLastStudyDate());
+        response.setReminderEnabled(user.getReminderEnabled());
+        response.setReminderTime(user.getReminderTime());
         if (user.getRole() != null) {
             response.setRoleId(user.getRole().getRoleId());
             response.setRole(user.getRole().getRoleName());

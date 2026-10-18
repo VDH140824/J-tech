@@ -1,5 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
+import { useCurrentUser } from "../../hooks/useAuth";
+import { UserMenu } from "./UserMenu";
 import "./AdminTopbar.css";
 
 interface AdminTopbarProps {
@@ -9,6 +11,7 @@ interface AdminTopbarProps {
 
 export function AdminTopbar({ title, breadcrumb }: AdminTopbarProps) {
   const user = useAuthStore((s) => s.user);
+  useCurrentUser();
   const location = useLocation();
 
   // Compute dynamic breadcrumb based on current route if not explicitly provided
@@ -26,9 +29,6 @@ export function AdminTopbar({ title, breadcrumb }: AdminTopbarProps) {
 
   const resolvedTitle = title || defaultTitle;
   const resolvedBreadcrumb = breadcrumb || defaultBreadcrumb;
-
-  const displayName = user?.displayName || user?.email?.split("@")[0] || "daika";
-  const avatarLetter = (displayName.charAt(0) || "D").toUpperCase();
 
   return (
     <header className="admin-dekiru-topbar">
@@ -55,16 +55,8 @@ export function AdminTopbar({ title, breadcrumb }: AdminTopbarProps) {
 
         <div className="admin-topbar-divider" />
 
-        {/* Admin Profile Info */}
-        <div className="admin-profile-box">
-          <div className="admin-profile-text">
-            <span className="admin-profile-name">{displayName}</span>
-            <span className="admin-profile-role-tag">QUẢN TRỊ VIÊN</span>
-          </div>
-          <div className="admin-profile-avatar-circle">
-            {avatarLetter}
-          </div>
-        </div>
+        {/* Same account menu as the homepage: Admin portal, profile and logout. */}
+        <UserMenu />
       </div>
     </header>
   );

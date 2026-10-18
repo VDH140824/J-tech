@@ -20,6 +20,11 @@ public final class UserMapper {
         response.setStatus(user.getStatus() != null ? user.getStatus().name() : null);
         response.setStatusReason(user.getStatusReason());
         response.setCoinBalance(user.getCoinBalance());
+        response.setCurrentStreak(user.getCurrentStreak());
+        response.setLongestStreak(user.getLongestStreak());
+        response.setLastStudyDate(user.getLastStudyDate());
+        response.setReminderEnabled(user.getReminderEnabled());
+        response.setReminderTime(user.getReminderTime());
         response.setRole(user.getRole() != null ? user.getRole().getRoleName() : null);
         response.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
         response.setRoleId(user.getRole() != null ? user.getRole().getRoleId() : null);

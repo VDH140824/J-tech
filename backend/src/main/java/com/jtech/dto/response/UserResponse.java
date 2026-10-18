@@ -18,6 +18,11 @@ public class UserResponse {
     private String status;
     private String statusReason;
     private Integer coinBalance;
+    private Integer currentStreak;
+    private Integer longestStreak;
+    private LocalDate lastStudyDate;
+    private Boolean reminderEnabled;
+    private java.time.LocalTime reminderTime;
     private Long reviewedById;
     private String reviewedByEmail;
     private LocalDateTime reviewedAt;
@@ -58,6 +63,16 @@ public class UserResponse {
     public void setStatusReason(String statusReason) { this.statusReason = statusReason; }
     public Integer getCoinBalance() { return coinBalance; }
     public void setCoinBalance(Integer coinBalance) { this.coinBalance = coinBalance; }
+    public Integer getCurrentStreak() { return currentStreak; }
+    public void setCurrentStreak(Integer currentStreak) { this.currentStreak = currentStreak; }
+    public Integer getLongestStreak() { return longestStreak; }
+    public void setLongestStreak(Integer longestStreak) { this.longestStreak = longestStreak; }
+    public LocalDate getLastStudyDate() { return lastStudyDate; }
+    public void setLastStudyDate(LocalDate lastStudyDate) { this.lastStudyDate = lastStudyDate; }
+    public Boolean getReminderEnabled() { return reminderEnabled; }
+    public void setReminderEnabled(Boolean reminderEnabled) { this.reminderEnabled = reminderEnabled; }
+    public java.time.LocalTime getReminderTime() { return reminderTime; }
+    public void setReminderTime(java.time.LocalTime reminderTime) { this.reminderTime = reminderTime; }
     public Long getReviewedById() { return reviewedById; }
     public void setReviewedById(Long reviewedById) { this.reviewedById = reviewedById; }
     public String getReviewedByEmail() { return reviewedByEmail; }

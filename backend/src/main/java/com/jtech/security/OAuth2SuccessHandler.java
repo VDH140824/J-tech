@@ -66,7 +66,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String displayName = oAuth2User.getAttribute("name");
 
         User user = userRepository.findByEmail(email).map(existingUser -> {
-            existingUser.setLastLogin(LocalDateTime.now());
+            LocalDateTime loginAt = LocalDateTime.now();
+            existingUser.setLastLogin(loginAt);
             if ((existingUser.getGoogleSub() == null || existingUser.getGoogleSub().isBlank()) && googleSub != null && !googleSub.isBlank()) {
                 existingUser.setGoogleSub(googleSub);
             }
@@ -94,7 +95,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             newUser.setAvatarUrl(picture);
             newUser.setStatus(UserStatus.PENDING);
             newUser.setCoinBalance(0);
-            newUser.setLastLogin(LocalDateTime.now());
+            LocalDateTime loginAt = LocalDateTime.now();
+            newUser.setLastLogin(loginAt);
 
             return userRepository.save(newUser);
 

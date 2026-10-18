@@ -10,7 +10,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      # Schema is managed by doc/jtech.sql; prevent Hibernate from changing other tables.
+      ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:

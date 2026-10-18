@@ -14,6 +14,11 @@ export interface UserResponse {
   status?: string | null;
   statusReason?: string | null;
   coinBalance?: number | null;
+  currentStreak?: number | null;
+  longestStreak?: number | null;
+  lastStudyDate?: string | null;
+  reminderEnabled?: boolean | null;
+  reminderTime?: string | null;
   lastLogin?: string | null;
   lastLoginAt?: string | null;
   createdAt?: string | null;
