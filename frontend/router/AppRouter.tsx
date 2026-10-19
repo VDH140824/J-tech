@@ -5,11 +5,14 @@ import { OAuth2RedirectPage } from "../pages/auth/OAuth2RedirectPage";
 import { PendingApprovalPage } from "../pages/auth/PendingApprovalPage";
 import { AccountRejectedPage } from "../pages/auth/AccountRejectedPage";
 import { HomePage } from "../pages/home/HomePage";
+import { CoursePage } from "../pages/home/CoursePage";
 import { BackgroundMusic } from "../components/ui/BackgroundMusic";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { AdminProtectedRoute } from "../components/auth/AdminProtectedRoute";
+import { ModeratorProtectedRoute } from "../components/auth/ModeratorProtectedRoute";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { AdminPortalPage } from "../pages/admin/AdminPortalPage";
+import { ModeratorPortalPage } from "../pages/moderator/ModeratorPortalPage";
 import { MainLayout } from "../layouts/MainLayout";
 
 export function AppRouter() {
@@ -33,6 +36,7 @@ export function AppRouter() {
           }
         >
           <Route path="/home" element={<HomePage />} />
+          <Route path="/courses/:courseId" element={<CoursePage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
@@ -54,8 +58,28 @@ export function AppRouter() {
           }
         />
 
+        {/* Moderator routes (Moderator has its own dedicated portal layout) */}
+        <Route
+          path="/moderator"
+          element={
+            <ModeratorProtectedRoute>
+              <ModeratorPortalPage />
+            </ModeratorProtectedRoute>
+          }
+        />
+        <Route
+          path="/moderator/*"
+          element={
+            <ModeratorProtectedRoute>
+              <ModeratorPortalPage />
+            </ModeratorProtectedRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </>
   );
 }
+
+

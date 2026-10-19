@@ -1,0 +1,905 @@
+/* ==========================================================================
+   MODERATOR PORTAL STYLES - TEAL/CONTENT MANAGEMENT THEME
+   ========================================================================== */
+
+/* --- Spinner override for teal theme --- */
+.mod-spinner {
+  border-top-color: #0d9488 !important;
+}
+
+/* ==========================================================================
+   COURSES GRID
+   ========================================================================== */
+.mod-courses-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mod-course-card {
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 18px;
+  padding: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mod-course-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Color Accent Variants */
+.mod-course-card.mod-card-teal {
+  border-top: 3px solid #0d9488;
+}
+
+.mod-course-card.mod-card-blue {
+  border-top: 3px solid #2563eb;
+}
+
+.mod-course-card.mod-card-purple {
+  border-top: 3px solid #7c3aed;
+}
+
+.mod-course-card.mod-card-rose {
+  border-top: 3px solid #e11d48;
+}
+
+/* Card Header */
+.mod-course-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px 12px;
+}
+
+.mod-course-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.mod-course-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mod-course-name {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.mod-course-code {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.02em;
+}
+
+.mod-course-chapter-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 14px;
+  background-color: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 12px;
+}
+
+.mod-count-number {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0d9488;
+}
+
+.mod-count-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Description */
+.mod-course-desc {
+  margin: 0;
+  padding: 0 24px 12px;
+  font-size: 0.86rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* Actions */
+.mod-course-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 24px 18px;
+}
+
+.mod-btn-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mod-btn-detail:hover {
+  background-color: #f0fdfa;
+  border-color: #99f6e4;
+  color: #0d9488;
+}
+
+/* ==========================================================================
+   EXPANDED CHAPTERS PANEL
+   ========================================================================== */
+.mod-chapters-panel {
+  border-top: 1px solid #f1f5f9;
+  background-color: #fafbfc;
+  padding: 20px 24px;
+  animation: modSlideDown 0.25s ease-out;
+}
+
+@keyframes modSlideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+.mod-chapters-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  padding: 20px 0;
+  color: #64748b;
+  font-size: 0.88rem;
+}
+
+.mod-chapters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.mod-chapters-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mod-chapters-count {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #0d9488;
+  background-color: #f0fdfa;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid #ccfbf1;
+}
+
+.mod-chapters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mod-chapter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.mod-chapter-row:hover {
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.mod-chapter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.mod-chapter-no {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #0d9488;
+  letter-spacing: 0.02em;
+}
+
+.mod-chapter-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mod-chapter-desc {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.mod-btn-view-chapter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 0;
+  background-color: #0d9488;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
+}
+
+.mod-btn-view-chapter:hover {
+  background-color: #0f766e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+}
+
+.mod-chapters-empty {
+  text-align: center;
+  padding: 24px 16px;
+  color: #94a3b8;
+  font-size: 0.88rem;
+}
+
+.mod-chapters-empty p {
+  margin: 6px 0 0;
+}
+
+/* ==========================================================================
+   CHAPTER DETAIL PAGE - SECTIONS
+   ========================================================================== */
+
+/* Back Button Row */
+.mod-chapter-back-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mod-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #475569;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mod-btn-back:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.mod-chapter-breadcrumb-pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0d9488;
+  background-color: #f0fdfa;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid #ccfbf1;
+}
+
+/* Sections Grid */
+.mod-sections-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mod-section-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.mod-section-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.mod-section-card.mod-section-active {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.mod-section-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mod-section-icon {
+  font-size: 1.5rem;
+}
+
+.mod-section-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mod-section-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.mod-section-name {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.mod-section-jp {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #94a3b8;
+  font-family: "Yu Gothic", "Meiryo", sans-serif;
+}
+
+.mod-section-desc {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.mod-section-arrow {
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+/* ==========================================================================
+   SECTION CONTENT PANEL
+   ========================================================================== */
+.mod-section-content-panel {
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  animation: modSlideDown 0.3s ease-out;
+}
+
+.mod-section-content-header {
+  padding: 20px 24px;
+  border-left: 4px solid;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mod-section-content-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.mod-section-content-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.mod-section-content-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ffffff;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.mod-section-content-subtitle {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #64748b;
+}
+
+.mod-section-content-body {
+  padding: 32px 24px;
+}
+
+/* Empty State */
+.mod-section-empty-state {
+  text-align: center;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.mod-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 14px;
+  opacity: 0.6;
+}
+
+.mod-empty-title {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.mod-empty-desc {
+  margin: 0 0 24px;
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.mod-empty-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.mod-empty-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: #fafbfc;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* ==========================================================================
+   INTERACTIVE SECTION MANAGEMENT & FORMS
+   ========================================================================== */
+.modal-textarea {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s;
+  resize: vertical;
+  min-height: 72px;
+}
+
+.modal-textarea:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+.modal-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-modal-delete {
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 0;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-modal-delete:hover {
+  background-color: #dc2626;
+}
+
+.btn-modal-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Section Toolbar */
+.mod-section-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.mod-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.mod-toolbar-search {
+  position: relative;
+  flex: 1;
+  max-width: 380px;
+}
+
+.mod-toolbar-search .search-mag-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.88rem;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.mod-toolbar-search input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  outline: none;
+  background-color: #ffffff;
+  transition: all 0.2s;
+}
+
+.mod-toolbar-search input:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+.mod-toolbar-select {
+  padding: 9px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  outline: none;
+  background-color: #ffffff;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mod-toolbar-select:focus {
+  border-color: #0d9488;
+}
+
+.mod-btn-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 0;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mod-btn-add:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* Badge & Cell Styles */
+.mod-kanji-char-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: "Yu Gothic", "Meiryo", serif;
+}
+
+.mod-word-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mod-word-primary {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.mod-word-reading {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0d9488;
+}
+
+.mod-type-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.mod-example-text {
+  font-size: 0.82rem;
+  color: #334155;
+  line-height: 1.4;
+  max-width: 280px;
+}
+
+.mod-example-vi {
+  color: #64748b;
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+/* Section Header Switch Tabs */
+.mod-skill-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.mod-skill-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  background-color: #ffffff;
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  white-space: nowrap;
+}
+
+.mod-skill-tab-btn:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.mod-skill-tab-btn.active {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.mod-tab-count-pill {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 768px) {
+  .mod-course-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mod-course-chapter-count {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .mod-chapter-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mod-btn-view-chapter {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mod-section-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mod-empty-features {
+    grid-template-columns: 1fr;
+  }
+
+  .mod-chapter-back-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mod-section-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mod-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mod-toolbar-search {
+    max-width: 100%;
+  }
+
+  .modal-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   LESSON MANAGEMENT STYLES
+   ========================================================================== */
+.mod-lesson-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background-color: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  color: #0d9488;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.mod-lesson-title-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 440px;
+}
+
+.mod-lesson-main-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mod-lesson-main-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.mod-header-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   SKILLS SELECTION GRID
+   ========================================================================== */
+.mod-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.mod-skill-choice-card {
+  background-color: #ffffff;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 18px;
+  padding: 22px 24px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.mod-skill-choice-card:hover {
+  transform: translateY(-3px);
+  border-color: #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 640px) {
+  .mod-skills-grid {
+    grid-template-columns: 1fr;
+  }
+  .mod-skill-choice-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.mod-btn-view-items {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.mod-btn-view-items:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+
+

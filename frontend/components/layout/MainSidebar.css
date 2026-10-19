@@ -159,6 +159,32 @@
   object-fit: contain;
 }
 
+/* Moderator portal special nav button */
+.moderator-nav-wrapper {
+  margin-top: 8px;
+}
+
+.moderator-portal-btn {
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+}
+
+.moderator-portal-btn:hover {
+  background-color: #ccfbf1;
+  color: #115e59;
+}
+
+.moderator-badge-pill {
+  font-size: 0.65rem;
+  background-color: #0d9488;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
 @media (max-width: 768px) {
   .dekiru-sidebar {
     width: 100%;

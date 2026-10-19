@@ -91,6 +91,10 @@
   border-radius: 999px;
 }
 
+.admin-role-badge.mod-role-badge {
+  background-color: #0d9488;
+}
+
 .dropdown-menu-list {
   display: flex;
   flex-direction: column;
@@ -123,6 +127,16 @@
 
 .dropdown-item.admin-item:hover {
   background-color: #ffedd5;
+}
+
+.dropdown-item.moderator-item {
+  color: #0d9488;
+  background-color: #f0fdfa;
+  font-weight: 700;
+}
+
+.dropdown-item.moderator-item:hover {
+  background-color: #ccfbf1;
 }
 
 .dropdown-item.logout-item {

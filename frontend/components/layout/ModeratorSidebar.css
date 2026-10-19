@@ -1,0 +1,29 @@
+/* ==========================================================================
+   MODERATOR SIDEBAR - TEAL THEME OVERRIDES
+   ========================================================================== */
+.mod-brand-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: #ccfbf1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mod-pill-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  background-color: #f0fdfa;
+  color: #0d9488;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid #99f6e4;
+  letter-spacing: 0.05em;
+}
+
+.mod-sidebar .admin-nav-item.active.mod-active {
+  background-color: #f0fdfa;
+  color: #0d9488;
+}

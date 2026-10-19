@@ -23,6 +23,11 @@ export function UserMenu() {
     normalizedRole === "ADMIN" ||
     normalizedRole === "ROLE_ADMIN";
 
+  const isModerator =
+    normalizedRoleId === "2" ||
+    normalizedRole === "MODERATOR" ||
+    normalizedRole === "ROLE_MODERATOR";
+
   // Close profile dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -54,6 +59,7 @@ export function UserMenu() {
             <div className="dropdown-user-name">{displayName || "Học viên"}</div>
             <div className="dropdown-user-email">{user?.email || "user@jtech.edu.vn"}</div>
             {isAdmin && <span className="admin-role-badge">QUẢN TRỊ HỆ THỐNG</span>}
+            {isModerator && !isAdmin && <span className="admin-role-badge mod-role-badge">KIỂM DUYỆT VIÊN</span>}
           </div>
 
           <div className="dropdown-menu-list">
@@ -67,6 +73,19 @@ export function UserMenu() {
                 }}
               >
                 🛠️ Quản trị Admin
+              </button>
+            )}
+
+            {isModerator && (
+              <button
+                type="button"
+                className="dropdown-item moderator-item"
+                onClick={() => {
+                  setIsProfileOpen(false);
+                  navigate("/moderator");
+                }}
+              >
+                📋 Quản trị nội dung
               </button>
             )}
 

@@ -56,6 +56,11 @@ export function MainSidebar() {
     normalizedRole === "ADMIN" ||
     normalizedRole === "ROLE_ADMIN";
 
+  const isModerator =
+    normalizedRoleId === "2" ||
+    normalizedRole === "MODERATOR" ||
+    normalizedRole === "ROLE_MODERATOR";
+
   const isHomeActive = location.pathname === "/home" || activeTab === "trang-chu";
 
   return (
@@ -135,6 +140,23 @@ export function MainSidebar() {
           <span className="nav-link-icon">⚙️</span>
           <span className="nav-link-text">Cài đặt</span>
         </button>
+
+        {/* MODERATOR PORTAL SPECIAL ITEM (Only visible if user has MODERATOR privileges) */}
+        {isModerator && (
+          <div className="moderator-nav-wrapper">
+            <div className="nav-divider" />
+            <button
+              type="button"
+              className="nav-link-btn moderator-portal-btn"
+              onClick={() => navigate("/moderator")}
+              title="Truy cập Trang quản trị nội dung"
+            >
+              <span className="nav-link-icon">📋</span>
+              <span className="nav-link-text">Quản trị nội dung</span>
+              <span className="moderator-badge-pill">MOD</span>
+            </button>
+          </div>
+        )}
 
         {/* ADMIN PORTAL SPECIAL ITEM (Only visible if user has ADMIN privileges) */}
         {isAdmin && (

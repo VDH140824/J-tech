@@ -169,6 +169,7 @@ CREATE TABLE chapter (
 CREATE TABLE lesson (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   chapter_id BIGINT UNSIGNED NOT NULL,
+  skill_type ENUM('KANJI','VOCABULARY','GRAMMAR','LISTENING','READING'),
   lesson_no SMALLINT UNSIGNED NOT NULL,
   title VARCHAR(200) NOT NULL,
   description TEXT NULL,
@@ -180,7 +181,8 @@ CREATE TABLE lesson (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY uq_lesson_chapter_no (chapter_id,lesson_no),
+  KEY idx_lesson_chapter_id (chapter_id),
+  KEY idx_lesson_chapter_skill_no (chapter_id,skill_type,lesson_no),
   FOREIGN KEY (chapter_id) REFERENCES chapter (id),
   FOREIGN KEY (created_by) REFERENCES user_account (id),
   FOREIGN KEY (updated_by) REFERENCES user_account (id)
@@ -841,3 +843,16 @@ INSERT INTO role (id, code, name, description) VALUES
   (2, 'MODERATOR', 'Kiểm duyệt viên', 'Quản lý nội dung'),
   (3, 'ADMIN', 'Quản trị viên', 'Quản trị hệ thống'),
   (4, 'Teacher', 'Giáo viên', 'Quản lí lớp học');
+
+
+INSERT INTO course (code, name, description, display_order, status) VALUES
+('JPD113', 'Nhật 1', 'Môn Nhật 1', 1, 'PUBLISHED'),
+('JPD123', 'Nhật 2', 'Môn Nhật 2', 2, 'PUBLISHED');
+
+INSERT INTO chapter (course_id, chapter_no, title, display_order, status) VALUES
+(1, 1, 'Chương 1', 1, 'PUBLISHED'),
+(1, 2, 'Chương 2', 2, 'PUBLISHED'),
+(1, 3, 'Chương 3', 3, 'PUBLISHED'),
+(2, 1, 'Chương 4', 1, 'PUBLISHED'),
+(2, 2, 'Chương 5', 2, 'PUBLISHED'),
+(2, 3, 'Chương 6', 3, 'PUBLISHED');

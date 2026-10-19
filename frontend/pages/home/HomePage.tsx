@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getCourses, type CourseSummary } from "../../api/courseApi";
 import bannerCatImg from "../../assets/banner-cat.png";
 import "./HomePage.css";
 
@@ -144,6 +146,8 @@ function ProgressDonutSvg({ percentage }: { percentage: number }) {
 
 export function HomePage() {
   const navigate = useNavigate();
+  const [courses, setCourses] = useState<CourseSummary[]>([]);
+  useEffect(() => { getCourses().then(setCourses).catch(() => setCourses([])); }, []);
 
   return (
     <div className="dekiru-content-grid">
@@ -180,93 +184,12 @@ export function HomePage() {
               </div>
 
               <div className="course-cards-grid">
-                {/* CARD 1: Dekiru 1 */}
-                <div className="course-card pink-card">
-                  <div className="card-art-box">
-                    <CourseCardArt type={1} />
+                {courses.map((course, index) => (
+                  <div className={`course-card ${["pink-card", "blue-card", "green-card", "orange-card"][index % 4]}`} key={course.id} onClick={() => navigate(`/courses/${course.id}`)}>
+                    <div className="card-art-box"><CourseCardArt type={((index % 4) + 1) as 1 | 2 | 3 | 4} /></div>
+                    <div className="course-card-body"><h3 className="course-title">{course.name}</h3><div className="course-level">{course.code}</div><div className="course-progress-wrapper"><div className="course-progress-info"><span className="progress-text">{course.chapterCount} chuong</span><button type="button" className="circle-arrow-btn blue-btn">?</button></div></div></div>
                   </div>
-                  <div className="course-card-body">
-                    <h3 className="course-title">Dekiru 1</h3>
-                    <div className="course-level">Sơ cấp (A1)</div>
-                    <div className="course-progress-wrapper">
-                      <div className="progress-bar-track">
-                        <div className="progress-bar-fill pink-fill" style={{ width: "50%" }} />
-                      </div>
-                      <div className="course-progress-info">
-                        <span className="progress-text">6 / 12 bài</span>
-                        <button type="button" className="circle-arrow-btn pink-btn" title="Vào bài học">
-                          →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CARD 2: Dekiru 2 */}
-                <div className="course-card blue-card">
-                  <div className="card-art-box">
-                    <CourseCardArt type={2} />
-                  </div>
-                  <div className="course-card-body">
-                    <h3 className="course-title">Dekiru 2</h3>
-                    <div className="course-level">Sơ cấp (A2)</div>
-                    <div className="course-progress-wrapper">
-                      <div className="progress-bar-track">
-                        <div className="progress-bar-fill blue-fill" style={{ width: "25%" }} />
-                      </div>
-                      <div className="course-progress-info">
-                        <span className="progress-text">3 / 12 bài</span>
-                        <button type="button" className="circle-arrow-btn blue-btn" title="Vào bài học">
-                          →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CARD 3: Dekiru 3 */}
-                <div className="course-card green-card">
-                  <div className="card-art-box">
-                    <CourseCardArt type={3} />
-                  </div>
-                  <div className="course-card-body">
-                    <h3 className="course-title">Dekiru 3</h3>
-                    <div className="course-level">Trung cấp (B1)</div>
-                    <div className="course-progress-wrapper">
-                      <div className="progress-bar-track">
-                        <div className="progress-bar-fill green-fill" style={{ width: "0%" }} />
-                      </div>
-                      <div className="course-progress-info">
-                        <span className="progress-text">0 / 12 bài</span>
-                        <button type="button" className="circle-arrow-btn green-btn" title="Vào bài học">
-                          →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CARD 4: Dekiru 4 */}
-                <div className="course-card orange-card">
-                  <div className="card-art-box">
-                    <CourseCardArt type={4} />
-                  </div>
-                  <div className="course-card-body">
-                    <h3 className="course-title">Dekiru 4</h3>
-                    <div className="course-level">Trung cấp (B2)</div>
-                    <div className="course-progress-wrapper">
-                      <div className="progress-bar-track">
-                        <div className="progress-bar-fill orange-fill" style={{ width: "0%" }} />
-                      </div>
-                      <div className="course-progress-info">
-                        <span className="progress-text">0 / 12 bài</span>
-                        <button type="button" className="circle-arrow-btn orange-btn" title="Vào bài học">
-                          →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </section>
 
@@ -474,3 +397,4 @@ export function HomePage() {
     </div>
   );
 }
+
