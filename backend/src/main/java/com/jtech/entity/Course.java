@@ -1,4 +1,46 @@
 package com.jtech.entity;
-import jakarta.persistence.*; import lombok.*; import java.util.*;
-@Entity @Table(name="course") @Getter @Setter @NoArgsConstructor
-public class Course { @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id; @Column(nullable=false,unique=true,length=20) private String code; @Column(nullable=false,length=150) private String name; @Column(columnDefinition="TEXT") private String description; @Column(name="thumbnail_url",length=500) private String thumbnailUrl; @Column(name="display_order",nullable=false) private Integer displayOrder; @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private Status status; @OneToMany(mappedBy="course",fetch=FetchType.LAZY) @OrderBy("displayOrder ASC, chapterNo ASC") private List<Chapter> chapters=new ArrayList<>(); public enum Status { DRAFT,PUBLISHED,HIDDEN,ARCHIVED } }
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.util.*;
+
+@Entity
+@Table(name = "course")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Course {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true, length = 20)
+    private String code;
+
+    @Column(nullable = false, length = 150)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "thumbnail_url", length = 500)
+    private String thumbnailUrl;
+
+    @Column(name = "display_order", nullable = false)
+    private Integer displayOrder;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Status status;
+
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    @OrderBy("displayOrder ASC, chapterNo ASC")
+    private List<Chapter> chapters = new ArrayList<>();
+
+    public enum Status {
+        DRAFT,
+        PUBLISHED,
+        HIDDEN,
+        ARCHIVED
+    }
+}

@@ -7,6 +7,112 @@
   border-top-color: #0d9488 !important;
 }
 
+/* Lesson and skill item dialogs */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  width: 100%;
+  max-height: min(90vh, 900px);
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+  animation: mod-modal-enter 160ms ease-out;
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+}
+
+.modal-title {
+  margin: 0;
+  color: #0f172a;
+}
+
+.modal-btn-close {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.modal-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.modal-field-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.modal-label {
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.modal-input,
+.modal-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  outline: none;
+}
+
+.modal-input:focus,
+.modal-textarea:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14);
+}
+
+.modal-textarea {
+  resize: vertical;
+}
+
+.modal-overlay .modal-actions-row {
+  padding-top: 4px;
+}
+
+@keyframes mod-modal-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 560px) {
+  .modal-overlay { padding: 12px; align-items: flex-start; }
+  .modal-grid-2 { grid-template-columns: 1fr; }
+  .modal-form-body { padding: 18px; }
+}
+
 /* ==========================================================================
    COURSES GRID
    ========================================================================== */
@@ -833,6 +939,71 @@
   color: #64748b;
   line-height: 1.4;
 }
+
+/* Compact lesson table matching the skill management reference */
+.mod-lesson-table-wrap {
+  padding: 5px;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
+}
+
+.admin-users-table.mod-lesson-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-users-table.mod-lesson-table thead th {
+  padding: 12px 14px;
+  background: #f1f3f6;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.admin-users-table.mod-lesson-table thead th:first-child { border-radius: 10px 0 0 10px; }
+.admin-users-table.mod-lesson-table thead th:last-child { border-radius: 0 10px 10px 0; }
+.admin-users-table.mod-lesson-table tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #edf0f4;
+  text-align: center;
+  vertical-align: middle;
+}
+.admin-users-table.mod-lesson-table tbody tr:last-child td { border-bottom: 0; }
+.admin-users-table.mod-lesson-table tbody tr:hover { background: #fafcff; }
+.lesson-col-index { width: 64px; }
+.lesson-col-title { min-width: 220px; }
+.lesson-col-description { min-width: 240px; }
+.lesson-col-number { width: 95px; }
+.lesson-col-status { width: 150px; }
+.lesson-col-order { width: 90px; text-align: center; }
+.lesson-col-actions { width: 220px; text-align: right; }
+.mod-lesson-row-index { color: #94a3b8; font-size: 0.82rem; }
+.mod-lesson-title-cell { gap: 4px; max-width: none; }
+.mod-lesson-main-title { display: block; text-align: center; }
+.mod-lesson-description-cell { color: #64748b; font-size: 0.82rem; line-height: 1.45; text-align: center !important; }
+.lesson-order-cell { text-align: center; }
+.lesson-order-pill {
+  display: inline-flex;
+  min-width: 30px;
+  justify-content: center;
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: white;
+  color: #475569;
+  font-size: 0.78rem;
+}
+.mod-lesson-status { padding: 5px 10px; border-radius: 999px; font-size: 0.72rem; white-space: nowrap; }
+.lesson-items-action { padding: 7px 10px; font-size: 0.76rem; }
+.mod-lesson-table .row-actions-group { justify-content: center !important; gap: 7px !important; }
 
 .mod-header-action-row {
   display: flex;

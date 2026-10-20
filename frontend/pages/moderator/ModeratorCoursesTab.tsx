@@ -210,10 +210,7 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
                               onClick={() =>
                                 onViewChapter({
                                   courseId: course.id,
-                                  courseName: course.name,
                                   chapterId: ch.id,
-                                  chapterNo: ch.chapterNo,
-                                  chapterTitle: ch.title,
                                 })
                               }
                             >

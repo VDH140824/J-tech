@@ -68,6 +68,22 @@ export function AppRouter() {
           }
         />
         <Route
+          path="/moderator/courses"
+          element={
+            <ModeratorProtectedRoute>
+              <ModeratorPortalPage />
+            </ModeratorProtectedRoute>
+          }
+        />
+        <Route
+          path="/moderator/courses/:courseId/chapters/:chapterId"
+          element={
+            <ModeratorProtectedRoute>
+              <ModeratorPortalPage />
+            </ModeratorProtectedRoute>
+          }
+        />
+        <Route
           path="/moderator/*"
           element={
             <ModeratorProtectedRoute>

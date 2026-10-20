@@ -29,7 +29,8 @@ export interface LessonFormInput {
 export async function getLessonsByChapter(
   chapterId: number,
   skillType?: SkillType,
-  status?: string
+  status?: string,
+  courseId?: number
 ): Promise<LessonSummary[]> {
   const params: Record<string, string> = {};
   if (skillType) {
@@ -38,6 +39,8 @@ export async function getLessonsByChapter(
   if (status && status !== "ALL") {
     params.status = status;
   }
+
+  // Use the existing working endpoint /chapters/{chapterId}/lessons
   const { data } = await apiClient.get<LessonSummary[]>(`/chapters/${chapterId}/lessons`, { params });
   return data;
 }
@@ -49,7 +52,8 @@ export async function getLessonById(id: number): Promise<LessonSummary> {
 
 export async function createLesson(
   chapterId: number,
-  payload: LessonFormInput
+  payload: LessonFormInput,
+  courseId?: number
 ): Promise<LessonSummary> {
   const { data } = await apiClient.post<LessonSummary>(`/chapters/${chapterId}/lessons`, payload);
   return data;

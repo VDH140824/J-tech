@@ -10,6 +10,7 @@ import com.jtech.repository.LessonRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,6 +50,19 @@ public class LessonController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/courses/{courseId}/chapters/{chapterId}/lessons")
+    public ResponseEntity<List<LessonResponse>> getLessonsByCourseAndChapter(
+            @PathVariable Long courseId,
+            @PathVariable Long chapterId,
+            @RequestParam(required = false) Lesson.SkillType skillType,
+            @RequestParam(required = false) Course.Status status
+    ) {
+        if (chapterRepository.findByIdAndCourseId(chapterId, courseId).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return getLessonsByChapter(chapterId, skillType, status);
+    }
+
     @GetMapping("/lessons/{id}")
     public ResponseEntity<LessonResponse> getLessonById(@PathVariable Long id) {
         return lessonRepository.findById(id)
@@ -56,24 +70,43 @@ public class LessonController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/chapters/{chapterId}/lessons")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PostMapping(value = {"/chapters/{chapterId}/lessons", "/courses/{courseId}/chapters/{chapterId}/lessons"})
     public ResponseEntity<?> createLesson(
+            @PathVariable(required = false) Long courseId,
             @PathVariable Long chapterId,
             @Valid @RequestBody LessonRequest request
     ) {
-        Chapter chapter = chapterRepository.findById(chapterId).orElse(null);
+        Chapter chapter;
+        if (courseId != null) {
+            chapter = chapterRepository.findByIdAndCourseId(chapterId, courseId).orElse(null);
+        } else {
+            chapter = chapterRepository.findById(chapterId).orElse(null);
+        }
+
         if (chapter == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Chapter not found with id: " + chapterId);
         }
 
+        Lesson.SkillType skillType = request.skillType() != null ? request.skillType() : Lesson.SkillType.GRAMMAR;
+        if (lessonRepository.existsByChapterIdAndSkillTypeAndDisplayOrder(chapterId, skillType, request.displayOrder())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Thứ tự hiển thị " + request.displayOrder() + " đã được sử dụng trong phần này.");
+        }
+
+        String documents = request.documents();
+        if (documents != null && documents.trim().isEmpty()) {
+            documents = null;
+        }
+
         Lesson lesson = Lesson.builder()
                 .chapter(chapter)
-                .skillType(request.skillType() != null ? request.skillType() : Lesson.SkillType.GRAMMAR)
+                .skillType(skillType)
                 .lessonNo(request.lessonNo())
                 .title(request.title())
                 .description(request.description())
-                .documents(request.documents())
-                .displayOrder(request.displayOrder() != null ? request.displayOrder() : request.lessonNo())
+                .documents(documents)
+                .displayOrder(request.displayOrder())
                 .status(request.status() != null ? request.status() : Course.Status.DRAFT)
                 .build();
 
@@ -81,6 +114,7 @@ public class LessonController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(saved));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
     @PutMapping("/lessons/{id}")
     public ResponseEntity<?> updateLesson(
             @PathVariable Long id,
@@ -91,13 +125,24 @@ public class LessonController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lesson not found with id: " + id);
         }
 
+        Lesson.SkillType skillType = request.skillType() != null ? request.skillType() : lesson.getSkillType();
+        if (lessonRepository.existsByChapterIdAndSkillTypeAndDisplayOrderAndIdNot(
+                lesson.getChapter().getId(), skillType, request.displayOrder(), id)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Thứ tự hiển thị " + request.displayOrder() + " đã được sử dụng trong phần này.");
+        }
+
         if (request.skillType() != null) {
-            lesson.setSkillType(request.skillType());
+            lesson.setSkillType(skillType);
         }
         lesson.setLessonNo(request.lessonNo());
         lesson.setTitle(request.title());
         lesson.setDescription(request.description());
-        lesson.setDocuments(request.documents());
+        String updateDocs = request.documents();
+        if (updateDocs != null && updateDocs.trim().isEmpty()) {
+            updateDocs = null;
+        }
+        lesson.setDocuments(updateDocs);
         if (request.displayOrder() != null) {
             lesson.setDisplayOrder(request.displayOrder());
         }
@@ -109,6 +154,7 @@ public class LessonController {
         return ResponseEntity.ok(mapToResponse(updated));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
     @DeleteMapping("/lessons/{id}")
     public ResponseEntity<Void> deleteLesson(@PathVariable Long id) {
         if (!lessonRepository.existsById(id)) {

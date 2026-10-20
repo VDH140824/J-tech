@@ -68,11 +68,11 @@ export function MainSidebar() {
       <div className="sidebar-brand" onClick={() => navigate("/home")}>
         <DekiruLogoIcon />
         <div className="brand-titles">
-          <span className="dekiru-brand-name">Dekiru</span>
+          <span className="dekiru-brand-name">J-Tech</span>
           <span className="dekiru-brand-sub">できる</span>
         </div>
       </div>
-      <div className="sidebar-tagline">Luyện tiếng Nhật cùng Dekiru</div>
+      <div className="sidebar-tagline">Luyện tiếng Nhật cùng J-Tech</div>
 
       <nav className="sidebar-nav-menu">
         <button
