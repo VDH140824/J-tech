@@ -79,7 +79,10 @@ export function ModeratorGrammarListPage({
   // Open Create Modal
   const handleOpenCreateModal = () => {
     setEditingItem(null);
-    const nextOrder = grammars.length > 0 ? Math.max(...grammars.map((g) => g.displayOrder || 0)) + 1 : 1;
+    const nextOrder =
+      grammars.length > 0
+        ? Math.max(...grammars.map((g) => g.displayOrder || 0)) + 1
+        : 1;
     setFormData({
       structureName: "",
       meaningVi: "",
@@ -121,10 +124,14 @@ export function ModeratorGrammarListPage({
       setSubmitting(true);
       if (editingItem) {
         await updateGrammar(editingItem.id, formData);
-        showNotification(`Đã cập nhật mẫu ngữ pháp "${formData.structureName}" thành công!`);
+        showNotification(
+          `Đã cập nhật mẫu ngữ pháp "${formData.structureName}" thành công!`,
+        );
       } else {
         await createGrammar(lesson.id, formData);
-        showNotification(`Đã thêm mẫu ngữ pháp "${formData.structureName}" thành công!`);
+        showNotification(
+          `Đã thêm mẫu ngữ pháp "${formData.structureName}" thành công!`,
+        );
       }
       setIsModalOpen(false);
       setEditingItem(null);
@@ -143,7 +150,9 @@ export function ModeratorGrammarListPage({
     try {
       setSubmitting(true);
       await deleteGrammar(deletingItem.id);
-      showNotification(`Đã xóa mẫu ngữ pháp "${deletingItem.structureName}" thành công!`);
+      showNotification(
+        `Đã xóa mẫu ngữ pháp "${deletingItem.structureName}" thành công!`,
+      );
       setDeletingItem(null);
       await fetchGrammars();
     } catch (err: unknown) {
@@ -199,7 +208,8 @@ export function ModeratorGrammarListPage({
           <span>←</span> Quay lại danh sách bài học
         </button>
         <span className="mod-chapter-breadcrumb-pill">
-          {courseName} / Chương {chapterNo} / Ngữ pháp / Bài {lesson.lessonNo}: {lesson.title}
+          {courseName} / Chương {chapterNo} / Ngữ pháp / Bài {lesson.lessonNo}:{" "}
+          {lesson.title}
         </span>
       </div>
 
@@ -207,12 +217,19 @@ export function ModeratorGrammarListPage({
       <div className="admin-page-header">
         <div className="mod-header-action-row" style={{ width: "100%" }}>
           <div className="admin-header-titles">
-            <h2 className="admin-main-title" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h2
+              className="admin-main-title"
+              style={{ display: "flex", alignItems: "center", gap: "10px" }}
+            >
               <span>📄</span>
-              <span>Danh sách ngữ pháp (list_grammar)</span>
+              <span>Chi tiết ngữ pháp (list_grammar)</span>
             </h2>
             <p className="admin-main-subtitle">
-              Quản lý các mẫu ngữ pháp thuộc <strong>Bài {lesson.lessonNo}: {lesson.title}</strong> (Dữ liệu từ bảng <code>grammar</code>).
+              Quản lý các mẫu ngữ pháp thuộc{" "}
+              <strong>
+                Bài {lesson.lessonNo}: {lesson.title}
+              </strong>{" "}
+              (Dữ liệu từ bảng <code>grammar</code>).
             </p>
           </div>
           <button
@@ -258,7 +275,10 @@ export function ModeratorGrammarListPage({
       <div className="admin-table-card">
         {loading ? (
           <div className="admin-loading-state">
-            <div className="admin-loading-spinner" style={{ borderTopColor: "#2563eb" }} />
+            <div
+              className="admin-loading-spinner"
+              style={{ borderTopColor: "#2563eb" }}
+            />
             <p className="admin-loading-text">Đang tải danh sách ngữ pháp...</p>
           </div>
         ) : error ? (
@@ -302,9 +322,13 @@ export function ModeratorGrammarListPage({
                   <th style={{ width: "180px" }}>Cấu trúc ngữ pháp</th>
                   <th style={{ width: "200px" }}>Ý nghĩa tiếng Việt</th>
                   <th>Giải thích &amp; Ví dụ</th>
-                  <th style={{ width: "100px", textAlign: "center" }}>Thứ tự</th>
+                  <th style={{ width: "100px", textAlign: "center" }}>
+                    Thứ tự
+                  </th>
                   <th style={{ width: "140px" }}>Trạng thái</th>
-                  <th style={{ width: "120px", textAlign: "right" }}>Thao tác</th>
+                  <th style={{ width: "120px", textAlign: "right" }}>
+                    Thao tác
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -330,13 +354,33 @@ export function ModeratorGrammarListPage({
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 600, color: "#0f172a", fontSize: "0.9rem" }}>
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          fontSize: "0.9rem",
+                        }}
+                      >
                         {item.meaningVi}
                       </span>
                     </td>
                     <td>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "4px", maxWidth: "450px" }}>
-                        <p style={{ margin: 0, fontSize: "0.82rem", color: "#475569", lineHeight: 1.4 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                          maxWidth: "450px",
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: "0.82rem",
+                            color: "#475569",
+                            lineHeight: 1.4,
+                          }}
+                        >
                           {item.usageExplanation}
                         </p>
                         {item.exampleJp && (
@@ -349,10 +393,20 @@ export function ModeratorGrammarListPage({
                               marginTop: "4px",
                             }}
                           >
-                            <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#1e293b" }}>
+                            <div
+                              style={{
+                                fontSize: "0.85rem",
+                                fontWeight: 700,
+                                color: "#1e293b",
+                              }}
+                            >
                               {item.exampleJp}
                             </div>
-                            <div style={{ fontSize: "0.78rem", color: "#64748b" }}>{item.exampleVi}</div>
+                            <div
+                              style={{ fontSize: "0.78rem", color: "#64748b" }}
+                            >
+                              {item.exampleVi}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -391,7 +445,10 @@ export function ModeratorGrammarListPage({
                       )}
                     </td>
                     <td>
-                      <div className="row-actions-group" style={{ justifyContent: "flex-end" }}>
+                      <div
+                        className="row-actions-group"
+                        style={{ justifyContent: "flex-end" }}
+                      >
                         <button
                           type="button"
                           className="btn-action edit"
@@ -420,11 +477,20 @@ export function ModeratorGrammarListPage({
 
       {/* Modal Create / Edit Grammar */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => !submitting && setIsModalOpen(false)}>
-          <div className="modal-card" style={{ maxWidth: "620px" }} onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => !submitting && setIsModalOpen(false)}
+        >
+          <div
+            className="modal-card"
+            style={{ maxWidth: "620px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h3 className="modal-title">
-                {editingItem ? "✏️ Chỉnh sửa mẫu ngữ pháp" : "➕ Thêm mẫu ngữ pháp mới"}
+                {editingItem
+                  ? "✏️ Chỉnh sửa mẫu ngữ pháp"
+                  : "➕ Thêm mẫu ngữ pháp mới"}
               </h3>
               <button
                 type="button"
@@ -438,27 +504,36 @@ export function ModeratorGrammarListPage({
               <div className="modal-grid-2">
                 <div className="modal-field-group">
                   <label className="modal-label">
-                    Cấu trúc ngữ pháp <span style={{ color: "#ef4444" }}>*</span>
+                    Cấu trúc ngữ pháp{" "}
+                    <span style={{ color: "#ef4444" }}>*</span>
                   </label>
                   <input
                     type="text"
                     className="modal-input"
                     placeholder="Ví dụ: ～から～まで"
                     value={formData.structureName}
-                    onChange={(e) => setFormData({ ...formData, structureName: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        structureName: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
                 <div className="modal-field-group">
                   <label className="modal-label">
-                    Ý nghĩa tiếng Việt <span style={{ color: "#ef4444" }}>*</span>
+                    Ý nghĩa tiếng Việt{" "}
+                    <span style={{ color: "#ef4444" }}>*</span>
                   </label>
                   <input
                     type="text"
                     className="modal-input"
                     placeholder="Ví dụ: Từ... đến..."
                     value={formData.meaningVi}
-                    onChange={(e) => setFormData({ ...formData, meaningVi: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, meaningVi: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -466,14 +541,20 @@ export function ModeratorGrammarListPage({
 
               <div className="modal-field-group">
                 <label className="modal-label">
-                  Giải thích cách dùng <span style={{ color: "#ef4444" }}>*</span>
+                  Giải thích cách dùng{" "}
+                  <span style={{ color: "#ef4444" }}>*</span>
                 </label>
                 <textarea
                   className="modal-textarea"
                   placeholder="Giải thích chi tiết cách kết hợp và ngữ cảnh sử dụng..."
                   rows={3}
                   value={formData.usageExplanation}
-                  onChange={(e) => setFormData({ ...formData, usageExplanation: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      usageExplanation: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -488,7 +569,9 @@ export function ModeratorGrammarListPage({
                     className="modal-input"
                     placeholder="Ví dụ: 9時から5時まで働きます。"
                     value={formData.exampleJp}
-                    onChange={(e) => setFormData({ ...formData, exampleJp: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, exampleJp: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -501,7 +584,9 @@ export function ModeratorGrammarListPage({
                     className="modal-input"
                     placeholder="Ví dụ: Tôi làm việc từ 9 giờ đến 5 giờ."
                     value={formData.exampleVi}
-                    onChange={(e) => setFormData({ ...formData, exampleVi: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, exampleVi: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -516,7 +601,10 @@ export function ModeratorGrammarListPage({
                     className="modal-input"
                     value={formData.displayOrder ?? 1}
                     onChange={(e) =>
-                      setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })
+                      setFormData({
+                        ...formData,
+                        displayOrder: parseInt(e.target.value) || 0,
+                      })
                     }
                   />
                 </div>
@@ -528,7 +616,11 @@ export function ModeratorGrammarListPage({
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        status: e.target.value as "DRAFT" | "PUBLISHED" | "HIDDEN" | "ARCHIVED",
+                        status: e.target.value as
+                          | "DRAFT"
+                          | "PUBLISHED"
+                          | "HIDDEN"
+                          | "ARCHIVED",
                       })
                     }
                   >
@@ -554,7 +646,11 @@ export function ModeratorGrammarListPage({
                   style={{ backgroundColor: "#2563eb" }}
                   disabled={submitting}
                 >
-                  {submitting ? "Đang lưu..." : editingItem ? "Lưu thay đổi" : "Tạo mẫu ngữ pháp"}
+                  {submitting
+                    ? "Đang lưu..."
+                    : editingItem
+                      ? "Lưu thay đổi"
+                      : "Tạo mẫu ngữ pháp"}
                 </button>
               </div>
             </form>
@@ -564,8 +660,15 @@ export function ModeratorGrammarListPage({
 
       {/* Delete Confirmation Modal */}
       {deletingItem && (
-        <div className="modal-overlay" onClick={() => !submitting && setDeletingItem(null)}>
-          <div className="modal-card" style={{ maxWidth: "460px" }} onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => !submitting && setDeletingItem(null)}
+        >
+          <div
+            className="modal-card"
+            style={{ maxWidth: "460px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h3 className="modal-title">Xác nhận xóa ngữ pháp</h3>
               <button
@@ -578,7 +681,9 @@ export function ModeratorGrammarListPage({
             </div>
             <div className="modal-form-body">
               <p className="modal-description">
-                Bạn có chắc chắn muốn xóa mẫu ngữ pháp <strong>{deletingItem.structureName}</strong> khỏi bài học này không? Hành động này sẽ xóa dữ liệu vĩnh viễn.
+                Bạn có chắc chắn muốn xóa mẫu ngữ pháp{" "}
+                <strong>{deletingItem.structureName}</strong> khỏi bài học này
+                không? Hành động này sẽ xóa dữ liệu vĩnh viễn.
               </p>
               <div className="modal-actions-row">
                 <button
