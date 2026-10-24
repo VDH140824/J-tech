@@ -3,6 +3,7 @@ import "./UserAvatar.css";
 
 interface UserAvatarProps {
   user?: {
+    fullName?: string | null;
     displayName?: string | null;
     email?: string | null;
     avatarUrl?: string | null;
@@ -12,7 +13,7 @@ interface UserAvatarProps {
 }
 
 export function UserAvatar({ user, className = "", size }: UserAvatarProps) {
-  const displayName = user?.displayName ?? user?.email ?? "";
+  const displayName = user?.fullName ?? user?.displayName ?? user?.email ?? "";
   const avatarInitial = displayName ? displayName.charAt(0).toUpperCase() : "H";
 
   const customStyle: React.CSSProperties = size

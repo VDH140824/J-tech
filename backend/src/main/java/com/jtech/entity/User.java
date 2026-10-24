@@ -88,12 +88,4 @@ public class User {
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
-    public String getDisplayName() {
-        return fullName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.fullName = displayName;
-    }
-
 }

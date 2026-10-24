@@ -133,13 +133,13 @@ public class AdminUserServiceImpl implements AdminUserService {
         Role role = roleRepository.findByRoleName(roleName)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy role: " + roleName));
 
-        String displayName = email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
+        String fullName = email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
 
         User user = new User();
         user.setEmail(email);
         user.setRole(role);
         user.setStatus(UserStatus.ACTIVE);
-        user.setDisplayName(displayName.length() > 50 ? displayName.substring(0, 50) : displayName);
+        user.setFullName(fullName.length() > 50 ? fullName.substring(0, 50) : fullName);
         user.setCoinBalance(0);
 
         return UserMapper.toResponse(userRepository.save(user));

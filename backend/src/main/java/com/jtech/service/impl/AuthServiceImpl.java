@@ -83,9 +83,9 @@ public class AuthServiceImpl implements AuthService {
                 ? userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"))
                 : getAuthenticatedUser();
 
-        String name = request.getDisplayName();
+        String name = request.getFullName();
         if (name != null) {
-            user.setDisplayName(name.trim());
+            user.setFullName(name.trim());
         }
         if (request.getDateOfBirth() != null) {
             user.setDateOfBirth(request.getDateOfBirth());
