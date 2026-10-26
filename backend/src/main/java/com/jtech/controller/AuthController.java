@@ -91,7 +91,7 @@ public class AuthController {
         if (code == null || code.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-
+        //
         UserResponse response = authService.exchangeOAuth2Code(code);
         response.setRefreshToken(null);
 

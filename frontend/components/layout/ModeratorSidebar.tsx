@@ -48,7 +48,7 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
         <DekiruModBadgeIcon />
         <div className="admin-sidebar-brand-text">
           <div className="brand-name-row">
-            <span className="brand-name">J-Tech</span>
+            <span className="brand-name">JTech</span>
             <span className="mod-pill-badge">MOD</span>
           </div>
           <span className="brand-sub">Quản trị nội dung</span>

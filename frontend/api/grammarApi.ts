@@ -9,6 +9,7 @@ export interface GrammarItem {
   exampleJp: string;
   exampleVi: string;
   videoUrl?: string;
+  videoDurationSec?: number;
   displayOrder: number;
   status: "DRAFT" | "PUBLISHED" | "HIDDEN" | "ARCHIVED";
   createdAt?: string;
@@ -22,8 +23,16 @@ export interface GrammarFormInput {
   exampleJp: string;
   exampleVi: string;
   videoUrl?: string;
+  videoPublicId?: string;
+  videoDurationSec?: number;
   displayOrder?: number;
   status?: "DRAFT" | "PUBLISHED" | "HIDDEN" | "ARCHIVED";
+}
+
+export interface GrammarVideoUpload {
+  videoUrl: string;
+  publicId: string;
+  duration?: number;
 }
 
 export async function getGrammarsByLesson(lessonId: number, status?: string): Promise<GrammarItem[]> {
@@ -33,8 +42,20 @@ export async function getGrammarsByLesson(lessonId: number, status?: string): Pr
   return data;
 }
 
+export async function getGrammarById(id: number): Promise<GrammarItem> {
+  const { data } = await apiClient.get<GrammarItem>(`/grammars/${id}`);
+  return data;
+}
+
 export async function createGrammar(lessonId: number, payload: GrammarFormInput): Promise<GrammarItem> {
   const { data } = await apiClient.post<GrammarItem>(`/lessons/${lessonId}/grammars`, payload);
+  return data;
+}
+
+export async function uploadGrammarVideo(file: File): Promise<GrammarVideoUpload> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data } = await apiClient.post<GrammarVideoUpload>("/grammars/videos", formData);
   return data;
 }
 

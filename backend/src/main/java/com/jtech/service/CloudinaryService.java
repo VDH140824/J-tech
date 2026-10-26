@@ -17,6 +17,7 @@ import java.util.Set;
 public class CloudinaryService {
 
     private static final String TARGET_ASSET_FOLDER = "Video/jtech/customer_upload/video";
+    private static final String GRAMMAR_VIDEO_FOLDER = "Jtech/Moderator/Grammar/video";
     private static final Set<String> ALLOWED_VIDEO_CONTENT_TYPES = Set.of(
             "video/mp4",
             "video/webm",
@@ -33,6 +34,14 @@ public class CloudinaryService {
     }
 
     public CloudinaryUploadResponse uploadVideo(MultipartFile file) {
+        return uploadVideo(file, TARGET_ASSET_FOLDER, false);
+    }
+
+    public CloudinaryUploadResponse uploadGrammarVideo(MultipartFile file) {
+        return uploadVideo(file, GRAMMAR_VIDEO_FOLDER, true);
+    }
+
+    private CloudinaryUploadResponse uploadVideo(MultipartFile file, String folder, boolean uniqueFilename) {
         System.out.println("========== CLOUDINARY UPLOAD START ==========");
     System.out.println("File: " + (file != null ? file.getOriginalFilename() : "NULL"));
     System.out.println("Size: " + (file != null ? file.getSize() : -1));
@@ -54,9 +63,9 @@ System.out.println("Calling Cloudinary uploadLarge...");
                     tempFile.toFile(),
                     ObjectUtils.asMap(
                             "resource_type", "video",
-                            "folder", TARGET_ASSET_FOLDER,
+                            "folder", folder,
                             "use_filename", true,
-                            "unique_filename", false,
+                            "unique_filename", uniqueFilename,
                             "overwrite", false
                     )
             );
