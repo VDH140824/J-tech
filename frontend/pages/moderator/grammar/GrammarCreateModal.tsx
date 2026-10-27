@@ -53,6 +53,8 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
 
     try {
       setStage("saving");
+
+      //transmitting data to grammarApi
       const created = await createGrammar(lessonId, {
         ...form,
         structureName: form.structureName.trim(),

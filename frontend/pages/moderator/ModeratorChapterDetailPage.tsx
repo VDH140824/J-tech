@@ -6,6 +6,7 @@ import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfi
 import { ModeratorChapterSkillsOverview } from "./ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "./ModeratorLessonListTab";
 import { ModeratorGrammarDetailPage } from "./grammar/ModeratorGrammarDetailPage";
+import { GrammarQuestionListPage } from "./grammar/GrammarQuestionListPage";
 import { ModeratorSkillItemListPage } from "./ModeratorSkillItemListPage";
 
 // Re-export for external consumers
@@ -104,6 +105,7 @@ export function ModeratorChapterDetailPage({
           next.set("skill", sec);
           next.delete("lessonId");
           next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
         { replace: true }
@@ -115,6 +117,7 @@ export function ModeratorChapterDetailPage({
           next.delete("skill");
           next.delete("lessonId");
           next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
         { replace: true }
@@ -154,6 +157,7 @@ export function ModeratorChapterDetailPage({
           const next = new URLSearchParams(prev);
           next.set("lessonId", String(lesson.id));
           next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
         { replace: true }
@@ -165,6 +169,7 @@ export function ModeratorChapterDetailPage({
           const next = new URLSearchParams(prev);
           next.delete("lessonId");
           next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
         { replace: true }
@@ -182,6 +187,23 @@ export function ModeratorChapterDetailPage({
   // Show the selected lesson's grammar detail directly.
   if (lessonIdParam && activeLessonForItems && activeConfig) {
     if (activeConfig.key === "grammar") {
+      if (searchParams.get("questionList") === "1") {
+        return (
+          <GrammarQuestionListPage
+            courseName={courseName}
+            chapterNo={chapterNo}
+            lessonTitle={activeLessonForItems.title}
+            lessonId={activeLessonForItems.id}
+            onBack={() => {
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.delete("questionList");
+                return next;
+              });
+            }}
+          />
+        );
+      }
       return (
         <ModeratorGrammarDetailPage
           grammarId={grammarId}
@@ -194,6 +216,13 @@ export function ModeratorChapterDetailPage({
             else next.set("grammarId", String(id));
             return next;
           }, { replace: true })}
+          onViewQuestions={() => {
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set("questionList", "1");
+              return next;
+            });
+          }}
           onBack={() => handleViewLessonItems(null)}
         />
       );
