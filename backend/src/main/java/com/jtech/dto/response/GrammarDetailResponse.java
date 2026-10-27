@@ -12,6 +12,7 @@ public record GrammarDetailResponse(
         String exampleJp,
         String exampleVi,
         String videoUrl,
+        String videoPublicId,
         Integer videoDurationSec,
         Integer displayOrder,
         Grammar.Status status,

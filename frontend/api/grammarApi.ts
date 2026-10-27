@@ -9,6 +9,7 @@ export interface GrammarItem {
   exampleJp: string;
   exampleVi: string;
   videoUrl?: string;
+  videoPublicId?: string;
   videoDurationSec?: number;
   displayOrder: number;
   status: "DRAFT" | "PUBLISHED" | "HIDDEN" | "ARCHIVED";
@@ -59,8 +60,22 @@ export async function uploadGrammarVideo(file: File): Promise<GrammarVideoUpload
   return data;
 }
 
-export async function updateGrammar(id: number, payload: GrammarFormInput): Promise<GrammarItem> {
-  const { data } = await apiClient.put<GrammarItem>(`/grammars/${id}`, payload);
+export async function updateGrammar(id: number, payload: GrammarFormInput, videoFile?: File | null): Promise<GrammarItem> {
+  const grammarFields = {
+    structureName: payload.structureName,
+    meaningVi: payload.meaningVi,
+    usageExplanation: payload.usageExplanation,
+    exampleJp: payload.exampleJp,
+    exampleVi: payload.exampleVi,
+    displayOrder: payload.displayOrder,
+    status: payload.status,
+  };
+  const formData = new FormData();
+  formData.append("grammar", new Blob([JSON.stringify(grammarFields)], { type: "application/json" }));
+  if (videoFile) {
+    formData.append("file", videoFile);
+  }
+  const { data } = await apiClient.put<GrammarItem>(`/grammars/${id}`, formData);
   return data;
 }
 

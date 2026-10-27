@@ -1,6 +1,7 @@
 package com.jtech.controller;
 
 import com.jtech.dto.request.GrammarCreateRequest;
+import com.jtech.dto.request.GrammarUpdateRequest;
 import com.jtech.dto.response.CloudinaryUploadResponse;
 import com.jtech.dto.response.GrammarDetailResponse;
 import com.jtech.entity.Grammar;
@@ -49,6 +50,25 @@ public class GrammarController {
             @Valid @RequestBody GrammarCreateRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(grammarService.create(lessonId, request));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PutMapping(value = "/grammars/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<GrammarDetailResponse> updateGrammar(
+            @PathVariable Long id,
+            @Valid @RequestPart("grammar") GrammarUpdateRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        return ResponseEntity.ok(grammarService.update(id, request, file));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @DeleteMapping("/grammars/{id}")
+    public ResponseEntity<Void> deleteGrammar(@PathVariable Long id) {
+        if (!grammarService.delete(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")

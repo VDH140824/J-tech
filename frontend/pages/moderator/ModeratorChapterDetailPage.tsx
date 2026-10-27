@@ -5,7 +5,7 @@ import { getChapter, getCourse, type ChapterDetail } from "../../api/courseApi";
 import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
 import { ModeratorChapterSkillsOverview } from "./ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "./ModeratorLessonListTab";
-import { ModeratorGrammarDetailPage } from "./ModeratorGrammarDetailPage";
+import { ModeratorGrammarDetailPage } from "./grammar/ModeratorGrammarDetailPage";
 import { ModeratorSkillItemListPage } from "./ModeratorSkillItemListPage";
 
 // Re-export for external consumers
@@ -190,7 +190,8 @@ export function ModeratorChapterDetailPage({
           lesson={activeLessonForItems}
           onSelectGrammar={(id) => setSearchParams((prev) => {
             const next = new URLSearchParams(prev);
-            next.set("grammarId", String(id));
+            if (id == null) next.delete("grammarId");
+            else next.set("grammarId", String(id));
             return next;
           }, { replace: true })}
           onBack={() => handleViewLessonItems(null)}

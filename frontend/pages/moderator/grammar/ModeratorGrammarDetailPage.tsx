@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { getGrammarById, getGrammarsByLesson, type GrammarItem } from "../../api/grammarApi";
-import type { LessonSummary } from "../../api/lessonApi";
+import axios from "axios";
+import { deleteGrammar, getGrammarById, getGrammarsByLesson, type GrammarItem } from "../../../api/grammarApi";
+import type { LessonSummary } from "../../../api/lessonApi";
 import { GrammarCreateModal } from "./GrammarCreateModal";
+import { GrammarEditModal } from "./GrammarEditModal";
 
 interface ModeratorGrammarDetailPageProps {
   grammarId: number | null;
@@ -9,7 +11,7 @@ interface ModeratorGrammarDetailPageProps {
   chapterNo: number;
   lesson: LessonSummary;
   onBack: () => void;
-  onSelectGrammar: (grammarId: number) => void;
+  onSelectGrammar: (grammarId: number | null) => void;
 }
 
 export function ModeratorGrammarDetailPage({
@@ -27,6 +29,10 @@ export function ModeratorGrammarDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -66,6 +72,44 @@ export function ModeratorGrammarDetailPage({
     return () => window.clearTimeout(timeout);
   }, [success]);
 
+  const handleConfirmDelete = async () => {
+    if (!grammar || isDeleting) return;
+
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteGrammar(grammar.id);
+      const deletedName = grammar.structureName;
+      const remaining = grammarOptions.filter((item) => item.id !== grammar.id);
+      setGrammarOptions(remaining);
+      setGrammar(null);
+      setIsDeleteConfirmOpen(false);
+      setSuccess(`Đã xóa mẫu ngữ pháp "${deletedName}" thành công!`);
+
+      if (remaining.length > 0) {
+        const nextGrammar = remaining[0];
+        setSelectedGrammarId(nextGrammar.id);
+        setLoading(true);
+        onSelectGrammar(nextGrammar.id);
+      } else {
+        setSelectedGrammarId(null);
+        onSelectGrammar(null);
+      }
+    } catch (caughtError) {
+      const apiError = axios.isAxiosError<{ message?: string }>(caughtError) ? caughtError : null;
+      const backendMessage = apiError?.response?.data?.message;
+      setDeleteError(
+        typeof backendMessage === "string" && backendMessage.trim()
+          ? backendMessage
+          : apiError?.response?.status
+            ? `Không xóa được ngữ pháp (HTTP ${apiError.response.status}). Vui lòng thử lại.`
+            : "Không xóa được ngữ pháp. Vui lòng thử lại."
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="admin-page-container">
       <div className="mod-chapter-back-row">
@@ -85,8 +129,15 @@ export function ModeratorGrammarDetailPage({
           </div>
           {!loading && !error && (grammar ? (
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              <button type="button" className="mod-btn-add" style={{ backgroundColor: "#2563eb" }} disabled title="Chức năng chỉnh sửa sẽ được triển khai sau">Chỉnh sửa</button>
-              <button type="button" className="mod-btn-add" style={{ backgroundColor: "#dc2626" }} disabled title="Chức năng xóa sẽ được triển khai sau">Xóa</button>
+              <button type="button" className="mod-btn-add" style={{ backgroundColor: "#2563eb" }} onClick={() => setIsEditOpen(true)}>Chỉnh sửa</button>
+              <button
+                type="button"
+                className="mod-btn-add"
+                style={{ backgroundColor: "#dc2626" }}
+                onClick={() => { setDeleteError(null); setIsDeleteConfirmOpen(true); }}
+              >
+                Xóa
+              </button>
             </div>
           ) : (
             <button type="button" className="mod-btn-add" style={{ backgroundColor: "#2563eb" }} onClick={() => setIsCreateOpen(true)}>
@@ -97,6 +148,7 @@ export function ModeratorGrammarDetailPage({
       </div>
 
       {success && <p role="status" style={{ color: "#166534", fontWeight: 600 }}>{success}</p>}
+      {deleteError && <p role="alert" style={{ color: "#b91c1c", fontWeight: 600 }}>{deleteError}</p>}
       {grammarOptions.length > 1 && (
         <div className="mod-section-toolbar">
           <label htmlFor="grammar-select" style={{ fontWeight: 600 }}>Mẫu ngữ pháp:</label>
@@ -190,6 +242,59 @@ export function ModeratorGrammarDetailPage({
             setReloadKey((key) => key + 1);
           }}
         />
+      )}
+      {isEditOpen && grammar && (
+        <GrammarEditModal
+          grammar={grammar}
+          onClose={() => setIsEditOpen(false)}
+          onUpdated={(updated) => {
+            setIsEditOpen(false);
+            setGrammar(updated);
+            setGrammarOptions((items) => items.map((item) => item.id === updated.id ? updated : item));
+            setSuccess(`Đã cập nhật mẫu ngữ pháp "${updated.structureName}" thành công!`);
+          }}
+        />
+      )}
+      {isDeleteConfirmOpen && grammar && (
+        <div className="modal-overlay" onClick={() => !isDeleting && setIsDeleteConfirmOpen(false)}>
+          <div className="modal-card" style={{ maxWidth: "460px" }} onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Xác nhận xóa ngữ pháp</h3>
+              <button
+                type="button"
+                className="modal-btn-close"
+                disabled={isDeleting}
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                aria-label="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-form-body">
+              <p className="modal-description">
+                Bạn có chắc muốn xóa mẫu ngữ pháp <strong>{grammar.structureName}</strong>? Tiến độ riêng của mẫu này sẽ bị xóa; lịch sử phiên học sẽ được giữ nhưng không còn liên kết tới mẫu ngữ pháp.
+              </p>
+              <div className="modal-actions-row">
+                <button
+                  type="button"
+                  className="btn-modal-cancel"
+                  disabled={isDeleting}
+                  onClick={() => setIsDeleteConfirmOpen(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="btn-modal-delete"
+                  disabled={isDeleting}
+                  onClick={() => void handleConfirmDelete()}
+                >
+                  {isDeleting ? "Đang xóa..." : "Xác nhận xóa"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

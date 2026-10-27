@@ -11,6 +11,7 @@ D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\reques
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\request\ChangeUserRoleRequest.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\request\ExchangeTokenRequest.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\request\GrammarCreateRequest.java
+D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\request\GrammarUpdateRequest.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\request\LessonRequest.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\request\PreCreateUserRequest.java
 D:\FPT\K9_FALL2026\SEP490\code\J-tech\backend\src\main\java\com\jtech\dto\request\RefreshTokenRequest.java

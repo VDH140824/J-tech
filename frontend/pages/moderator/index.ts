@@ -5,5 +5,5 @@ export * from "./ModeratorChapterSkillsOverview";
 export * from "./ModeratorLessonListTab";
 export * from "./LessonFormModal";
 export * from "./sectionConfig";
-export * from "./ModeratorGrammarDetailPage";
+export * from "./grammar/ModeratorGrammarDetailPage";
 export * from "./ModeratorSkillItemListPage";

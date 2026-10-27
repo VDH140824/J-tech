@@ -5,7 +5,7 @@ import {
   type GrammarFormInput,
   type GrammarItem,
   type GrammarVideoUpload,
-} from "../../api/grammarApi";
+} from "../../../api/grammarApi";
 
 interface GrammarCreateModalProps {
   lessonId: number;
