@@ -53,3 +53,7 @@ export async function createQuestionGrammar(payload: GrammarQuestionCreateInput)
   const { data } = await apiClient.post<GrammarQuestion>("/questions", payload);
   return data;
 }
+
+export async function deleteQuestionGrammar(id: number): Promise<void> {
+  await apiClient.delete(`/questions/${id}`);
+}

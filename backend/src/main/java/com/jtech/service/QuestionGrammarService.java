@@ -99,6 +99,18 @@ public class QuestionGrammarService {
         return toResponse(questionRepository.save(question));
     }
 
+    @Transactional
+    public void deleteQuestionGrammar(Long id) {
+        Question question = questionRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Question not found"));
+        if (question.getSkill() != Question.Skill.GRAMMAR) {
+            throw new NoSuchElementException("Grammar question not found");
+        }
+
+        questionRepository.delete(question);
+        questionRepository.flush();
+    }
+
     private void validateAnswerData(String answerData) {
         try {
             objectMapper.readTree(answerData);

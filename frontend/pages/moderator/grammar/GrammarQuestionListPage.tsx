@@ -1,5 +1,6 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
-import { getAllGrammarQuestions, type GrammarQuestion } from "../../../api/grammarQuestionApi";
+import { deleteQuestionGrammar, getAllGrammarQuestions, type GrammarQuestion } from "../../../api/grammarQuestionApi";
 import { QuestionGrammarCreateModal } from "./QuestionGrammarCreateModal";
 import { QuestionGrammarEditModal } from "./QuestionGrammarEditModal";
 
@@ -42,8 +43,49 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [editingQuestion, setEditingQuestion] = useState<GrammarQuestion | null>(null);
+  const [deletingQuestion, setDeletingQuestion] = useState<GrammarQuestion | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const onClickDelete = (question: GrammarQuestion) => {
+    setDeleteError(null);
+    setDeletingQuestion(question);
+  };
+
+  const onCancelDelete = () => {
+    if (deleting) return;
+    setDeletingQuestion(null);
+    setDeleteError(null);
+  };
+
+  const onConfirmDelete = async () => {
+    if (!deletingQuestion || deleting) return;
+    const questionId = deletingQuestion.id;
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      await deleteQuestionGrammar(questionId);
+      setQuestions((items) => items.filter((item) => item.id !== questionId));
+      setDeletingQuestion(null);
+      setSuccess("Xóa câu hỏi ngữ pháp thành công.");
+    } catch (caughtError) {
+      const apiError = axios.isAxiosError<{ message?: string }>(caughtError) ? caughtError : null;
+      const backendMessage = apiError?.response?.data?.message;
+      setDeleteError(
+        apiError?.response?.status === 404
+          ? "Câu hỏi không còn tồn tại. Vui lòng tải lại danh sách."
+          : apiError?.response?.status === 409
+            ? "Câu hỏi đang được sử dụng nên không thể xóa."
+            : typeof backendMessage === "string" && backendMessage.trim()
+              ? backendMessage
+              : "Không thể xóa câu hỏi ngữ pháp. Vui lòng thử lại."
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (!success) return;
@@ -126,7 +168,12 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
                         {column.value(question)}
                       </td>
                     ))}
-                    <td><button type="button" className="mod-btn-add mod-question-btn--secondary" onClick={() => setEditingQuestion(question)}>Chỉnh sửa</button></td>
+                    <td>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button type="button" className="mod-btn-add mod-question-btn--secondary" onClick={() => setEditingQuestion(question)}>Chỉnh sửa</button>
+                        <button type="button" className="btn-modal-delete" onClick={() => onClickDelete(question)}>Xóa</button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -156,6 +203,27 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
             setSuccess("Cập nhật câu hỏi ngữ pháp thành công.");
           }}
         />
+      )}
+      {deletingQuestion && (
+        <div className="modal-overlay" role="presentation">
+          <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="question-grammar-delete-title">
+            <div className="modal-header">
+              <h3 className="modal-title" id="question-grammar-delete-title">Xác nhận xóa câu hỏi</h3>
+              <button type="button" className="modal-btn-close" onClick={onCancelDelete} disabled={deleting} aria-label="Đóng">✕</button>
+            </div>
+            <div className="modal-form-body">
+              <p className="modal-description">Bạn có chắc chắn muốn xóa câu hỏi này?</p>
+              <p className="modal-description"><strong>{deletingQuestion.content}</strong></p>
+              {deleteError && <p role="alert" style={{ color: "#b91c1c", fontWeight: 600 }}>{deleteError}</p>}
+              <div className="modal-actions-row">
+                <button type="button" className="btn-modal-cancel" onClick={onCancelDelete} disabled={deleting}>Hủy</button>
+                <button type="button" className="btn-modal-delete" onClick={() => void onConfirmDelete()} disabled={deleting}>
+                  {deleting ? "Đang xóa..." : "Xác nhận xóa"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

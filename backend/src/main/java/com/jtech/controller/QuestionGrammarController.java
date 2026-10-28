@@ -5,12 +5,14 @@ import com.jtech.dto.request.QuestionGrammarCreateRequest;
 import com.jtech.dto.response.QuestionGrammarResponse;
 import com.jtech.service.QuestionGrammarService;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,6 +57,20 @@ public class QuestionGrammarController {
             return ResponseEntity.ok(questionGrammarService.updateQuestionGrammar(id, request, authentication.getName()));
         } catch (NoSuchElementException exception) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @DeleteMapping("/questions/{id}")
+    public ResponseEntity<?> deleteQuestionGrammar(@PathVariable Long id) {
+        try {
+            questionGrammarService.deleteQuestionGrammar(id);
+            return ResponseEntity.noContent().build();
+        } catch (NoSuchElementException exception) {
+            return ResponseEntity.notFound().build();
+        } catch (DataIntegrityViolationException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Câu hỏi đang được sử dụng nên không thể xóa."));
         }
     }
 
