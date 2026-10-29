@@ -1,0 +1,71 @@
+# ==========================================
+# J-TECH PROJECT - GITIGNORE
+# ==========================================
+
+# 1. JAVA / SPRING BOOT / MAVEN
+# Ignore compiled files and build outputs
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Maven
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# 2. FRONTEND - NODE.JS / REACT
+**/node_modules/
+**/dist/
+**/build/
+**/.vite/
+**/coverage/
+*.tsbuildinfo
+
+# 3. IDE / EDITOR
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# VS Code
+.vscode/
+.history/
+
+# 4. OPERATING SYSTEM
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# 5. ENVIRONMENT / SECRETS
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Local-only Spring configuration
+application-local.properties
+application-local.yml
+application-local.yaml
+
+# 6. TEMPORARY FILES
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
