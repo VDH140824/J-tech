@@ -4,7 +4,7 @@ import type { UserResponse } from "../../types/auth";
 
 // Helper to get initials
 function getUserInitials(user: UserResponse): string {
-  const name = user.displayName || user.email || "U";
+  const name = user.fullName || user.displayName || user.email || "U";
   if (name.length <= 2) return name.toUpperCase();
   const parts = name.trim().split(/\s+/);
   if (parts.length > 1) {
@@ -154,7 +154,7 @@ export function PendingUsersPage() {
                             {initials}
                           </div>
                           <span className="user-display-text">
-                            {user.displayName || user.email.split("@")[0]}
+                            {user.fullName || user.displayName || user.email.split("@")[0]}
                           </span>
                         </td>
 

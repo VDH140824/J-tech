@@ -80,7 +80,7 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
         <DekiruAdminBadgeIcon />
         <div className="admin-sidebar-brand-text">
           <div className="brand-name-row">
-            <span className="brand-name">J-Tech</span>
+            <span className="brand-name">JTech</span>
             <span className="admin-pill-badge">ADMIN</span>
           </div>
           <span className="brand-sub">Hệ sinh thái tiếng Nhật</span>

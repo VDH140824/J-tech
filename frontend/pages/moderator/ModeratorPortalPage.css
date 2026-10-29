@@ -745,6 +745,29 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
+.mod-question-btn--primary {
+  background-color: #0d9488;
+}
+
+.mod-question-btn--primary:hover {
+  background-color: #0f766e;
+}
+
+.mod-question-btn--secondary {
+  background-color: #2563eb;
+}
+
+.mod-question-btn--secondary:hover {
+  background-color: #1d4ed8;
+}
+
+.mod-question-btn--primary:disabled,
+.mod-question-btn--secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Badge & Cell Styles */
 .mod-kanji-char-badge {
   display: inline-flex;

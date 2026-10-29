@@ -83,9 +83,9 @@ public class AuthServiceImpl implements AuthService {
                 ? userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"))
                 : getAuthenticatedUser();
 
-        String name = request.getDisplayName();
+        String name = request.getFullName();
         if (name != null) {
-            user.setDisplayName(name.trim());
+            user.setFullName(name.trim());
         }
         if (request.getDateOfBirth() != null) {
             user.setDateOfBirth(request.getDateOfBirth());
@@ -106,10 +106,12 @@ public class AuthServiceImpl implements AuthService {
         if (code == null || code.isBlank()) {
             throw new IllegalArgumentException("Exchange code is required");
         }
+        // consume code
         com.jtech.security.OAuth2ExchangeStore.ExchangePayload payload = oAuth2ExchangeStore.consume(code);
         if (payload == null) {
             throw new IllegalArgumentException("Invalid or expired exchange code");
         }
+        // get user from code
         User user = userRepository.findById(payload.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (user.getStatus() != UserStatus.ACTIVE) {

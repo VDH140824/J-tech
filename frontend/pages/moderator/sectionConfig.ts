@@ -45,7 +45,7 @@ export const SECTIONS: SectionConfig[] = [
     skillType: "GRAMMAR",
     label: "Ngữ pháp",
     labelJp: "文法",
-    itemButtonLabel: "Danh sách ngữ pháp",
+    itemButtonLabel: "Chi tiết ngữ pháp",
     icon: "📄",
     color: "#2563eb",
     bgColor: "#eff6ff",

@@ -620,7 +620,7 @@ export function AuthShell({
       {/* Full-screen video background - 100% clean and unobstructed */}
       <video
         className="auth-bg-video"
-        src="https://res.cloudinary.com/keticbsk/video/upload/v1785993263/M%C3%80N_H%C3%8CNH_CH%E1%BB%8CN_T%C6%AF%E1%BB%9ANG_-_%C4%90I%C3%8AU_THUY%E1%BB%80N_NH%E1%BA%ACT_NGUY%E1%BB%86T_TH%C3%81NH_LINH_-_Garena_Li%C3%AAn_Qu%C3%A2n_Mobile_1_ac7jpy.mp4"
+        src="https://res.cloudinary.com/keticbsk/video/upload/v1793165045/gemini_generated_video_41ffd254_q7swny.mp4"
         autoPlay
         loop
         muted

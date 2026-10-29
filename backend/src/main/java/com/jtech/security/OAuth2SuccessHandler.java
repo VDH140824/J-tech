@@ -63,17 +63,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             return;
         }
 
-        String displayName = oAuth2User.getAttribute("name");
-
+        String fullName = oAuth2User.getAttribute("name");
+       //User exit
         User user = userRepository.findByEmail(email).map(existingUser -> {
             LocalDateTime loginAt = LocalDateTime.now();
             existingUser.setLastLogin(loginAt);
             if ((existingUser.getGoogleSub() == null || existingUser.getGoogleSub().isBlank()) && googleSub != null && !googleSub.isBlank()) {
                 existingUser.setGoogleSub(googleSub);
             }
-            if ((existingUser.getDisplayName() == null || existingUser.getDisplayName().isBlank())
-                    && displayName != null && !displayName.isBlank()) {
-                existingUser.setDisplayName(displayName);
+            if ((existingUser.getFullName() == null || existingUser.getFullName().isBlank())
+                    && fullName != null && !fullName.isBlank()) {
+                existingUser.setFullName(fullName);
             }
             return userRepository.save(existingUser);
         }).orElseGet(() -> {
@@ -90,8 +90,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             newUser.setRole(userRole);
             newUser.setEmail(email);
             newUser.setGoogleSub(googleSub);
-            String resolvedName = displayName != null && !displayName.isBlank() ? displayName : email;
-            newUser.setDisplayName(resolvedName.length() > 50 ? resolvedName.substring(0, 50) : resolvedName);
+            String resolvedName = fullName != null && !fullName.isBlank() ? fullName : email;
+            newUser.setFullName(resolvedName.length() > 50 ? resolvedName.substring(0, 50) : resolvedName);
             newUser.setAvatarUrl(picture);
             newUser.setStatus(UserStatus.PENDING);
             newUser.setCoinBalance(0);

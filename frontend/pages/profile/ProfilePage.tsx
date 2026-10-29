@@ -73,12 +73,12 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setFullName(user?.displayName ?? "");
+    setFullName(user?.fullName ?? user?.displayName ?? "");
     setDateOfBirth(formatDateInput(user?.dateOfBirth ?? null));
   }, [user]);
 
   const initial = useMemo(() => {
-    const base = user?.displayName ?? user?.email ?? "U";
+    const base = user?.fullName ?? user?.displayName ?? user?.email ?? "U";
     return base.charAt(0).toUpperCase();
   }, [user]);
 
@@ -124,14 +124,14 @@ export function ProfilePage() {
         <section className="profile-card profile-summary">
           <div className="profile-avatar">
             {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.displayName ?? "Avatar"} className="profile-avatar-img" />
+              <img src={user.avatarUrl} alt={user?.fullName ?? user?.displayName ?? "Avatar"} className="profile-avatar-img" />
             ) : (
               initial
             )}
           </div>
           <div>
             <h1>Hồ sơ người dùng</h1>
-            <p>{user?.displayName ?? "Chưa có tên"}</p>
+            <p>{user?.fullName ?? user?.displayName ?? "Chưa có tên"}</p>
             <p>{user?.email ?? ""}</p>
             <p>Vai trò: {formatRoleLabel(user?.role)}</p>
           </div>
@@ -145,7 +145,7 @@ export function ProfilePage() {
             </div>
             <div className="profile-avatar preview">
               {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.displayName ?? "Avatar"} className="profile-avatar-img" />
+                <img src={user.avatarUrl} alt={user?.fullName ?? user?.displayName ?? "Avatar"} className="profile-avatar-img" />
               ) : (
                 initial
               )}

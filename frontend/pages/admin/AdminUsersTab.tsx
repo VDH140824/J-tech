@@ -44,7 +44,7 @@ function getStatusLabel(status?: string | null): string {
 
 // Helper to get initials (e.g. "qp", "うず", "DK")
 function getUserInitials(user: UserResponse): string {
-  const name = user.displayName || user.email || "U";
+  const name = user.fullName || user.displayName || user.email || "U";
   if (name.length <= 2) return name.toUpperCase();
   const parts = name.trim().split(/\s+/);
   if (parts.length > 1) {
@@ -92,7 +92,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   const [error, setError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  // Modals state
+  // Create user
   const [showPreCreate, setShowPreCreate] = useState(false);
   const [preCreateEmail, setPreCreateEmail] = useState("");
   const [preCreateRole, setPreCreateRole] = useState<"STUDENT" | "MODERATOR" | "ADMIN">("MODERATOR");
@@ -108,6 +108,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   const [deletingUser, setDeletingUser] = useState<UserResponse | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  //Load to adminApi
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -159,6 +160,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       await preCreateAdminUser({ email: preCreateEmail.trim(), role: preCreateRole });
       showNotification(`Đã tạo tài khoản ${preCreateEmail.trim()} với quyền ${preCreateRole}!`);
       setShowPreCreate(false);
+      //reset input box
       setPreCreateEmail("");
       setPreCreateRole("MODERATOR");
       fetchUsers();
@@ -382,7 +384,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                             {initials}
                           </div>
                           <span className="user-display-text">
-                            {user.displayName || user.email.split("@")[0]}
+                            {user.fullName || user.displayName || user.email.split("@")[0]}
                           </span>
                         </td>
 
@@ -501,15 +503,15 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
               </label>
 
               <label className="modal-field-label">
-                <span>Phân quyền ban đầu *</span>
+                <span>Quyền truy cập hệ thống *</span>
                 <select
                   value={preCreateRole}
                   onChange={(e) => setPreCreateRole(e.target.value as any)}
                   className="modal-select"
                 >
-                  <option value="STUDENT">Học viên (STUDENT)</option>
-                  <option value="MODERATOR">Kiểm duyệt viên (MODERATOR)</option>
-                  <option value="ADMIN">Quản trị viên (ADMIN)</option>
+                  <option value="STUDENT">Học viên</option>
+                  <option value="MODERATOR">Kiểm duyệt viên</option>
+                  <option value="ADMIN">Quản trị viên</option>
                 </select>
               </label>
 
@@ -546,7 +548,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
             </div>
             <div className="modal-form-body">
               <div className="user-modal-summary">
-                <span className="summary-name">{editingUser.displayName || "Chưa có tên"}</span>
+                <span className="summary-name">{editingUser.fullName || editingUser.displayName || "Chưa có tên"}</span>
                 <span className="summary-email">{editingUser.email}</span>
               </div>
 

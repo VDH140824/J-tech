@@ -14,7 +14,7 @@ export function UserMenu() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { mutate: logout } = useLogout();
 
-  const displayName = user?.displayName ?? user?.email ?? "";
+  const displayName = user?.fullName ?? user?.displayName ?? user?.email ?? "";
   const userName = isAuthenticated ? (displayName ? displayName : "Học viên") : "Khách";
   const normalizedRole = user?.role?.trim().toUpperCase();
   const normalizedRoleId = String(user?.roleId ?? "");

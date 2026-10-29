@@ -5,7 +5,8 @@ import { getChapter, getCourse, type ChapterDetail } from "../../api/courseApi";
 import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
 import { ModeratorChapterSkillsOverview } from "./ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "./ModeratorLessonListTab";
-import { ModeratorGrammarListPage } from "./ModeratorGrammarListPage";
+import { ModeratorGrammarDetailPage } from "./grammar/ModeratorGrammarDetailPage";
+import { GrammarQuestionListPage } from "./grammar/GrammarQuestionListPage";
 import { ModeratorSkillItemListPage } from "./ModeratorSkillItemListPage";
 
 // Re-export for external consumers
@@ -103,6 +104,8 @@ export function ModeratorChapterDetailPage({
           const next = new URLSearchParams(prev);
           next.set("skill", sec);
           next.delete("lessonId");
+          next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
         { replace: true }
@@ -113,6 +116,8 @@ export function ModeratorChapterDetailPage({
           const next = new URLSearchParams(prev);
           next.delete("skill");
           next.delete("lessonId");
+          next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
         { replace: true }
@@ -151,6 +156,8 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.set("lessonId", String(lesson.id));
+          next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
         { replace: true }
@@ -161,6 +168,8 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.delete("lessonId");
+          next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
         { replace: true }
@@ -172,17 +181,48 @@ export function ModeratorChapterDetailPage({
   const chapterNo = chapterDetail?.chapterNo || initialChapterNo || chapterId;
   const chapterTitle = chapterDetail?.title || initialChapterTitle || `Chương ${chapterNo}`;
   const activeConfig = SECTIONS.find((s) => s.key === selectedSection);
+  const grammarIdParam = searchParams.get("grammarId");
+  const grammarId = grammarIdParam && /^\d+$/.test(grammarIdParam) ? Number(grammarIdParam) : null;
 
-  // 1. SUB-PAGE: LIST OF ITEMS FOR A SPECIFIC LESSON (e.g. list_grammar)
-  // ONLY render when lessonId is in URL and activeLessonForItems exists
+  // Show the selected lesson's grammar detail directly.
   if (lessonIdParam && activeLessonForItems && activeConfig) {
     if (activeConfig.key === "grammar") {
+      if (searchParams.get("questionList") === "1") {
+        return (
+          <GrammarQuestionListPage
+            courseName={courseName}
+            chapterNo={chapterNo}
+            lessonTitle={activeLessonForItems.title}
+            lessonId={activeLessonForItems.id}
+            onBack={() => {
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.delete("questionList");
+                return next;
+              });
+            }}
+          />
+        );
+      }
       return (
-        <ModeratorGrammarListPage
+        <ModeratorGrammarDetailPage
+          grammarId={grammarId}
           courseName={courseName}
           chapterNo={chapterNo}
-          chapterTitle={chapterTitle}
           lesson={activeLessonForItems}
+          onSelectGrammar={(id) => setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (id == null) next.delete("grammarId");
+            else next.set("grammarId", String(id));
+            return next;
+          }, { replace: true })}
+          onViewQuestions={() => {
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set("questionList", "1");
+              return next;
+            });
+          }}
           onBack={() => handleViewLessonItems(null)}
         />
       );
