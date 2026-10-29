@@ -14,46 +14,11 @@ function formatDateInput(value?: string | null) {
   return date.toISOString().slice(0, 10);
 }
 
-function formatDateTime(value?: string | null) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString("vi-VN");
-}
-
 function formatDateDisplay(value?: string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString("vi-VN");
-}
-
-function formatDisplayValue(value?: string | null) {
-  return value?.trim() ? value : "—";
-}
-
-function formatRoleLabel(role?: string | null) {
-  if (!role) return "—";
-  const r = role.toUpperCase();
-  if (r === "ADMIN" || r === "ROLE_ADMIN") return "Quản trị viên";
-  if (r === "MODERATOR") return "Kiểm duyệt viên";
-  if (r === "STUDENT") return "Học viên";
-  return role;
-}
-
-function formatStatusLabel(status?: string | null) {
-  if (!status) return "—";
-  const s = status.toUpperCase();
-  if (s === "ACTIVE") return "Đang hoạt động";
-  if (s === "PENDING") return "Chờ duyệt";
-  if (s === "LOCKED") return "Tạm khóa";
-  if (s === "REJECTED") return "Bị từ chối";
-  return status;
-}
-
-function formatAvatarLabel(value?: string | null) {
-  if (value?.trim()) return value.trim();
-  return "Mặc định hệ thống";
 }
 
 export function ProfilePage() {
@@ -122,7 +87,7 @@ export function ProfilePage() {
 
       <main className="profile-shell">
         <section className="profile-card profile-summary">
-          <div className="profile-avatar">
+          <div className="profile-avatar profile-avatar-hero">
             {user?.avatarUrl ? (
               <img src={user.avatarUrl} alt={user?.fullName ?? user?.displayName ?? "Avatar"} className="profile-avatar-img" />
             ) : (
@@ -130,82 +95,69 @@ export function ProfilePage() {
             )}
           </div>
           <div>
-            <h1>Hồ sơ người dùng</h1>
-            <p>{user?.fullName ?? user?.displayName ?? "Chưa có tên"}</p>
-            <p>{user?.email ?? ""}</p>
-            <p>Vai trò: {formatRoleLabel(user?.role)}</p>
+            <span className="profile-eyebrow">HỒ SƠ CỦA BẠN</span>
+            <h1>{user?.fullName ?? user?.displayName ?? "Chưa có tên"}</h1>
+            <p className="profile-email">{user?.email ?? "Chưa có email"}</p>
           </div>
         </section>
 
-        <section className="profile-card">
+        <section className="profile-card profile-details-card">
           <div className="profile-card-header">
             <div>
-              <h2>Thông tin tài khoản</h2>
-              <p>Xem và chỉnh sửa thông tin trực tiếp từ tài khoản người dùng.</p>
-            </div>
-            <div className="profile-avatar preview">
-              {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user?.fullName ?? user?.displayName ?? "Avatar"} className="profile-avatar-img" />
-              ) : (
-                initial
-              )}
+              <span className="profile-eyebrow">TỔNG QUAN</span>
+              <h2>Thông tin cá nhân</h2>
+              <p>Các thông tin chính trong hành trình học tập của bạn.</p>
             </div>
           </div>
 
           {isLoading && <p>Đang tải dữ liệu...</p>}
           {isError && <p>Không thể tải thông tin tài khoản.</p>}
 
-          <form className="profile-form" onSubmit={handleSubmit}>
-            <div className="profile-details-grid">
-              <div className="profile-detail-item">
-                <span>Ảnh đại diện</span>
-                <strong>{formatAvatarLabel(user?.avatarUrl)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Vai trò</span>
-                <strong>{formatRoleLabel(user?.role)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Trạng thái</span>
-                <strong>{formatStatusLabel(user?.status)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Số dư xu</span>
-                <strong>{(user?.coinBalance ?? 0).toLocaleString()} xu</strong>
-              </div>
-              <div className="profile-detail-item">
+          <div className="profile-details-grid">
+            <div className="profile-detail-item profile-detail-birthday">
+              <span className="profile-detail-icon" aria-hidden="true">🎂</span>
+              <div>
                 <span>Ngày sinh</span>
                 <strong>{formatDateDisplay(user?.dateOfBirth)}</strong>
               </div>
-              <div className="profile-detail-item">
-                <span>Đăng nhập gần nhất</span>
-                <strong>{formatDateTime(user?.lastLogin)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Tạo lúc</span>
-                <strong>{formatDateTime(user?.createdAt)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Cập nhật lúc</span>
-                <strong>{formatDateTime(user?.updatedAt)}</strong>
+            </div>
+            <div className="profile-detail-item profile-detail-coins">
+              <span className="profile-detail-icon" aria-hidden="true">🪙</span>
+              <div>
+                <span>Xu hiện tại</span>
+                <strong>{(user?.coinBalance ?? 0).toLocaleString("vi-VN")} xu</strong>
               </div>
             </div>
+            <div className="profile-detail-item profile-detail-streak">
+              <span className="profile-detail-icon" aria-hidden="true">🔥</span>
+              <div>
+                <span>Chuỗi streak hiện tại</span>
+                <strong>{(user?.currentStreak ?? 0).toLocaleString("vi-VN")} ngày</strong>
+              </div>
+            </div>
+            <div className="profile-detail-item profile-detail-longest">
+              <span className="profile-detail-icon" aria-hidden="true">🏆</span>
+              <div>
+                <span>Chuỗi streak dài nhất</span>
+                <strong>{(user?.longestStreak ?? 0).toLocaleString("vi-VN")} ngày</strong>
+              </div>
+            </div>
+          </div>
 
+          <form className="profile-form" onSubmit={handleSubmit}>
+            <div className="profile-edit-heading">
+              <h3>Chỉnh sửa thông tin</h3>
+              <p>Cập nhật tên và ngày sinh của bạn.</p>
+            </div>
             <div className="profile-edit-grid">
               <label>
-                Tên hiển thị
+                Họ và tên
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Nhập tên hiển thị"
                 />
               </label>
-
-              <label>
-                Email
-                <input value={user?.email ?? ""} disabled />
-              </label>
-
 
               <label>
                 Ngày sinh
