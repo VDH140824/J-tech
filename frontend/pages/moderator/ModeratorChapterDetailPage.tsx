@@ -6,6 +6,9 @@ import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfi
 import { ModeratorChapterSkillsOverview } from "./ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "./ModeratorLessonListTab";
 import { ModeratorGrammarListPage } from "./ModeratorGrammarListPage";
+import { ModeratorVocabularyLessonPage } from "./ModeratorVocabularyLessonPage";
+import { VocabularyChapterFlashcards } from "./VocabularyChapterFlashcards";
+import { VocabularyChapterTestPage } from "./VocabularyChapterTestPage";
 import { ModeratorSkillItemListPage } from "./ModeratorSkillItemListPage";
 
 // Re-export for external consumers
@@ -151,6 +154,7 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.set("lessonId", String(lesson.id));
+          next.delete("vocabTab");
           return next;
         },
         { replace: true }
@@ -161,6 +165,7 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.delete("lessonId");
+          next.delete("vocabTab");
           return next;
         },
         { replace: true }
@@ -172,6 +177,30 @@ export function ModeratorChapterDetailPage({
   const chapterNo = chapterDetail?.chapterNo || initialChapterNo || chapterId;
   const chapterTitle = chapterDetail?.title || initialChapterTitle || `Chương ${chapterNo}`;
   const activeConfig = SECTIONS.find((s) => s.key === selectedSection);
+
+  const setChapterView = (view: string | null) => setSearchParams(previous => {
+    const next = new URLSearchParams(previous); next.delete("lessonId"); next.delete("vocabTab");
+    if (view) next.set("vocabChapterView", view); else next.delete("vocabChapterView");
+    return next;
+  }, { replace: true });
+  if (activeConfig?.key === "vocabulary" && searchParams.get("vocabChapterView") === "flashcards") {
+    return <VocabularyChapterFlashcards chapterId={chapterId} chapterNo={chapterNo} courseName={courseName} onBack={() => setChapterView(null)} />;
+  }
+  if (activeConfig?.key === "vocabulary" && searchParams.get("vocabChapterView") === "test") {
+    return <VocabularyChapterTestPage chapterId={chapterId} chapterNo={chapterNo} courseName={courseName} onBack={() => setChapterView(null)} />;
+  }
+
+  if (lessonIdParam && activeConfig?.key === "vocabulary") {
+    return <ModeratorVocabularyLessonPage
+      key={lessonIdParam}
+      lessonId={Number(lessonIdParam)}
+      chapterId={chapterId}
+      courseName={courseName}
+      chapterNo={chapterNo}
+      chapterTitle={chapterTitle}
+      onBack={() => handleViewLessonItems(null)}
+    />;
+  }
 
   // 1. SUB-PAGE: LIST OF ITEMS FOR A SPECIFIC LESSON (e.g. list_grammar)
   // ONLY render when lessonId is in URL and activeLessonForItems exists
@@ -228,6 +257,8 @@ export function ModeratorChapterDetailPage({
       onSelectSection={(secKey) => handleSelectSection(secKey)}
       onBackToOverview={() => handleSelectSection(null)}
       onViewLessonItems={(lesson) => handleViewLessonItems(lesson)}
+      onOpenChapterFlashcards={() => setChapterView("flashcards")}
+      onOpenChapterTest={() => setChapterView("test")}
     />
   );
 }

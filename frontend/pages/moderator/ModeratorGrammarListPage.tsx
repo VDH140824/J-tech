@@ -15,6 +15,7 @@ interface ModeratorGrammarListPageProps {
   chapterTitle: string;
   lesson: LessonSummary;
   onBack: () => void;
+  readOnly?: boolean;
 }
 
 export function ModeratorGrammarListPage({
@@ -23,6 +24,7 @@ export function ModeratorGrammarListPage({
   chapterTitle,
   lesson,
   onBack,
+  readOnly = false,
 }: ModeratorGrammarListPageProps) {
   const [grammars, setGrammars] = useState<GrammarItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +64,7 @@ export function ModeratorGrammarListPage({
     try {
       setLoading(true);
       setError(null);
-      const data = await getGrammarsByLesson(lesson.id, statusFilter);
+      const data = await getGrammarsByLesson(lesson.id, readOnly ? "PUBLISHED" : statusFilter);
       setGrammars(data);
     } catch (err: unknown) {
       console.error("Lỗi khi tải danh sách ngữ pháp:", err);
@@ -74,10 +76,11 @@ export function ModeratorGrammarListPage({
 
   useEffect(() => {
     fetchGrammars();
-  }, [lesson.id, statusFilter]);
+  }, [lesson.id, statusFilter, readOnly]);
 
   // Open Create Modal
   const handleOpenCreateModal = () => {
+    if (readOnly) return;
     setEditingItem(null);
     const nextOrder = grammars.length > 0 ? Math.max(...grammars.map((g) => g.displayOrder || 0)) + 1 : 1;
     setFormData({
@@ -95,6 +98,7 @@ export function ModeratorGrammarListPage({
 
   // Open Edit Modal
   const handleOpenEditModal = (item: GrammarItem) => {
+    if (readOnly) return;
     setEditingItem(item);
     setFormData({
       structureName: item.structureName,
@@ -111,6 +115,7 @@ export function ModeratorGrammarListPage({
 
   // Submit Form
   const handleSubmitForm = async (e: React.FormEvent) => {
+    if (readOnly) return;
     e.preventDefault();
     if (!formData.structureName.trim() || !formData.meaningVi.trim()) {
       alert("Vui lòng điền cấu trúc và ý nghĩa ngữ pháp!");
@@ -139,7 +144,7 @@ export function ModeratorGrammarListPage({
 
   // Delete Item
   const handleConfirmDelete = async () => {
-    if (!deletingItem) return;
+    if (readOnly || !deletingItem) return;
     try {
       setSubmitting(true);
       await deleteGrammar(deletingItem.id);
@@ -215,14 +220,14 @@ export function ModeratorGrammarListPage({
               Quản lý các mẫu ngữ pháp thuộc <strong>Bài {lesson.lessonNo}: {lesson.title}</strong> (Dữ liệu từ bảng <code>grammar</code>).
             </p>
           </div>
-          <button
+          {!readOnly && <button
             type="button"
             className="mod-btn-add"
             style={{ backgroundColor: "#2563eb", padding: "11px 22px" }}
             onClick={handleOpenCreateModal}
           >
             <span>➕</span> Thêm ngữ pháp mới
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -238,7 +243,7 @@ export function ModeratorGrammarListPage({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <select
+          {!readOnly && <select
             className="mod-toolbar-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -247,7 +252,7 @@ export function ModeratorGrammarListPage({
             <option value="PUBLISHED">Đã xuất bản (PUBLISHED)</option>
             <option value="DRAFT">Bản nháp (DRAFT)</option>
             <option value="HIDDEN">Ẩn (HIDDEN)</option>
-          </select>
+          </select>}
         </div>
         <div style={{ fontSize: "0.86rem", color: "#64748b", fontWeight: 600 }}>
           Hiển thị <strong>{filteredGrammars.length}</strong> mẫu ngữ pháp
@@ -280,18 +285,18 @@ export function ModeratorGrammarListPage({
             <span style={{ fontSize: "2.4rem" }}>📭</span>
             <h3 className="admin-empty-title">Chưa có mẫu ngữ pháp nào</h3>
             <p className="admin-empty-desc">
-              {searchQuery || statusFilter !== "ALL"
+              {readOnly ? "Chưa có mẫu ngữ pháp được xuất bản phù hợp với lựa chọn này." : searchQuery || statusFilter !== "ALL"
                 ? "Không tìm thấy mẫu ngữ pháp nào phù hợp với bộ lọc."
                 : `Bài ${lesson.lessonNo} chưa có mẫu ngữ pháp nào. Nhấn nút "Thêm ngữ pháp mới" để bắt đầu.`}
             </p>
-            <button
+            {!readOnly && <button
               type="button"
               className="mod-btn-add"
               style={{ backgroundColor: "#2563eb", margin: "16px auto 0" }}
               onClick={handleOpenCreateModal}
             >
               <span>➕</span> Thêm ngữ pháp mới
-            </button>
+            </button>}
           </div>
         ) : (
           <div className="table-responsive">
@@ -304,7 +309,7 @@ export function ModeratorGrammarListPage({
                   <th>Giải thích &amp; Ví dụ</th>
                   <th style={{ width: "100px", textAlign: "center" }}>Thứ tự</th>
                   <th style={{ width: "140px" }}>Trạng thái</th>
-                  <th style={{ width: "120px", textAlign: "right" }}>Thao tác</th>
+                  {!readOnly && <th style={{ width: "120px", textAlign: "right" }}>Thao tác</th>}
                 </tr>
               </thead>
               <tbody>
@@ -390,7 +395,7 @@ export function ModeratorGrammarListPage({
                         </span>
                       )}
                     </td>
-                    <td>
+                    {!readOnly && <td>
                       <div className="row-actions-group" style={{ justifyContent: "flex-end" }}>
                         <button
                           type="button"
@@ -409,7 +414,7 @@ export function ModeratorGrammarListPage({
                           🗑️
                         </button>
                       </div>
-                    </td>
+                    </td>}
                   </tr>
                 ))}
               </tbody>
@@ -419,7 +424,7 @@ export function ModeratorGrammarListPage({
       </div>
 
       {/* Modal Create / Edit Grammar */}
-      {isModalOpen && (
+      {!readOnly && isModalOpen && (
         <div className="modal-overlay" onClick={() => !submitting && setIsModalOpen(false)}>
           <div className="modal-card" style={{ maxWidth: "620px" }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -563,7 +568,7 @@ export function ModeratorGrammarListPage({
       )}
 
       {/* Delete Confirmation Modal */}
-      {deletingItem && (
+      {!readOnly && deletingItem && (
         <div className="modal-overlay" onClick={() => !submitting && setDeletingItem(null)}>
           <div className="modal-card" style={{ maxWidth: "460px" }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">

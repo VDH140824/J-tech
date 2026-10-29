@@ -2,7 +2,7 @@ export function checkIsAdmin(user: { role?: string | null; roleId?: number | str
   if (!user) return false;
   const normalizedRole = user.role?.trim().toUpperCase();
   const normalizedRoleId = String(user.roleId ?? "");
-  return normalizedRoleId === "1" || normalizedRole === "ADMIN" || normalizedRole === "ROLE_ADMIN";
+  return normalizedRole === "ADMIN" || normalizedRole === "ROLE_ADMIN" || (!normalizedRole && normalizedRoleId === "3");
 }
 
 export function checkIsModerator(user: { role?: string | null; roleId?: number | string | null } | null | undefined): boolean {

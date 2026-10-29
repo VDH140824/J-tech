@@ -6,6 +6,7 @@ interface ModeratorChapterSkillsOverviewProps {
   chapterTitle: string;
   onSelectSkill: (skill: LessonSection) => void;
   onBack: () => void;
+  readOnly?: boolean;
 }
 
 export function ModeratorChapterSkillsOverview({
@@ -14,6 +15,7 @@ export function ModeratorChapterSkillsOverview({
   chapterTitle,
   onSelectSkill,
   onBack,
+  readOnly = false,
 }: ModeratorChapterSkillsOverviewProps) {
   return (
     <div className="admin-page-container">
@@ -38,7 +40,7 @@ export function ModeratorChapterSkillsOverview({
             📖 Chương {chapterNo}: {chapterTitle}
           </h2>
           <p className="admin-main-subtitle">
-            Chọn kỹ năng cần quản lý bài học trong <strong>{courseName}</strong> (Kanji, Từ vựng, Ngữ pháp, Nghe, Đọc hiểu).
+            Chọn kỹ năng {readOnly ? "để học" : "cần quản lý bài học"} trong <strong>{courseName}</strong> (Kanji, Từ vựng, Ngữ pháp, Nghe, Đọc hiểu).
           </p>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { PendingApprovalPage } from "../pages/auth/PendingApprovalPage";
 import { AccountRejectedPage } from "../pages/auth/AccountRejectedPage";
 import { HomePage } from "../pages/home/HomePage";
 import { CoursePage } from "../pages/home/CoursePage";
+import { ChapterPage } from "../pages/home/ChapterPage";
 import { BackgroundMusic } from "../components/ui/BackgroundMusic";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { AdminProtectedRoute } from "../components/auth/AdminProtectedRoute";
@@ -14,6 +15,7 @@ import { ProfilePage } from "../pages/profile/ProfilePage";
 import { AdminPortalPage } from "../pages/admin/AdminPortalPage";
 import { ModeratorPortalPage } from "../pages/moderator/ModeratorPortalPage";
 import { MainLayout } from "../layouts/MainLayout";
+import { FeedbackPage } from "../pages/feedback/FeedbackPage";
 
 export function AppRouter() {
   return (
@@ -37,7 +39,9 @@ export function AppRouter() {
         >
           <Route path="/home" element={<HomePage />} />
           <Route path="/courses/:courseId" element={<CoursePage />} />
+          <Route path="/courses/:courseId/chapters/:chapterId" element={<ChapterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
         </Route>
 
         {/* Admin routes (Admin has its own dedicated portal layout) */}

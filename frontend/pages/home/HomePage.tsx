@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getCourses, type CourseSummary } from "../../api/courseApi";
+import { useAuthStore } from "../../store/authStore";
+import { checkIsModerator } from "../../utils/auth";
 import bannerCatImg from "../../assets/banner-cat.png";
 import "./HomePage.css";
 
@@ -146,6 +148,7 @@ function ProgressDonutSvg({ percentage }: { percentage: number }) {
 
 export function HomePage() {
   const navigate = useNavigate();
+  const user = useAuthStore(state => state.user);
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   useEffect(() => { getCourses().then(setCourses).catch(() => setCourses([])); }, []);
 
@@ -185,9 +188,9 @@ export function HomePage() {
 
               <div className="course-cards-grid">
                 {courses.map((course, index) => (
-                  <div className={`course-card ${["pink-card", "blue-card", "green-card", "orange-card"][index % 4]}`} key={course.id} onClick={() => navigate(`/courses/${course.id}`)}>
+                  <div className={`course-card ${["pink-card", "blue-card", "green-card", "orange-card"][index % 4]}`} key={course.id} onClick={() => navigate(checkIsModerator(user) ? `/moderator/courses?courseId=${course.id}` : `/courses/${course.id}`)}>
                     <div className="card-art-box"><CourseCardArt type={((index % 4) + 1) as 1 | 2 | 3 | 4} /></div>
-                    <div className="course-card-body"><h3 className="course-title">{course.name}</h3><div className="course-level">{course.code}</div><div className="course-progress-wrapper"><div className="course-progress-info"><span className="progress-text">{course.chapterCount} chuong</span><button type="button" className="circle-arrow-btn blue-btn">?</button></div></div></div>
+                    <div className="course-card-body"><h3 className="course-title">{course.name}</h3><div className="course-level">{course.code}</div><div className="course-progress-wrapper"><div className="course-progress-info"><span className="progress-text">{course.chapterCount} chương</span><button type="button" className="circle-arrow-btn blue-btn" aria-label={`Mở môn học ${course.name}`}>→</button></div></div></div>
                   </div>
                 ))}
               </div>

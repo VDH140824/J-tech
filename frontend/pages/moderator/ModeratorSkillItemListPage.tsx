@@ -11,6 +11,7 @@ interface ModeratorSkillItemListPageProps {
   chapterTitle: string;
   lesson: LessonSummary;
   onBack: () => void;
+  readOnly?: boolean;
 }
 
 export function ModeratorSkillItemListPage({
@@ -21,6 +22,7 @@ export function ModeratorSkillItemListPage({
   chapterNo,
   lesson,
   onBack,
+  readOnly = false,
 }: ModeratorSkillItemListPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -49,14 +51,14 @@ export function ModeratorSkillItemListPage({
               Quản lý chi tiết các nội dung thuộc <strong>Bài {lesson.lessonNo}: {lesson.title}</strong>
             </p>
           </div>
-          <button
+          {!readOnly && <button
             type="button"
             className="mod-btn-add"
             style={{ backgroundColor: skillColor, padding: "11px 22px" }}
             onClick={() => alert(`Tính năng thêm mới cho phần ${skillLabel} đang được hoàn thiện!`)}
           >
             <span>➕</span> Thêm {skillLabel} mới
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -72,7 +74,7 @@ export function ModeratorSkillItemListPage({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <select
+          {!readOnly && <select
             className="mod-toolbar-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -81,7 +83,7 @@ export function ModeratorSkillItemListPage({
             <option value="PUBLISHED">Đã xuất bản</option>
             <option value="DRAFT">Bản nháp</option>
             <option value="HIDDEN">Ẩn</option>
-          </select>
+          </select>}
         </div>
         <div style={{ fontSize: "0.86rem", color: "#64748b", fontWeight: 600 }}>
           Hiển thị <strong>0</strong> mục
@@ -94,16 +96,16 @@ export function ModeratorSkillItemListPage({
           <span style={{ fontSize: "2.4rem" }}>📭</span>
           <h3 className="admin-empty-title">Chưa có dữ liệu {skillLabel}</h3>
           <p className="admin-empty-desc">
-            Bài {lesson.lessonNo} chưa có dữ liệu {skillLabel}. Nhấn "Thêm {skillLabel} mới" để bắt đầu thêm nội dung.
+            Bài {lesson.lessonNo} chưa có dữ liệu {skillLabel}.{!readOnly && <> Nhấn "Thêm {skillLabel} mới" để bắt đầu thêm nội dung.</>}
           </p>
-          <button
+          {!readOnly && <button
             type="button"
             className="mod-btn-add"
             style={{ backgroundColor: skillColor, margin: "16px auto 0" }}
             onClick={() => alert(`Tính năng thêm mới cho phần ${skillLabel} đang được hoàn thiện!`)}
           >
             <span>➕</span> Thêm {skillLabel} mới
-          </button>
+          </button>}
         </div>
       </div>
     </div>

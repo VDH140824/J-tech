@@ -1,1 +1,14 @@
+com\jtech\service\VocabularyMiniTestPersistenceTest.class
+com\jtech\service\VocabularyChapterUnitTest.class
+com\jtech\controller\VocabularyControllerTest.class
+com\jtech\controller\VocabularyAuthorizationTest.class
+com\jtech\service\VocabularyAccessUnitTest.class
 com\jtech\security\JwtServiceTest.class
+com\jtech\service\VocabularyMiniTestServiceTest.class
+com\jtech\controller\VocabularyAuthorizationTest$SecurityConfiguration.class
+com\jtech\service\VocabularyChapterTestServiceTest.class
+com\jtech\controller\VocabularyMiniTestControllerTest.class
+com\jtech\controller\VocabularyMiniTestControllerTest$SecurityConfiguration.class
+com\jtech\service\VocabularyCrudUnitTest.class
+com\jtech\service\VocabularyServiceTest.class
+com\jtech\service\VocabularyMiniTestUnitTest.class

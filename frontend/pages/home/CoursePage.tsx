@@ -1,4 +1,21 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { getCourse, type CourseDetail } from "../../api/courseApi";
-export function CoursePage(){ const {courseId}=useParams(); const navigate=useNavigate(); const [course,setCourse]=useState<CourseDetail>(); useEffect(()=>{if(courseId) getCourse(Number(courseId)).then(setCourse);},[courseId]); if(!course) return <div>�ang t?i...</div>; return <main style={{padding:"32px"}}><button onClick={()=>navigate("/home")}>? Trang ch?</button><h1>{course.name}</h1><p>{course.description}</p><h2>Danh s�ch chuong</h2>{course.chapters.map(ch=><article key={ch.id}><h3>Chuong {ch.chapterNo}: {ch.title}</h3><p>{ch.description}</p></article>)}</main>; }
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
+import { checkIsModerator } from "../../utils/auth";
+import { ModeratorCoursesTab } from "../moderator/ModeratorCoursesTab";
+import "./StudentLearningPage.css";
+
+export function CoursePage() {
+  const { courseId } = useParams();
+  const navigate = useNavigate();
+  const id = Number(courseId);
+  const valid = Number.isSafeInteger(id) && id > 0;
+  const user = useAuthStore(state => state.user);
+
+  if (valid && checkIsModerator(user)) return <Navigate to={`/moderator/courses?courseId=${id}`} replace />;
+
+  return <div className="student-learning-page">
+    {!valid ? <p role="alert">Mã môn học không hợp lệ.</p>
+      : <ModeratorCoursesTab readOnly initialCourseId={id}
+        onViewChapter={({ courseId: selectedCourse, chapterId }) => navigate(`/courses/${selectedCourse}/chapters/${chapterId}`)} />}
+  </div>;
+}

@@ -52,7 +52,7 @@ export function MainSidebar() {
   const normalizedRole = user?.role?.trim().toUpperCase();
   const normalizedRoleId = String(user?.roleId ?? "");
   const isAdmin =
-    normalizedRoleId === "1" ||
+    (!normalizedRole && normalizedRoleId === "3") ||
     normalizedRole === "ADMIN" ||
     normalizedRole === "ROLE_ADMIN";
 
@@ -61,7 +61,7 @@ export function MainSidebar() {
     normalizedRole === "MODERATOR" ||
     normalizedRole === "ROLE_MODERATOR";
 
-  const isHomeActive = location.pathname === "/home" || activeTab === "trang-chu";
+  const isHomeActive = location.pathname === "/home";
 
   return (
     <aside className="dekiru-sidebar">
@@ -75,6 +75,9 @@ export function MainSidebar() {
       <div className="sidebar-tagline">Luyện tiếng Nhật cùng J-Tech</div>
 
       <nav className="sidebar-nav-menu">
+        {(normalizedRole === "STUDENT" || normalizedRole === "ROLE_STUDENT" || (!normalizedRole && normalizedRoleId === "1")) && <button type="button" className={`nav-link-btn ${location.pathname === "/feedback" ? "active" : ""}`} onClick={() => { setActiveTab("feedback"); navigate("/feedback"); }}>
+          <span className="nav-link-icon">💬</span><span className="nav-link-text">Phản hồi & Báo lỗi</span>
+        </button>}
         <button
           type="button"
           className={`nav-link-btn ${isHomeActive ? "active" : ""}`}

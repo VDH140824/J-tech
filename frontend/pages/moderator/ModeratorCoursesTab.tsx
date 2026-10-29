@@ -4,9 +4,11 @@ import type { ModeratorNavState } from "./ModeratorPortalPage";
 
 interface ModeratorCoursesTabProps {
   onViewChapter: (state: ModeratorNavState) => void;
+  initialCourseId?: number;
+  readOnly?: boolean;
 }
 
-export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps) {
+export function ModeratorCoursesTab({ onViewChapter, initialCourseId, readOnly = false }: ModeratorCoursesTabProps) {
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,7 +37,7 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
     const selectedCourse = courses.find((c) => c.id === courseId);
     try {
       const detail = await getCourse(courseId);
-      if (detail && detail.chapters && detail.chapters.length > 0) {
+      if (readOnly || (detail && detail.chapters && detail.chapters.length > 0)) {
         setCourseDetail(detail);
       } else {
         // Fallback default chapters if empty
@@ -52,6 +54,7 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
         });
       }
     } catch {
+      if (readOnly) { setCourseDetail(null); return; }
       // Fallback for offline/preview
       setCourseDetail({
         id: courseId,
@@ -68,6 +71,12 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
       setLoadingDetail(false);
     }
   };
+
+  useEffect(() => {
+    if (initialCourseId && expandedCourseId !== initialCourseId && courses.some(course => course.id === initialCourseId)) {
+      void handleToggleCourse(initialCourseId);
+    }
+  }, [initialCourseId, courses]);
 
   const filteredCourses = courses.filter((c) => {
     const q = searchQuery.toLowerCase();
@@ -89,7 +98,7 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
       <div className="admin-page-header">
         <div className="admin-header-titles">
           <h2 className="admin-main-title">📚 Danh sách môn học</h2>
-          <p className="admin-main-subtitle">Quản lý nội dung các môn học theo giáo trình Dekiru.</p>
+          <p className="admin-main-subtitle">{readOnly ? "Nội dung các môn học theo giáo trình Dekiru." : "Quản lý nội dung các môn học theo giáo trình Dekiru."}</p>
         </div>
       </div>
 

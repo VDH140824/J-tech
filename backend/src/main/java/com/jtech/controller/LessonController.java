@@ -8,12 +8,14 @@ import com.jtech.entity.Lesson;
 import com.jtech.repository.ChapterRepository;
 import com.jtech.repository.LessonRepository;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class LessonController {
@@ -156,11 +158,16 @@ public class LessonController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
     @DeleteMapping("/lessons/{id}")
-    public ResponseEntity<Void> deleteLesson(@PathVariable Long id) {
+    public ResponseEntity<?> deleteLesson(@PathVariable Long id) {
         if (!lessonRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        lessonRepository.deleteById(id);
+        try {
+            lessonRepository.deleteById(id);
+        } catch (DataIntegrityViolationException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message",
+                    "Không thể xóa bài học vì đang có dữ liệu liên kết (từ vựng, bài kiểm tra hoặc lịch sử học tập)."));
+        }
         return ResponseEntity.noContent().build();
     }
 

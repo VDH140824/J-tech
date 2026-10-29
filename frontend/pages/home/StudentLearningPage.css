@@ -1,0 +1,14 @@
+@import "../admin/AdminPortalPage.css";
+@import "../moderator/ModeratorPortalPage.css";
+@import "../moderator/ModeratorContent.css";
+
+.student-learning-page {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 28px 32px 48px;
+}
+
+@media (max-width: 768px) {
+  .student-learning-page { padding: 16px; }
+}

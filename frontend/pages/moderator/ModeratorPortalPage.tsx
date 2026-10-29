@@ -3,12 +3,13 @@ import { useLocation, useNavigate, useMatch, useSearchParams } from "react-route
 import { ModeratorCoursesTab } from "./ModeratorCoursesTab";
 import { ModeratorChapterDetailPage } from "./ModeratorChapterDetailPage";
 import { ModeratorLayout } from "../../layouts/ModeratorLayout";
+import { FeedbackPage } from "../feedback/FeedbackPage";
 import { SECTIONS } from "./sectionConfig";
 import type { ChapterDetail } from "../../api/courseApi";
 import "../admin/AdminPortalPage.css";
 import "./ModeratorPortalPage.css";
 
-export type ModeratorTab = "courses" | "chapter-detail";
+export type ModeratorTab = "courses" | "chapter-detail" | "feedback";
 
 export interface ModeratorNavState {
   courseId: number;
@@ -41,9 +42,10 @@ export function ModeratorPortalPage() {
     }
   }, [location.pathname, searchParams, navigate]);
 
-  const activeTab: ModeratorTab = matchChapter ? "chapter-detail" : "courses";
+  const activeTab: ModeratorTab = location.pathname === "/moderator/feedback" ? "feedback" : matchChapter ? "chapter-detail" : "courses";
 
   const handleSelectTab = (tab: string) => {
+    if (tab === "feedback") navigate("/moderator/feedback");
     if (tab === "courses") {
       setChapterInfo(null);
       navigate("/moderator");
@@ -85,8 +87,9 @@ export function ModeratorPortalPage() {
       title="Quản trị nội dung"
       breadcrumb={breadcrumb}
     >
+      {activeTab === "feedback" && <FeedbackPage portal="moderator" />}
       {activeTab === "courses" && (
-        <ModeratorCoursesTab onViewChapter={handleViewChapter} />
+        <ModeratorCoursesTab onViewChapter={handleViewChapter} initialCourseId={Number(searchParams.get("courseId")) || undefined} />
       )}
       {activeTab === "chapter-detail" && courseId && chapterId && (
         <ModeratorChapterDetailPage

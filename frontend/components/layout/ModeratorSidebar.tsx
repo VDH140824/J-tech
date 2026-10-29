@@ -57,6 +57,9 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
 
       {/* Nav Menu */}
       <nav className="admin-sidebar-menu">
+        <button type="button" className={`admin-nav-item ${currentTab === "feedback" ? "active mod-active" : ""}`} onClick={() => handleNavClick("feedback", "/moderator/feedback")}>
+          <span className="admin-nav-icon">💬</span><span className="admin-nav-label">Phản hồi nội dung học</span>
+        </button>
         <div className="admin-menu-section-label">QUẢN TRỊ NỘI DUNG</div>
 
         {/* 1. Danh sách môn học */}

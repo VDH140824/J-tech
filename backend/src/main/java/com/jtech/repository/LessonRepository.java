@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select l from Lesson l where l.id = :id")
+    Optional<Lesson> findForUpdate(Long id);
     List<Lesson> findByChapterIdOrderByDisplayOrderAscLessonNoAscIdAsc(Long chapterId);
     List<Lesson> findByChapterIdAndSkillTypeOrderByDisplayOrderAscLessonNoAscIdAsc(Long chapterId, Lesson.SkillType skillType);
     List<Lesson> findByChapterIdAndSkillTypeAndStatusOrderByDisplayOrderAscLessonNoAscIdAsc(Long chapterId, Lesson.SkillType skillType, Course.Status status);

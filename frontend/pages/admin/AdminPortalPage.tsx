@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FeedbackPage } from "../feedback/FeedbackPage";
 import { useLocation } from "react-router-dom";
 import { AdminDashboardTab } from "./AdminDashboardTab";
 import { AdminUsersTab } from "./AdminUsersTab";
@@ -6,7 +7,7 @@ import { PendingUsersPage } from "./PendingUsersPage";
 import { AdminLayout } from "../../layouts/AdminLayout";
 import "./AdminPortalPage.css";
 
-export type AdminTab = "dashboard" | "users" | "pending" | "settings";
+export type AdminTab = "dashboard" | "users" | "pending" | "settings" | "feedback";
 
 export function AdminPortalPage() {
   const location = useLocation();
@@ -14,7 +15,9 @@ export function AdminPortalPage() {
   // In the screenshot, "Quản lý tài khoản" is the primary default view
   const path = location.pathname;
   let initialTab: AdminTab = "users";
-  if (path.includes("/admin/dashboard")) {
+  if (path.includes("/admin/feedback")) {
+    initialTab = "feedback";
+  } else if (path.includes("/admin/dashboard")) {
     initialTab = "dashboard";
   } else if (path.includes("/admin/pending")) {
     initialTab = "pending";
@@ -23,6 +26,7 @@ export function AdminPortalPage() {
   }
 
   const [activeTab, setActiveTab] = useState<AdminTab>(initialTab);
+  useEffect(() => { setActiveTab(initialTab); }, [initialTab]);
 
   const handleSelectTab = (tab: string) => {
     setActiveTab(tab as AdminTab);
@@ -30,6 +34,7 @@ export function AdminPortalPage() {
 
   return (
     <AdminLayout activeTab={activeTab} onSelectTab={handleSelectTab}>
+      {activeTab === "feedback" && <FeedbackPage portal="admin" />}
       {activeTab === "dashboard" && <AdminDashboardTab />}
       {activeTab === "users" && (
         <AdminUsersTab onNavigateToPending={() => setActiveTab("pending")} />

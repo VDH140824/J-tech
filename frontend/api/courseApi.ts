@@ -1,4 +1,5 @@
 import { apiClient } from "../services/api";
+import type { LessonSummary } from "./lessonApi";
 
 export interface CourseSummary {
   id: number;
@@ -45,4 +46,18 @@ export async function getCourse(id: number): Promise<CourseDetail> {
 export async function getChapter(courseId: number, chapterId: number): Promise<ChapterDetail> {
   const { data } = await apiClient.get<ChapterDetail>(`/courses/${courseId}/chapters/${chapterId}`);
   return data;
+}
+
+export interface ChapterStudy {
+  id: number;
+  chapterNo: number;
+  title: string;
+  description?: string;
+  courseId: number;
+  courseName: string;
+  lessons: LessonSummary[];
+}
+
+export async function getChapterStudy(courseId: number, chapterId: number): Promise<ChapterStudy> {
+  return (await apiClient.get<ChapterStudy>(`/courses/${courseId}/chapters/${chapterId}/study`)).data;
 }

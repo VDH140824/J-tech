@@ -89,6 +89,9 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
 
       {/* Nav Menu */}
       <nav className="admin-sidebar-menu">
+        <button type="button" className={`admin-nav-item ${currentTab === "feedback" ? "active" : ""}`} onClick={() => handleNavClick("feedback", "/admin/feedback")}>
+          <span className="admin-nav-icon">💬</span><span className="admin-nav-label">Phản hồi & Báo lỗi hệ thống</span>
+        </button>
         <div className="admin-menu-section-label">CHỨC NĂNG QUẢN TRỊ</div>
 
         {/* 1. Sơ đồ & Thống kê */}
