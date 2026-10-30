@@ -5,6 +5,7 @@ import com.jtech.dto.request.UpdateProfileRequest;
 import com.jtech.dto.response.UserResponse;
 
 import java.security.Principal;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface AuthService {
 
@@ -18,6 +19,8 @@ public interface AuthService {
     UserResponse getCurrentUser(Principal principal);
 
     UserResponse updateProfile(Long userId, UpdateProfileRequest request);
+
+    UserResponse updateAvatar(MultipartFile file);
 
     UserResponse exchangeOAuth2Code(String code);
 }

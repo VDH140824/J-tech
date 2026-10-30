@@ -10,6 +10,8 @@ import com.jtech.repository.RefreshTokenRepository;
 import com.jtech.repository.UserRepository;
 import com.jtech.security.JwtService;
 import com.jtech.service.AuthService;
+import com.jtech.service.CloudinaryService;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,14 +28,16 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
+    private final CloudinaryService cloudinaryService;
     private final com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore;
 
     public AuthServiceImpl(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository,
-                           JwtService jwtService,
+                           JwtService jwtService, CloudinaryService cloudinaryService,
                            com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtService = jwtService;
+        this.cloudinaryService = cloudinaryService;
         this.oAuth2ExchangeStore = oAuth2ExchangeStore;
     }
 
@@ -98,6 +102,15 @@ public class AuthServiceImpl implements AuthService {
         }
         user = userRepository.save(user);
         return mapToUserResponse(user);
+    }
+
+    @Override @Transactional
+    public UserResponse updateAvatar(MultipartFile file) {
+        User user = getAuthenticatedUser();
+        var uploaded = cloudinaryService.uploadAvatar(file);
+        user.setAvatarUrl(uploaded.get("url"));
+        user.setAvatarPublicId(uploaded.get("publicId"));
+        return mapToUserResponse(userRepository.save(user));
     }
 
     @Override

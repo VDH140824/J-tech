@@ -52,3 +52,10 @@ export async function updateProfile(
   );
   return data;
 }
+
+export async function updateAvatar(file: File): Promise<UserResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data } = await apiClient.post<UserResponse>("/users/me/avatar", formData);
+  return data;
+}

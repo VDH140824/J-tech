@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
-import { useCurrentUser } from "../../hooks/useAuth";
+import { authKeys, useCurrentUser } from "../../hooks/useAuth";
 import * as authApi from "../../api/authApi";
 import type { UpdateProfileRequest } from "../../types/auth";
 import "./ProfilePage.css";
@@ -26,6 +26,8 @@ export function ProfilePage() {
   const queryClient = useQueryClient();
   const storedUser = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const { data: currentUser, isLoading, isError } = useCurrentUser();
 
@@ -36,6 +38,7 @@ export function ProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     setFullName(user?.fullName ?? user?.displayName ?? "");
@@ -46,6 +49,30 @@ export function ProfilePage() {
     const base = user?.fullName ?? user?.displayName ?? user?.email ?? "U";
     return base.charAt(0).toUpperCase();
   }, [user]);
+
+  const handleAvatarChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setError("Chọn ảnh JPG, PNG hoặc WebP không quá 5 MB.");
+      setMessage("");
+      return;
+    }
+    setUploadingAvatar(true);
+    setError("");
+    setMessage("");
+    try {
+      const updated = await authApi.updateAvatar(file);
+      queryClient.setQueryData(authKeys.me(accessToken), updated);
+      setUser(updated);
+      setMessage("Cập nhật ảnh đại diện thành công.");
+    } catch {
+      setError("Không thể cập nhật ảnh đại diện. Vui lòng thử lại.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,7 +90,7 @@ export function ProfilePage() {
 
     try {
       const updated = await authApi.updateProfile(user.id, payload);
-      queryClient.setQueryData(["auth", "me"], updated);
+      queryClient.setQueryData(authKeys.me(accessToken), updated);
       setUser(updated);
       setMessage("Cập nhật thông tin thành công.");
     } catch {
@@ -87,12 +114,18 @@ export function ProfilePage() {
 
       <main className="profile-shell">
         <section className="profile-card profile-summary">
-          <div className="profile-avatar profile-avatar-hero">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user?.fullName ?? user?.displayName ?? "Avatar"} className="profile-avatar-img" />
-            ) : (
-              initial
-            )}
+          <div className="profile-avatar-wrap">
+            <div className="profile-avatar profile-avatar-hero">
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt={user?.fullName ?? user?.displayName ?? "Avatar"} className="profile-avatar-img" />
+              ) : (
+                initial
+              )}
+            </div>
+            <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="profile-avatar-input" onChange={handleAvatarChange} aria-label="Chọn ảnh đại diện" />
+            <button type="button" className="profile-avatar-edit" onClick={() => avatarInputRef.current?.click()} disabled={uploadingAvatar || !user?.id}>
+              {uploadingAvatar ? "Đang tải..." : "✎ Chỉnh sửa ảnh"}
+            </button>
           </div>
           <div>
             <span className="profile-eyebrow">HỒ SƠ CỦA BẠN</span>

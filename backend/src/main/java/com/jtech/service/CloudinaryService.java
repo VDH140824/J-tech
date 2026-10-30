@@ -18,6 +18,7 @@ public class CloudinaryService {
 
     private static final String TARGET_ASSET_FOLDER = "Video/jtech/customer_upload/video";
     private static final String GRAMMAR_VIDEO_FOLDER = "Jtech/Moderator/Grammar/video";
+    private static final String AVATAR_FOLDER = "Jtech/Users/Avatar";
     private static final Set<String> ALLOWED_VIDEO_CONTENT_TYPES = Set.of(
             "video/mp4",
             "video/webm",
@@ -39,6 +40,22 @@ public class CloudinaryService {
 
     public CloudinaryUploadResponse uploadGrammarVideo(MultipartFile file) {
         return uploadVideo(file, GRAMMAR_VIDEO_FOLDER, true);
+    }
+
+    public Map<String, String> uploadAvatar(MultipartFile file) {
+        if (file == null || file.isEmpty() || file.getSize() > 5 * 1024 * 1024
+                || !Set.of("image/jpeg", "image/png", "image/webp").contains(file.getContentType())) {
+            throw new IllegalArgumentException("Ảnh phải là JPG, PNG hoặc WebP và không quá 5 MB");
+        }
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = (Map<String, Object>) cloudinary.uploader().upload(
+                    file.getBytes(), ObjectUtils.asMap("resource_type", "image", "folder", AVATAR_FOLDER));
+            return Map.of("url", String.valueOf(result.get("secure_url")),
+                    "publicId", String.valueOf(result.get("public_id")));
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể tải ảnh đại diện lên", exception);
+        }
     }
 
     private CloudinaryUploadResponse uploadVideo(MultipartFile file, String folder, boolean uniqueFilename) {
