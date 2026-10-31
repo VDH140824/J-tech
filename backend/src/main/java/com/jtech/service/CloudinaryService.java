@@ -44,6 +44,7 @@ public class CloudinaryService {
 
     public Map<String, String> uploadAvatar(MultipartFile file) {
         if (file == null || file.isEmpty() || file.getSize() > 5 * 1024 * 1024
+                || file.getContentType() == null
                 || !Set.of("image/jpeg", "image/png", "image/webp").contains(file.getContentType())) {
             throw new IllegalArgumentException("Ảnh phải là JPG, PNG hoặc WebP và không quá 5 MB");
         }
