@@ -666,6 +666,13 @@
   text-align: left;
 }
 
+.modal-field-error {
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .modal-input,
 .modal-select {
   border: 1.5px solid #e2e8f0;

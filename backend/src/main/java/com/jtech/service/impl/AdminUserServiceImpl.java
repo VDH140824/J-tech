@@ -119,7 +119,17 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     @Transactional
     public UserResponse preCreateUser(PreCreateUserRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        String rawEmail = request.getEmail();
+        if (rawEmail == null || rawEmail.isBlank()) {
+            throw new IllegalArgumentException("Email không được để trống");
+        }
+        String email = rawEmail.trim().toLowerCase();
+        if (email.length() > 255) {
+            throw new IllegalArgumentException("Email không được vượt quá 255 ký tự");
+        }
+        if (!email.matches("^[^@\\s]+@[^@\\s.]+(?:\\.[^@\\s.]+)+$")) {
+            throw new IllegalArgumentException("Email không đúng định dạng: cần có tên và tên miền hợp lệ, không chứa khoảng trắng hoặc dấu chấm liên tiếp");
+        }
 
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalStateException("Email đã tồn tại trong hệ thống: " + email);

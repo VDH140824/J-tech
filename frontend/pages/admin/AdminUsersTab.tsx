@@ -76,6 +76,25 @@ function formatLastLogin(dateStr?: string | null) {
   return { time, date };
 }
 
+function validatePreCreateEmail(value: string): string | null {
+  const email = value.trim().toLowerCase();
+  if (!email) return "Email không được để trống.";
+  if (email.length > 255) return "Email không được vượt quá 255 ký tự.";
+  if (/\s/.test(email)) return "Email không được chứa khoảng trắng.";
+
+  const atIndex = email.indexOf("@");
+  if (atIndex === -1) return "Email phải chứa ký tự @.";
+  if (email.lastIndexOf("@") !== atIndex) return "Email không được chứa nhiều ký tự @.";
+  if (atIndex === 0) return "Email thiếu tên người dùng trước ký tự @.";
+
+  const domain = email.slice(atIndex + 1);
+  if (!domain || !domain.includes(".")) return "Email thiếu tên miền hợp lệ.";
+  if (domain.includes("..") || !/^[^@\s.]+(?:\.[^@\s.]+)+$/.test(domain)) {
+    return "Tên miền email không hợp lệ.";
+  }
+  return null;
+}
+
 interface AdminUsersTabProps {
   onNavigateToPending?: () => void;
 }
@@ -95,6 +114,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   // Create user
   const [showPreCreate, setShowPreCreate] = useState(false);
   const [preCreateEmail, setPreCreateEmail] = useState("");
+  const [preCreateError, setPreCreateError] = useState<string | null>(null);
   const [preCreateRole, setPreCreateRole] = useState<"STUDENT" | "MODERATOR" | "ADMIN">("MODERATOR");
   const [preCreateLoading, setPreCreateLoading] = useState(false);
 
@@ -154,7 +174,12 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   const handlePreCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!preCreateEmail.trim()) return;
+    setPreCreateError(null);
+    const validationError = validatePreCreateEmail(preCreateEmail);
+    if (validationError) {
+      setPreCreateError(validationError);
+      return;
+    }
     try {
       setPreCreateLoading(true);
       await preCreateAdminUser({ email: preCreateEmail.trim(), role: preCreateRole });
@@ -165,7 +190,12 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       setPreCreateRole("MODERATOR");
       fetchUsers();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Không thể tạo tài khoản.");
+      const backendMessage = err?.response?.data?.message;
+      setPreCreateError(
+        typeof backendMessage === "string" && backendMessage.trim()
+          ? backendMessage
+          : "Không thể tạo tài khoản.",
+      );
     } finally {
       setPreCreateLoading(false);
     }
@@ -232,7 +262,10 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
         <button
           type="button"
           className="admin-btn-create-user"
-          onClick={() => setShowPreCreate(true)}
+          onClick={() => {
+            setPreCreateError(null);
+            setShowPreCreate(true);
+          }}
         >
           <span className="btn-icon">⊕</span>
           <span>Thêm người dùng mới</span>
@@ -493,13 +526,24 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
               <label className="modal-field-label">
                 <span>Google Email *</span>
                 <input
-                  type="email"
-                  required
+                  type="text"
+                  inputMode="email"
+                  autoComplete="email"
                   placeholder="vi_du@fpt.edu.vn"
                   value={preCreateEmail}
-                  onChange={(e) => setPreCreateEmail(e.target.value)}
+                  onChange={(e) => {
+                    setPreCreateEmail(e.target.value);
+                    setPreCreateError(null);
+                  }}
+                  aria-invalid={!!preCreateError}
+                  aria-describedby={preCreateError ? "pre-create-email-error" : undefined}
                   className="modal-input"
                 />
+                {preCreateError && (
+                  <span id="pre-create-email-error" className="modal-field-error" role="alert">
+                    {preCreateError}
+                  </span>
+                )}
               </label>
 
               <label className="modal-field-label">
