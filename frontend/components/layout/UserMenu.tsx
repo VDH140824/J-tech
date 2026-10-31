@@ -19,9 +19,7 @@ export function UserMenu() {
   const normalizedRole = user?.role?.trim().toUpperCase();
   const normalizedRoleId = String(user?.roleId ?? "");
   const isAdmin =
-    normalizedRoleId === "1" ||
-    normalizedRole === "ADMIN" ||
-    normalizedRole === "ROLE_ADMIN";
+    normalizedRoleId === "1" || normalizedRole === "ADMIN" || normalizedRole === "ROLE_ADMIN";
 
   const isModerator =
     normalizedRoleId === "2" ||
@@ -40,7 +38,10 @@ export function UserMenu() {
   }, []);
 
   return (
-    <div className="user-profile-wrapper" ref={profileRef}>
+    <div
+      className="user-profile-wrapper"
+      ref={profileRef}
+    >
       <button
         type="button"
         className="user-profile-trigger"
@@ -59,7 +60,9 @@ export function UserMenu() {
             <div className="dropdown-user-name">{displayName || "Học viên"}</div>
             <div className="dropdown-user-email">{user?.email || "user@jtech.edu.vn"}</div>
             {isAdmin && <span className="admin-role-badge">QUẢN TRỊ HỆ THỐNG</span>}
-            {isModerator && !isAdmin && <span className="admin-role-badge mod-role-badge">KIỂM DUYỆT VIÊN</span>}
+            {isModerator && !isAdmin && (
+              <span className="admin-role-badge mod-role-badge">KIỂM DUYỆT VIÊN</span>
+            )}
           </div>
 
           <div className="dropdown-menu-list">

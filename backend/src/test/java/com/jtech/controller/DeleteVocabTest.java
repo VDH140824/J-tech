@@ -1,21 +1,20 @@
 package com.jtech.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.jtech.entity.Course;
 import com.jtech.entity.Vocabulary;
 import com.jtech.repository.LessonRepository;
 import com.jtech.repository.VocabularyRepository;
 import com.jtech.service.VocabularyService;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class DeleteVocabTest {
 
@@ -44,12 +43,14 @@ class DeleteVocabTest {
         var word = existing(Course.Status.PUBLISHED);
         when(vocabulary.findById(10L)).thenReturn(Optional.of(word));
         controller.archive(10L);
-        assertAll(() -> assertEquals(Course.Status.ARCHIVED, word.getStatus()),
-                () -> assertEquals(10L, word.getId()),
-                () -> assertEquals(3L, word.getLessonId()),
-                () -> assertEquals("日本語", word.getWord()),
-                () -> assertEquals("にほんご", word.getReading()),
-                () -> assertEquals("Tiếng Nhật", word.getMeaningVi()));
+        assertAll(
+            () -> assertEquals(Course.Status.ARCHIVED, word.getStatus()),
+            () -> assertEquals(10L, word.getId()),
+            () -> assertEquals(3L, word.getLessonId()),
+            () -> assertEquals("日本語", word.getWord()),
+            () -> assertEquals("にほんご", word.getReading()),
+            () -> assertEquals("Tiếng Nhật", word.getMeaningVi())
+        );
         verify(vocabulary).findById(10L);
         verify(vocabulary).save(word);
         verifyNoMoreInteractions(vocabulary); // Also rules out all physical-delete methods.
@@ -58,8 +59,11 @@ class DeleteVocabTest {
     @Test
     @DisplayName("Archived vocabulary is hidden from students")
     void archivedWordIsHiddenFromStudents() {
-        var student = new UsernamePasswordAuthenticationToken("student", "",
-                List.of(new SimpleGrantedAuthority("ROLE_STUDENT")));
+        var student = new UsernamePasswordAuthenticationToken(
+            "student",
+            "",
+            List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
+        );
         var archived = existing(Course.Status.ARCHIVED);
         assertTrue(service.visible(List.of(archived), null, student).isEmpty());
         verifyNoInteractions(vocabulary, lessons);
@@ -72,5 +76,4 @@ class DeleteVocabTest {
         verify(vocabulary).findById(999L);
         verifyNoMoreInteractions(vocabulary);
     }
-
 }

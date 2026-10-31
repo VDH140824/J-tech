@@ -26,14 +26,20 @@ export interface GrammarFormInput {
   status?: "DRAFT" | "PUBLISHED" | "HIDDEN" | "ARCHIVED";
 }
 
-export async function getGrammarsByLesson(lessonId: number, status?: string): Promise<GrammarItem[]> {
+export async function getGrammarsByLesson(
+  lessonId: number,
+  status?: string,
+): Promise<GrammarItem[]> {
   const params: Record<string, string> = {};
   if (status && status !== "ALL") params.status = status;
   const { data } = await apiClient.get<GrammarItem[]>(`/lessons/${lessonId}/grammars`, { params });
   return data;
 }
 
-export async function createGrammar(lessonId: number, payload: GrammarFormInput): Promise<GrammarItem> {
+export async function createGrammar(
+  lessonId: number,
+  payload: GrammarFormInput,
+): Promise<GrammarItem> {
   const { data } = await apiClient.post<GrammarItem>(`/lessons/${lessonId}/grammars`, payload);
   return data;
 }

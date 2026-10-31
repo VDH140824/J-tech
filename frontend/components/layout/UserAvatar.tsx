@@ -20,7 +20,10 @@ export function UserAvatar({ user, className = "", size }: UserAvatarProps) {
     : {};
 
   return (
-    <div className={`user-avatar-circle ${className}`} style={customStyle}>
+    <div
+      className={`user-avatar-circle ${className}`}
+      style={customStyle}
+    >
       {user?.avatarUrl ? (
         <img
           src={user.avatarUrl}

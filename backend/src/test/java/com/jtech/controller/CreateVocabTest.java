@@ -1,5 +1,9 @@
 package com.jtech.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.jtech.dto.request.VocabularyRequest;
 import com.jtech.entity.Chapter;
 import com.jtech.entity.Course;
@@ -11,6 +15,8 @@ import com.jtech.service.VocabularyService;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,14 +28,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 class CreateVocabTest {
+
     private static final ValidatorFactory VALIDATORS = Validation.buildDefaultValidatorFactory();
     private static final Validator VALIDATOR = VALIDATORS.getValidator();
 
@@ -38,7 +38,10 @@ class CreateVocabTest {
     private final VocabularyService service = new VocabularyService(lessons);
     private final VocabularyController controller = new VocabularyController(vocabulary, service);
     private final Authentication moderator = new UsernamePasswordAuthenticationToken(
-            "moderator", "", List.of(new SimpleGrantedAuthority("ROLE_MODERATOR")));
+        "moderator",
+        "",
+        List.of(new SimpleGrantedAuthority("ROLE_MODERATOR"))
+    );
     private Lesson lesson;
 
     @BeforeEach
@@ -61,9 +64,16 @@ class CreateVocabTest {
     }
 
     private VocabularyRequest input(String word, String reading, String meaning, Integer order) {
-        // Null legacy audio fields deliberately model the confirmed synthesis workflow.
-        return new VocabularyRequest(word, reading, meaning, null, null, null,
-                null, null, order, Course.Status.DRAFT);
+        return new VocabularyRequest(
+            word,
+            reading,
+            meaning,
+            null,
+            null,
+            null,
+            order,
+            Course.Status.DRAFT
+        );
     }
 
     private VocabularyRequest validInput() {
@@ -71,9 +81,12 @@ class CreateVocabTest {
     }
 
     private void assertRequiredFieldViolation(VocabularyRequest request, String field) {
-        assertTrue(VALIDATOR.validate(request).stream()
+        assertTrue(
+            VALIDATOR.validate(request)
+                .stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals(field)),
-                () -> "Missing required field: " + field);
+            () -> "Missing required field: " + field
+        );
     }
 
     @Test
@@ -89,12 +102,14 @@ class CreateVocabTest {
         when(vocabulary.save(any(Vocabulary.class))).thenAnswer(call -> call.getArgument(0));
         var created = controller.create(3L, validInput(), moderator).getBody();
         assertNotNull(created);
-        assertAll(() -> assertEquals(3L, created.getLessonId()),
-                () -> assertEquals("日本語", created.getWord()),
-                () -> assertEquals("にほんご", created.getReading()),
-                () -> assertEquals("Tiếng Nhật", created.getMeaningVi()),
-                () -> assertEquals(0, created.getDisplayOrder()),
-                () -> assertEquals(Course.Status.DRAFT, created.getStatus()));
+        assertAll(
+            () -> assertEquals(3L, created.getLessonId()),
+            () -> assertEquals("日本語", created.getWord()),
+            () -> assertEquals("にほんご", created.getReading()),
+            () -> assertEquals("Tiếng Nhật", created.getMeaningVi()),
+            () -> assertEquals(0, created.getDisplayOrder()),
+            () -> assertEquals(Course.Status.DRAFT, created.getStatus())
+        );
         verify(vocabulary).save(created);
     }
 
@@ -102,13 +117,23 @@ class CreateVocabTest {
     @DisplayName("Save optional fields")
     void createSavesOptionalFields() {
         when(vocabulary.save(any(Vocabulary.class))).thenAnswer(call -> call.getArgument(0));
-        var request = new VocabularyRequest("日本語", "にほんご", "Tiếng Nhật", "Noun",
-                "日本語を勉強します。", "Tôi học tiếng Nhật.", null, null, 1, Course.Status.DRAFT);
+        var request = new VocabularyRequest(
+            "日本語",
+            "にほんご",
+            "Tiếng Nhật",
+            "Noun",
+            "日本語を勉強します。",
+            "Tôi học tiếng Nhật.",
+            1,
+            Course.Status.DRAFT
+        );
         var created = controller.create(3L, request, moderator).getBody();
         assertNotNull(created);
-        assertAll(() -> assertEquals(request.wordType(), created.getWordType()),
-                () -> assertEquals(request.exampleJp(), created.getExampleJp()),
-                () -> assertEquals(request.exampleVi(), created.getExampleVi()));
+        assertAll(
+            () -> assertEquals(request.wordType(), created.getWordType()),
+            () -> assertEquals(request.exampleJp(), created.getExampleJp()),
+            () -> assertEquals(request.exampleVi(), created.getExampleVi())
+        );
     }
 
     @ParameterizedTest(name = "missing word: [{0}]")
@@ -138,7 +163,10 @@ class CreateVocabTest {
     @Test
     @DisplayName("Display order is required")
     void rejectMissingDisplayOrder() {
-        assertRequiredFieldViolation(input("日本語", "にほんご", "Tiếng Nhật", null), "displayOrder");
+        assertRequiredFieldViolation(
+            input("日本語", "にほんご", "Tiếng Nhật", null),
+            "displayOrder"
+        );
     }
 
     @Test
@@ -158,7 +186,9 @@ class CreateVocabTest {
     void duplicateCreateDoesNotSave() {
         // The lookup has no status restriction. Actual IgnoreCase SQL requires integration testing.
         when(vocabulary.existsByLessonIdAndWordIgnoreCase(3L, "日本語")).thenReturn(true);
-        assertThrows(IllegalStateException.class, () -> controller.create(3L, validInput(), moderator));
+        assertThrows(IllegalStateException.class, () ->
+            controller.create(3L, validInput(), moderator)
+        );
         verify(vocabulary).existsByLessonIdAndWordIgnoreCase(3L, "日本語");
         verifyNoMoreInteractions(vocabulary);
     }
@@ -166,7 +196,9 @@ class CreateVocabTest {
     @Test
     @DisplayName("Creation rejects a missing lesson")
     void createRejectsMissingLesson() {
-        assertThrows(RuntimeException.class, () -> controller.create(999L, validInput(), moderator));
+        assertThrows(RuntimeException.class, () ->
+            controller.create(999L, validInput(), moderator)
+        );
         verifyNoInteractions(vocabulary);
     }
 
@@ -183,7 +215,11 @@ class CreateVocabTest {
     void createPropagatesSaveFailure() {
         var failure = new IllegalStateException("Simulated repository failure");
         when(vocabulary.save(any(Vocabulary.class))).thenThrow(failure);
-        assertSame(failure, assertThrows(IllegalStateException.class,
-                () -> controller.create(3L, validInput(), moderator)));
+        assertSame(
+            failure,
+            assertThrows(IllegalStateException.class, () ->
+                controller.create(3L, validInput(), moderator)
+            )
+        );
     }
 }

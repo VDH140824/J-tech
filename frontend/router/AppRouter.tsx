@@ -23,11 +23,26 @@ export function AppRouter() {
       <BackgroundMusic />
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/oauth2/redirect" element={<OAuth2RedirectPage />} />
-        <Route path="/pending-approval" element={<PendingApprovalPage />} />
-        <Route path="/account-rejected" element={<AccountRejectedPage />} />
+        <Route
+          path="/"
+          element={<LandingPage />}
+        />
+        <Route
+          path="/login"
+          element={<LoginPage />}
+        />
+        <Route
+          path="/oauth2/redirect"
+          element={<OAuth2RedirectPage />}
+        />
+        <Route
+          path="/pending-approval"
+          element={<PendingApprovalPage />}
+        />
+        <Route
+          path="/account-rejected"
+          element={<AccountRejectedPage />}
+        />
 
         {/* Authenticated main application routes sharing MainLayout */}
         <Route
@@ -37,11 +52,26 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/courses/:courseId" element={<CoursePage />} />
-          <Route path="/courses/:courseId/chapters/:chapterId" element={<ChapterPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route
+            path="/home"
+            element={<HomePage />}
+          />
+          <Route
+            path="/courses/:courseId"
+            element={<CoursePage />}
+          />
+          <Route
+            path="/courses/:courseId/chapters/:chapterId"
+            element={<ChapterPage />}
+          />
+          <Route
+            path="/profile"
+            element={<ProfilePage />}
+          />
+          <Route
+            path="/feedback"
+            element={<FeedbackPage />}
+          />
         </Route>
 
         {/* Admin routes (Admin has its own dedicated portal layout) */}
@@ -96,10 +126,16 @@ export function AppRouter() {
           }
         />
 
-        <Route path="*" element={<Navigate to="/home" replace />} />
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/home"
+              replace
+            />
+          }
+        />
       </Routes>
     </>
   );
 }
-
-

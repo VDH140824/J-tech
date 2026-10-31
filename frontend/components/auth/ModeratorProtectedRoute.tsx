@@ -15,14 +15,16 @@ export function ModeratorProtectedRoute({ children }: ModeratorProtectedRoutePro
 
   if (isLoading) {
     return (
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#f8fafc",
-        color: "#1e293b"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: "#f8fafc",
+          color: "#1e293b",
+        }}
+      >
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>📋</div>
           <p style={{ fontSize: "1.1rem", color: "#64748b" }}>Đang xác thực quyền Moderator...</p>
@@ -33,14 +35,29 @@ export function ModeratorProtectedRoute({ children }: ModeratorProtectedRoutePro
 
   const status = user?.status?.toUpperCase();
   if (status === "PENDING") {
-    return <Navigate to="/pending-approval" replace />;
+    return (
+      <Navigate
+        to="/pending-approval"
+        replace
+      />
+    );
   }
   if (status === "REJECTED" || status === "LOCKED") {
-    return <Navigate to="/account-rejected" replace />;
+    return (
+      <Navigate
+        to="/account-rejected"
+        replace
+      />
+    );
   }
 
   if (!isAuthenticated || !checkIsModerator(user) || status !== "ACTIVE") {
-    return <Navigate to="/home" replace />;
+    return (
+      <Navigate
+        to="/home"
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

@@ -1,5 +1,9 @@
 package com.jtech.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.jtech.entity.Chapter;
 import com.jtech.entity.Course;
 import com.jtech.entity.Lesson;
@@ -7,19 +11,14 @@ import com.jtech.entity.Vocabulary;
 import com.jtech.repository.LessonRepository;
 import com.jtech.repository.VocabularyRepository;
 import com.jtech.service.VocabularyService;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class ReadVocabTest {
 
@@ -28,7 +27,10 @@ class ReadVocabTest {
     private final VocabularyService service = new VocabularyService(lessons);
     private final VocabularyController controller = new VocabularyController(vocabulary, service);
     private final Authentication moderator = new UsernamePasswordAuthenticationToken(
-            "moderator", "", List.of(new SimpleGrantedAuthority("ROLE_MODERATOR")));
+        "moderator",
+        "",
+        List.of(new SimpleGrantedAuthority("ROLE_MODERATOR"))
+    );
     private Lesson lesson;
 
     @BeforeEach
@@ -73,12 +75,13 @@ class ReadVocabTest {
     void filterByStatusWithoutModifyingRecords() {
         var draft = existing(Course.Status.DRAFT);
         var archived = existing(Course.Status.ARCHIVED);
-        when(vocabulary.findByLessonIdOrderByDisplayOrderAscIdAsc(3L)).thenReturn(List.of(draft, archived));
+        when(vocabulary.findByLessonIdOrderByDisplayOrderAscIdAsc(3L)).thenReturn(
+            List.of(draft, archived)
+        );
         assertEquals(List.of(archived), controller.list(3L, Course.Status.ARCHIVED, moderator));
         assertEquals(Course.Status.DRAFT, draft.getStatus());
         assertEquals(Course.Status.ARCHIVED, archived.getStatus());
         verify(vocabulary).findByLessonIdOrderByDisplayOrderAscIdAsc(3L);
         verifyNoMoreInteractions(vocabulary);
     }
-
 }

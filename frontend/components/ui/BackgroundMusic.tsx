@@ -15,8 +15,7 @@ export function BackgroundMusic() {
   const location = useLocation();
 
   const shouldPlay = MUSIC_ROUTES.some(
-    (route) =>
-      location.pathname === route || location.pathname.startsWith(`${route}/`),
+    (route) => location.pathname === route || location.pathname.startsWith(`${route}/`),
   );
 
   // Create audio element once. Playback starts only from the music button.
@@ -202,21 +201,27 @@ export function BackgroundMusic() {
           onClick={toggle}
           onMouseEnter={() => setShowVolume(true)}
           onMouseLeave={() => setShowVolume(false)}
-          title={
-            playing
-              ? "Pause music • Scroll for volume"
-              : "Play Japanese background music"
-          }
+          title={playing ? "Pause music • Scroll for volume" : "Play Japanese background music"}
         >
-          <span className={`bg-music-icon ${playing ? "playing" : ""}`}>
-            ♫
-          </span>
+          <span className={`bg-music-icon ${playing ? "playing" : ""}`}>♫</span>
           <span>Nhạc Nhật</span>
           <div className="bg-music-equalizer">
-            <div className="bg-music-bar" style={{ animationPlayState: playing ? "running" : "paused" }} />
-            <div className="bg-music-bar" style={{ animationPlayState: playing ? "running" : "paused" }} />
-            <div className="bg-music-bar" style={{ animationPlayState: playing ? "running" : "paused" }} />
-            <div className="bg-music-bar" style={{ animationPlayState: playing ? "running" : "paused" }} />
+            <div
+              className="bg-music-bar"
+              style={{ animationPlayState: playing ? "running" : "paused" }}
+            />
+            <div
+              className="bg-music-bar"
+              style={{ animationPlayState: playing ? "running" : "paused" }}
+            />
+            <div
+              className="bg-music-bar"
+              style={{ animationPlayState: playing ? "running" : "paused" }}
+            />
+            <div
+              className="bg-music-bar"
+              style={{ animationPlayState: playing ? "running" : "paused" }}
+            />
           </div>
         </div>
       </div>

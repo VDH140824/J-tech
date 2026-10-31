@@ -5,8 +5,7 @@ import com.jtech.entity.RefreshToken;
 
 public final class RefreshTokenMapper {
 
-    private RefreshTokenMapper() {
-    }
+    private RefreshTokenMapper() {}
 
     public static RefreshToken toEntity(RefreshTokenRequest request) {
         if (request == null) {

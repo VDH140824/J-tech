@@ -143,7 +143,9 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .sidebar-cat-widget:hover {

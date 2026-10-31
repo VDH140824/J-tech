@@ -71,7 +71,10 @@ export function ModeratorLessonListTab({
       setLoading(true);
       setError(null);
       const data = readOnly
-        ? (publishedLessons ?? []).filter(lesson => lesson.skillType === activeConfig.skillType && lesson.status === "PUBLISHED")
+        ? (publishedLessons ?? []).filter(
+            (lesson) =>
+              lesson.skillType === activeConfig.skillType && lesson.status === "PUBLISHED",
+          )
         : await getLessonsByChapter(chapterId, activeConfig.skillType, statusFilter, courseId);
       setLessons(data);
     } catch (err: unknown) {
@@ -133,9 +136,13 @@ export function ModeratorLessonListTab({
       await fetchLessons();
     } catch (err: unknown) {
       console.error("Lỗi khi xóa bài học:", err);
-      alert(isAxiosError(err) && err.response?.status === 409 && typeof err.response.data?.message === "string"
-        ? err.response.data.message
-        : "Không thể xóa bài học. Vui lòng thử lại!");
+      alert(
+        isAxiosError(err) &&
+          err.response?.status === 409 &&
+          typeof err.response.data?.message === "string"
+          ? err.response.data.message
+          : "Không thể xóa bài học. Vui lòng thử lại!",
+      );
     } finally {
       setDeleting(false);
     }
@@ -194,7 +201,10 @@ export function ModeratorLessonListTab({
       </div>
 
       {/* Quick Tabs to Switch Between Skills */}
-      <div className="mod-skill-tabs-nav" style={{ marginBottom: "16px" }}>
+      <div
+        className="mod-skill-tabs-nav"
+        style={{ marginBottom: "16px" }}
+      >
         {SECTIONS.map((sec) => {
           const isActive = sec.key === selectedSection;
           return (
@@ -223,32 +233,64 @@ export function ModeratorLessonListTab({
 
       {/* Section Header with "➕ Thêm bài học" */}
       <div className="admin-page-header">
-        <div className={`mod-header-action-row ${activeConfig.key === "vocabulary" ? "mod-vocab-header-actions" : ""}`} style={{ width: "100%" }}>
+        <div
+          className={`mod-header-action-row ${activeConfig.key === "vocabulary" ? "mod-vocab-header-actions" : ""}`}
+          style={{ width: "100%" }}
+        >
           <div className="admin-header-titles">
-            <h2 className="admin-main-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <h2
+              className="admin-main-title"
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
               <span>{activeConfig.icon}</span>
               <span>
-                {readOnly ? "Bài học" : "Quản lý bài học"} {activeConfig.label} ({activeConfig.labelJp})
+                {readOnly ? "Bài học" : "Quản lý bài học"} {activeConfig.label} (
+                {activeConfig.labelJp})
               </span>
             </h2>
             <p className="admin-main-subtitle">
-              {readOnly ? `Chương ${chapterNo}: ${chapterTitle} — Danh sách bài học ${activeConfig.label}.` : <>Chương {chapterNo}: {chapterTitle} — Danh sách bài học từ bảng{" "}<code>lesson</code> (skill: <strong>{activeConfig.skillType}</strong>).</>}
+              {readOnly ? (
+                `Chương ${chapterNo}: ${chapterTitle} — Danh sách bài học ${activeConfig.label}.`
+              ) : (
+                <>
+                  Chương {chapterNo}: {chapterTitle} — Danh sách bài học từ bảng <code>lesson</code>{" "}
+                  (skill: <strong>{activeConfig.skillType}</strong>).
+                </>
+              )}
             </p>
           </div>
-          {activeConfig.key === "vocabulary" && onOpenChapterFlashcards && <button type="button" className="mod-btn-back" onClick={onOpenChapterFlashcards}>Flashcard tổng hợp chương</button>}
-          {activeConfig.key === "vocabulary" && onOpenChapterTest && <button type="button" className="mod-btn-back" onClick={onOpenChapterTest}>Bài test chương Vocab</button>}
-          {!readOnly && <button
-            type="button"
-            className="mod-btn-add"
-            style={{
-              backgroundColor: activeConfig.color,
-              padding: "11px 22px",
-              fontSize: "0.92rem",
-            }}
-            onClick={handleOpenCreateModal}
-          >
-            <span>➕</span> Thêm bài học
-          </button>}
+          {activeConfig.key === "vocabulary" && onOpenChapterFlashcards && (
+            <button
+              type="button"
+              className="mod-btn-back"
+              onClick={onOpenChapterFlashcards}
+            >
+              Flashcard tổng hợp chương
+            </button>
+          )}
+          {activeConfig.key === "vocabulary" && onOpenChapterTest && (
+            <button
+              type="button"
+              className="mod-btn-back"
+              onClick={onOpenChapterTest}
+            >
+              Bài test chương Vocab
+            </button>
+          )}
+          {!readOnly && (
+            <button
+              type="button"
+              className="mod-btn-add"
+              style={{
+                backgroundColor: activeConfig.color,
+                padding: "11px 22px",
+                fontSize: "0.92rem",
+              }}
+              onClick={handleOpenCreateModal}
+            >
+              <span>➕</span> Thêm bài học
+            </button>
+          )}
         </div>
       </div>
 
@@ -264,17 +306,19 @@ export function ModeratorLessonListTab({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          {!readOnly && <select
-            className="mod-toolbar-select"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="PUBLISHED">Đã xuất bản (PUBLISHED)</option>
-            <option value="DRAFT">Bản nháp (DRAFT)</option>
-            <option value="HIDDEN">Ẩn (HIDDEN)</option>
-            <option value="ARCHIVED">Lưu trữ (ARCHIVED)</option>
-          </select>}
+          {!readOnly && (
+            <select
+              className="mod-toolbar-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="PUBLISHED">Đã xuất bản (PUBLISHED)</option>
+              <option value="DRAFT">Bản nháp (DRAFT)</option>
+              <option value="HIDDEN">Ẩn (HIDDEN)</option>
+              <option value="ARCHIVED">Lưu trữ (ARCHIVED)</option>
+            </select>
+          )}
         </div>
         <div style={{ fontSize: "0.86rem", color: "#64748b", fontWeight: 600 }}>
           Hiển thị <strong>{filteredLessons.length}</strong> bài học {activeConfig.label}
@@ -289,9 +333,7 @@ export function ModeratorLessonListTab({
               className="admin-loading-spinner"
               style={{ borderTopColor: activeConfig.color }}
             />
-            <p className="admin-loading-text">
-              Đang tải danh sách bài học {activeConfig.label}...
-            </p>
+            <p className="admin-loading-text">Đang tải danh sách bài học {activeConfig.label}...</p>
           </div>
         ) : error ? (
           <div className="admin-empty-state">
@@ -311,18 +353,22 @@ export function ModeratorLessonListTab({
           <div className="admin-empty-state">
             <h3 className="admin-empty-title">Chưa có bài học nào</h3>
             <p className="admin-empty-desc">
-              {readOnly ? "Chưa có bài học được xuất bản phù hợp với lựa chọn này." : searchQuery || statusFilter !== "ALL"
-                ? "Không tìm thấy bài học nào phù hợp với bộ lọc hiện tại."
-                : `Chưa có bài học nào trong phần ${activeConfig.label}. Nhấn nút "Thêm bài học" để bắt đầu.`}
+              {readOnly
+                ? "Chưa có bài học được xuất bản phù hợp với lựa chọn này."
+                : searchQuery || statusFilter !== "ALL"
+                  ? "Không tìm thấy bài học nào phù hợp với bộ lọc hiện tại."
+                  : `Chưa có bài học nào trong phần ${activeConfig.label}. Nhấn nút "Thêm bài học" để bắt đầu.`}
             </p>
-            {!readOnly && <button
-              type="button"
-              className="mod-btn-add"
-              style={{ backgroundColor: activeConfig.color, margin: "16px auto 0" }}
-              onClick={handleOpenCreateModal}
-            >
-              <span>➕</span> Thêm bài học
-            </button>}
+            {!readOnly && (
+              <button
+                type="button"
+                className="mod-btn-add"
+                style={{ backgroundColor: activeConfig.color, margin: "16px auto 0" }}
+                onClick={handleOpenCreateModal}
+              >
+                <span>➕</span> Thêm bài học
+              </button>
+            )}
           </div>
         ) : (
           <div className="table-responsive mod-lesson-table-wrap">
@@ -360,8 +406,16 @@ export function ModeratorLessonListTab({
                     </td>
                     <td>
                       {activeConfig.key === "vocabulary" ? (
-                        <button type="button" className="mod-vocab-lesson-link" onClick={() => onViewLessonItems(lesson)}>{lesson.title}</button>
-                      ) : <span className="mod-lesson-main-title">{lesson.title}</span>}
+                        <button
+                          type="button"
+                          className="mod-vocab-lesson-link"
+                          onClick={() => onViewLessonItems(lesson)}
+                        >
+                          {lesson.title}
+                        </button>
+                      ) : (
+                        <span className="mod-lesson-main-title">{lesson.title}</span>
+                      )}
                     </td>
                     <td className="mod-lesson-description-cell">
                       {lesson.description?.trim() || "—"}
@@ -388,7 +442,10 @@ export function ModeratorLessonListTab({
                       <span className="lesson-order-pill">{lesson.displayOrder}</span>
                     </td>
                     <td>
-                      <div className="row-actions-group" style={{ justifyContent: "flex-end", gap: "8px" }}>
+                      <div
+                        className="row-actions-group"
+                        style={{ justifyContent: "flex-end", gap: "8px" }}
+                      >
                         <button
                           type="button"
                           className="mod-btn-view-items lesson-items-action"
@@ -401,25 +458,33 @@ export function ModeratorLessonListTab({
                           onClick={() => onViewLessonItems(lesson)}
                         >
                           <span>{activeConfig.icon}</span>
-                          <span>{activeConfig.key === "vocabulary" ? "Mở bài học" : activeConfig.itemButtonLabel}</span>
+                          <span>
+                            {activeConfig.key === "vocabulary"
+                              ? "Mở bài học"
+                              : activeConfig.itemButtonLabel}
+                          </span>
                         </button>
 
-                        {!readOnly && <><button
-                          type="button"
-                          className={`btn-action edit ${activeConfig.key === "vocabulary" ? "mod-vocab-text-action" : ""}`}
-                          title="Chỉnh sửa bài học"
-                          onClick={() => handleOpenEditModal(lesson)}
-                        >
-                          {activeConfig.key === "vocabulary" ? "Sửa" : "✏️"}
-                        </button>
-                        <button
-                          type="button"
-                          className={`btn-action delete ${activeConfig.key === "vocabulary" ? "mod-vocab-text-action" : ""}`}
-                          title="Xóa bài học"
-                          onClick={() => setDeletingLesson(lesson)}
-                        >
-                          {activeConfig.key === "vocabulary" ? "Xóa" : "🗑️"}
-                        </button></>}
+                        {!readOnly && (
+                          <>
+                            <button
+                              type="button"
+                              className={`btn-action edit ${activeConfig.key === "vocabulary" ? "mod-vocab-text-action" : ""}`}
+                              title="Chỉnh sửa bài học"
+                              onClick={() => handleOpenEditModal(lesson)}
+                            >
+                              {activeConfig.key === "vocabulary" ? "Sửa" : "✏️"}
+                            </button>
+                            <button
+                              type="button"
+                              className={`btn-action delete ${activeConfig.key === "vocabulary" ? "mod-vocab-text-action" : ""}`}
+                              title="Xóa bài học"
+                              onClick={() => setDeletingLesson(lesson)}
+                            >
+                              {activeConfig.key === "vocabulary" ? "Xóa" : "🗑️"}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -431,20 +496,25 @@ export function ModeratorLessonListTab({
       </div>
 
       {/* Lesson Create / Edit Modal */}
-      {!readOnly && <LessonFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmitForm}
-        editingLesson={editingLesson}
-        skillLabel={activeConfig.label}
-        skillType={activeConfig.skillType}
-        skillColor={activeConfig.color}
-        defaultLessonNo={nextLessonNo}
-      />}
+      {!readOnly && (
+        <LessonFormModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmitForm}
+          editingLesson={editingLesson}
+          skillLabel={activeConfig.label}
+          skillType={activeConfig.skillType}
+          skillColor={activeConfig.color}
+          defaultLessonNo={nextLessonNo}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {!readOnly && deletingLesson && (
-        <div className="modal-overlay" onClick={() => !deleting && setDeletingLesson(null)}>
+        <div
+          className="modal-overlay"
+          onClick={() => !deleting && setDeletingLesson(null)}
+        >
           <div
             className="modal-card"
             style={{ maxWidth: "460px" }}
@@ -467,7 +537,8 @@ export function ModeratorLessonListTab({
                 <strong>
                   Bài {deletingLesson.lessonNo}: {deletingLesson.title}
                 </strong>{" "}
-                khỏi chương này không? {activeConfig.key === "vocabulary"
+                khỏi chương này không?{" "}
+                {activeConfig.key === "vocabulary"
                   ? "Thông tin bài học sẽ bị xóa. Các từ vựng được giữ nguyên trong hệ thống và gỡ khỏi bài này để có thể gán sang bài khác."
                   : "Hành động này sẽ xóa dữ liệu bài học này khỏi hệ thống."}
               </p>

@@ -1,19 +1,18 @@
 package com.jtech.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.jtech.dto.request.VocabularyRequest;
 import com.jtech.entity.Course;
 import com.jtech.entity.Vocabulary;
 import com.jtech.repository.LessonRepository;
 import com.jtech.repository.VocabularyRepository;
 import com.jtech.service.VocabularyService;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class UpdateVocabTest {
 
@@ -23,9 +22,16 @@ class UpdateVocabTest {
     private final VocabularyController controller = new VocabularyController(vocabulary, service);
 
     private VocabularyRequest input(String word, String reading, String meaning, Integer order) {
-        // Null legacy audio fields deliberately model the confirmed synthesis workflow.
-        return new VocabularyRequest(word, reading, meaning, null, null, null,
-                null, null, order, Course.Status.DRAFT);
+        return new VocabularyRequest(
+            word,
+            reading,
+            meaning,
+            null,
+            null,
+            null,
+            order,
+            Course.Status.DRAFT
+        );
     }
 
     private VocabularyRequest validInput() {
@@ -50,8 +56,9 @@ class UpdateVocabTest {
         var word = existing(Course.Status.DRAFT);
         when(vocabulary.findById(10L)).thenReturn(Optional.of(word));
         when(vocabulary.existsByLessonIdAndWordIgnoreCaseAndIdNot(3L, "別", 10L)).thenReturn(true);
-        assertThrows(IllegalStateException.class,
-                () -> controller.update(10L, input("別", "べつ", "Khác", 1)));
+        assertThrows(IllegalStateException.class, () ->
+            controller.update(10L, input("別", "べつ", "Khác", 1))
+        );
         assertEquals("日本語", word.getWord());
         verify(vocabulary).findById(10L);
         verify(vocabulary).existsByLessonIdAndWordIgnoreCaseAndIdNot(3L, "別", 10L);
@@ -64,15 +71,25 @@ class UpdateVocabTest {
         var word = existing(Course.Status.DRAFT);
         when(vocabulary.findById(10L)).thenReturn(Optional.of(word));
         when(vocabulary.save(word)).thenReturn(word);
-        var request = new VocabularyRequest("別", "べつ", "Khác", "Noun", "例", "Ví dụ",
-                null, null, 2, Course.Status.PUBLISHED);
+        var request = new VocabularyRequest(
+            "別",
+            "べつ",
+            "Khác",
+            "Noun",
+            "例",
+            "Ví dụ",
+            2,
+            Course.Status.PUBLISHED
+        );
         var updated = controller.update(10L, request);
-        assertAll(() -> assertEquals("別", updated.getWord()),
-                () -> assertEquals("べつ", updated.getReading()),
-                () -> assertEquals("Khác", updated.getMeaningVi()),
-                () -> assertEquals(2, updated.getDisplayOrder()),
-                () -> assertEquals(Course.Status.PUBLISHED, updated.getStatus()),
-                () -> assertEquals(3L, updated.getLessonId()));
+        assertAll(
+            () -> assertEquals("別", updated.getWord()),
+            () -> assertEquals("べつ", updated.getReading()),
+            () -> assertEquals("Khác", updated.getMeaningVi()),
+            () -> assertEquals(2, updated.getDisplayOrder()),
+            () -> assertEquals(Course.Status.PUBLISHED, updated.getStatus()),
+            () -> assertEquals(3L, updated.getLessonId())
+        );
         verify(vocabulary).save(word);
     }
 
@@ -95,5 +112,4 @@ class UpdateVocabTest {
         verify(vocabulary).findById(999L);
         verifyNoMoreInteractions(vocabulary);
     }
-
 }

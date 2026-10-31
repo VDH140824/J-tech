@@ -13,7 +13,11 @@ public interface AdminUserService {
     UserResponse approveUser(Long userId);
     UserResponse rejectUser(Long userId);
     UserResponse updateUserStatus(Long userId, AdminUserStatusRequest request);
-    UserResponse changeUserRole(Long userId, ChangeUserRoleRequest request, String currentUserEmail);
+    UserResponse changeUserRole(
+        Long userId,
+        ChangeUserRoleRequest request,
+        String currentUserEmail
+    );
     void deleteUser(Long userId);
     UserResponse preCreateUser(PreCreateUserRequest request);
 }

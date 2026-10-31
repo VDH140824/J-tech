@@ -30,7 +30,7 @@ export async function getLessonsByChapter(
   chapterId: number,
   skillType?: SkillType,
   status?: string,
-  courseId?: number
+  courseId?: number,
 ): Promise<LessonSummary[]> {
   const params: Record<string, string> = {};
   if (skillType) {
@@ -41,7 +41,9 @@ export async function getLessonsByChapter(
   }
 
   // Use the existing working endpoint /chapters/{chapterId}/lessons
-  const { data } = await apiClient.get<LessonSummary[]>(`/chapters/${chapterId}/lessons`, { params });
+  const { data } = await apiClient.get<LessonSummary[]>(`/chapters/${chapterId}/lessons`, {
+    params,
+  });
   return data;
 }
 
@@ -53,16 +55,13 @@ export async function getLessonById(id: number): Promise<LessonSummary> {
 export async function createLesson(
   chapterId: number,
   payload: LessonFormInput,
-  courseId?: number
+  courseId?: number,
 ): Promise<LessonSummary> {
   const { data } = await apiClient.post<LessonSummary>(`/chapters/${chapterId}/lessons`, payload);
   return data;
 }
 
-export async function updateLesson(
-  id: number,
-  payload: LessonFormInput
-): Promise<LessonSummary> {
+export async function updateLesson(id: number, payload: LessonFormInput): Promise<LessonSummary> {
   const { data } = await apiClient.put<LessonSummary>(`/lessons/${id}`, payload);
   return data;
 }

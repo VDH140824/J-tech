@@ -1,9 +1,9 @@
 package com.jtech.security;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class JwtServiceTest {
 
@@ -55,7 +55,10 @@ class JwtServiceTest {
         String email = "user@jtech.edu.vn";
         String token = jwtService.generateToken(email);
 
-        JwtService differentSecretService = new JwtService("another-secret-key-that-is-at-least-256-bits-long-12345678", expirationMs);
+        JwtService differentSecretService = new JwtService(
+            "another-secret-key-that-is-at-least-256-bits-long-12345678",
+            expirationMs
+        );
         assertFalse(differentSecretService.isTokenValid(token, email));
     }
 

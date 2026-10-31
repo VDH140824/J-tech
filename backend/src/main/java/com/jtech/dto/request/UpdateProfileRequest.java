@@ -1,7 +1,6 @@
 package com.jtech.dto.request;
 
 import jakarta.validation.constraints.Size;
-
 import java.time.LocalDate;
 
 public class UpdateProfileRequest {
@@ -20,8 +19,7 @@ public class UpdateProfileRequest {
     @Size(max = 255)
     private String avatarPublicId;
 
-    public UpdateProfileRequest() {
-    }
+    public UpdateProfileRequest() {}
 
     public UpdateProfileRequest(String fullName, LocalDate dateOfBirth) {
         this.fullName = fullName;

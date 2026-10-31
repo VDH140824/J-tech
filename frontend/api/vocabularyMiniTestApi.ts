@@ -21,7 +21,9 @@ export interface MiniTestInput {
   status: MiniTestStatus;
   questions: MiniTestQuestionInput[];
 }
-export interface MiniTestQuestion extends MiniTestQuestionInput { id: number; }
+export interface MiniTestQuestion extends MiniTestQuestionInput {
+  id: number;
+}
 export interface VocabularyMiniTest extends Omit<MiniTestInput, "questions"> {
   id: number;
   lessonId: number | null;
@@ -35,22 +37,34 @@ export interface MiniTestResult {
   correctCount: number;
   totalQuestions: number;
   passed: boolean;
-  questions: { questionId: number; correct: boolean; correctAnswer: string; matches: Record<string, string>; explanation: string }[];
+  questions: {
+    questionId: number;
+    correct: boolean;
+    correctAnswer: string;
+    matches: Record<string, string>;
+    explanation: string;
+  }[];
 }
 const base = "/moderator/vocabulary";
 export async function getMiniTests(lessonId: number, signal?: AbortSignal) {
-  return (await apiClient.get<VocabularyMiniTest[]>(`${base}/lessons/${lessonId}/mini-tests`, { signal })).data;
+  return (
+    await apiClient.get<VocabularyMiniTest[]>(`${base}/lessons/${lessonId}/mini-tests`, { signal })
+  ).data;
 }
 export async function getMiniTest(id: number) {
   return (await apiClient.get<VocabularyMiniTest>(`${base}/mini-tests/${id}`)).data;
 }
-export async function archiveMiniTest(id: number) { await apiClient.delete(`${base}/mini-tests/${id}`); }
+export async function archiveMiniTest(id: number) {
+  await apiClient.delete(`${base}/mini-tests/${id}`);
+}
 export async function generateMiniTest(lessonId: number, input: Omit<MiniTestInput, "questions">) {
-  return (await apiClient.post<VocabularyMiniTest>(`${base}/lessons/${lessonId}/mini-tests`, input)).data;
+  return (await apiClient.post<VocabularyMiniTest>(`${base}/lessons/${lessonId}/mini-tests`, input))
+    .data;
 }
 export function miniTestError(error: unknown): string {
   if (isAxiosError(error)) {
-    if (error.response?.status === 404) return "Không tìm thấy API mini-test. Hãy khởi động lại backend bản code mới và kiểm tra địa chỉ API.";
+    if (error.response?.status === 404)
+      return "Không tìm thấy API mini-test. Hãy khởi động lại backend bản code mới và kiểm tra địa chỉ API.";
     if (typeof error.response?.data?.message === "string") return error.response.data.message;
   }
   return "Không thể tải hoặc lưu dữ liệu. Vui lòng thử lại.";

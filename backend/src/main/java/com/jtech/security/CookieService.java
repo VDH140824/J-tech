@@ -15,9 +15,10 @@ public class CookieService {
     private final String authPath;
 
     public CookieService(
-            @Value("${app.cookie.secure:false}") boolean secure,
-            @Value("${app.cookie.same-site:Lax}") String sameSite,
-            @Value("${app.cookie.path:/api/auth}") String authPath) {
+        @Value("${app.cookie.secure:false}") boolean secure,
+        @Value("${app.cookie.same-site:Lax}") String sameSite,
+        @Value("${app.cookie.path:/api/auth}") String authPath
+    ) {
         this.secure = secure;
         this.sameSite = sameSite;
         this.authPath = authPath;
@@ -25,41 +26,41 @@ public class CookieService {
 
     public ResponseCookie createRefreshTokenCookie(String token) {
         return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, token)
-                .httpOnly(true)
-                .secure(secure)
-                .path(authPath)
-                .maxAge(30L * 24 * 60 * 60) // 30 days
-                .sameSite(sameSite)
-                .build();
+            .httpOnly(true)
+            .secure(secure)
+            .path(authPath)
+            .maxAge(30L * 24 * 60 * 60) // 30 days
+            .sameSite(sameSite)
+            .build();
     }
 
     public ResponseCookie clearRefreshTokenCookie() {
         return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(secure)
-                .path(authPath)
-                .maxAge(0)
-                .sameSite(sameSite)
-                .build();
+            .httpOnly(true)
+            .secure(secure)
+            .path(authPath)
+            .maxAge(0)
+            .sameSite(sameSite)
+            .build();
     }
 
     public ResponseCookie createExchangeCookie(String code) {
         return ResponseCookie.from(AUTH_EXCHANGE_COOKIE_NAME, code)
-                .httpOnly(true)
-                .secure(secure)
-                .path(authPath)
-                .maxAge(60) // 60 seconds
-                .sameSite(sameSite)
-                .build();
+            .httpOnly(true)
+            .secure(secure)
+            .path(authPath)
+            .maxAge(60) // 60 seconds
+            .sameSite(sameSite)
+            .build();
     }
 
     public ResponseCookie clearExchangeCookie() {
         return ResponseCookie.from(AUTH_EXCHANGE_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(secure)
-                .path(authPath)
-                .maxAge(0)
-                .sameSite(sameSite)
-                .build();
+            .httpOnly(true)
+            .secure(secure)
+            .path(authPath)
+            .maxAge(0)
+            .sameSite(sameSite)
+            .build();
     }
 }

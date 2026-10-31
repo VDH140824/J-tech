@@ -4,6 +4,7 @@ import com.jtech.dto.request.UpdateProfileRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.service.AuthService;
 import jakarta.validation.Valid;
+import java.security.Principal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/users")
@@ -38,20 +37,23 @@ public class UserController {
 
     private void traceAuthentication(String path, Principal principal) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Object authenticationPrincipal = authentication != null ? authentication.getPrincipal() : null;
-        log.info("[AUTH-TRACE] path={} authenticationClass={} principalClass={} principalName={} authenticated={}",
-                path,
-                authentication != null ? authentication.getClass().getName() : null,
-                authenticationPrincipal != null ? authenticationPrincipal.getClass().getName() : null,
-                principal != null ? principal.getName() : null,
-                authentication != null && authentication.isAuthenticated());
+        Object authenticationPrincipal =
+            authentication != null ? authentication.getPrincipal() : null;
+        log.info(
+            "[AUTH-TRACE] path={} authenticationClass={} principalClass={} principalName={} authenticated={}",
+            path,
+            authentication != null ? authentication.getClass().getName() : null,
+            authenticationPrincipal != null ? authenticationPrincipal.getClass().getName() : null,
+            principal != null ? principal.getName() : null,
+            authentication != null && authentication.isAuthenticated()
+        );
     }
 
     @PutMapping("/profile")
     public ResponseEntity<UserResponse> updateProfile(
-            @RequestParam(value = "userId", required = false) Long userId,
-            @Valid @RequestBody UpdateProfileRequest request) {
+        @RequestParam(value = "userId", required = false) Long userId,
+        @Valid @RequestBody UpdateProfileRequest request
+    ) {
         return ResponseEntity.ok(authService.updateProfile(userId, request));
     }
-
 }

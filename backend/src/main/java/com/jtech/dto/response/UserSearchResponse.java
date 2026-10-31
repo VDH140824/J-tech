@@ -1,1 +1,18 @@
-package com.jtech.dto.response; import lombok.*; @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder public class UserSearchResponse { private Long id; private String username; private String fullName; private String email; private String phone; private String avatarUrl; }
+package com.jtech.dto.response;
+
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserSearchResponse {
+
+    private Long id;
+    private String username;
+    private String fullName;
+    private String email;
+    private String phone;
+    private String avatarUrl;
+}

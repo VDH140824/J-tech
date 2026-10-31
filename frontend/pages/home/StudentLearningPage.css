@@ -10,5 +10,7 @@
 }
 
 @media (max-width: 768px) {
-  .student-learning-page { padding: 16px; }
+  .student-learning-page {
+    padding: 16px;
+  }
 }

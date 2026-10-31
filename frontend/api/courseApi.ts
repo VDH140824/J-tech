@@ -59,5 +59,6 @@ export interface ChapterStudy {
 }
 
 export async function getChapterStudy(courseId: number, chapterId: number): Promise<ChapterStudy> {
-  return (await apiClient.get<ChapterStudy>(`/courses/${courseId}/chapters/${chapterId}/study`)).data;
+  return (await apiClient.get<ChapterStudy>(`/courses/${courseId}/chapters/${chapterId}/study`))
+    .data;
 }

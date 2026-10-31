@@ -42,7 +42,11 @@ export function LessonFormModal({
         lessonNo: editingLesson.lessonNo,
         title: editingLesson.title,
         description: editingLesson.description || "",
-        documents: isVocabulary ? parseLessonDocuments(editingLesson.documents).map(document => document.url).join("\n") : editingLesson.documents || "",
+        documents: isVocabulary
+          ? parseLessonDocuments(editingLesson.documents)
+              .map((document) => document.url)
+              .join("\n")
+          : editingLesson.documents || "",
         displayOrder: editingLesson.displayOrder,
         status: editingLesson.status,
       });
@@ -106,7 +110,10 @@ export function LessonFormModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={() => !submitting && onClose()}>
+    <div
+      className="modal-overlay"
+      onClick={() => !submitting && onClose()}
+    >
       <div
         className="modal-card"
         style={{ maxWidth: "600px" }}
@@ -131,7 +138,10 @@ export function LessonFormModal({
               {editingLesson ? "✏️" : "➕"}
             </span>
             <div>
-              <h3 className="modal-title" style={{ margin: 0 }}>
+              <h3
+                className="modal-title"
+                style={{ margin: 0 }}
+              >
                 {editingLesson ? "Chỉnh sửa bài học" : `Thêm bài học mới (${skillLabel})`}
               </h3>
               <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#64748b" }}>
@@ -169,7 +179,10 @@ export function LessonFormModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="modal-form-body">
+        <form
+          onSubmit={handleSubmit}
+          className="modal-form-body"
+        >
           {/* Row 1: lesson_no & display_order */}
           <div className="modal-grid-2">
             <div className="modal-field-group">
@@ -183,7 +196,8 @@ export function LessonFormModal({
                 placeholder="Ví dụ: 1, 2, 3..."
                 value={formData.lessonNo}
                 onChange={(e) => {
-                  const num = e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0);
+                  const num =
+                    e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0);
                   setFormData({ ...formData, lessonNo: num });
                 }}
                 required
@@ -206,7 +220,8 @@ export function LessonFormModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    displayOrder: e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0),
+                    displayOrder:
+                      e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0),
                   })
                 }
               />
@@ -265,25 +280,36 @@ export function LessonFormModal({
             </div>
 
             <div className="modal-field-group">
-              <label className="modal-label" htmlFor="lesson-documents">{isVocabulary ? "URL tài liệu PDF" : "Tài liệu đính kèm (documents)"}</label>
-              {isVocabulary ? <>
-                <textarea
+              <label
+                className="modal-label"
+                htmlFor="lesson-documents"
+              >
+                {isVocabulary ? "URL tài liệu PDF" : "Tài liệu đính kèm (documents)"}
+              </label>
+              {isVocabulary ? (
+                <>
+                  <textarea
+                    id="lesson-documents"
+                    className="modal-textarea"
+                    rows={3}
+                    placeholder="https://res.cloudinary.com/.../bai-1.pdf"
+                    value={formData.documents || ""}
+                    onChange={(e) => setFormData({ ...formData, documents: e.target.value })}
+                  />
+                  <span className="mod-content-form-hint">
+                    Dán URL PDF trên Cloudinary. Mỗi dòng một tài liệu.
+                  </span>
+                </>
+              ) : (
+                <input
                   id="lesson-documents"
-                  className="modal-textarea"
-                  rows={3}
-                  placeholder="https://res.cloudinary.com/.../bai-1.pdf"
+                  type="text"
+                  className="modal-input"
+                  placeholder="Link tài liệu hoặc ghi chú file JSON..."
                   value={formData.documents || ""}
-                  onChange={e => setFormData({ ...formData, documents: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, documents: e.target.value })}
                 />
-                <span className="mod-content-form-hint">Dán URL PDF trên Cloudinary. Mỗi dòng một tài liệu.</span>
-              </> : <input
-                id="lesson-documents"
-                type="text"
-                className="modal-input"
-                placeholder="Link tài liệu hoặc ghi chú file JSON..."
-                value={formData.documents || ""}
-                onChange={(e) => setFormData({ ...formData, documents: e.target.value })}
-              />}
+              )}
             </div>
           </div>
 

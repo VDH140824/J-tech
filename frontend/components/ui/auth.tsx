@@ -1,8 +1,4 @@
-import type {
-  ButtonHTMLAttributes,
-  InputHTMLAttributes,
-  ReactNode,
-} from "react";
+import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 import { forwardRef, useState } from "react";
 
 type FieldErrorProps = {
@@ -40,7 +36,13 @@ export function EmailIcon() {
       strokeWidth={1.8}
       className="h-4 w-4 text-sky-400"
     >
-      <rect x="2" y="4" width="20" height="16" rx="3" />
+      <rect
+        x="2"
+        y="4"
+        width="20"
+        height="16"
+        rx="3"
+      />
       <path d="M2 7l10 7 10-7" />
     </svg>
   );
@@ -54,9 +56,20 @@ export function LockIcon() {
       strokeWidth={1.8}
       className="h-4 w-4 text-sky-400"
     >
-      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <rect
+        x="5"
+        y="11"
+        width="14"
+        height="10"
+        rx="2"
+      />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-      <circle cx="12" cy="16" r="1.5" fill="currentColor" />
+      <circle
+        cx="12"
+        cy="16"
+        r="1.5"
+        fill="currentColor"
+      />
     </svg>
   );
 }
@@ -69,7 +82,11 @@ export function UserIcon() {
       strokeWidth={1.8}
       className="h-4 w-4 text-sky-400"
     >
-      <circle cx="12" cy="8" r="4" />
+      <circle
+        cx="12"
+        cy="8"
+        r="4"
+      />
       <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" />
     </svg>
   );
@@ -84,7 +101,11 @@ function EyeIcon({ open }: { open: boolean }) {
       className="h-4 w-4"
     >
       <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-      <circle cx="12" cy="12" r="3" />
+      <circle
+        cx="12"
+        cy="12"
+        r="3"
+      />
     </svg>
   ) : (
     <svg
@@ -95,7 +116,12 @@ function EyeIcon({ open }: { open: boolean }) {
       className="h-4 w-4"
     >
       <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19C5 19 1 12 1 12a18.2 18.2 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-      <line x1="1" y1="1" x2="23" y2="23" />
+      <line
+        x1="1"
+        y1="1"
+        x2="23"
+        y2="23"
+      />
     </svg>
   );
 }
@@ -191,12 +217,7 @@ function Particles() {
 }
 
 /* ─── AuthShell ─────────────────────────────────────────────────── */
-export function AuthShell({
-  title,
-  description,
-  children,
-  footer,
-}: AuthShellProps) {
+export function AuthShell({ title, description, children, footer }: AuthShellProps) {
   return (
     <div className="auth-fullscreen-root">
       <style>{`
@@ -666,14 +687,13 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ({ label, error, icon, className = "", type: typeProp, ...props }, ref) => {
     const [showPwd, setShowPwd] = useState(false);
     const isPassword = typeProp === "password";
-    const resolvedType = isPassword
-      ? showPwd
-        ? "text"
-        : "password"
-      : typeProp;
+    const resolvedType = isPassword ? (showPwd ? "text" : "password") : typeProp;
 
     return (
-      <label className="block" style={{ marginBottom: 4 }}>
+      <label
+        className="block"
+        style={{ marginBottom: 4 }}
+      >
         <span className="auth-field-label">{label}</span>
         <div className="auth-input-wrap">
           {icon && <span className="auth-input-icon">{icon}</span>}
