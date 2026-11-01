@@ -122,6 +122,8 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
   const [editRole, setEditRole] = useState<"STUDENT" | "MODERATOR" | "ADMIN">("STUDENT");
   const [editStatus, setEditStatus] = useState<UserStatus>("ACTIVE");
+  const [editStatusReason, setEditStatusReason] = useState("");
+  const [editStatusReasonError, setEditStatusReasonError] = useState<string | null>(null);
   const [editSaving, setEditSaving] = useState(false);
 
   // Delete User state
@@ -206,10 +208,18 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
     const resolvedRole = user.role === "ADMIN" ? "ADMIN" : user.role === "MODERATOR" ? "MODERATOR" : "STUDENT";
     setEditRole(resolvedRole);
     setEditStatus((user.status as UserStatus) || "ACTIVE");
+    setEditStatusReason(user.statusReason || "");
+    setEditStatusReasonError(null);
   };
 
   const handleSaveEdit = async () => {
     if (!editingUser) return;
+    const needsReason = editStatus === "LOCKED" || editStatus === "REJECTED";
+    const reason = editStatusReason.trim();
+    if (needsReason && (!reason || reason.length > 500)) {
+      setEditStatusReasonError(!reason ? "Vui lòng nhập lý do." : "Lý do không được vượt quá 500 ký tự.");
+      return;
+    }
     try {
       setEditSaving(true);
       const id = editingUser.id;
@@ -217,7 +227,9 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
         await changeAdminUserRole(id, editRole);
       }
       if (editingUser.status !== editStatus) {
-        await updateAdminUserStatus(id, { status: editStatus });
+        await updateAdminUserStatus(id, { status: editStatus, statusReason: needsReason ? reason : null });
+      } else if (needsReason && editingUser.statusReason !== reason) {
+        await updateAdminUserStatus(id, { status: editStatus, statusReason: reason });
       }
       showNotification(`Đã cập nhật thông tin tài khoản #${id}!`);
       setEditingUser(null);
@@ -613,7 +625,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                 <span>Trạng thái tài khoản (Status)</span>
                 <select
                   value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value as any)}
+                  onChange={(e) => { setEditStatus(e.target.value as UserStatus); setEditStatusReasonError(null); }}
                   className="modal-select"
                 >
                   {STATUS_OPTIONS.map((st) => (
@@ -623,6 +635,21 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                   ))}
                 </select>
               </label>
+
+              {(editStatus === "LOCKED" || editStatus === "REJECTED") && (
+                <label className="modal-field-label">
+                  <span>Lý do {editStatus === "LOCKED" ? "khóa" : "từ chối"} tài khoản *</span>
+                  <textarea
+                    value={editStatusReason}
+                    onChange={(e) => { setEditStatusReason(e.target.value); setEditStatusReasonError(null); }}
+                    maxLength={500}
+                    rows={3}
+                    className="modal-input"
+                    aria-invalid={!!editStatusReasonError}
+                  />
+                  {editStatusReasonError && <span className="modal-field-error" role="alert">{editStatusReasonError}</span>}
+                </label>
+              )}
 
               <div className="modal-actions-row">
                 <button

@@ -30,6 +30,9 @@ export function PendingUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [rejectingUser, setRejectingUser] = useState<UserResponse | null>(null);
+  const [rejectReason, setRejectReason] = useState("Tài khoản không phải của sinh viên FPT");
+  const [rejectReasonError, setRejectReasonError] = useState<string | null>(null);
 
   const loadUsers = async () => {
     try {
@@ -53,15 +56,16 @@ export function PendingUsersPage() {
     setTimeout(() => setActionSuccess(null), 4000);
   };
 
-  const changeStatus = async (userId: number, action: "approve" | "reject") => {
+  const changeStatus = async (userId: number, action: "approve" | "reject", reason?: string) => {
     try {
       setProcessingId(userId);
       if (action === "approve") {
         await approvePendingUser(userId);
         showNotification(`Đã phê duyệt tài khoản #${userId} thành công!`);
       } else {
-        await rejectPendingUser(userId);
+        await rejectPendingUser(userId, reason!);
         showNotification(`Đã từ chối tài khoản #${userId}!`);
+        setRejectingUser(null);
       }
       await loadUsers();
     } catch (err: any) {
@@ -69,6 +73,16 @@ export function PendingUsersPage() {
     } finally {
       setProcessingId(null);
     }
+  };
+
+  const submitReject = () => {
+    if (!rejectingUser) return;
+    const reason = rejectReason.trim();
+    if (!reason || reason.length > 500) {
+      setRejectReasonError(!reason ? "Vui lòng nhập lý do từ chối." : "Lý do không được vượt quá 500 ký tự.");
+      return;
+    }
+    void changeStatus(rejectingUser.id, "reject", reason);
   };
 
   return (
@@ -184,7 +198,11 @@ export function PendingUsersPage() {
                               type="button"
                               className="btn-reject-clean"
                               disabled={isProcessing}
-                              onClick={() => changeStatus(user.id, "reject")}
+                              onClick={() => {
+                                setRejectingUser(user);
+                                setRejectReason("Tài khoản không phải của sinh viên FPT");
+                                setRejectReasonError(null);
+                              }}
                               title="Từ chối tài khoản này"
                             >
                               {isProcessing ? "..." : "✕ Từ chối"}
@@ -200,6 +218,34 @@ export function PendingUsersPage() {
           </div>
         )}
       </div>
+      {rejectingUser && (
+        <div className="admin-modal-backdrop" onClick={() => setRejectingUser(null)}>
+          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header"><h3>Từ chối tài khoản #{rejectingUser.id}</h3></div>
+            <div className="modal-form-body">
+              <p className="modal-description">{rejectingUser.email}</p>
+              <label className="modal-field-label">
+                <span>Lý do từ chối *</span>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => { setRejectReason(e.target.value); setRejectReasonError(null); }}
+                  maxLength={500}
+                  rows={3}
+                  className="modal-input"
+                  aria-invalid={!!rejectReasonError}
+                />
+                {rejectReasonError && <span className="modal-field-error" role="alert">{rejectReasonError}</span>}
+              </label>
+              <div className="modal-actions-row">
+                <button type="button" className="btn-modal-cancel" onClick={() => setRejectingUser(null)}>Hủy</button>
+                <button type="button" className="btn-modal-submit" disabled={processingId === rejectingUser.id} onClick={submitReject}>
+                  {processingId === rejectingUser.id ? "Đang xử lý..." : "Xác nhận từ chối"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

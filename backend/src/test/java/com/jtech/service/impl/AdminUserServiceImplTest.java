@@ -3,6 +3,7 @@ package com.jtech.service.impl;
 import com.jtech.dto.request.AdminUserStatusRequest;
 import com.jtech.dto.request.ChangeUserRoleRequest;
 import com.jtech.dto.request.PreCreateUserRequest;
+import com.jtech.dto.request.RejectUserRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.entity.Role;
 import com.jtech.entity.User;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,26 +61,29 @@ class AdminUserServiceImplTest {
     }
 
     @Test
-    void getUsers_success() {
-        // Arrange: Chuẩn bị dữ liệu giả
-        Pageable pageable = PageRequest.of(0, 10);
+void getUsers_success() {
+    // Arrange: Chuẩn bị dữ liệu giả
+    Pageable pageable = PageRequest.of(0, 10);
 
-        when(userRepository.findAdminUsers(
-                "student", 2L, UserStatus.ACTIVE, pageable))
-                .thenReturn(new PageImpl<>(List.of(user)));
+    user.setEmail("student@gmail.com");
+    user.setStatus(UserStatus.ACTIVE);
 
-        // Act: Gọi method cần test
-        Page<UserResponse> result =
-                service.getUsers("student", 2L, "active", pageable);
+    when(userRepository.findAdminUsers(
+            "student@gmail.com", 2L, UserStatus.ACTIVE, pageable))
+            .thenReturn(new PageImpl<>(List.of(user)));
 
-        // Assert: Kiểm tra kết quả
-        assertEquals(1, result.getTotalElements());
-        assertEquals("student@example.com",
-                result.getContent().get(0).getEmail());
+    // Act: Gọi hàm Service
+    Page<UserResponse> result = service.getUsers(
+            "student@gmail.com", 2L, "ACTIVE", pageable);
 
-        verify(userRepository).findAdminUsers(
-                "student", 2L, UserStatus.ACTIVE, pageable);
-    }
+    // Assert: Kiểm tra kết quả
+    assertEquals(1, result.getTotalElements());
+    assertEquals("student@gmail.com",
+            result.getContent().get(0).getEmail());
+
+    verify(userRepository).findAdminUsers(
+            "student@gmail.com", 2L, UserStatus.ACTIVE, pageable);
+}
     @Test
 void getUsers_allStatus() {
     // Arrange: Admin chọn All Status (không lọc trạng thái)
@@ -195,10 +201,13 @@ void getUsers_empty() {
         java.time.LocalDateTime before = java.time.LocalDateTime.now();
 
         // Act
-        UserResponse result = service.rejectUser(1L);
+        RejectUserRequest request = new RejectUserRequest();
+        request.setStatusReason("Tài khoản không phải của sinh viên FPT");
+        UserResponse result = service.rejectUser(1L, request);
 
         // Assert
         assertEquals("REJECTED", result.getStatus());
+        assertEquals("Tài khoản không phải của sinh viên FPT", result.getStatusReason());
         assertNotNull(result.getReviewedAt());
         assertFalse(result.getReviewedAt().isBefore(before));
         verify(userRepository).save(user);
@@ -210,11 +219,56 @@ void getUsers_empty() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         // Act
+        RejectUserRequest request = new RejectUserRequest();
+        request.setStatusReason("Tài khoản không phải của sinh viên FPT");
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
-                () -> service.rejectUser(99L));
+                () -> service.rejectUser(99L, request));
 
         // Assert
         assertEquals("Không tìm thấy người dùng với ID: 99", error.getMessage());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void rejectUser_requiresReason() {
+        user.setStatus(UserStatus.PENDING);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        RejectUserRequest request = new RejectUserRequest();
+        request.setStatusReason("  ");
+
+        assertThrows(IllegalArgumentException.class, () -> service.rejectUser(1L, request));
+        assertEquals(UserStatus.PENDING, user.getStatus());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void rejectUser_reasonMaxLength() {
+        user.setStatus(UserStatus.PENDING);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(user)).thenReturn(user);
+        String reason = "a".repeat(100);
+        RejectUserRequest request = new RejectUserRequest();
+        request.setStatusReason(reason);
+
+        UserResponse result = service.rejectUser(1L, request);
+
+        assertEquals("REJECTED", result.getStatus());
+        assertEquals(reason, result.getStatusReason());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void rejectUser_reasonTooLong() {
+        user.setStatus(UserStatus.PENDING);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        RejectUserRequest request = new RejectUserRequest();
+        request.setStatusReason("a".repeat(101));
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.rejectUser(1L, request));
+
+        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals(UserStatus.PENDING, user.getStatus());
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -254,6 +308,74 @@ void getUsers_empty() {
         assertEquals("ACTIVE", result.getStatus());
         assertNull(result.getStatusReason());
         verify(userRepository).save(user);
+    }
+
+    @Test
+    void updateUserStatus_lockedRequiresReason() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
+
+        assertThrows(IllegalArgumentException.class, () -> service.updateUserStatus(1L, request));
+        assertEquals(UserStatus.ACTIVE, user.getStatus());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateUserStatus_lockedReasonMaxLength() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(user)).thenReturn(user);
+        String reason = "a".repeat(100);
+        AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
+        request.setStatusReason(reason);
+
+        UserResponse result = service.updateUserStatus(1L, request);
+
+        assertEquals("LOCKED", result.getStatus());
+        assertEquals(reason, result.getStatusReason());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void updateUserStatus_lockedReasonTooLong() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
+        request.setStatusReason("a".repeat(101));
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.updateUserStatus(1L, request));
+
+        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals(UserStatus.ACTIVE, user.getStatus());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateUserStatus_rejectedReasonMaxLength() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(user)).thenReturn(user);
+        String reason = "a".repeat(100);
+        AdminUserStatusRequest request = new AdminUserStatusRequest("REJECTED");
+        request.setStatusReason(reason);
+
+        UserResponse result = service.updateUserStatus(1L, request);
+
+        assertEquals("REJECTED", result.getStatus());
+        assertEquals(reason, result.getStatusReason());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void updateUserStatus_rejectedReasonTooLong() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        AdminUserStatusRequest request = new AdminUserStatusRequest("REJECTED");
+        request.setStatusReason("a".repeat(101));
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.updateUserStatus(1L, request));
+
+        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals(UserStatus.ACTIVE, user.getStatus());
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -338,10 +460,10 @@ void getUsers_empty() {
     @Test
     void preCreateUser_success() {
         // Arrange
-        PreCreateUserRequest request = preCreateRequest("new@example.com", "STUDENT");
-        Role student = user.getRole();
-        when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
-        when(roleRepository.findByRoleName("STUDENT")).thenReturn(Optional.of(student));
+        PreCreateUserRequest request = preCreateRequest("moderator@example.com", "MODERATOR");
+        Role moderator = role("MODERATOR");
+        when(userRepository.findByEmail("moderator@example.com")).thenReturn(Optional.empty());
+        when(roleRepository.findByRoleName("MODERATOR")).thenReturn(Optional.of(moderator));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -349,36 +471,20 @@ void getUsers_empty() {
 
         // Assert
         assertEquals("ACTIVE", result.getStatus());
-        assertEquals("STUDENT", result.getRole());
+        assertEquals("MODERATOR", result.getRole());
+        assertEquals("moderator@example.com", result.getEmail());
         assertEquals(0, result.getCoinBalance());
-        assertEquals("new", result.getFullName());
+        assertEquals("moderator", result.getFullName());
         verify(userRepository).save(any(User.class));
     }
 
-    @Test
-    void preCreateUser_admin() {
-        // Arrange
-        PreCreateUserRequest request = preCreateRequest("admin@example.com", "ADMIN");
-        Role admin = role("ADMIN");
-        when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.empty());
-        when(roleRepository.findByRoleName("ADMIN")).thenReturn(Optional.of(admin));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        // Act
-        UserResponse result = service.preCreateUser(request);
-
-        // Assert
-        assertEquals("ADMIN", result.getRole());
-        assertEquals("ACTIVE", result.getStatus());
-        verify(userRepository).save(any(User.class));
-    }
 
     @Test
     void preCreateUser_normalizeEmail() {
         // Arrange
-        PreCreateUserRequest request = preCreateRequest("  NEW@EXAMPLE.COM  ", "STUDENT");
+        PreCreateUserRequest request = preCreateRequest("  NEW@EXAMPLE.COM  ", "MODERATOR");
         when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
-        when(roleRepository.findByRoleName("STUDENT")).thenReturn(Optional.of(user.getRole()));
+        when(roleRepository.findByRoleName("MODERATOR")).thenReturn(Optional.of(role("MODERATOR")));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -386,6 +492,8 @@ void getUsers_empty() {
 
         // Assert
         assertEquals("new@example.com", result.getEmail());
+        assertEquals("MODERATOR", result.getRole());
+        assertEquals("ACTIVE", result.getStatus());
         verify(userRepository).findByEmail("new@example.com");
         ArgumentCaptor<User> savedUser = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(savedUser.capture());
@@ -395,15 +503,16 @@ void getUsers_empty() {
     @Test
     void preCreateUser_duplicateEmail() {
         // Arrange
-        PreCreateUserRequest request = preCreateRequest("student@example.com", "STUDENT");
-        when(userRepository.findByEmail("student@example.com")).thenReturn(Optional.of(user));
+        PreCreateUserRequest request = preCreateRequest("moderator@example.com", "MODERATOR");
+        user.setEmail("moderator@example.com");
+        when(userRepository.findByEmail("moderator@example.com")).thenReturn(Optional.of(user));
 
         // Act
         IllegalStateException error = assertThrows(IllegalStateException.class,
                 () -> service.preCreateUser(request));
 
         // Assert
-        assertEquals("Email đã tồn tại trong hệ thống: student@example.com", error.getMessage());
+        assertEquals("Email đã tồn tại trong hệ thống: moderator@example.com", error.getMessage());
         verifyNoInteractions(roleRepository);
         verify(userRepository, never()).save(any(User.class));
     }
@@ -413,9 +522,9 @@ void getUsers_empty() {
         // Arrange
         String localPart = "a".repeat(51);
         String email = localPart + "@example.com";
-        PreCreateUserRequest request = preCreateRequest(email, "STUDENT");
+        PreCreateUserRequest request = preCreateRequest(email, "MODERATOR");
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
-        when(roleRepository.findByRoleName("STUDENT")).thenReturn(Optional.of(user.getRole()));
+        when(roleRepository.findByRoleName("MODERATOR")).thenReturn(Optional.of(role("MODERATOR")));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -424,13 +533,48 @@ void getUsers_empty() {
         // Assert
         assertEquals(50, result.getFullName().length());
         assertEquals("a".repeat(50), result.getFullName());
+        assertEquals("MODERATOR", result.getRole());
+        assertEquals("ACTIVE", result.getStatus());
         verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void preCreateUser_emailMaxLength() {
+        String suffix = "@example.com";
+        String email = "a".repeat(255 - suffix.length()) + suffix;
+        PreCreateUserRequest request = preCreateRequest(email, "MODERATOR");
+        Role moderator = role("MODERATOR");
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(roleRepository.findByRoleName("MODERATOR")).thenReturn(Optional.of(moderator));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserResponse result = service.preCreateUser(request);
+
+        assertEquals(255, email.length());
+        assertEquals(email, result.getEmail());
+        assertEquals("MODERATOR", result.getRole());
+        assertEquals("ACTIVE", result.getStatus());
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void preCreateUser_emailTooLong() {
+        String suffix = "@example.com";
+        String email = "a".repeat(256 - suffix.length()) + suffix;
+        PreCreateUserRequest request = preCreateRequest(email, "MODERATOR");
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.preCreateUser(request));
+
+        assertEquals(256, email.length());
+        assertEquals("Email không được vượt quá 255 ký tự", error.getMessage());
+        verifyNoInteractions(userRepository, roleRepository);
     }
 
     @Test
     void preCreateUser_missingAtSign() {
         // Arrange
-        PreCreateUserRequest request = preCreateRequest("usergmail.com", "STUDENT");
+        PreCreateUserRequest request = preCreateRequest("usergmail.com", "MODERATOR");
 
         // Act
         assertThrows(IllegalArgumentException.class, () -> service.preCreateUser(request));
@@ -442,7 +586,7 @@ void getUsers_empty() {
     @Test
     void preCreateUser_missingLocalPart() {
         // Arrange
-        PreCreateUserRequest request = preCreateRequest("@gmail.com", "STUDENT");
+        PreCreateUserRequest request = preCreateRequest("@gmail.com", "MODERATOR");
 
         // Act
         assertThrows(IllegalArgumentException.class, () -> service.preCreateUser(request));
@@ -454,8 +598,8 @@ void getUsers_empty() {
     @Test
     void preCreateUser_missingDomain() {
         // Arrange
-        PreCreateUserRequest noDomain = preCreateRequest("user@", "STUDENT");
-        PreCreateUserRequest noDomainSuffix = preCreateRequest("user@gmail", "STUDENT");
+        PreCreateUserRequest noDomain = preCreateRequest("user@", "MODERATOR");
+        PreCreateUserRequest noDomainSuffix = preCreateRequest("user@gmail", "MODERATOR");
 
         // Act
         assertThrows(IllegalArgumentException.class, () -> service.preCreateUser(noDomain));
@@ -468,7 +612,7 @@ void getUsers_empty() {
     @Test
     void preCreateUser_multipleAtSigns() {
         // Arrange
-        PreCreateUserRequest request = preCreateRequest("user@@gmail.com", "STUDENT");
+        PreCreateUserRequest request = preCreateRequest("user@@gmail.com", "MODERATOR");
 
         // Act
         assertThrows(IllegalArgumentException.class, () -> service.preCreateUser(request));
@@ -480,7 +624,7 @@ void getUsers_empty() {
     @Test
     void preCreateUser_emailWithSpaces() {
         // Arrange
-        PreCreateUserRequest request = preCreateRequest("user name@gmail.com", "STUDENT");
+        PreCreateUserRequest request = preCreateRequest("user name@gmail.com", "MODERATOR");
 
         // Act
         assertThrows(IllegalArgumentException.class, () -> service.preCreateUser(request));
@@ -492,7 +636,7 @@ void getUsers_empty() {
     @Test
     void preCreateUser_invalidDomain() {
         // Arrange
-        PreCreateUserRequest request = preCreateRequest("user@gmail..com", "STUDENT");
+        PreCreateUserRequest request = preCreateRequest("user@gmail..com", "MODERATOR");
 
         // Act
         assertThrows(IllegalArgumentException.class, () -> service.preCreateUser(request));

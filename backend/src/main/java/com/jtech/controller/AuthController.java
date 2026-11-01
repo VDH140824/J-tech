@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +30,20 @@ public class AuthController {
     public AuthController(AuthService authService, com.jtech.security.CookieService cookieService) {
         this.authService = authService;
         this.cookieService = cookieService;
+    }
+
+    @GetMapping("/account-status")
+    public ResponseEntity<java.util.Map<String, String>> accountStatus(HttpServletRequest httpRequest) {
+        var session = httpRequest.getSession(false);
+        if (session == null) return ResponseEntity.noContent().build();
+        Object status = session.getAttribute(com.jtech.security.OAuth2SuccessHandler.ACCOUNT_STATUS_SESSION_KEY);
+        if (!(status instanceof String statusValue)) return ResponseEntity.noContent().build();
+
+        java.util.Map<String, String> result = new java.util.HashMap<>();
+        result.put("status", statusValue);
+        Object reason = session.getAttribute(com.jtech.security.OAuth2SuccessHandler.ACCOUNT_REASON_SESSION_KEY);
+        if (reason instanceof String reasonValue) result.put("statusReason", reasonValue);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/logout")

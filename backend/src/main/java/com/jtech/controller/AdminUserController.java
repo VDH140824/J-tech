@@ -3,6 +3,7 @@ package com.jtech.controller;
 import com.jtech.dto.request.AdminUserStatusRequest;
 import com.jtech.dto.request.ChangeUserRoleRequest;
 import com.jtech.dto.request.PreCreateUserRequest;
+import com.jtech.dto.request.RejectUserRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.service.AdminUserService;
 import jakarta.validation.Valid;
@@ -52,8 +53,9 @@ public class AdminUserController {
     }
 
     @PutMapping("/{id}/reject")
-    public ResponseEntity<UserResponse> rejectUser(@PathVariable Long id) {
-        return ResponseEntity.ok(adminUserService.rejectUser(id));
+    public ResponseEntity<UserResponse> rejectUser(@PathVariable Long id,
+                                                   @Valid @RequestBody RejectUserRequest request) {
+        return ResponseEntity.ok(adminUserService.rejectUser(id, request));
     }
 
 
