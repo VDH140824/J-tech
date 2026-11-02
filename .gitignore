@@ -62,10 +62,17 @@ application-local.properties
 application-local.yml
 application-local.yaml
 
-# 6. TEMPORARY FILES
+# 6. DOCUMENTATION
+**/doc/
+**/docs/
+**/audit-docs/
+
+# 7. TEMPORARY FILES
 *.tmp
 *.temp
 *.bak
 *.swp
 *.swo
 *~
+
+.fake

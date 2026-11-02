@@ -20,10 +20,13 @@ public class LessonController {
 
     private final LessonRepository lessonRepository;
     private final ChapterRepository chapterRepository;
+    private final com.jtech.service.KanjiService kanjiService;
 
-    public LessonController(LessonRepository lessonRepository, ChapterRepository chapterRepository) {
+    public LessonController(LessonRepository lessonRepository, ChapterRepository chapterRepository,
+                            com.jtech.service.KanjiService kanjiService) {
         this.lessonRepository = lessonRepository;
         this.chapterRepository = chapterRepository;
+        this.kanjiService = kanjiService;
     }
 
     @GetMapping("/chapters/{chapterId}/lessons")
@@ -70,8 +73,8 @@ public class LessonController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
-    @PostMapping(value = {"/chapters/{chapterId}/lessons", "/courses/{courseId}/chapters/{chapterId}/lessons"})
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @PostMapping(value = {"/chapters/{chapterId}/lessons", "/courses/{courseId}/chapters/{chapterId}/lessons"}, consumes = "application/json")
     public ResponseEntity<?> createLesson(
             @PathVariable(required = false) Long courseId,
             @PathVariable Long chapterId,
@@ -114,8 +117,8 @@ public class LessonController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(saved));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
-    @PutMapping("/lessons/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @PutMapping(value = "/lessons/{id}", consumes = "application/json")
     public ResponseEntity<?> updateLesson(
             @PathVariable Long id,
             @Valid @RequestBody LessonRequest request
@@ -154,7 +157,7 @@ public class LessonController {
         return ResponseEntity.ok(mapToResponse(updated));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @DeleteMapping("/lessons/{id}")
     public ResponseEntity<Void> deleteLesson(@PathVariable Long id) {
         if (!lessonRepository.existsById(id)) {
@@ -162,6 +165,45 @@ public class LessonController {
         }
         lessonRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @org.springframework.transaction.annotation.Transactional
+    @PostMapping(value = "/chapters/{chapterId}/lessons", consumes = "multipart/form-data")
+    public ResponseEntity<?> createKanjiLesson(@PathVariable Long chapterId,
+            @Valid @RequestPart("request") LessonRequest request,
+            @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file) {
+        requireKanji(request);
+        var normalized = withDocuments(request, kanjiService.documents(request.documents(), null));
+        return attach(createLesson(null, chapterId, normalized), file);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @org.springframework.transaction.annotation.Transactional
+    @PutMapping(value = "/lessons/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateKanjiLesson(@PathVariable Long id,
+            @Valid @RequestPart("request") LessonRequest request,
+            @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file) {
+        requireKanji(request);
+        var lesson = lessonRepository.findById(id).orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bài học."));
+        if (lesson.getSkillType() != Lesson.SkillType.KANJI) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Bài học không thuộc phần chữ Hán.");
+        var normalized = withDocuments(request, kanjiService.documents(request.documents(), null));
+        return attach(updateLesson(id, normalized), file);
+    }
+
+    private void requireKanji(LessonRequest request) {
+        if (request.skillType() != Lesson.SkillType.KANJI) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ tài liệu cho bài học chữ Hán.");
+    }
+    private LessonRequest withDocuments(LessonRequest r, String docs) {
+        return new LessonRequest(r.skillType(), r.lessonNo(), r.title(), r.description(), docs, r.displayOrder(), r.status());
+    }
+    private ResponseEntity<?> attach(ResponseEntity<?> response, org.springframework.web.multipart.MultipartFile file) {
+        if (!response.getStatusCode().is2xxSuccessful() || file == null) return response;
+        LessonResponse body = (LessonResponse) response.getBody();
+        Lesson lesson = lessonRepository.findById(body.id()).orElseThrow();
+        lesson.setDocuments(kanjiService.documents(lesson.getDocuments(), file));
+        lessonRepository.saveAndFlush(lesson);
+        return ResponseEntity.status(response.getStatusCode()).body(mapToResponse(lesson));
     }
 
     private LessonResponse mapToResponse(Lesson lesson) {

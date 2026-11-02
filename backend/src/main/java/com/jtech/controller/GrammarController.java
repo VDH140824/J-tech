@@ -28,13 +28,13 @@ public class GrammarController {
         this.cloudinaryService = cloudinaryService;
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @GetMapping("/grammars/{id}")
     public ResponseEntity<GrammarDetailResponse> getGrammarById(@PathVariable Long id) {
         return ResponseEntity.ok(grammarService.getById(id));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @GetMapping("/lessons/{lessonId}/grammars")
     public ResponseEntity<List<GrammarDetailResponse>> getGrammarsByLesson(
             @PathVariable Long lessonId,
@@ -43,7 +43,7 @@ public class GrammarController {
         return ResponseEntity.ok(grammarService.getByLesson(lessonId, status));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PostMapping("/lessons/{lessonId}/grammars")
     public ResponseEntity<GrammarDetailResponse> createGrammar(
             @PathVariable Long lessonId,
@@ -52,7 +52,7 @@ public class GrammarController {
         return ResponseEntity.status(HttpStatus.CREATED).body(grammarService.create(lessonId, request));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PutMapping(value = "/grammars/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<GrammarDetailResponse> updateGrammar(
             @PathVariable Long id,
@@ -62,7 +62,7 @@ public class GrammarController {
         return ResponseEntity.ok(grammarService.update(id, request, file));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @DeleteMapping("/grammars/{id}")
     public ResponseEntity<Void> deleteGrammar(@PathVariable Long id) {
         if (!grammarService.delete(id)) {
@@ -71,7 +71,7 @@ public class GrammarController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PostMapping(value = "/grammars/videos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CloudinaryUploadResponse> uploadGrammarVideo(@RequestPart("file") MultipartFile file) {
         try {

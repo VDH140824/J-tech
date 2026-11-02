@@ -66,6 +66,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**")
                         .permitAll()
+                        .requestMatchers("/kanji/**", "/lessons/*/kanji").hasAnyAuthority("ROLE_MODERATOR", "MODERATOR")
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ADMIN")
                         .anyRequest()
                         .authenticated())

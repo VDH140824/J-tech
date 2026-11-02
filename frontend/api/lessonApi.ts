@@ -53,18 +53,28 @@ export async function getLessonById(id: number): Promise<LessonSummary> {
 export async function createLesson(
   chapterId: number,
   payload: LessonFormInput,
-  courseId?: number
+  courseId?: number,
+  documentFile?: File
 ): Promise<LessonSummary> {
-  const { data } = await apiClient.post<LessonSummary>(`/chapters/${chapterId}/lessons`, payload);
+  const { data } = await apiClient.post<LessonSummary>(`/chapters/${chapterId}/lessons`, lessonBody(payload, documentFile));
   return data;
 }
 
 export async function updateLesson(
   id: number,
-  payload: LessonFormInput
+  payload: LessonFormInput,
+  documentFile?: File
 ): Promise<LessonSummary> {
-  const { data } = await apiClient.put<LessonSummary>(`/lessons/${id}`, payload);
+  const { data } = await apiClient.put<LessonSummary>(`/lessons/${id}`, lessonBody(payload, documentFile));
   return data;
+}
+
+function lessonBody(payload: LessonFormInput, file?: File): LessonFormInput | FormData {
+  if (payload.skillType !== "KANJI") return payload;
+  const form = new FormData();
+  form.append("request", new Blob([JSON.stringify(payload)], { type: "application/json" }));
+  if (file) form.append("file", file);
+  return form;
 }
 
 export async function deleteLesson(id: number): Promise<void> {

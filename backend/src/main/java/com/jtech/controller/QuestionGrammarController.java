@@ -32,13 +32,13 @@ public class QuestionGrammarController {
         this.questionGrammarService = questionGrammarService;
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @GetMapping("/grammar-questions")
     public ResponseEntity<List<QuestionGrammarResponse>> getAllGrammarQuestions() {
         return ResponseEntity.ok(questionGrammarService.getAllGrammarQuestions());
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PostMapping("/questions")
     public ResponseEntity<QuestionGrammarResponse> createQuestionGrammar(
             @Valid @RequestBody QuestionGrammarCreateRequest request,
@@ -47,7 +47,7 @@ public class QuestionGrammarController {
                 .body(questionGrammarService.createQuestionGrammar(request, authentication.getName()));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PutMapping("/questions/{id}")
     public ResponseEntity<QuestionGrammarResponse> updateQuestionGrammar(
             @PathVariable Long id,
@@ -60,7 +60,7 @@ public class QuestionGrammarController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @DeleteMapping("/questions/{id}")
     public ResponseEntity<?> deleteQuestionGrammar(@PathVariable Long id) {
         try {

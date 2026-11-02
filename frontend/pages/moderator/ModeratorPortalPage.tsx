@@ -3,12 +3,13 @@ import { useLocation, useNavigate, useMatch, useSearchParams } from "react-route
 import { ModeratorCoursesTab } from "./ModeratorCoursesTab";
 import { ModeratorChapterDetailPage } from "./ModeratorChapterDetailPage";
 import { ModeratorLayout } from "../../layouts/ModeratorLayout";
+import { ModeratorKanjiManagementPage } from "./kanji/ModeratorKanjiManagementPage";
 import { SECTIONS } from "./sectionConfig";
 import type { ChapterDetail } from "../../api/courseApi";
 import "../admin/AdminPortalPage.css";
 import "./ModeratorPortalPage.css";
 
-export type ModeratorTab = "courses" | "chapter-detail";
+export type ModeratorTab = "courses" | "chapter-detail" | "kanji";
 
 export interface ModeratorNavState {
   courseId: number;
@@ -41,9 +42,14 @@ export function ModeratorPortalPage() {
     }
   }, [location.pathname, searchParams, navigate]);
 
-  const activeTab: ModeratorTab = matchChapter ? "chapter-detail" : "courses";
+  const activeTab: ModeratorTab = location.pathname.replace(/\/$/, "") === "/moderator/kanji" ? "kanji" : matchChapter ? "chapter-detail" : "courses";
 
   const handleSelectTab = (tab: string) => {
+    if (tab === "kanji") {
+      setChapterInfo(null);
+      navigate("/moderator/kanji");
+      return;
+    }
     if (tab === "courses") {
       setChapterInfo(null);
       navigate("/moderator");
@@ -76,6 +82,7 @@ export function ModeratorPortalPage() {
   }
 
   const courseId = matchChapter?.params.courseId ? Number(matchChapter.params.courseId) : null;
+  if (activeTab === "kanji") breadcrumb = "Trang chủ / Quản lý Kanji";
   const chapterId = matchChapter?.params.chapterId ? Number(matchChapter.params.chapterId) : null;
 
   return (
@@ -85,6 +92,7 @@ export function ModeratorPortalPage() {
       title="Quản trị nội dung"
       breadcrumb={breadcrumb}
     >
+      {activeTab === "kanji" && <ModeratorKanjiManagementPage />}
       {activeTab === "courses" && (
         <ModeratorCoursesTab onViewChapter={handleViewChapter} />
       )}
