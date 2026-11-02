@@ -92,17 +92,17 @@ export function ModeratorLessonListTab({
   };
 
   // Submit Create or Edit Form
-  const handleSubmitForm = async (formData: LessonFormInput) => {
+  const handleSubmitForm = async (formData: LessonFormInput, documentFile?: File) => {
     const payload: LessonFormInput = {
       ...formData,
       skillType: activeConfig.skillType,
     };
 
     if (editingLesson) {
-      await updateLesson(editingLesson.id, payload);
+      await updateLesson(editingLesson.id, payload, documentFile);
       showNotification(`Đã cập nhật bài học "${formData.title}" thành công!`);
     } else {
-      await createLesson(chapterId, payload, courseId);
+      await createLesson(chapterId, payload, courseId, documentFile);
       showNotification(`Đã thêm bài học "${formData.title}" thành công!`);
     }
     await fetchLessons();
@@ -216,8 +216,7 @@ export function ModeratorLessonListTab({
               </span>
             </h2>
             <p className="admin-main-subtitle">
-              Chương {chapterNo}: {chapterTitle} — Danh sách bài học từ bảng{" "}
-              <code>lesson</code> (skill: <strong>{activeConfig.skillType}</strong>).
+              {selectedSection === "kanji" ? <>Chương {chapterNo}: {chapterTitle} — Danh sách bài học chữ Hán.</> : <>Chương {chapterNo}: {chapterTitle} — Danh sách bài học từ bảng <code>lesson</code> (skill: <strong>{activeConfig.skillType}</strong>).</>}
             </p>
           </div>
           <button
@@ -253,10 +252,10 @@ export function ModeratorLessonListTab({
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="ALL">Tất cả trạng thái</option>
-            <option value="PUBLISHED">Đã xuất bản (PUBLISHED)</option>
-            <option value="DRAFT">Bản nháp (DRAFT)</option>
-            <option value="HIDDEN">Ẩn (HIDDEN)</option>
-            <option value="ARCHIVED">Lưu trữ (ARCHIVED)</option>
+            <option value="PUBLISHED">{selectedSection === "kanji" ? "Đã xuất bản" : "Đã xuất bản (PUBLISHED)"}</option>
+            <option value="DRAFT">{selectedSection === "kanji" ? "Bản nháp" : "Bản nháp (DRAFT)"}</option>
+            <option value="HIDDEN">{selectedSection === "kanji" ? "Ẩn" : "Ẩn (HIDDEN)"}</option>
+            <option value="ARCHIVED">{selectedSection === "kanji" ? "Lưu trữ" : "Lưu trữ (ARCHIVED)"}</option>
           </select>
         </div>
         <div style={{ fontSize: "0.86rem", color: "#64748b", fontWeight: 600 }}>
@@ -362,7 +361,7 @@ export function ModeratorLessonListTab({
                       ) : (
                         <span className="status-badge rejected mod-lesson-status">
                           <span className="status-dot rejected" />
-                          {lesson.status}
+                          {selectedSection === "kanji" ? (lesson.status === "HIDDEN" ? "Ẩn" : "Đã lưu trữ") : lesson.status}
                         </span>
                       )}
                     </td>
@@ -419,6 +418,7 @@ export function ModeratorLessonListTab({
         onSubmit={handleSubmitForm}
         editingLesson={editingLesson}
         skillLabel={activeConfig.label}
+        vietnameseOnly={selectedSection === "kanji"}
         skillColor={activeConfig.color}
         defaultLessonNo={nextLessonNo}
       />

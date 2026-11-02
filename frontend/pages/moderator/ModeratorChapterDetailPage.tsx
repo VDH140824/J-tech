@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { LessonSummary } from "../../api/lessonApi";
+import { getLessonById, type LessonSummary } from "../../api/lessonApi";
 import { getChapter, getCourse, type ChapterDetail } from "../../api/courseApi";
 import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
 import { ModeratorChapterSkillsOverview } from "./ModeratorChapterSkillsOverview";
@@ -8,6 +8,7 @@ import { ModeratorLessonListTab } from "./ModeratorLessonListTab";
 import { ModeratorGrammarDetailPage } from "./grammar/ModeratorGrammarDetailPage";
 import { GrammarQuestionListPage } from "./grammar/GrammarQuestionListPage";
 import { ModeratorSkillItemListPage } from "./ModeratorSkillItemListPage";
+import { ModeratorKanjiPage } from "./kanji/ModeratorKanjiPage";
 
 // Re-export for external consumers
 export { SECTIONS, type LessonSection, type SectionConfig };
@@ -141,6 +142,29 @@ export function ModeratorChapterDetailPage({
     return null;
   });
 
+  const [lessonLoading, setLessonLoading] = useState(false);
+  const [lessonError, setLessonError] = useState("");
+  const [lessonRetry, setLessonRetry] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setLessonError("");
+    setActiveLessonForItemsState(null);
+    if (!lessonIdParam) { setLessonLoading(false); return; }
+    const id = Number(lessonIdParam);
+    if (!Number.isSafeInteger(id) || id <= 0) { setLessonError("Bài học không hợp lệ."); return; }
+    setLessonLoading(true);
+    getLessonById(id).then(lesson => {
+      if (!active) return;
+      const section = SECTIONS.find(s => s.key === validSkill);
+      if (lesson.chapterId !== chapterId || (section && lesson.skillType !== section.skillType)) {
+        setLessonError("Bài học không thuộc chương hoặc kỹ năng đã chọn."); return;
+      }
+      setActiveLessonForItemsState(lesson);
+    }).catch(() => { if (active) setLessonError("Không thể tải bài học. Vui lòng thử lại."); })
+      .finally(() => { if (active) setLessonLoading(false); });
+    return () => { active = false; };
+  }, [lessonIdParam, chapterId, validSkill, lessonRetry]);
+
   // Sync if lessonId in URL is removed (e.g. user pressed back)
   useEffect(() => {
     if (!lessonIdParam) {
@@ -185,7 +209,16 @@ export function ModeratorChapterDetailPage({
   const grammarId = grammarIdParam && /^\d+$/.test(grammarIdParam) ? Number(grammarIdParam) : null;
 
   // Show the selected lesson's grammar detail directly.
+  if (lessonIdParam && (lessonLoading || lessonError)) {
+    return <div className="admin-page-container">
+      <button className="mod-btn-back" onClick={() => handleViewLessonItems(null)}>← Danh sách bài học</button>
+      {lessonLoading ? <p role="status">Đang tải bài học…</p> : <p role="alert">{lessonError} <button onClick={() => setLessonRetry(n => n + 1)}>Thử lại</button></p>}
+    </div>;
+  }
   if (lessonIdParam && activeLessonForItems && activeConfig) {
+    if (activeConfig.key === "kanji") {
+      return <ModeratorKanjiPage key={activeLessonForItems.id} lesson={activeLessonForItems} onBack={() => handleViewLessonItems(null)} />;
+    }
     if (activeConfig.key === "grammar") {
       if (searchParams.get("questionList") === "1") {
         return (
