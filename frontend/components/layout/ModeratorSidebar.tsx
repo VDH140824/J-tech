@@ -68,6 +68,14 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
           <span className="admin-nav-icon">📚</span>
           <span className="admin-nav-label">Danh sách môn học</span>
         </button>
+        <button
+          type="button"
+          className={`admin-nav-item ${currentTab === "classes" ? "active mod-active" : ""}`}
+          onClick={() => handleNavClick("classes", "/moderator/classes")}
+        >
+          <span className="admin-nav-icon">👥</span>
+          <span className="admin-nav-label">Danh sách lớp học</span>
+        </button>
       </nav>
 
       {/* Footer Back Home */}
