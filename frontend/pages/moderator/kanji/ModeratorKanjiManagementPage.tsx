@@ -63,10 +63,10 @@ export function ModeratorKanjiManagementPage() {
     </div>
     {loading ? <p role="status">Đang tải bài học Kanji…</p> : error ? <p role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Thử lại</button></p>
       : !chapterId ? <p>Chọn môn học và chương để xem các bài học Kanji.</p>
-      : lessons.length === 0 ? <div className="admin-empty-state"><p>Chương này chưa có bài học Kanji.</p>
-        <Link className="mod-btn-add" to={`/moderator/courses/${courseId}/chapters/${chapterId}?skill=kanji`}>Tạo bài học Kanji</Link></div>
-      : <div className="admin-table-card kanji-table"><table><thead><tr><th>Bài</th><th>Tên bài học</th><th>Thao tác</th></tr></thead>
-        <tbody>{lessons.map(l => <tr key={l.id}><td>{l.lessonNo}</td><td>{l.title}</td><td><button className="mod-btn-add" onClick={() => choose(courseId, chapterId, l.id)}>Quản lý Kanji</button></td></tr>)}</tbody>
-      </table></div>}
+        : lessons.length === 0 ? <div className="admin-empty-state"><p>Chương này chưa có bài học Kanji.</p>
+          <Link className="mod-btn-add" to={`/moderator/courses/${courseId}/chapters/${chapterId}?skill=kanji`}>Tạo bài học Kanji</Link></div>
+          : <div className="admin-table-card kanji-table"><table><thead><tr><th>Bài</th><th>Tên bài học</th><th>Thao tác</th></tr></thead>
+            <tbody>{lessons.map(l => <tr key={l.id}><td>{l.lessonNo}</td><td>{l.title}</td><td><button className="mod-btn-add" onClick={() => choose(courseId, chapterId, l.id)}>Quản lý Kanji</button></td></tr>)}</tbody>
+          </table></div>}
   </div>;
 }
