@@ -8,6 +8,7 @@ import {
 
 interface QuestionGrammarCreateModalProps {
   lessonId: number;
+  grammarId: number;
   onClose: () => void;
   onCreated: (question: GrammarQuestion) => void;
 }
@@ -15,7 +16,7 @@ interface QuestionGrammarCreateModalProps {
 const optionKeys = ["A", "B", "C", "D"] as const;
 type OptionKey = typeof optionKeys[number];
 
-export function QuestionGrammarCreateModal({ lessonId, onClose, onCreated }: QuestionGrammarCreateModalProps) {
+export function QuestionGrammarCreateModal({ lessonId, grammarId, onClose, onCreated }: QuestionGrammarCreateModalProps) {
   const [form, setForm] = useState({
     questionType: "MCQ" as GrammarQuestion["questionType"],
     content: "",
@@ -75,6 +76,7 @@ export function QuestionGrammarCreateModal({ lessonId, onClose, onCreated }: Que
     const payload: GrammarQuestionCreateInput = {
       questionType: form.questionType,
       lessonId,
+      grammarId,
       content: form.content.trim(),
       explanation: form.explanation.trim() || null,
       answerData,

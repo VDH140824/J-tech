@@ -8,6 +8,7 @@ public record QuestionGrammarResponse(
         Question.Skill skill,
         Question.QuestionType questionType,
         Long lessonId,
+        Long grammarId,
         String content,
         String mediaUrl,
         String explanation,

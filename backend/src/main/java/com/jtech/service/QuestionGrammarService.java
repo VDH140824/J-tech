@@ -8,6 +8,9 @@ import com.jtech.dto.response.QuestionGrammarResponse;
 import com.jtech.entity.Lesson;
 import com.jtech.entity.Question;
 import com.jtech.repository.LessonRepository;
+import com.jtech.repository.GrammarRepository;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import com.jtech.repository.QuestionGrammarRepository;
 import com.jtech.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,22 +26,28 @@ public class QuestionGrammarService {
     private final QuestionGrammarRepository questionRepository;
     private final UserRepository userRepository;
     private final LessonRepository lessonRepository;
+    private final GrammarRepository grammarRepository;
     private final ObjectMapper objectMapper;
 
     public QuestionGrammarService(QuestionGrammarRepository questionRepository,
                                   UserRepository userRepository,
                                   LessonRepository lessonRepository,
+                                  GrammarRepository grammarRepository,
                                   ObjectMapper objectMapper) {
         this.questionRepository = questionRepository;
         this.userRepository = userRepository;
         this.lessonRepository = lessonRepository;
+        this.grammarRepository = grammarRepository;
         this.objectMapper = objectMapper;
     }
 
     @Transactional(readOnly = true)
-    public List<QuestionGrammarResponse> getAllGrammarQuestions() {
-        return questionRepository.findBySkillAndStatusOrderByDisplayOrderAscIdAsc(
-                Question.Skill.GRAMMAR, Question.QuestionStatus.ACTIVE)
+    public List<QuestionGrammarResponse> getAllGrammarQuestions(Long grammarId) {
+        if (!grammarRepository.existsById(grammarId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Grammar not found");
+        }
+        return questionRepository.findByGrammarIdAndSkillAndStatusOrderByDisplayOrderAscIdAsc(
+                grammarId, Question.Skill.GRAMMAR, Question.QuestionStatus.ACTIVE)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -52,6 +61,12 @@ public class QuestionGrammarService {
             throw new IllegalArgumentException("Lesson is not a grammar lesson");
         }
 
+        var grammar = grammarRepository.findById(request.grammarId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grammar not found"));
+        if (!grammar.getLesson().getId().equals(lesson.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grammar does not belong to this lesson");
+        }
+
         validateAnswerData(request.answerData());
         Long userId = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new AccessDeniedException("User not found"))
@@ -61,6 +76,7 @@ public class QuestionGrammarService {
         question.setSkill(Question.Skill.GRAMMAR);
         question.setQuestionType(request.questionType());
         question.setLessonId(lesson.getId());
+        question.setGrammarId(grammar.getId());
         question.setContent(request.content().trim());
         question.setExplanation(request.explanation() == null ? null : request.explanation().trim());
         question.setAnswerData(request.answerData().trim());
@@ -122,7 +138,7 @@ public class QuestionGrammarService {
     private QuestionGrammarResponse toResponse(Question question) {
         return new QuestionGrammarResponse(
                 question.getId(), question.getSkill(), question.getQuestionType(),
-                question.getLessonId(), question.getContent(), question.getMediaUrl(),
+                question.getLessonId(), question.getGrammarId(), question.getContent(), question.getMediaUrl(),
                 question.getExplanation(), question.getAnswerData(), question.getDifficulty(),
                 question.getIsExerciseQuestion(), question.getDisplayOrder(), question.getStatus(),
                 question.getCreatedBy(), question.getUpdatedBy(), question.getCreatedAt(),

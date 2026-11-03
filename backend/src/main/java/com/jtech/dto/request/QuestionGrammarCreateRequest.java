@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 public record QuestionGrammarCreateRequest(
         @NotNull Question.QuestionType questionType,
         @NotNull @Min(1) Long lessonId,
+        @NotNull @Min(1) Long grammarId,
         @NotBlank String content,
         String explanation,
         @NotBlank String answerData,

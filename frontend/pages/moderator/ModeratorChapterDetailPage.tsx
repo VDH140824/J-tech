@@ -187,9 +187,11 @@ export function ModeratorChapterDetailPage({
   // Show the selected lesson's grammar detail directly.
   if (lessonIdParam && activeLessonForItems && activeConfig) {
     if (activeConfig.key === "grammar") {
-      if (searchParams.get("questionList") === "1") {
+      if (searchParams.get("questionList") === "1" && grammarId != null && grammarId > 0) {
         return (
           <GrammarQuestionListPage
+            key={grammarId}
+            grammarId={grammarId}
             courseName={courseName}
             chapterNo={chapterNo}
             lessonTitle={activeLessonForItems.title}
@@ -216,9 +218,10 @@ export function ModeratorChapterDetailPage({
             else next.set("grammarId", String(id));
             return next;
           }, { replace: true })}
-          onViewQuestions={() => {
+          onViewQuestions={(selectedGrammarId) => {
             setSearchParams((prev) => {
               const next = new URLSearchParams(prev);
+              next.set("grammarId", String(selectedGrammarId));
               next.set("questionList", "1");
               return next;
             });
