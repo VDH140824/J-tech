@@ -8,8 +8,11 @@ import java.time.LocalDateTime;
 public record ClassResponse(Long id, String code, Long moderatorId, String description,
                             ClassroomStatus status, LocalDateTime createdAt, long studentCount) {
     public static ClassResponse fromClassroom(Classroom classroom) {
+        return fromClassroom(classroom, 0);
+    }
+    public static ClassResponse fromClassroom(Classroom classroom, long studentCount) {
         return new ClassResponse(classroom.getId(), classroom.getCode(), classroom.getModeratorId(),
-                classroom.getDescription(), classroom.getStatus(), classroom.getCreatedAt(), 0);
+                classroom.getDescription(), classroom.getStatus(), classroom.getCreatedAt(), studentCount);
     }
     public static ClassResponse fromQueryRow(Object[] row) {
         LocalDateTime createdAt = row[5] instanceof Timestamp timestamp

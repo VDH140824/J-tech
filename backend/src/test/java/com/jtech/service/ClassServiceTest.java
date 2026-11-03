@@ -38,6 +38,150 @@ class ClassServiceTest {
     @InjectMocks ClassService service;
     private User moderator;
 
+    private Classroom prepareUpdate() {
+        Classroom classroom = new Classroom();
+        classroom.setId(10L);
+        classroom.setCode("OLD_CODE");
+        classroom.setModeratorId(12L);
+        classroom.setStatus(ClassroomStatus.ACTIVE);
+        classroom.setCreatedAt(LocalDateTime.of(2026, 1, 1, 9, 0));
+        when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
+        when(classRepository.findById(10L)).thenReturn(Optional.of(classroom));
+        return classroom;
+    }
+
+    @Test
+    void deleteClass_success() {
+        var classroom = prepareUpdate();
+
+        service.deleteClass(10L);
+
+        verify(classRepository).countStudents(10L);
+        verify(classRepository).countPosts(10L);
+        verify(classRepository).delete(classroom);
+        verify(classRepository).flush();
+    }
+
+    @Test
+    void deleteClass_hasMembers() {
+        prepareUpdate();
+        when(classRepository.countStudents(10L)).thenReturn(1L);
+
+        var error = assertThrows(IllegalStateException.class, () -> service.deleteClass(10L));
+
+        assertEquals("Không thể xóa lớp đang có học sinh.", error.getMessage());
+        verify(classRepository, never()).countPosts(any());
+        verify(classRepository, never()).delete(any());
+    }
+
+    @Test
+    void deleteClass_hasPosts() {
+        prepareUpdate();
+        when(classRepository.countPosts(10L)).thenReturn(1L);
+
+        var error = assertThrows(IllegalStateException.class, () -> service.deleteClass(10L));
+
+        assertEquals("Không thể xóa lớp đang có bài đăng.", error.getMessage());
+        verify(classRepository, never()).delete(any());
+    }
+
+    @Test
+    void deleteClass_deleteFailed() {
+        var classroom = prepareUpdate();
+        doThrow(new DataIntegrityViolationException("Storage error"))
+                .when(classRepository).flush();
+
+        assertThrows(DataIntegrityViolationException.class, () -> service.deleteClass(10L));
+        verify(classRepository).delete(classroom);
+    }
+
+    @Test
+    void updateClass_success() {
+        var classroom = prepareUpdate();
+        when(classRepository.countStudents(10L)).thenReturn(32L);
+        var result = service.updateClass(10L, new ClassRequest(" NEW_CODE ", " Mô tả ", "CLOSED"));
+        assertEquals("NEW_CODE", result.code());
+        assertEquals("Mô tả", result.description());
+        assertEquals(ClassroomStatus.CLOSED, result.status());
+        assertEquals(32, result.studentCount());
+        assertEquals(12L, result.moderatorId());
+        assertEquals(LocalDateTime.of(2026, 1, 1, 9, 0), result.createdAt());
+        assertNotNull(classroom.getUpdatedAt());
+        verify(classRepository).saveAndFlush(classroom);
+    }
+
+    @Test
+    void updateClass_sameCode() {
+        var classroom = prepareUpdate();
+        service.updateClass(10L, new ClassRequest("OLD_CODE", null, "ACTIVE"));
+        verify(classRepository).existsByCodeAndIdNot("OLD_CODE", 10L);
+        verify(classRepository).saveAndFlush(classroom);
+    }
+
+    @Test
+    void updateClass_duplicateCode() {
+        var classroom = prepareUpdate();
+        when(classRepository.existsByCodeAndIdNot("OTHER", 10L)).thenReturn(true);
+        assertThrows(IllegalStateException.class,
+                () -> service.updateClass(10L, new ClassRequest("OTHER", null, "ACTIVE")));
+        assertEquals("OLD_CODE", classroom.getCode());
+        verify(classRepository, never()).saveAndFlush(any());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "JP N5", "JP@N5", "A234567890123456789012345678901"})
+    void updateClass_invalidCode(String code) {
+        prepareUpdate();
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateClass(10L, new ClassRequest(code, null, "ACTIVE")));
+        verify(classRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void updateClass_descriptionTooLong() {
+        prepareUpdate();
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateClass(10L, new ClassRequest("OLD_CODE", "a".repeat(101), "ACTIVE")));
+        verify(classRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void updateClass_descriptionMaxLength() {
+        var classroom = prepareUpdate();
+        var description = "a".repeat(100);
+
+        var result = service.updateClass(10L, new ClassRequest("OLD_CODE", description, "ACTIVE"));
+
+        assertEquals(description, result.description());
+        verify(classRepository).saveAndFlush(classroom);
+    }
+
+    @Test
+    void updateClass_emptyDescription() {
+        prepareUpdate();
+        assertNull(service.updateClass(10L, new ClassRequest("OLD_CODE", "   ", "ACTIVE")).description());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"INVALID", "active"})
+    void updateClass_invalidStatus(String status) {
+        prepareUpdate();
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateClass(10L, new ClassRequest("OLD_CODE", null, status)));
+        verify(classRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void updateClass_saveFailed() {
+        prepareUpdate();
+        when(classRepository.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("Storage error"));
+        assertThrows(DataIntegrityViolationException.class,
+                () -> service.updateClass(10L, new ClassRequest("OLD_CODE", null, "ACTIVE")));
+        verify(classRepository, never()).countStudents(any());
+    }
+
     @Test
     void createClass_success() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));

@@ -62,7 +62,7 @@ export function ClassCreateModal({ onClose, onCreated }: { onClose: () => void; 
           <select id="class-status" value={status} disabled={busy}
             onChange={(event) => setStatus(event.target.value as ClassroomStatus)}>
             <option value="ACTIVE">Đang hoạt động</option>
-            <option value="ARCHIVED">Đã lưu trữ</option>
+            <option value="ARCHIVED">Lưu trữ</option>
             <option value="CLOSED">Đã đóng</option>
           </select>
         </div>

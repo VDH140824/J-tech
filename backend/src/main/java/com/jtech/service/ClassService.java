@@ -6,6 +6,8 @@ import com.jtech.entity.Classroom;
 import com.jtech.entity.ClassroomStatus;
 import com.jtech.entity.User;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import org.springframework.dao.DataIntegrityViolationException;
 import com.jtech.entity.UserStatus;
 import com.jtech.repository.ClassRepository;
@@ -40,6 +42,67 @@ public class ClassService {
 
     @Transactional
     public ClassResponse createClass(ClassRequest request) {
+        ClassRequest data = validateClassData(request);
+        var moderator = getCurrentModerator();
+        if (classRepository.existsByCode(data.code())) throw new IllegalStateException("Mã lớp đã tồn tại.");
+        Classroom classroom = new Classroom();
+        classroom.setCode(data.code());
+        classroom.setDescription(data.description());
+        classroom.setModeratorId(moderator.getUserId());
+        classroom.setStatus(ClassroomStatus.valueOf(data.status()));
+        saveClassroom(classroom);
+        entityManager.refresh(classroom);
+        return ClassResponse.fromClassroom(classroom);
+    }
+
+    @Transactional
+    public ClassResponse updateClass(Long id, ClassRequest request) {
+        var moderator = getCurrentModerator();
+        Classroom classroom = classRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lớp học không tồn tại."));
+        if (!moderator.getUserId().equals(classroom.getModeratorId())) {
+            throw new AccessDeniedException("Bạn không có quyền chỉnh sửa lớp học này.");
+        }
+        ClassRequest data = validateClassData(request);
+        if (classRepository.existsByCodeAndIdNot(data.code(), id)) {
+            throw new IllegalStateException("Mã lớp đã tồn tại.");
+        }
+        classroom.setCode(data.code());
+        classroom.setDescription(data.description());
+        classroom.setStatus(ClassroomStatus.valueOf(data.status()));
+        classroom.setUpdatedAt(LocalDateTime.now());
+        saveClassroom(classroom);
+        return ClassResponse.fromClassroom(classroom, classRepository.countStudents(id));
+    }
+
+    @Transactional
+    public void deleteClass(Long id) {
+        var moderator = getCurrentModerator();
+        Classroom classroom = classRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lớp học không tồn tại."));
+        if (!moderator.getUserId().equals(classroom.getModeratorId())) {
+            throw new AccessDeniedException("Bạn không có quyền xóa lớp học này.");
+        }
+        if (classRepository.countStudents(id) > 0) {
+            throw new IllegalStateException("Không thể xóa lớp đang có học sinh.");
+        }
+        if (classRepository.countPosts(id) > 0) {
+            throw new IllegalStateException("Không thể xóa lớp đang có bài đăng.");
+        }
+        try {
+            classRepository.delete(classroom);
+            classRepository.flush();
+        } catch (DataIntegrityViolationException exception) {
+            for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+                if (cause.getMessage() != null && cause.getMessage().toLowerCase(java.util.Locale.ROOT).contains("foreign key")) {
+                    throw new IllegalStateException("Không thể xóa lớp vì lớp đã có dữ liệu liên quan.", exception);
+                }
+            }
+            throw exception;
+        }
+    }
+
+    private ClassRequest validateClassData(ClassRequest request) {
         String code = request == null || request.code() == null ? "" : request.code().trim();
         String description = request == null || request.description() == null ? null : request.description().trim();
         String statusValue = request == null || request.status() == null ? "" : request.status().trim();
@@ -58,13 +121,10 @@ public class ClassService {
         } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException("Trạng thái lớp học không hợp lệ.");
         }
-        var moderator = getCurrentModerator();
-        if (classRepository.existsByCode(code)) throw new IllegalStateException("Mã lớp đã tồn tại.");
-        Classroom classroom = new Classroom();
-        classroom.setCode(code);
-        classroom.setDescription(description);
-        classroom.setModeratorId(moderator.getUserId());
-        classroom.setStatus(status);
+        return new ClassRequest(code, description, status.name());
+    }
+
+    private void saveClassroom(Classroom classroom) {
         try {
             classRepository.saveAndFlush(classroom);
         } catch (DataIntegrityViolationException exception) {
@@ -76,8 +136,6 @@ public class ClassService {
             }
             throw exception;
         }
-        entityManager.refresh(classroom);
-        return ClassResponse.fromClassroom(classroom);
     }
 
     private User getCurrentModerator() {

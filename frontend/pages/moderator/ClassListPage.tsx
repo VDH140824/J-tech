@@ -1,17 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { getMyClasses, type ClassResponse, type ClassroomStatus } from "../../api/classApi";
+import { deleteClass, getMyClasses, type ClassResponse, type ClassroomStatus } from "../../api/classApi";
 import "./ClassListPage.css";
 import { ClassCreateModal } from "./ClassCreateModal";
+import { ClassEditModal } from "./ClassEditModal";
 
 const PAGE_SIZE = 4;
 const STATUS_LABELS: Record<ClassroomStatus, string> = {
   ACTIVE: "Đang hoạt động",
-  ARCHIVED: "Đã lưu trữ",
+  ARCHIVED: "Lưu trữ",
   CLOSED: "Đã đóng",
 };
 
 export function ClassListPage() {
+  const [selectedClass, setSelectedClass] = useState<ClassResponse | null>(null);
+  const [classToDelete, setClassToDelete] = useState<ClassResponse | null>(null);
+  const deleteDialog = useRef<HTMLDialogElement>(null);
+  const deleting = useRef(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [success, setSuccess] = useState("");
   const [classes, setClasses] = useState<ClassResponse[]>([]);
@@ -22,6 +29,41 @@ export function ClassListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ClassroomStatus | "">("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    if (classToDelete) deleteDialog.current?.showModal();
+  }, [classToDelete]);
+
+  function openDeleteConfirmation(classroom: ClassResponse) {
+    setSuccess("");
+    setDeleteError("");
+    setClassToDelete(classroom);
+  }
+
+  function handleCancelDelete() {
+    if (!deleting.current) setClassToDelete(null);
+  }
+
+  async function handleConfirmDelete() {
+    if (!classToDelete || deleting.current) return;
+    deleting.current = true;
+    setDeleteBusy(true);
+    setDeleteError("");
+    try {
+      await deleteClass(classToDelete.id);
+      setClassToDelete(null);
+      setSuccess("Xóa lớp học thành công.");
+      setRequestVersion((value) => value + 1);
+    } catch (cause) {
+      const status = axios.isAxiosError(cause) ? cause.response?.status : undefined;
+      const message = axios.isAxiosError(cause) ? cause.response?.data?.message : undefined;
+      setDeleteError((status === 403 || status === 404 || status === 409) && typeof message === "string"
+        ? message : "Không thể xóa lớp học. Vui lòng thử lại.");
+    } finally {
+      deleting.current = false;
+      setDeleteBusy(false);
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -74,6 +116,31 @@ export function ClassListPage() {
       </div>
 
       {success && <p role="status">{success}</p>}
+      {selectedClass && <ClassEditModal key={selectedClass.id} classroom={selectedClass}
+        onClose={() => setSelectedClass(null)} onUpdated={() => {
+          setSelectedClass(null);
+          setSuccess("Cập nhật lớp học thành công.");
+          setRequestVersion((value) => value + 1);
+        }} />}
+      {classToDelete && (
+        <dialog ref={deleteDialog} className="class-delete-modal" aria-labelledby="class-delete-title"
+          onCancel={(event) => { event.preventDefault(); handleCancelDelete(); }}>
+          <div className="class-create-header">
+            <h2 id="class-delete-title">Xóa lớp học</h2>
+            <button type="button" className="class-create-close" aria-label="Đóng xác nhận xóa"
+              disabled={deleteBusy} onClick={handleCancelDelete}>×</button>
+          </div>
+          <p>Bạn có chắc chắn muốn xóa lớp <strong>{classToDelete.code}</strong>?</p>
+          <p className="class-delete-note">Lớp đã có học sinh hoặc bài đăng sẽ không thể xóa.</p>
+          {deleteError && <p className="class-list-error" role="alert">{deleteError}</p>}
+          <div className="class-create-buttons">
+            <button type="button" disabled={deleteBusy} onClick={handleCancelDelete}>Hủy</button>
+            <button type="button" className="class-delete-submit" disabled={deleteBusy} onClick={handleConfirmDelete}>
+              {deleteBusy ? "Đang xóa…" : "Xác nhận xóa"}
+            </button>
+          </div>
+        </dialog>
+      )}
       {showCreate && <ClassCreateModal onClose={() => setShowCreate(false)} onCreated={() => {
         setShowCreate(false);
         setSuccess("Tạo lớp học thành công.");
@@ -124,10 +191,10 @@ export function ClassListPage() {
                     <p className="class-list-count">Học sinh: <strong>{classroom.studentCount}</strong> học viên</p>
                     <div className="class-list-actions">
                       <button type="button" disabled title="Chưa hỗ trợ">Xem chi tiết</button>
-                      <button type="button" disabled title="Chưa hỗ trợ">Chỉnh sửa</button>
-                      <button type="button" disabled title="Chưa hỗ trợ">Xóa</button>
+                      <button type="button" onClick={() => { setSuccess(""); setSelectedClass(classroom); }}>Chỉnh sửa</button>
+                      <button type="button" onClick={() => openDeleteConfirmation(classroom)}>Xóa</button>
                     </div>
-                    <small className="class-list-unavailable">Các thao tác trên lớp chưa hỗ trợ.</small>
+                    <small className="class-list-unavailable">Xem chi tiết chưa hỗ trợ.</small>
                   </div>
                 </article>
               ))}
