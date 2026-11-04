@@ -2,23 +2,22 @@ package com.jtech.controller;
 
 import com.jtech.dto.request.LessonRequest;
 import com.jtech.dto.response.LessonResponse;
-import com.jtech.entity.Chapter;
 import com.jtech.entity.Course;
 import com.jtech.entity.Lesson;
-import com.jtech.repository.ChapterRepository;
-import com.jtech.repository.LessonRepository;
+import com.jtech.service.LessonService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
 public class LessonController {
+    private final LessonService lessonService;
 
-    private final LessonRepository lessonRepository;
+    /*private final LessonRepository lessonRepository;
     private final ChapterRepository chapterRepository;
     private final com.jtech.service.KanjiService kanjiService;
 
@@ -26,54 +25,32 @@ public class LessonController {
                             com.jtech.service.KanjiService kanjiService) {
         this.lessonRepository = lessonRepository;
         this.chapterRepository = chapterRepository;
-        this.kanjiService = kanjiService;
+        this.kanjiService = kanjiService;*/
+    public LessonController(LessonService lessonService) {
+        this.lessonService = lessonService;
     }
 
     @GetMapping("/chapters/{chapterId}/lessons")
     public ResponseEntity<List<LessonResponse>> getLessonsByChapter(
-            @PathVariable Long chapterId,
-            @RequestParam(required = false) Lesson.SkillType skillType,
-            @RequestParam(required = false) Course.Status status
-    ) {
-        List<Lesson> lessons;
-        if (skillType != null && status != null) {
-            lessons = lessonRepository.findByChapterIdAndSkillTypeAndStatusOrderByDisplayOrderAscLessonNoAscIdAsc(chapterId, skillType, status);
-        } else if (skillType != null) {
-            lessons = lessonRepository.findByChapterIdAndSkillTypeOrderByDisplayOrderAscLessonNoAscIdAsc(chapterId, skillType);
-        } else if (status != null) {
-            lessons = lessonRepository.findByChapterIdAndStatusOrderByDisplayOrderAscLessonNoAscIdAsc(chapterId, status);
-        } else {
-            lessons = lessonRepository.findByChapterIdOrderByDisplayOrderAscLessonNoAscIdAsc(chapterId);
-        }
-
-        List<LessonResponse> responses = lessons.stream()
-                .map(this::mapToResponse)
-                .toList();
-
-        return ResponseEntity.ok(responses);
+            @PathVariable Long chapterId, @RequestParam(required = false) Lesson.SkillType skillType,
+            @RequestParam(required = false) Course.Status status) {
+        return ResponseEntity.ok(lessonService.getLessonsByChapter(chapterId, skillType, status));
     }
 
     @GetMapping("/courses/{courseId}/chapters/{chapterId}/lessons")
     public ResponseEntity<List<LessonResponse>> getLessonsByCourseAndChapter(
-            @PathVariable Long courseId,
-            @PathVariable Long chapterId,
+            @PathVariable Long courseId, @PathVariable Long chapterId,
             @RequestParam(required = false) Lesson.SkillType skillType,
-            @RequestParam(required = false) Course.Status status
-    ) {
-        if (chapterRepository.findByIdAndCourseId(chapterId, courseId).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return getLessonsByChapter(chapterId, skillType, status);
+            @RequestParam(required = false) Course.Status status) {
+        return ResponseEntity.ok(lessonService.getLessonsByCourseAndChapter(courseId, chapterId, skillType, status));
     }
 
     @GetMapping("/lessons/{id}")
     public ResponseEntity<LessonResponse> getLessonById(@PathVariable Long id) {
-        return lessonRepository.findById(id)
-                .map(lesson -> ResponseEntity.ok(mapToResponse(lesson)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(lessonService.getLessonById(id));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    /*@PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PostMapping(value = {"/chapters/{chapterId}/lessons", "/courses/{courseId}/chapters/{chapterId}/lessons"}, consumes = "application/json")
     public ResponseEntity<?> createLesson(
             @PathVariable(required = false) Long courseId,
@@ -155,18 +132,29 @@ public class LessonController {
 
         Lesson updated = lessonRepository.save(lesson);
         return ResponseEntity.ok(mapToResponse(updated));
+        */
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PostMapping({"/chapters/{chapterId}/lessons", "/courses/{courseId}/chapters/{chapterId}/lessons"})
+    public ResponseEntity<LessonResponse> createLesson(@PathVariable(required = false) Long courseId,
+            @PathVariable Long chapterId, @Valid @RequestPart("request") LessonRequest request,
+            @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.createLesson(courseId, chapterId, request, file));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PutMapping("/lessons/{id}")
+    public ResponseEntity<LessonResponse> updateLesson(@PathVariable Long id, @Valid @RequestPart("request") LessonRequest request,
+            @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file) {
+        return ResponseEntity.ok(lessonService.updateLesson(id, request, file));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @DeleteMapping("/lessons/{id}")
     public ResponseEntity<Void> deleteLesson(@PathVariable Long id) {
-        if (!lessonRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        lessonRepository.deleteById(id);
+        lessonService.deleteLesson(id);
         return ResponseEntity.noContent().build();
     }
-
+    /*
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @org.springframework.transaction.annotation.Transactional
     @PostMapping(value = "/chapters/{chapterId}/lessons", consumes = "multipart/form-data")
@@ -220,5 +208,9 @@ public class LessonController {
                 lesson.getCreatedAt(),
                 lesson.getUpdatedAt()
         );
+         */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<String> handleLessonError(ResponseStatusException exception) {
+        return ResponseEntity.status(exception.getStatusCode()).body(exception.getReason());
     }
 }

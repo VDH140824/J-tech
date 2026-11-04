@@ -24,6 +24,8 @@ import java.util.UUID;
 
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+    public static final String ACCOUNT_STATUS_SESSION_KEY = "ACCOUNT_STATUS";
+    public static final String ACCOUNT_REASON_SESSION_KEY = "ACCOUNT_STATUS_REASON";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -103,11 +105,23 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         });
 
         if (user.getStatus() != UserStatus.ACTIVE) {
+            var session = request.getSession();
+            session.setAttribute(ACCOUNT_STATUS_SESSION_KEY, user.getStatus().name());
+            if (user.getStatusReason() == null || user.getStatusReason().isBlank()) {
+                session.removeAttribute(ACCOUNT_REASON_SESSION_KEY);
+            } else {
+                session.setAttribute(ACCOUNT_REASON_SESSION_KEY, user.getStatusReason());
+            }
             String statusRoute = user.getStatus() == UserStatus.PENDING
                     ? "/pending-approval"
                     : "/account-rejected";
             getRedirectStrategy().sendRedirect(request, response, frontendUrl + statusRoute);
             return;
+        }
+
+        if (request.getSession(false) != null) {
+            request.getSession(false).removeAttribute(ACCOUNT_STATUS_SESSION_KEY);
+            request.getSession(false).removeAttribute(ACCOUNT_REASON_SESSION_KEY);
         }
 
         RefreshToken refreshToken = refreshTokenRepository.save(RefreshToken.builder()

@@ -10,6 +10,8 @@ import com.jtech.repository.RefreshTokenRepository;
 import com.jtech.repository.UserRepository;
 import com.jtech.security.JwtService;
 import com.jtech.service.AuthService;
+import com.jtech.service.CloudinaryService;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,14 +28,16 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
+    private final CloudinaryService cloudinaryService;
     private final com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore;
 
     public AuthServiceImpl(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository,
-                           JwtService jwtService,
+                           JwtService jwtService, CloudinaryService cloudinaryService,
                            com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtService = jwtService;
+        this.cloudinaryService = cloudinaryService;
         this.oAuth2ExchangeStore = oAuth2ExchangeStore;
     }
 
@@ -79,16 +83,31 @@ public class AuthServiceImpl implements AuthService {
 
     @Override @Transactional
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        if (request == null) throw new IllegalArgumentException("Dữ liệu hồ sơ là bắt buộc");
+        String name = request.getFullName();
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("Họ tên không được để trống");
+        name = name.trim();
+        if (name.length() > 50) throw new IllegalArgumentException("Họ tên không quá 50 ký tự");
+        java.time.LocalDate dateOfBirth = null;
+        if (request.getDateOfBirth() != null) {
+            try {
+                dateOfBirth = java.time.LocalDate.parse(request.getDateOfBirth(),
+                        java.time.format.DateTimeFormatter.ofPattern("uuuu-MM-dd")
+                                .withResolverStyle(java.time.format.ResolverStyle.STRICT));
+            } catch (java.time.format.DateTimeParseException exception) {
+                throw new IllegalArgumentException("Ngày sinh không hợp lệ. Nhập theo định dạng yyyy-MM-dd.", exception);
+            }
+        }
+        if (dateOfBirth != null && dateOfBirth.isAfter(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày sinh không được ở tương lai");
+        }
         User user = (userId != null)
                 ? userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"))
                 : getAuthenticatedUser();
 
-        String name = request.getFullName();
-        if (name != null) {
-            user.setFullName(name.trim());
-        }
-        if (request.getDateOfBirth() != null) {
-            user.setDateOfBirth(request.getDateOfBirth());
+        user.setFullName(name);
+        if (dateOfBirth != null) {
+            user.setDateOfBirth(dateOfBirth);
         }
         if (request.getAvatarPublicId() != null) {
             user.setAvatarPublicId(request.getAvatarPublicId().trim().isEmpty() ? null : request.getAvatarPublicId().trim());
@@ -98,6 +117,15 @@ public class AuthServiceImpl implements AuthService {
         }
         user = userRepository.save(user);
         return mapToUserResponse(user);
+    }
+
+    @Override @Transactional
+    public UserResponse updateAvatar(MultipartFile file) {
+        User user = getAuthenticatedUser();
+        var uploaded = cloudinaryService.uploadAvatar(file);
+        user.setAvatarUrl(uploaded.get("url"));
+        user.setAvatarPublicId(uploaded.get("publicId"));
+        return mapToUserResponse(userRepository.save(user));
     }
 
     @Override

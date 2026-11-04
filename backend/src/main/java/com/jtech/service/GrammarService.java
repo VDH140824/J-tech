@@ -54,6 +54,11 @@ public class GrammarService {
 
     @Transactional
     public GrammarDetailResponse create(Long lessonId, GrammarCreateRequest request) {
+        validateTextFields(request.structureName(), request.meaningVi(), request.usageExplanation(),
+                request.exampleJp(), request.exampleVi());
+        if (request.displayOrder() != null) {
+            validateDisplayOrder(request.displayOrder());
+        }
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lesson not found"));
         if (lesson.getSkillType() != Lesson.SkillType.GRAMMAR) {
@@ -74,7 +79,7 @@ public class GrammarService {
                 .videoUrl(request.videoUrl())
                 .videoPublicId(request.videoPublicId())
                 .videoDurationSec(request.videoDurationSec())
-                .displayOrder(request.displayOrder() != null ? request.displayOrder() : 0)
+                .displayOrder(request.displayOrder() != null ? request.displayOrder() : 1)
                 .status(request.status() != null ? request.status() : Grammar.Status.DRAFT)
                 .build();
         return toResponse(grammarRepository.save(grammar));
@@ -84,6 +89,10 @@ public class GrammarService {
     public GrammarDetailResponse update(Long id, GrammarUpdateRequest request, MultipartFile videoFile) {
         Grammar grammar = grammarRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grammar not found"));
+
+        validateTextFields(request.structureName(), request.meaningVi(), request.usageExplanation(),
+                request.exampleJp(), request.exampleVi());
+        validateDisplayOrder(request.displayOrder());
 
         if ((request.videoUrl() != null && !request.videoUrl().isBlank())
                 || (request.videoPublicId() != null && !request.videoPublicId().isBlank())) {
@@ -177,6 +186,30 @@ public class GrammarService {
             });
         }
         return true;
+    }
+
+    private void validateTextFields(String structureName, String meaningVi, String usageExplanation,
+                                    String exampleJp, String exampleVi) {
+        validateText(structureName, "Cấu trúc ngữ pháp");
+        validateText(meaningVi, "Ý nghĩa tiếng Việt");
+        validateText(usageExplanation, "Giải thích cách dùng");
+        validateText(exampleJp, "Ví dụ tiếng Nhật");
+        validateText(exampleVi, "Dịch ví dụ");
+    }
+
+    private void validateText(String value, String label) {
+        if (value == null || value.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, label + " không được để trống");
+        }
+        if (value.trim().length() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, label + " không được vượt quá 100 ký tự");
+        }
+    }
+
+    private void validateDisplayOrder(Integer order) {
+        if (order == null || order < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thứ tự hiển thị phải từ 1 trở lên");
+        }
     }
 
     private GrammarDetailResponse toResponse(Grammar grammar) {

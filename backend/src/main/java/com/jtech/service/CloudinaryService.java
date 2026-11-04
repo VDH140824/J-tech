@@ -18,6 +18,7 @@ public class CloudinaryService {
 
     private static final String TARGET_ASSET_FOLDER = "Video/jtech/customer_upload/video";
     private static final String GRAMMAR_VIDEO_FOLDER = "Jtech/Moderator/Grammar/video";
+    private static final String AVATAR_FOLDER = "Jtech/Users/Avatar";
     private static final Set<String> ALLOWED_VIDEO_CONTENT_TYPES = Set.of(
             "video/mp4",
             "video/webm",
@@ -27,6 +28,25 @@ public class CloudinaryService {
             "video/x-matroska"
     );
 
+
+    public Map<String, String> uploadDocument(MultipartFile file) {
+        if (file == null || file.isEmpty()) throw new IllegalArgumentException("Vui lòng chọn tài liệu đính kèm");
+        String name = file.getOriginalFilename();
+        String ext = name == null || !name.contains(".") ? "" : name.substring(name.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT);
+        Map<String, String> types = Map.of("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "ppt", "application/vnd.ms-powerpoint", "pdf", "application/pdf", "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        String mime = file.getContentType();
+        if (!types.containsKey(ext) || (mime != null && !mime.isBlank() && !"application/octet-stream".equalsIgnoreCase(mime) && !types.get(ext).equalsIgnoreCase(mime))) throw new IllegalArgumentException("Chỉ chấp nhận tệp DOCX, PPTX, PPT, PDF, XLSX");
+        try {
+            Map result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "raw", "folder", "Jtech/Lessons/Documents", "public_id", java.util.UUID.randomUUID() + "." + ext, "overwrite", false));
+            if (!(result.get("secure_url") instanceof String url) || url.isBlank() || !(result.get("public_id") instanceof String id) || id.isBlank()) throw new IllegalStateException("Cloudinary không trả về thông tin tài liệu");
+            return Map.of("name", name, "url", url, "publicId", id);
+        } catch (IOException exception) { throw new IllegalStateException("Không thể tải tài liệu lên Cloudinary", exception); }
+    }
+    public void deleteDocument(String id) {
+        if (id == null || !id.startsWith("Jtech/Lessons/Documents/")) return;
+        try { cloudinary.uploader().destroy(id, ObjectUtils.asMap("resource_type", "raw")); }
+        catch (IOException exception) { throw new IllegalStateException("Không thể xóa tài liệu Cloudinary", exception); }
+    }
     private final Cloudinary cloudinary;
 
     public CloudinaryService(Cloudinary cloudinary) {
@@ -39,6 +59,23 @@ public class CloudinaryService {
 
     public CloudinaryUploadResponse uploadGrammarVideo(MultipartFile file) {
         return uploadVideo(file, GRAMMAR_VIDEO_FOLDER, true);
+    }
+
+    public Map<String, String> uploadAvatar(MultipartFile file) {
+        if (file == null || file.isEmpty() || file.getSize() > 5 * 1024 * 1024
+                || file.getContentType() == null
+                || !Set.of("image/jpeg", "image/png", "image/webp").contains(file.getContentType())) {
+            throw new IllegalArgumentException("Ảnh phải là JPG, PNG hoặc WebP và không quá 5 MB");
+        }
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = (Map<String, Object>) cloudinary.uploader().upload(
+                    file.getBytes(), ObjectUtils.asMap("resource_type", "image", "folder", AVATAR_FOLDER));
+            return Map.of("url", String.valueOf(result.get("secure_url")),
+                    "publicId", String.valueOf(result.get("public_id")));
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể tải ảnh đại diện lên", exception);
+        }
     }
 
     private CloudinaryUploadResponse uploadVideo(MultipartFile file, String folder, boolean uniqueFilename) {
@@ -113,6 +150,14 @@ System.out.println("Format: " + uploadResult.get("format"));
         } catch (IOException e) {
             throw new IllegalStateException("Failed to delete video from Cloudinary", e);
         }
+    }
+
+    public void deleteGrammarVideo(String publicId) {
+        String grammarVideoPrefix = GRAMMAR_VIDEO_FOLDER + "/";
+        if (publicId == null || !publicId.startsWith(grammarVideoPrefix)) {
+            throw new IllegalArgumentException("Video không thuộc thư mục ngữ pháp của moderator");
+        }
+        deleteVideo(publicId);
     }
 
     public String buildSecureVideoUrl(String publicId, String format) {

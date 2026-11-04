@@ -43,8 +43,8 @@ export async function approvePendingUser(userId: number): Promise<UserResponse> 
 }
 
 /** PUT /api/admin/users/:id/reject */
-export async function rejectPendingUser(userId: number): Promise<UserResponse> {
-  const { data } = await apiClient.put<UserResponse>(`/admin/users/${userId}/reject`);
+export async function rejectPendingUser(userId: number, statusReason: string): Promise<UserResponse> {
+  const { data } = await apiClient.put<UserResponse>(`/admin/users/${userId}/reject`, { statusReason });
   return data;
 }
 

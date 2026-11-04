@@ -1,18 +1,20 @@
 package com.jtech.dto.request;
 
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.AssertTrue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDate;
 
 public class UpdateProfileRequest {
 
-    @Size(max = 255)
+    @Size(max = 50, message = "Họ tên không quá 50 ký tự")
     private String displayName;
 
-    @Size(max = 100)
+    @Size(max = 50, message = "Họ tên không quá 50 ký tự")
     private String fullName;
 
-    private LocalDate dateOfBirth;
+    private String dateOfBirth;
 
     @Size(max = 500)
     private String avatarUrl;
@@ -26,7 +28,7 @@ public class UpdateProfileRequest {
     public UpdateProfileRequest(String fullName, LocalDate dateOfBirth) {
         this.fullName = fullName;
         this.displayName = fullName;
-        this.dateOfBirth = dateOfBirth;
+        this.dateOfBirth = dateOfBirth == null ? null : dateOfBirth.toString();
     }
 
     public String getDisplayName() {
@@ -41,15 +43,21 @@ public class UpdateProfileRequest {
         return fullName != null ? fullName : displayName;
     }
 
+    @AssertTrue(message = "Họ tên không được để trống")
+    @JsonIgnore
+    public boolean isValidFullName() {
+        return getFullName() != null && !getFullName().isBlank();
+    }
+
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
 
-    public LocalDate getDateOfBirth() {
+    public String getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(LocalDate dateOfBirth) {
+    public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 

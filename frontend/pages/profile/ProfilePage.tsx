@@ -1,24 +1,29 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { useAuthStore } from "../../store/authStore";
-import { useCurrentUser } from "../../hooks/useAuth";
+import { authKeys, useCurrentUser } from "../../hooks/useAuth";
 import * as authApi from "../../api/authApi";
 import type { UpdateProfileRequest } from "../../types/auth";
 import "./ProfilePage.css";
+
+function getBackendErrorMessage(error: unknown, fallback: string): string {
+  if (!isAxiosError(error)) return fallback;
+  const data: unknown = error.response?.data;
+  if (typeof data === "string" && data.trim()) return data;
+  if (data && typeof data === "object" && "message" in data &&
+      typeof data.message === "string" && data.message.trim()) {
+    return data.message;
+  }
+  return fallback;
+}
 
 function formatDateInput(value?: string | null) {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 10);
-}
-
-function formatDateTime(value?: string | null) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString("vi-VN");
 }
 
 function formatDateDisplay(value?: string | null) {
@@ -28,39 +33,13 @@ function formatDateDisplay(value?: string | null) {
   return date.toLocaleDateString("vi-VN");
 }
 
-function formatDisplayValue(value?: string | null) {
-  return value?.trim() ? value : "—";
-}
-
-function formatRoleLabel(role?: string | null) {
-  if (!role) return "—";
-  const r = role.toUpperCase();
-  if (r === "ADMIN" || r === "ROLE_ADMIN") return "Quản trị viên";
-  if (r === "MODERATOR") return "Kiểm duyệt viên";
-  if (r === "STUDENT") return "Học viên";
-  return role;
-}
-
-function formatStatusLabel(status?: string | null) {
-  if (!status) return "—";
-  const s = status.toUpperCase();
-  if (s === "ACTIVE") return "Đang hoạt động";
-  if (s === "PENDING") return "Chờ duyệt";
-  if (s === "LOCKED") return "Tạm khóa";
-  if (s === "REJECTED") return "Bị từ chối";
-  return status;
-}
-
-function formatAvatarLabel(value?: string | null) {
-  if (value?.trim()) return value.trim();
-  return "Mặc định hệ thống";
-}
-
 export function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const storedUser = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const { data: currentUser, isLoading, isError } = useCurrentUser();
 
@@ -71,6 +50,7 @@ export function ProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     setFullName(user?.fullName ?? user?.displayName ?? "");
@@ -81,6 +61,30 @@ export function ProfilePage() {
     const base = user?.fullName ?? user?.displayName ?? user?.email ?? "U";
     return base.charAt(0).toUpperCase();
   }, [user]);
+
+  const handleAvatarChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setError("Chọn ảnh JPG, PNG hoặc WebP không quá 5 MB.");
+      setMessage("");
+      return;
+    }
+    setUploadingAvatar(true);
+    setError("");
+    setMessage("");
+    try {
+      const updated = await authApi.updateAvatar(file);
+      queryClient.setQueryData(authKeys.me(accessToken), updated);
+      setUser(updated);
+      setMessage("Cập nhật ảnh đại diện thành công.");
+    } catch (error: unknown) {
+      setError(getBackendErrorMessage(error, "Không thể cập nhật ảnh đại diện. Vui lòng thử lại."));
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -98,11 +102,11 @@ export function ProfilePage() {
 
     try {
       const updated = await authApi.updateProfile(user.id, payload);
-      queryClient.setQueryData(["auth", "me"], updated);
+      queryClient.setQueryData(authKeys.me(accessToken), updated);
       setUser(updated);
       setMessage("Cập nhật thông tin thành công.");
-    } catch {
-      setError("Không thể cập nhật thông tin. Vui lòng thử lại.");
+    } catch (error: unknown) {
+      setError(getBackendErrorMessage(error, "Không thể cập nhật thông tin. Vui lòng thử lại."));
     } finally {
       setSaving(false);
     }
@@ -122,90 +126,83 @@ export function ProfilePage() {
 
       <main className="profile-shell">
         <section className="profile-card profile-summary">
-          <div className="profile-avatar">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user?.fullName ?? user?.displayName ?? "Avatar"} className="profile-avatar-img" />
-            ) : (
-              initial
-            )}
-          </div>
-          <div>
-            <h1>Hồ sơ người dùng</h1>
-            <p>{user?.fullName ?? user?.displayName ?? "Chưa có tên"}</p>
-            <p>{user?.email ?? ""}</p>
-            <p>Vai trò: {formatRoleLabel(user?.role)}</p>
-          </div>
-        </section>
-
-        <section className="profile-card">
-          <div className="profile-card-header">
-            <div>
-              <h2>Thông tin tài khoản</h2>
-              <p>Xem và chỉnh sửa thông tin trực tiếp từ tài khoản người dùng.</p>
-            </div>
-            <div className="profile-avatar preview">
+          <div className="profile-avatar-wrap">
+            <div className="profile-avatar profile-avatar-hero">
               {user?.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user?.fullName ?? user?.displayName ?? "Avatar"} className="profile-avatar-img" />
               ) : (
                 initial
               )}
             </div>
+            <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="profile-avatar-input" onChange={handleAvatarChange} aria-label="Chọn ảnh đại diện" />
+            <button type="button" className="profile-avatar-edit" onClick={() => avatarInputRef.current?.click()} disabled={uploadingAvatar || !user?.id}>
+              {uploadingAvatar ? "Đang tải..." : "✎ Chỉnh sửa ảnh"}
+            </button>
+          </div>
+          <div>
+            <span className="profile-eyebrow">HỒ SƠ CỦA BẠN</span>
+            <h1>{user?.fullName ?? user?.displayName ?? "Chưa có tên"}</h1>
+            <p className="profile-email">{user?.email ?? "Chưa có email"}</p>
+          </div>
+        </section>
+
+        <section className="profile-card profile-details-card">
+          <div className="profile-card-header">
+            <div>
+              <span className="profile-eyebrow">TỔNG QUAN</span>
+              <h2>Thông tin cá nhân</h2>
+              <p>Các thông tin chính trong hành trình học tập của bạn.</p>
+            </div>
           </div>
 
           {isLoading && <p>Đang tải dữ liệu...</p>}
           {isError && <p>Không thể tải thông tin tài khoản.</p>}
 
-          <form className="profile-form" onSubmit={handleSubmit}>
-            <div className="profile-details-grid">
-              <div className="profile-detail-item">
-                <span>Ảnh đại diện</span>
-                <strong>{formatAvatarLabel(user?.avatarUrl)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Vai trò</span>
-                <strong>{formatRoleLabel(user?.role)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Trạng thái</span>
-                <strong>{formatStatusLabel(user?.status)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Số dư xu</span>
-                <strong>{(user?.coinBalance ?? 0).toLocaleString()} xu</strong>
-              </div>
-              <div className="profile-detail-item">
+          <div className="profile-details-grid">
+            <div className="profile-detail-item profile-detail-birthday">
+              <span className="profile-detail-icon" aria-hidden="true">🎂</span>
+              <div>
                 <span>Ngày sinh</span>
                 <strong>{formatDateDisplay(user?.dateOfBirth)}</strong>
               </div>
-              <div className="profile-detail-item">
-                <span>Đăng nhập gần nhất</span>
-                <strong>{formatDateTime(user?.lastLogin)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Tạo lúc</span>
-                <strong>{formatDateTime(user?.createdAt)}</strong>
-              </div>
-              <div className="profile-detail-item">
-                <span>Cập nhật lúc</span>
-                <strong>{formatDateTime(user?.updatedAt)}</strong>
+            </div>
+            <div className="profile-detail-item profile-detail-coins">
+              <span className="profile-detail-icon" aria-hidden="true">🪙</span>
+              <div>
+                <span>Xu hiện tại</span>
+                <strong>{(user?.coinBalance ?? 0).toLocaleString("vi-VN")} xu</strong>
               </div>
             </div>
+            <div className="profile-detail-item profile-detail-streak">
+              <span className="profile-detail-icon" aria-hidden="true">🔥</span>
+              <div>
+                <span>Chuỗi streak hiện tại</span>
+                <strong>{(user?.currentStreak ?? 0).toLocaleString("vi-VN")} ngày</strong>
+              </div>
+            </div>
+            <div className="profile-detail-item profile-detail-longest">
+              <span className="profile-detail-icon" aria-hidden="true">🏆</span>
+              <div>
+                <span>Chuỗi streak dài nhất</span>
+                <strong>{(user?.longestStreak ?? 0).toLocaleString("vi-VN")} ngày</strong>
+              </div>
+            </div>
+          </div>
 
+          <form className="profile-form" onSubmit={handleSubmit}>
+            <div className="profile-edit-heading">
+              <h3>Chỉnh sửa thông tin</h3>
+              <p>Cập nhật tên và ngày sinh của bạn.</p>
+            </div>
             <div className="profile-edit-grid">
               <label>
-                Tên hiển thị
+                Họ và tên
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Nhập tên hiển thị"
                 />
               </label>
-
-              <label>
-                Email
-                <input value={user?.email ?? ""} disabled />
-              </label>
-
 
               <label>
                 Ngày sinh
@@ -224,7 +221,7 @@ export function ProfilePage() {
             </div>
 
             {message && <p className="profile-message success">{message}</p>}
-            {error && <p className="profile-message error">{error}</p>}
+            {error && <p className="profile-message error" role="alert">{error}</p>}
           </form>
         </section>
       </main>

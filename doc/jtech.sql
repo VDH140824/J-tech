@@ -353,6 +353,7 @@ CREATE TABLE question (
   skill ENUM('VOCABULARY','KANJI','GRAMMAR','LISTENING','CONJUGATION') NOT NULL,
   question_type ENUM('MCQ','FILL_IN','MATCHING') NOT NULL,
   lesson_id BIGINT UNSIGNED NULL,
+  grammar_id BIGINT UNSIGNED NULL,
   listening_exercise_id BIGINT UNSIGNED NULL,
   conjugation_form_id BIGINT UNSIGNED NULL,
   content TEXT NOT NULL,
@@ -370,6 +371,8 @@ CREATE TABLE question (
   updated_at DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (id),
   KEY idx_question_difficulty (difficulty),
+  KEY idx_question_grammar (grammar_id, skill, status, display_order),
+  CONSTRAINT fk_question_grammar FOREIGN KEY (grammar_id) REFERENCES grammar (id) ON DELETE SET NULL,
   FOREIGN KEY (lesson_id) REFERENCES lesson (id),
   FOREIGN KEY (listening_exercise_id) REFERENCES listening_exercise (id),
   FOREIGN KEY (conjugation_form_id) REFERENCES conjugation_form (id),
@@ -642,8 +645,6 @@ CREATE TABLE flashcard_progress (
 CREATE TABLE classroom (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   code VARCHAR(30) NOT NULL,
-  name VARCHAR(150) NOT NULL,
-  course_id BIGINT UNSIGNED NOT NULL,
   moderator_id BIGINT UNSIGNED NOT NULL,
   description TEXT NULL DEFAULT NULL,
   status ENUM('ACTIVE','ARCHIVED','CLOSED') NOT NULL DEFAULT 'ACTIVE',
@@ -651,7 +652,6 @@ CREATE TABLE classroom (
   updated_at DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_classroom_code (code),
-  FOREIGN KEY (course_id) REFERENCES course (id),
   FOREIGN KEY (moderator_id) REFERENCES user_account (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

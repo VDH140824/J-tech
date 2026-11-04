@@ -9,6 +9,7 @@ interface GrammarQuestionListPageProps {
   chapterNo: number;
   lessonTitle: string;
   lessonId: number;
+  grammarId: number;
   onBack: () => void;
 }
 
@@ -37,7 +38,7 @@ function displayAnswer(question: GrammarQuestion): string {
   }
 }
 
-export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, lessonId, onBack }: GrammarQuestionListPageProps) {
+export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, lessonId, grammarId, onBack }: GrammarQuestionListPageProps) {
   const [questions, setQuestions] = useState<GrammarQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +99,7 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
     setLoading(true);
     setError(null);
 
-    getAllGrammarQuestions()
+    getAllGrammarQuestions(grammarId)
       .then((items) => {
         if (active) setQuestions(items);
       })
@@ -110,7 +111,7 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
       });
 
     return () => { active = false; };
-  }, [reloadKey]);
+  }, [reloadKey, grammarId]);
 
   const columns: { label: string; value: (question: GrammarQuestion) => string }[] = [
     { label: "Loại câu hỏi", value: (q) => q.questionType },
@@ -183,6 +184,7 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
       )}
       {isCreateOpen && (
         <QuestionGrammarCreateModal
+          grammarId={grammarId}
           lessonId={lessonId}
           onClose={() => setIsCreateOpen(false)}
           onCreated={(created) => {

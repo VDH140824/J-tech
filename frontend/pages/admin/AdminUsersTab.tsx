@@ -76,6 +76,25 @@ function formatLastLogin(dateStr?: string | null) {
   return { time, date };
 }
 
+function validatePreCreateEmail(value: string): string | null {
+  const email = value.trim().toLowerCase();
+  if (!email) return "Email không được để trống.";
+  if (email.length > 255) return "Email không được vượt quá 255 ký tự.";
+  if (/\s/.test(email)) return "Email không được chứa khoảng trắng.";
+
+  const atIndex = email.indexOf("@");
+  if (atIndex === -1) return "Email phải chứa ký tự @.";
+  if (email.lastIndexOf("@") !== atIndex) return "Email không được chứa nhiều ký tự @.";
+  if (atIndex === 0) return "Email thiếu tên người dùng trước ký tự @.";
+
+  const domain = email.slice(atIndex + 1);
+  if (!domain || !domain.includes(".")) return "Email thiếu tên miền hợp lệ.";
+  if (domain.includes("..") || !/^[^@\s.]+(?:\.[^@\s.]+)+$/.test(domain)) {
+    return "Tên miền email không hợp lệ.";
+  }
+  return null;
+}
+
 interface AdminUsersTabProps {
   onNavigateToPending?: () => void;
 }
@@ -95,6 +114,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   // Create user
   const [showPreCreate, setShowPreCreate] = useState(false);
   const [preCreateEmail, setPreCreateEmail] = useState("");
+  const [preCreateError, setPreCreateError] = useState<string | null>(null);
   const [preCreateRole, setPreCreateRole] = useState<"STUDENT" | "MODERATOR" | "ADMIN">("MODERATOR");
   const [preCreateLoading, setPreCreateLoading] = useState(false);
 
@@ -102,6 +122,8 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
   const [editRole, setEditRole] = useState<"STUDENT" | "MODERATOR" | "ADMIN">("STUDENT");
   const [editStatus, setEditStatus] = useState<UserStatus>("ACTIVE");
+  const [editStatusReason, setEditStatusReason] = useState("");
+  const [editStatusReasonError, setEditStatusReasonError] = useState<string | null>(null);
   const [editSaving, setEditSaving] = useState(false);
 
   // Delete User state
@@ -154,7 +176,12 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   const handlePreCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!preCreateEmail.trim()) return;
+    setPreCreateError(null);
+    const validationError = validatePreCreateEmail(preCreateEmail);
+    if (validationError) {
+      setPreCreateError(validationError);
+      return;
+    }
     try {
       setPreCreateLoading(true);
       await preCreateAdminUser({ email: preCreateEmail.trim(), role: preCreateRole });
@@ -165,7 +192,12 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       setPreCreateRole("MODERATOR");
       fetchUsers();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Không thể tạo tài khoản.");
+      const backendMessage = err?.response?.data?.message;
+      setPreCreateError(
+        typeof backendMessage === "string" && backendMessage.trim()
+          ? backendMessage
+          : "Không thể tạo tài khoản.",
+      );
     } finally {
       setPreCreateLoading(false);
     }
@@ -176,10 +208,18 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
     const resolvedRole = user.role === "ADMIN" ? "ADMIN" : user.role === "MODERATOR" ? "MODERATOR" : "STUDENT";
     setEditRole(resolvedRole);
     setEditStatus((user.status as UserStatus) || "ACTIVE");
+    setEditStatusReason(user.statusReason || "");
+    setEditStatusReasonError(null);
   };
 
   const handleSaveEdit = async () => {
     if (!editingUser) return;
+    const needsReason = editStatus === "LOCKED" || editStatus === "REJECTED";
+    const reason = editStatusReason.trim();
+    if (needsReason && (!reason || reason.length > 500)) {
+      setEditStatusReasonError(!reason ? "Vui lòng nhập lý do." : "Lý do không được vượt quá 500 ký tự.");
+      return;
+    }
     try {
       setEditSaving(true);
       const id = editingUser.id;
@@ -187,7 +227,9 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
         await changeAdminUserRole(id, editRole);
       }
       if (editingUser.status !== editStatus) {
-        await updateAdminUserStatus(id, { status: editStatus });
+        await updateAdminUserStatus(id, { status: editStatus, statusReason: needsReason ? reason : null });
+      } else if (needsReason && editingUser.statusReason !== reason) {
+        await updateAdminUserStatus(id, { status: editStatus, statusReason: reason });
       }
       showNotification(`Đã cập nhật thông tin tài khoản #${id}!`);
       setEditingUser(null);
@@ -232,7 +274,10 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
         <button
           type="button"
           className="admin-btn-create-user"
-          onClick={() => setShowPreCreate(true)}
+          onClick={() => {
+            setPreCreateError(null);
+            setShowPreCreate(true);
+          }}
         >
           <span className="btn-icon">⊕</span>
           <span>Thêm người dùng mới</span>
@@ -493,13 +538,24 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
               <label className="modal-field-label">
                 <span>Google Email *</span>
                 <input
-                  type="email"
-                  required
+                  type="text"
+                  inputMode="email"
+                  autoComplete="email"
                   placeholder="vi_du@fpt.edu.vn"
                   value={preCreateEmail}
-                  onChange={(e) => setPreCreateEmail(e.target.value)}
+                  onChange={(e) => {
+                    setPreCreateEmail(e.target.value);
+                    setPreCreateError(null);
+                  }}
+                  aria-invalid={!!preCreateError}
+                  aria-describedby={preCreateError ? "pre-create-email-error" : undefined}
                   className="modal-input"
                 />
+                {preCreateError && (
+                  <span id="pre-create-email-error" className="modal-field-error" role="alert">
+                    {preCreateError}
+                  </span>
+                )}
               </label>
 
               <label className="modal-field-label">
@@ -569,7 +625,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                 <span>Trạng thái tài khoản (Status)</span>
                 <select
                   value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value as any)}
+                  onChange={(e) => { setEditStatus(e.target.value as UserStatus); setEditStatusReasonError(null); }}
                   className="modal-select"
                 >
                   {STATUS_OPTIONS.map((st) => (
@@ -579,6 +635,21 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                   ))}
                 </select>
               </label>
+
+              {(editStatus === "LOCKED" || editStatus === "REJECTED") && (
+                <label className="modal-field-label">
+                  <span>Lý do {editStatus === "LOCKED" ? "khóa" : "từ chối"} tài khoản *</span>
+                  <textarea
+                    value={editStatusReason}
+                    onChange={(e) => { setEditStatusReason(e.target.value); setEditStatusReasonError(null); }}
+                    maxLength={500}
+                    rows={3}
+                    className="modal-input"
+                    aria-invalid={!!editStatusReasonError}
+                  />
+                  {editStatusReasonError && <span className="modal-field-error" role="alert">{editStatusReasonError}</span>}
+                </label>
+              )}
 
               <div className="modal-actions-row">
                 <button

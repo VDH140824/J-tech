@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -34,8 +35,8 @@ public class QuestionGrammarController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @GetMapping("/grammar-questions")
-    public ResponseEntity<List<QuestionGrammarResponse>> getAllGrammarQuestions() {
-        return ResponseEntity.ok(questionGrammarService.getAllGrammarQuestions());
+    public ResponseEntity<List<QuestionGrammarResponse>> getAllGrammarQuestions(@RequestParam Long grammarId) {
+        return ResponseEntity.ok(questionGrammarService.getAllGrammarQuestions(grammarId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")

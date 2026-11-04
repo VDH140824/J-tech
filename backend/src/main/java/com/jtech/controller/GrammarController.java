@@ -82,4 +82,17 @@ public class GrammarController {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Video upload failed", exception);
         }
     }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @DeleteMapping("/grammars/videos")
+    public ResponseEntity<Void> deleteTemporaryGrammarVideo(@RequestParam String publicId) {
+        try {
+            cloudinaryService.deleteGrammarVideo(publicId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+        } catch (IllegalStateException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Video cleanup failed", exception);
+        }
+    }
 }

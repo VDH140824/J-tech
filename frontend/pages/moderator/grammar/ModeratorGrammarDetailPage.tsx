@@ -12,7 +12,7 @@ interface ModeratorGrammarDetailPageProps {
   lesson: LessonSummary;
   onBack: () => void;
   onSelectGrammar: (grammarId: number | null) => void;
-  onViewQuestions: () => void;
+  onViewQuestions: (grammarId: number) => void;
 }
 
 export function ModeratorGrammarDetailPage({
@@ -132,7 +132,7 @@ export function ModeratorGrammarDetailPage({
           </div>
           {!loading && !error && (grammar ? (
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              <button type="button" className="mod-btn-add mod-question-btn--primary" onClick={onViewQuestions}>Danh sách câu hỏi</button>
+              <button type="button" className="mod-btn-add mod-question-btn--primary" onClick={() => onViewQuestions(grammar.id)}>Danh sách câu hỏi</button>
               <button type="button" className="mod-btn-add" style={{ backgroundColor: "#2563eb" }} onClick={() => setIsEditOpen(true)}>Chỉnh sửa</button>
               <button
                 type="button"

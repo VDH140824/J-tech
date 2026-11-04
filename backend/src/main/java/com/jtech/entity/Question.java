@@ -29,6 +29,9 @@ public class Question {
     @Column(name = "lesson_id")
     private Long lessonId;
 
+    @Column(name = "grammar_id", columnDefinition = "BIGINT UNSIGNED")
+    private Long grammarId;
+
     @Column(name = "listening_exercise_id")
     private Long listeningExerciseId;
 

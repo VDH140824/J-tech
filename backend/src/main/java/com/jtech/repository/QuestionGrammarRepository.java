@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface QuestionGrammarRepository extends JpaRepository<Question, Long> {
-    List<Question> findBySkillAndStatusOrderByDisplayOrderAscIdAsc(
-            Question.Skill skill, Question.QuestionStatus status);
+    List<Question> findByGrammarIdAndSkillAndStatusOrderByDisplayOrderAscIdAsc(
+            Long grammarId, Question.Skill skill, Question.QuestionStatus status);
 }

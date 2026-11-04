@@ -5,6 +5,7 @@ export interface GrammarQuestion {
   skill: "GRAMMAR";
   questionType: "MCQ" | "FILL_IN" | "MATCHING";
   lessonId: number | null;
+  grammarId: number | null;
   content: string;
   mediaUrl: string | null;
   explanation: string | null;
@@ -31,6 +32,7 @@ export interface GrammarQuestionUpdateInput {
 export interface GrammarQuestionCreateInput {
   questionType: GrammarQuestion["questionType"];
   lessonId: number;
+  grammarId: number;
   content: string;
   explanation: string | null;
   answerData: string;
@@ -39,8 +41,8 @@ export interface GrammarQuestionCreateInput {
   displayOrder: number;
 }
 
-export async function getAllGrammarQuestions(): Promise<GrammarQuestion[]> {
-  const { data } = await apiClient.get<GrammarQuestion[]>("/grammar-questions");
+export async function getAllGrammarQuestions(grammarId: number): Promise<GrammarQuestion[]> {
+  const { data } = await apiClient.get<GrammarQuestion[]>("/grammar-questions", { params: { grammarId } });
   return data;
 }
 

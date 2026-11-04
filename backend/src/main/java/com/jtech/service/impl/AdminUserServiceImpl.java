@@ -3,6 +3,7 @@ package com.jtech.service.impl;
 import com.jtech.dto.request.AdminUserStatusRequest;
 import com.jtech.dto.request.ChangeUserRoleRequest;
 import com.jtech.dto.request.PreCreateUserRequest;
+import com.jtech.dto.request.RejectUserRequest;
 import com.jtech.dto.response.UserResponse;
 import com.jtech.entity.User;
 import com.jtech.entity.Role;
@@ -61,10 +62,12 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     @Transactional
-    public UserResponse rejectUser(Long userId) {
+    public UserResponse rejectUser(Long userId, RejectUserRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
+        String reason = requireStatusReason(request == null ? null : request.getStatusReason());
         user.setStatus(UserStatus.REJECTED);
+        user.setStatusReason(reason);
         user.setReviewedAt(java.time.LocalDateTime.now());
         return UserMapper.toResponse(userRepository.save(user));
     }
@@ -75,17 +78,31 @@ public class AdminUserServiceImpl implements AdminUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
 
+        UserStatus nextStatus;
         try {
-            user.setStatus(UserStatus.valueOf(request.getStatus().toUpperCase()));
-            user.setStatusReason(request.getStatusReason() == null || request.getStatusReason().isBlank()
-                    ? null
-                    : request.getStatusReason().trim());
-            user.setReviewedAt(java.time.LocalDateTime.now());
+            nextStatus = UserStatus.valueOf(request.getStatus().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ: " + request.getStatus());
         }
+        String reason = nextStatus == UserStatus.LOCKED || nextStatus == UserStatus.REJECTED
+                ? requireStatusReason(request.getStatusReason())
+                : null;
+        user.setStatus(nextStatus);
+        user.setStatusReason(reason);
+        user.setReviewedAt(java.time.LocalDateTime.now());
 
         return UserMapper.toResponse(userRepository.save(user));
+    }
+
+    private String requireStatusReason(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Lý do thay đổi trạng thái không được để trống");
+        }
+        String reason = value.trim();
+        if (reason.length() > 100) {
+            throw new IllegalArgumentException("Lý do không được vượt quá 100 ký tự");
+        }
+        return reason;
     }
 
     @Override
@@ -119,7 +136,17 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     @Transactional
     public UserResponse preCreateUser(PreCreateUserRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        String rawEmail = request.getEmail();
+        if (rawEmail == null || rawEmail.isBlank()) {
+            throw new IllegalArgumentException("Email không được để trống");
+        }
+        String email = rawEmail.trim().toLowerCase();
+        if (email.length() > 255) {
+            throw new IllegalArgumentException("Email không được vượt quá 255 ký tự");
+        }
+        if (!email.matches("^[^@\\s]+@[^@\\s.]+(?:\\.[^@\\s.]+)+$")) {
+            throw new IllegalArgumentException("Email không đúng định dạng: cần có tên và tên miền hợp lệ, không chứa khoảng trắng hoặc dấu chấm liên tiếp");
+        }
 
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalStateException("Email đã tồn tại trong hệ thống: " + email);
