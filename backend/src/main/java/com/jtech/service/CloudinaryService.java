@@ -28,6 +28,25 @@ public class CloudinaryService {
             "video/x-matroska"
     );
 
+
+    public Map<String, String> uploadDocument(MultipartFile file) {
+        if (file == null || file.isEmpty()) throw new IllegalArgumentException("Vui lòng chọn tài liệu đính kèm");
+        String name = file.getOriginalFilename();
+        String ext = name == null || !name.contains(".") ? "" : name.substring(name.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT);
+        Map<String, String> types = Map.of("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "ppt", "application/vnd.ms-powerpoint", "pdf", "application/pdf", "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        String mime = file.getContentType();
+        if (!types.containsKey(ext) || (mime != null && !mime.isBlank() && !"application/octet-stream".equalsIgnoreCase(mime) && !types.get(ext).equalsIgnoreCase(mime))) throw new IllegalArgumentException("Chỉ chấp nhận tệp DOCX, PPTX, PPT, PDF, XLSX");
+        try {
+            Map result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "raw", "folder", "Jtech/Lessons/Documents", "public_id", java.util.UUID.randomUUID() + "." + ext, "overwrite", false));
+            if (!(result.get("secure_url") instanceof String url) || url.isBlank() || !(result.get("public_id") instanceof String id) || id.isBlank()) throw new IllegalStateException("Cloudinary không trả về thông tin tài liệu");
+            return Map.of("name", name, "url", url, "publicId", id);
+        } catch (IOException exception) { throw new IllegalStateException("Không thể tải tài liệu lên Cloudinary", exception); }
+    }
+    public void deleteDocument(String id) {
+        if (id == null || !id.startsWith("Jtech/Lessons/Documents/")) return;
+        try { cloudinary.uploader().destroy(id, ObjectUtils.asMap("resource_type", "raw")); }
+        catch (IOException exception) { throw new IllegalStateException("Không thể xóa tài liệu Cloudinary", exception); }
+    }
     private final Cloudinary cloudinary;
 
     public CloudinaryService(Cloudinary cloudinary) {

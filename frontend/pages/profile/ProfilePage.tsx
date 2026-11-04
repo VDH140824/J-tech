@@ -1,11 +1,23 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { useAuthStore } from "../../store/authStore";
 import { authKeys, useCurrentUser } from "../../hooks/useAuth";
 import * as authApi from "../../api/authApi";
 import type { UpdateProfileRequest } from "../../types/auth";
 import "./ProfilePage.css";
+
+function getBackendErrorMessage(error: unknown, fallback: string): string {
+  if (!isAxiosError(error)) return fallback;
+  const data: unknown = error.response?.data;
+  if (typeof data === "string" && data.trim()) return data;
+  if (data && typeof data === "object" && "message" in data &&
+      typeof data.message === "string" && data.message.trim()) {
+    return data.message;
+  }
+  return fallback;
+}
 
 function formatDateInput(value?: string | null) {
   if (!value) return "";
@@ -67,8 +79,8 @@ export function ProfilePage() {
       queryClient.setQueryData(authKeys.me(accessToken), updated);
       setUser(updated);
       setMessage("Cập nhật ảnh đại diện thành công.");
-    } catch {
-      setError("Không thể cập nhật ảnh đại diện. Vui lòng thử lại.");
+    } catch (error: unknown) {
+      setError(getBackendErrorMessage(error, "Không thể cập nhật ảnh đại diện. Vui lòng thử lại."));
     } finally {
       setUploadingAvatar(false);
     }
@@ -93,8 +105,8 @@ export function ProfilePage() {
       queryClient.setQueryData(authKeys.me(accessToken), updated);
       setUser(updated);
       setMessage("Cập nhật thông tin thành công.");
-    } catch {
-      setError("Không thể cập nhật thông tin. Vui lòng thử lại.");
+    } catch (error: unknown) {
+      setError(getBackendErrorMessage(error, "Không thể cập nhật thông tin. Vui lòng thử lại."));
     } finally {
       setSaving(false);
     }
@@ -209,7 +221,7 @@ export function ProfilePage() {
             </div>
 
             {message && <p className="profile-message success">{message}</p>}
-            {error && <p className="profile-message error">{error}</p>}
+            {error && <p className="profile-message error" role="alert">{error}</p>}
           </form>
         </section>
       </main>

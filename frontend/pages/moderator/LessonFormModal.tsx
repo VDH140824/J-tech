@@ -24,7 +24,6 @@ export function LessonFormModal({
     lessonNo: defaultLessonNo,
     title: "",
     description: "",
-    documents: "",
     displayOrder: defaultLessonNo,
     status: "PUBLISHED",
   });
@@ -38,7 +37,6 @@ export function LessonFormModal({
         lessonNo: editingLesson.lessonNo,
         title: editingLesson.title,
         description: editingLesson.description || "",
-        documents: editingLesson.documents || "",
         displayOrder: editingLesson.displayOrder,
         status: editingLesson.status,
       });
@@ -47,7 +45,6 @@ export function LessonFormModal({
         lessonNo: defaultLessonNo,
         title: "",
         description: "",
-        documents: "",
         displayOrder: defaultLessonNo,
         status: "PUBLISHED",
       });
@@ -59,10 +56,22 @@ export function LessonFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim()) {
-      setErrorMsg("Vui lòng nhập tiêu đề bài học!");
-      return;
+    const textFields = [
+      ["title", "Tiêu đề"],
+      ["description", "Mô tả"],
+    ] as const;
+    for (const [field, label] of textFields) {
+      const value = formData[field]?.trim() || "";
+      if (!value) {
+        setErrorMsg(`${label} là bắt buộc, không được chỉ chứa khoảng trắng!`);
+        return;
+      }
+      if (value.length > 100) {
+        setErrorMsg(`${label} không quá 100 ký tự!`);
+        return;
+      }
     }
+    if (!editingLesson && !formData.documentFile) { setErrorMsg("Vui lòng chọn tài liệu đính kèm!"); return; }
     if (!formData.lessonNo || formData.lessonNo < 1) {
       setErrorMsg("Số bài học (lesson_no) phải lớn hơn hoặc bằng 1!");
       return;
@@ -72,7 +81,6 @@ export function LessonFormModal({
       ...formData,
       title: formData.title.trim(),
       description: formData.description?.trim() || undefined,
-      documents: formData.documents?.trim() || undefined,
     };
 
     try {
@@ -220,11 +228,12 @@ export function LessonFormModal({
 
           {/* Row 3: description */}
           <div className="modal-field-group">
-            <label className="modal-label">Mô tả / Nội dung bài học (description)</label>
+            <label className="modal-label">Mô tả / Nội dung bài học (description) *</label>
             <textarea
               className="modal-textarea"
               placeholder="Mô tả mục tiêu, kiến thức trọng tâm của bài học..."
               rows={3}
+              required
               value={formData.description || ""}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
@@ -252,14 +261,18 @@ export function LessonFormModal({
             </div>
 
             <div className="modal-field-group">
-              <label className="modal-label">Tài liệu đính kèm (documents)</label>
-              <input
-                type="text"
-                className="modal-input"
-                placeholder="Link tài liệu hoặc ghi chú file JSON..."
-                value={formData.documents || ""}
-                onChange={(e) => setFormData({ ...formData, documents: e.target.value })}
-              />
+              <label className="modal-label">Tài liệu đính kèm (documents) *</label>
+
+              <input type="file" accept=".docx,.pptx,.ppt,.pdf,.xlsx" disabled={submitting} required={!editingLesson}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file && (!/\.(docx|pptx|ppt|pdf|xlsx)$/i.test(file.name) || file.size === 0)) {
+                    setErrorMsg("Chỉ chấp nhận tệp DOCX, PPTX, PPT, PDF, XLSX không rỗng");
+                    e.target.value = ""; setFormData({ ...formData, documentFile: undefined }); return;
+                  }
+                  setErrorMsg(null); setFormData({ ...formData, documentFile: file });
+                }} />
+              {editingLesson?.documents && <p>Tài liệu hiện có: {documentName(editingLesson.documents)}. Chọn tệp mới để thay thế.</p>}
             </div>
           </div>
 
@@ -286,4 +299,9 @@ export function LessonFormModal({
       </div>
     </div>
   );
+}
+
+function documentName(documents: string): string {
+  try { return JSON.parse(documents)?.name || "Tài liệu đã lưu"; }
+  catch { return "Tài liệu đã lưu"; }
 }

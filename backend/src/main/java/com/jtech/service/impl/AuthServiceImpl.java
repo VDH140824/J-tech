@@ -83,16 +83,31 @@ public class AuthServiceImpl implements AuthService {
 
     @Override @Transactional
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        if (request == null) throw new IllegalArgumentException("Dữ liệu hồ sơ là bắt buộc");
+        String name = request.getFullName();
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("Họ tên không được để trống");
+        name = name.trim();
+        if (name.length() > 50) throw new IllegalArgumentException("Họ tên không quá 50 ký tự");
+        java.time.LocalDate dateOfBirth = null;
+        if (request.getDateOfBirth() != null) {
+            try {
+                dateOfBirth = java.time.LocalDate.parse(request.getDateOfBirth(),
+                        java.time.format.DateTimeFormatter.ofPattern("uuuu-MM-dd")
+                                .withResolverStyle(java.time.format.ResolverStyle.STRICT));
+            } catch (java.time.format.DateTimeParseException exception) {
+                throw new IllegalArgumentException("Ngày sinh không hợp lệ. Nhập theo định dạng yyyy-MM-dd.", exception);
+            }
+        }
+        if (dateOfBirth != null && dateOfBirth.isAfter(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày sinh không được ở tương lai");
+        }
         User user = (userId != null)
                 ? userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"))
                 : getAuthenticatedUser();
 
-        String name = request.getFullName();
-        if (name != null) {
-            user.setFullName(name.trim());
-        }
-        if (request.getDateOfBirth() != null) {
-            user.setDateOfBirth(request.getDateOfBirth());
+        user.setFullName(name);
+        if (dateOfBirth != null) {
+            user.setDateOfBirth(dateOfBirth);
         }
         if (request.getAvatarPublicId() != null) {
             user.setAvatarPublicId(request.getAvatarPublicId().trim().isEmpty() ? null : request.getAvatarPublicId().trim());

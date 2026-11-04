@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import {
   createGrammar,
@@ -25,7 +26,7 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
     usageExplanation: "",
     exampleJp: "",
     exampleVi: "",
-    displayOrder: 0,
+    displayOrder: 1,
     status: "DRAFT",
   });
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -44,9 +45,25 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
       return;
     }
 
-    const fields = [form.structureName, form.meaningVi, form.usageExplanation, form.exampleJp, form.exampleVi];
-    if (fields.some((value) => !value.trim())) {
-      setError("Vui lòng nhập đầy đủ các trường ngữ pháp bắt buộc.");
+    const fields = [
+      ["Cấu trúc ngữ pháp", form.structureName],
+      ["Ý nghĩa tiếng Việt", form.meaningVi],
+      ["Giải thích cách dùng", form.usageExplanation],
+      ["Ví dụ tiếng Nhật", form.exampleJp],
+      ["Dịch ví dụ", form.exampleVi],
+    ];
+    for (const [label, value] of fields) {
+      if (!value.trim()) {
+        setError(label + " không được để trống.");
+        return;
+      }
+      if (value.trim().length > 100) {
+        setError(label + " không được vượt quá 100 ký tự.");
+        return;
+      }
+    }
+    if (form.displayOrder == null || !Number.isInteger(form.displayOrder) || form.displayOrder < 1) {
+      setError("Thứ tự hiển thị phải là số nguyên từ 1 trở lên.");
       return;
     }
     setError(null);
@@ -67,8 +84,11 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
         videoDurationSec: uploadedVideo?.duration == null ? undefined : Math.ceil(uploadedVideo.duration),
       });
       onCreated(created);
-    } catch {
-      setError("Không tạo được ngữ pháp. Dữ liệu đã nhập vẫn được giữ để thử lại.");
+    } catch (caughtError) {
+      const apiError = axios.isAxiosError<{ message?: string }>(caughtError) ? caughtError : null;
+      const backendMessage = apiError?.response?.data?.message;
+      setError(typeof backendMessage === "string" && backendMessage.trim()
+        ? backendMessage : "Không tạo được ngữ pháp. Dữ liệu đã nhập vẫn được giữ để thử lại.");
     } finally {
       setStage("idle");
     }
@@ -79,8 +99,11 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
     setError(null);
     try {
       setUploadedVideo(await uploadGrammarVideo(file));
-    } catch {
-      setError("Không tải được video lên Cloudinary. Vui lòng thử lại.");
+    } catch (caughtError) {
+      const apiError = axios.isAxiosError<{ message?: string }>(caughtError) ? caughtError : null;
+      const backendMessage = apiError?.response?.data?.message;
+      setError(typeof backendMessage === "string" && backendMessage.trim()
+        ? backendMessage : "Không tải được video lên Cloudinary. Vui lòng thử lại.");
     } finally {
       setStage("idle");
     }
@@ -112,14 +135,15 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
           <button type="button" className="modal-btn-close" onClick={onClose} disabled={busy} aria-label="Đóng">✕</button>
         </div>
         <form onSubmit={handleSubmit} className="modal-form-body">
+          <p className="modal-description">Các trường nội dung bắt buộc, tối đa 100 ký tự mỗi trường.</p>
           <div className="modal-grid-2">
             <div className="modal-field-group">
               <label className="modal-label" htmlFor="grammar-structure">Cấu trúc ngữ pháp *</label>
-              <input id="grammar-structure" className="modal-input" required maxLength={150} value={form.structureName} onChange={(e) => setForm({ ...form, structureName: e.target.value })} />
+              <input id="grammar-structure" className="modal-input" required value={form.structureName} onChange={(e) => setForm({ ...form, structureName: e.target.value })} />
             </div>
             <div className="modal-field-group">
               <label className="modal-label" htmlFor="grammar-meaning">Ý nghĩa tiếng Việt *</label>
-              <input id="grammar-meaning" className="modal-input" required maxLength={255} value={form.meaningVi} onChange={(e) => setForm({ ...form, meaningVi: e.target.value })} />
+              <input id="grammar-meaning" className="modal-input" required value={form.meaningVi} onChange={(e) => setForm({ ...form, meaningVi: e.target.value })} />
             </div>
           </div>
           <div className="modal-field-group">
@@ -137,7 +161,7 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
           <div className="modal-grid-2">
             <div className="modal-field-group">
               <label className="modal-label" htmlFor="grammar-order">Thứ tự hiển thị</label>
-              <input id="grammar-order" className="modal-input" type="number" min="0" required value={form.displayOrder ?? 0} onChange={(e) => setForm({ ...form, displayOrder: Number(e.target.value) })} />
+              <input id="grammar-order" className="modal-input" type="number" min="1" required value={form.displayOrder ?? 1} onChange={(e) => setForm({ ...form, displayOrder: Number(e.target.value) })} />
             </div>
             <div className="modal-field-group">
               <label className="modal-label" htmlFor="grammar-status">Trạng thái</label>

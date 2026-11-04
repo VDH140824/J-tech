@@ -57,19 +57,41 @@ export function QuestionGrammarEditModal({ question, onClose, onUpdated }: Quest
     event.preventDefault();
     if (saving) return;
 
-    if (!form.content.trim() || !form.questionType || !form.difficulty) {
+    const fields = [["Nội dung câu hỏi", form.content], ["Giải thích", form.explanation]];
+    for (const [label, value] of fields) {
+      if (!value.trim()) {
+        setError(label + " không được để trống.");
+        return;
+      }
+      if (value.trim().length > 100) {
+        setError(label + " không được vượt quá 100 ký tự.");
+        return;
+      }
+    }
+    if (!form.questionType || !form.difficulty) {
       setError("Vui lòng nhập đầy đủ thông tin câu hỏi.");
       return;
     }
     const displayOrder = Number(form.displayOrder);
-    if (!Number.isInteger(displayOrder) || displayOrder < 0 || displayOrder > 65535 || !form.displayOrder.trim()) {
-      setError("Thứ tự hiển thị phải là số nguyên từ 0 đến 65535.");
+    if (!Number.isInteger(displayOrder) || displayOrder < 1 || displayOrder > 65535 || !form.displayOrder.trim()) {
+      setError("Thứ tự hiển thị phải là số nguyên từ 1 đến 65535.");
       return;
     }
     let answerData: string;
     if (form.questionType === "MCQ") {
-      if (optionKeys.some((key) => !form.options[key].trim()) || !form.correctAnswer) {
-        setError("Vui lòng nhập đủ bốn đáp án A–D và chọn đáp án đúng.");
+      for (const key of optionKeys) {
+        const answer = form.options[key].trim();
+        if (!answer) {
+          setError("Đáp án " + key + " không được để trống.");
+          return;
+        }
+        if (answer.length > 100) {
+          setError("Đáp án " + key + " không được vượt quá 100 ký tự.");
+          return;
+        }
+      }
+      if (!form.correctAnswer) {
+        setError("Vui lòng chọn đáp án đúng A, B, C hoặc D.");
         return;
       }
       answerData = JSON.stringify({
@@ -98,7 +120,7 @@ export function QuestionGrammarEditModal({ question, onClose, onUpdated }: Quest
     const payload: GrammarQuestionUpdateInput = {
       questionType: form.questionType,
       content: form.content.trim(),
-      explanation: form.explanation.trim() || null,
+      explanation: form.explanation.trim(),
       answerData,
       difficulty: form.difficulty,
       displayOrder,
@@ -132,6 +154,7 @@ export function QuestionGrammarEditModal({ question, onClose, onUpdated }: Quest
           <button type="button" className="modal-btn-close" onClick={onClose} disabled={saving} aria-label="Đóng">✕</button>
         </div>
         <form className="modal-form-body" onSubmit={(event) => void handleSubmit(event)}>
+          <p className="modal-description">Nội dung, giải thích và từng đáp án MCQ bắt buộc, tối đa 100 ký tự mỗi trường.</p>
           <div className="modal-grid-2">
             <div className="modal-field-group">
               <label className="modal-label" htmlFor="question-grammar-edit-type">Loại câu hỏi *</label>
@@ -158,8 +181,8 @@ export function QuestionGrammarEditModal({ question, onClose, onUpdated }: Quest
               onChange={(event) => setForm({ ...form, content: event.target.value })} />
           </div>
           <div className="modal-field-group">
-            <label className="modal-label" htmlFor="question-grammar-edit-explanation">Giải thích</label>
-            <textarea id="question-grammar-edit-explanation" className="modal-textarea" rows={3} value={form.explanation} disabled={saving}
+            <label className="modal-label" htmlFor="question-grammar-edit-explanation">Giải thích *</label>
+            <textarea id="question-grammar-edit-explanation" className="modal-textarea" required rows={3} value={form.explanation} disabled={saving}
               onChange={(event) => setForm({ ...form, explanation: event.target.value })} />
           </div>
           {form.questionType === "MCQ" ? (
@@ -196,7 +219,7 @@ export function QuestionGrammarEditModal({ question, onClose, onUpdated }: Quest
           )}
           <div className="modal-field-group">
             <label className="modal-label" htmlFor="question-grammar-edit-order">Thứ tự hiển thị *</label>
-            <input id="question-grammar-edit-order" className="modal-input" type="number" min="0" max="65535" step="1" required
+            <input id="question-grammar-edit-order" className="modal-input" type="number" min="1" max="65535" step="1" required
               value={form.displayOrder} disabled={saving} onChange={(event) => setForm({ ...form, displayOrder: event.target.value })} />
           </div>
           {error && <p role="alert" style={{ color: "#b91c1c", fontWeight: 600 }}>{error}</p>}
