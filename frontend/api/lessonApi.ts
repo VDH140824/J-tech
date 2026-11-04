@@ -26,6 +26,7 @@ export interface LessonFormInput {
   lessonNo: number;
   title: string;
   description?: string;
+  documents?: string;
   documentFile?: File;
   displayOrder?: number;
   status?: "DRAFT" | "PUBLISHED" | "HIDDEN" | "ARCHIVED";
@@ -66,7 +67,7 @@ export async function createLesson(
 ): Promise<LessonSummary> {
   const { data } = await apiClient.post<LessonSummary>(
     `/chapters/${chapterId}/lessons`,
-    lessonFormData(payload),
+    lessonFormData(payload, documentFile),
   );
   return data;
 }
@@ -78,36 +79,23 @@ export async function updateLesson(
 ): Promise<LessonSummary> {
   const { data } = await apiClient.put<LessonSummary>(
     `/lessons/${id}`,
-    lessonFormData(payload),
+    lessonFormData(payload, documentFile),
   );
   return data;
-}
-
-function lessonBody(
-  payload: LessonFormInput,
-  file?: File,
-): LessonFormInput | FormData {
-  if (payload.skillType !== "KANJI") return payload;
-  const form = new FormData();
-  form.append(
-    "request",
-    new Blob([JSON.stringify(payload)], { type: "application/json" }),
-  );
-  if (file) form.append("file", file);
-  return form;
 }
 
 export async function deleteLesson(id: number): Promise<void> {
   await apiClient.delete(`/lessons/${id}`);
 }
 
-function lessonFormData(payload: LessonFormInput): FormData {
+function lessonFormData(payload: LessonFormInput, file?: File): FormData {
   const { documentFile, ...request } = payload;
+  const selectedFile = file ?? documentFile;
   const body = new FormData();
   body.append(
     "request",
     new Blob([JSON.stringify(request)], { type: "application/json" }),
   );
-  if (documentFile) body.append("file", documentFile);
+  if (selectedFile) body.append("file", selectedFile);
   return body;
 }

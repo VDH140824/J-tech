@@ -8,6 +8,7 @@ import com.jtech.entity.Lesson;
 import com.jtech.repository.ChapterRepository;
 import com.jtech.repository.LessonRepository;
 import jakarta.validation.Validator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +23,21 @@ public class LessonService {
     private final ChapterRepository chapterRepository;
     private final Validator validator;
     private final CloudinaryService cloudinary;
+    private final KanjiService kanjiService;
     private final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
     public LessonService(LessonRepository lessonRepository, ChapterRepository chapterRepository, Validator validator, CloudinaryService cloudinary) {
+        this(lessonRepository, chapterRepository, validator, cloudinary, null);
+    }
+
+    @Autowired
+    public LessonService(LessonRepository lessonRepository, ChapterRepository chapterRepository, Validator validator,
+                         CloudinaryService cloudinary, KanjiService kanjiService) {
         this.lessonRepository = lessonRepository;
         this.chapterRepository = chapterRepository;
         this.validator = validator;
         this.cloudinary = cloudinary;
+        this.kanjiService = kanjiService;
     }
 
     public List<LessonResponse> getLessonsByChapter(Long chapterId, Lesson.SkillType skillType, Course.Status status) {
@@ -70,7 +79,9 @@ public class LessonService {
         }
         Lesson lesson = Lesson.builder().chapter(chapter).skillType(skill)
                 .lessonNo(request.lessonNo()).title(request.title()).description(request.description())
-                .documents(uploadDocument(file, null)).displayOrder(request.displayOrder())
+                .documents(skill == Lesson.SkillType.KANJI && kanjiService != null
+                        ? kanjiService.documents(request.documents(), file) : uploadDocument(file, null))
+                .displayOrder(request.displayOrder())
                 .status(request.status() == null ? Course.Status.DRAFT : request.status()).build();
         return mapToResponse(lessonRepository.save(lesson));
     }
@@ -89,7 +100,14 @@ public class LessonService {
         lesson.setLessonNo(request.lessonNo());
         lesson.setTitle(request.title());
         lesson.setDescription(request.description());
-        if (file != null) lesson.setDocuments(uploadDocument(file, lesson.getDocuments()));
+        if (skill == Lesson.SkillType.KANJI && kanjiService != null) {
+            if (request.documents() != null || file != null) {
+                lesson.setDocuments(kanjiService.documents(
+                        request.documents() != null ? request.documents() : lesson.getDocuments(), file));
+            }
+        } else if (file != null) {
+            lesson.setDocuments(uploadDocument(file, lesson.getDocuments()));
+        }
         lesson.setDisplayOrder(request.displayOrder());
         if (request.status() != null) lesson.setStatus(request.status());
         return mapToResponse(lessonRepository.save(lesson));

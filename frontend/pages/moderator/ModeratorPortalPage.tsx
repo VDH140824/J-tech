@@ -10,9 +10,7 @@ import type { ChapterDetail } from "../../api/courseApi";
 import "../admin/AdminPortalPage.css";
 import "./ModeratorPortalPage.css";
 
-export type ModeratorTab = "courses" | "chapter-detail" | "kanji";
-
-//export type ModeratorTab = "courses" | "chapter-detail" | "classes";
+export type ModeratorTab = "courses" | "chapter-detail" | "kanji" | "classes";
 
 export interface ModeratorNavState {
   courseId: number;
@@ -46,19 +44,24 @@ export function ModeratorPortalPage() {
     }
   }, [location.pathname, searchParams, navigate]);
 
-  const activeTab: ModeratorTab = location.pathname.replace(/\/$/, "") === "/moderator/kanji" ? "kanji" : matchChapter ? "chapter-detail" : "courses";
+  const activeTab: ModeratorTab = location.pathname.replace(/\/$/, "") === "/moderator/kanji"
+    ? "kanji"
+    : matchClasses
+      ? "classes"
+      : matchChapter
+        ? "chapter-detail"
+        : "courses";
 
   const handleSelectTab = (tab: string) => {
     if (tab === "kanji") {
       setChapterInfo(null);
       navigate("/moderator/kanji");
       return;
-  const activeTab: ModeratorTab = matchClasses ? "classes" : matchChapter ? "chapter-detail" : "courses";
-
-  const handleSelectTab = (tab: string) => {
+    }
     if (tab === "classes") {
       setChapterInfo(null);
       navigate("/moderator/classes");
+      return;
     }
     if (tab === "courses") {
       setChapterInfo(null);

@@ -44,6 +44,7 @@ export function LessonFormModal({
         lessonNo: editingLesson.lessonNo,
         title: editingLesson.title,
         description: editingLesson.description || "",
+        documents: editingLesson.documents,
         displayOrder: editingLesson.displayOrder,
         status: editingLesson.status,
       });
@@ -80,7 +81,7 @@ export function LessonFormModal({
         return;
       }
     }
-    if (!editingLesson && !formData.documentFile) {
+    if (!vietnameseOnly && !editingLesson && !formData.documentFile) {
       setErrorMsg("Vui lòng chọn tài liệu đính kèm!");
       return;
     }
@@ -114,6 +115,7 @@ export function LessonFormModal({
       ...formData,
       title: formData.title.trim(),
       description: formData.description?.trim() || undefined,
+      documents: vietnameseOnly ? documents : undefined,
     };
 
     try {
@@ -356,9 +358,65 @@ export function LessonFormModal({
 
             <div className="modal-field-group">
               <label className="modal-label">
-                Tài liệu đính kèm (documents) *
+                {vietnameseOnly ? "Tài liệu đính kèm" : "Tài liệu đính kèm (documents) *"}
               </label>
-
+              {vietnameseOnly ? (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <input
+                      type="text"
+                      className="modal-input"
+                      aria-label="Đường dẫn hoặc tệp tài liệu"
+                      placeholder="Dán đường dẫn hoặc chọn tệp…"
+                      value={documentFile?.name || documentLink}
+                      readOnly={!!documentFile}
+                      disabled={submitting}
+                      onChange={(e) => setDocumentLink(e.target.value)}
+                    />
+                    {(documentFile || documentLink) && (
+                      <button type="button" disabled={submitting} aria-label="Bỏ tài liệu đã chọn"
+                        onClick={() => {
+                          setDocumentFile(undefined);
+                          setDocumentLink("");
+                          if (documentInputRef.current) documentInputRef.current.value = "";
+                        }}>×</button>
+                    )}
+                    <button type="button" disabled={submitting}
+                      onClick={() => documentInputRef.current?.click()}>Chọn tệp</button>
+                  </div>
+                  {lessonDocuments(formData.documents).map((doc, index) => (
+                    <div key={`${doc.url}-${index}`} style={{ marginTop: 8, overflowWrap: "anywhere" }}>
+                      <a href={doc.url} target="_blank" rel="noopener noreferrer">{doc.name}</a>{" "}
+                      <button type="button" disabled={submitting}
+                        onClick={() => setFormData({ ...formData,
+                          documents: JSON.stringify(lessonDocuments(formData.documents).filter((_, i) => i !== index)),
+                        })}>Bỏ đính kèm</button>
+                    </div>
+                  ))}
+                  <input ref={documentInputRef} hidden type="file"
+                    accept=".pdf,.docx,.txt,.png,.jpg,.jpeg"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && (file.size === 0 || file.size > 10 * 1024 * 1024 ||
+                        !/\.(pdf|docx|txt|png|jpe?g)$/i.test(file.name))) {
+                        setErrorMsg("Chọn tệp PDF, DOCX, TXT, PNG hoặc JPG có dữ liệu và không quá 10 MB.");
+                        setDocumentFile(undefined);
+                        e.target.value = "";
+                        return;
+                      }
+                      setErrorMsg(null);
+                      if (file) {
+                        setDocumentFile(file);
+                        setDocumentLink("");
+                      }
+                    }}
+                  />
+                  <p style={{ fontSize: "0.75rem", color: "#64748b" }}>
+                    Đường dẫn hoặc tệp PDF, DOCX, TXT, PNG, JPG · Tối đa 10 MB.
+                  </p>
+                </>
+              ) : (
+              <>
               <input
                 type="file"
                 accept=".docx,.pptx,.ppt,.pdf,.xlsx"
@@ -387,6 +445,8 @@ export function LessonFormModal({
                   Tài liệu hiện có: {documentName(editingLesson.documents)}.
                   Chọn tệp mới để thay thế.
                 </p>
+              )}
+              </>
               )}
             </div>
           </div>
