@@ -60,6 +60,10 @@ export async function uploadGrammarVideo(file: File): Promise<GrammarVideoUpload
   return data;
 }
 
+export async function deleteTemporaryGrammarVideo(publicId: string): Promise<void> {
+  await apiClient.delete("/grammars/videos", { params: { publicId } });
+}
+
 export async function updateGrammar(id: number, payload: GrammarFormInput, videoFile?: File | null): Promise<GrammarItem> {
   const grammarFields = {
     structureName: payload.structureName,

@@ -152,6 +152,14 @@ System.out.println("Format: " + uploadResult.get("format"));
         }
     }
 
+    public void deleteGrammarVideo(String publicId) {
+        String grammarVideoPrefix = GRAMMAR_VIDEO_FOLDER + "/";
+        if (publicId == null || !publicId.startsWith(grammarVideoPrefix)) {
+            throw new IllegalArgumentException("Video không thuộc thư mục ngữ pháp của moderator");
+        }
+        deleteVideo(publicId);
+    }
+
     public String buildSecureVideoUrl(String publicId, String format) {
         if (publicId == null || publicId.isBlank()) {
             return null;

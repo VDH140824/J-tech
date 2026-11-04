@@ -1,7 +1,8 @@
 import axios from "axios";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   createGrammar,
+  deleteTemporaryGrammarVideo,
   uploadGrammarVideo,
   type GrammarFormInput,
   type GrammarItem,
@@ -31,10 +32,31 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
   });
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadedVideo, setUploadedVideo] = useState<GrammarVideoUpload | null>(null);
+  const temporaryVideoIds = useRef(new Set<string>());
   const [stage, setStage] = useState<"idle" | "uploading" | "saving">("idle");
   const [error, setError] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [closing, setClosing] = useState(false);
   const busy = stage !== "idle";
+
+  const handleCancel = async () => {
+    if (busy || closing) return;
+    setClosing(true);
+    try {
+      for (const publicId of temporaryVideoIds.current) {
+        await deleteTemporaryGrammarVideo(publicId);
+      }
+      temporaryVideoIds.current.clear();
+      onClose();
+    } catch (caughtError) {
+      const apiError = axios.isAxiosError<{ message?: string }>(caughtError) ? caughtError : null;
+      const backendMessage = apiError?.response?.data?.message;
+      setError(typeof backendMessage === "string" && backendMessage.trim()
+        ? backendMessage : "Không xóa được video tạm trên Cloudinary. Vui lòng thử hủy lại.");
+    } finally {
+      setClosing(false);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -83,6 +105,8 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
         videoPublicId: uploadedVideo?.publicId,
         videoDurationSec: uploadedVideo?.duration == null ? undefined : Math.ceil(uploadedVideo.duration),
       });
+      temporaryVideoIds.current.clear();
+      setUploadedVideo(null);
       onCreated(created);
     } catch (caughtError) {
       const apiError = axios.isAxiosError<{ message?: string }>(caughtError) ? caughtError : null;
@@ -98,7 +122,9 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
     setStage("uploading");
     setError(null);
     try {
-      setUploadedVideo(await uploadGrammarVideo(file));
+      const uploaded = await uploadGrammarVideo(file);
+      temporaryVideoIds.current.add(uploaded.publicId);
+      setUploadedVideo(uploaded);
     } catch (caughtError) {
       const apiError = axios.isAxiosError<{ message?: string }>(caughtError) ? caughtError : null;
       const backendMessage = apiError?.response?.data?.message;
@@ -110,10 +136,6 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
   };
 
   const handleVideoChange = (file: File | null) => {
-    setUploadedVideo(null);
-    setVideoFile(null);
-    setError(null);
-    setVideoError(null);
     if (!file) return;
     if (!allowedVideoTypes.has(file.type)) {
       setVideoError("Định dạng video không được hỗ trợ.");
@@ -123,7 +145,16 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
       setVideoError("Video phải nhỏ hơn 500 MB.");
       return;
     }
+    const previousUpload = uploadedVideo;
+    setUploadedVideo(null);
+    setError(null);
+    setVideoError(null);
     setVideoFile(file);
+    if (previousUpload?.publicId) {
+      void deleteTemporaryGrammarVideo(previousUpload.publicId).then(() => {
+        temporaryVideoIds.current.delete(previousUpload.publicId);
+      }).catch(() => setError("Không xóa được video đã chọn trước đó trên Cloudinary; video sẽ được dọn khi hủy form."));
+    }
     void uploadSelectedVideo(file);
   };
 
@@ -132,7 +163,7 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
       <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="grammar-create-title" style={{ maxWidth: "700px", maxHeight: "90vh", overflowY: "auto" }}>
         <div className="modal-header">
           <h3 className="modal-title" id="grammar-create-title">Thêm ngữ pháp mới</h3>
-          <button type="button" className="modal-btn-close" onClick={onClose} disabled={busy} aria-label="Đóng">✕</button>
+          <button type="button" className="modal-btn-close" onClick={() => void handleCancel()} disabled={busy || closing} aria-label="Đóng">✕</button>
         </div>
         <form onSubmit={handleSubmit} className="modal-form-body">
           <p className="modal-description">Các trường nội dung bắt buộc, tối đa 100 ký tự mỗi trường.</p>
@@ -184,7 +215,7 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
           </div>
           {(videoError || error) && <p role="alert" style={{ color: "#b91c1c" }}>{videoError || error}</p>}
           <div className="modal-actions-row">
-            <button type="button" className="btn-modal-cancel" onClick={onClose} disabled={busy}>Hủy</button>
+            <button type="button" className="btn-modal-cancel" onClick={() => void handleCancel()} disabled={busy || closing}>{closing ? "Đang dọn video..." : "Hủy"}</button>
             <button type="submit" className="btn-modal-submit" disabled={busy}>
               {stage === "uploading" ? "Đang tải video..." : stage === "saving" ? "Đang tạo ngữ pháp..." : "Tạo ngữ pháp"}
             </button>
