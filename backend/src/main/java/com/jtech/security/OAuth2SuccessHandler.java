@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
     public static final String ACCOUNT_STATUS_SESSION_KEY = "ACCOUNT_STATUS";
     public static final String ACCOUNT_REASON_SESSION_KEY = "ACCOUNT_STATUS_REASON";
 
@@ -73,41 +74,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
         String fullName = oAuth2User.getAttribute("name");
-       //User exit
-        User user = userRepository.findByEmail(email).map(existingUser -> {
-            LocalDateTime loginAt = LocalDateTime.now();
-            existingUser.setLastLogin(loginAt);
-            if ((existingUser.getGoogleSub() == null || existingUser.getGoogleSub().isBlank()) && googleSub != null && !googleSub.isBlank()) {
-                existingUser.setGoogleSub(googleSub);
-            }
-            if ((existingUser.getFullName() == null || existingUser.getFullName().isBlank())
-                    && fullName != null && !fullName.isBlank()) {
-                existingUser.setFullName(fullName);
-            }
-            return userRepository.save(existingUser);
-        }).orElseGet(() -> {
-            Role userRole = roleRepository.findByRoleName("STUDENT")
-                    .orElseGet(() -> {
-                        Role role = new Role();
-                        role.setRoleName("STUDENT");
-                        role.setName("Học viên");
-                        role.setDescription("Default student role");
-                        return roleRepository.save(role);
-                    });
-
-            User newUser = new User();
-            newUser.setRole(userRole);
-            newUser.setEmail(email);
-            newUser.setGoogleSub(googleSub);
-            String resolvedName = fullName != null && !fullName.isBlank() ? fullName : email;
-            newUser.setFullName(resolvedName.length() > 50 ? resolvedName.substring(0, 50) : resolvedName);
-            newUser.setAvatarUrl(picture);
-            newUser.setStatus(UserStatus.PENDING);
-            newUser.setCoinBalance(0);
-            LocalDateTime loginAt = LocalDateTime.now();
-            newUser.setLastLogin(loginAt);
-        String displayName = oAuth2User.getAttribute("name");
-
+        //User exit
         User user = userRepository
             .findByEmail(email)
             .map(existingUser -> {
@@ -122,12 +89,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     existingUser.setGoogleSub(googleSub);
                 }
                 if (
-                    (existingUser.getDisplayName() == null ||
-                        existingUser.getDisplayName().isBlank()) &&
-                    displayName != null &&
-                    !displayName.isBlank()
+                    (existingUser.getFullName() == null || existingUser.getFullName().isBlank()) &&
+                    fullName != null &&
+                    !fullName.isBlank()
                 ) {
-                    existingUser.setDisplayName(displayName);
+                    existingUser.setFullName(fullName);
                 }
                 return userRepository.save(existingUser);
             })
@@ -144,9 +110,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 newUser.setRole(userRole);
                 newUser.setEmail(email);
                 newUser.setGoogleSub(googleSub);
-                String resolvedName =
-                    displayName != null && !displayName.isBlank() ? displayName : email;
-                newUser.setDisplayName(
+                String resolvedName = fullName != null && !fullName.isBlank() ? fullName : email;
+                newUser.setFullName(
                     resolvedName.length() > 50 ? resolvedName.substring(0, 50) : resolvedName
                 );
                 newUser.setAvatarUrl(picture);
@@ -166,9 +131,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             } else {
                 session.setAttribute(ACCOUNT_REASON_SESSION_KEY, user.getStatusReason());
             }
-            String statusRoute = user.getStatus() == UserStatus.PENDING
-                    ? "/pending-approval"
-                    : "/account-rejected";
+            String statusRoute =
+                user.getStatus() == UserStatus.PENDING ? "/pending-approval" : "/account-rejected";
             getRedirectStrategy().sendRedirect(request, response, frontendUrl + statusRoute);
             return;
         }
@@ -178,7 +142,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             request.getSession(false).removeAttribute(ACCOUNT_REASON_SESSION_KEY);
         }
 
-        RefreshToken refreshToken = refreshTokenRepository.save(RefreshToken.builder()
+        RefreshToken refreshToken = refreshTokenRepository.save(
+            RefreshToken.builder()
                 .user(user)
                 .token(UUID.randomUUID().toString())
                 .expiresAt(LocalDateTime.now().plusDays(30))

@@ -15,15 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatus(
-        org.springframework.web.server.ResponseStatusException ex
-    ) {
-        return ResponseEntity.status(ex.getStatusCode()).body(
-            Map.of("message", ex.getReason() == null ? "Request failed" : ex.getReason())
-        );
-    }
-
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleAuthenticationException(
         AuthenticationCredentialsNotFoundException ex
@@ -76,7 +67,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatusException(ResponseStatusException ex) {
+    public ResponseEntity<Map<String, String>> handleResponseStatusException(
+        ResponseStatusException ex
+    ) {
         String message = ex.getReason() != null ? ex.getReason() : ex.getMessage();
         return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", message));
     }

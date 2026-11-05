@@ -11,7 +11,6 @@ import com.jtech.repository.UserRepository;
 import com.jtech.security.JwtService;
 import com.jtech.service.AuthService;
 import com.jtech.service.CloudinaryService;
-import org.springframework.web.multipart.MultipartFile;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -22,6 +21,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -32,13 +32,11 @@ public class AuthServiceImpl implements AuthService {
     private final CloudinaryService cloudinaryService;
     private final com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore;
 
-    public AuthServiceImpl(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository,
-                           JwtService jwtService, CloudinaryService cloudinaryService,
-                           com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore) {
     public AuthServiceImpl(
         UserRepository userRepository,
         RefreshTokenRepository refreshTokenRepository,
         JwtService jwtService,
+        CloudinaryService cloudinaryService,
         com.jtech.security.OAuth2ExchangeStore oAuth2ExchangeStore
     ) {
         this.userRepository = userRepository;
@@ -120,24 +118,30 @@ public class AuthServiceImpl implements AuthService {
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
         if (request == null) throw new IllegalArgumentException("Dữ liệu hồ sơ là bắt buộc");
         String name = request.getFullName();
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("Họ tên không được để trống");
+        if (name == null || name.isBlank()) throw new IllegalArgumentException(
+            "Họ tên không được để trống"
+        );
         name = name.trim();
         if (name.length() > 50) throw new IllegalArgumentException("Họ tên không quá 50 ký tự");
         java.time.LocalDate dateOfBirth = null;
         if (request.getDateOfBirth() != null) {
             try {
-                dateOfBirth = java.time.LocalDate.parse(request.getDateOfBirth(),
-                        java.time.format.DateTimeFormatter.ofPattern("uuuu-MM-dd")
-                                .withResolverStyle(java.time.format.ResolverStyle.STRICT));
+                dateOfBirth = java.time.LocalDate.parse(
+                    request.getDateOfBirth(),
+                    java.time.format.DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(
+                        java.time.format.ResolverStyle.STRICT
+                    )
+                );
             } catch (java.time.format.DateTimeParseException exception) {
-                throw new IllegalArgumentException("Ngày sinh không hợp lệ. Nhập theo định dạng yyyy-MM-dd.", exception);
+                throw new IllegalArgumentException(
+                    "Ngày sinh không hợp lệ. Nhập theo định dạng yyyy-MM-dd.",
+                    exception
+                );
             }
         }
         if (dateOfBirth != null && dateOfBirth.isAfter(java.time.LocalDate.now())) {
             throw new IllegalArgumentException("Ngày sinh không được ở tương lai");
         }
-        User user = (userId != null)
-                ? userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"))
         User user =
             userId != null
                 ? userRepository
@@ -165,7 +169,8 @@ public class AuthServiceImpl implements AuthService {
         return mapToUserResponse(user);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public UserResponse updateAvatar(MultipartFile file) {
         User user = getAuthenticatedUser();
         var uploaded = cloudinaryService.uploadAvatar(file);
@@ -180,14 +185,6 @@ public class AuthServiceImpl implements AuthService {
         if (code == null || code.isBlank()) {
             throw new IllegalArgumentException("Exchange code is required");
         }
-        // consume code
-        com.jtech.security.OAuth2ExchangeStore.ExchangePayload payload = oAuth2ExchangeStore.consume(code);
-        if (payload == null) {
-            throw new IllegalArgumentException("Invalid or expired exchange code");
-        }
-        // get user from code
-        User user = userRepository.findById(payload.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         com.jtech.security.OAuth2ExchangeStore.ExchangePayload payload =
             oAuth2ExchangeStore.consume(code);
         if (payload == null) {

@@ -100,21 +100,11 @@ public class CloudinaryService {
                 .uploadLarge(
                     tempFile.toFile(),
                     ObjectUtils.asMap(
-                            "resource_type", "video",
-                            "folder", folder,
-                            "use_filename", true,
-                            "unique_filename", uniqueFilename,
-                            "overwrite", false
-                        "resource_type",
-                        "video",
-                        "folder",
-                        TARGET_ASSET_FOLDER,
-                        "use_filename",
-                        true,
-                        "unique_filename",
-                        false,
-                        "overwrite",
-                        false
+                        "resource_type", "video",
+                        "folder", folder,
+                        "use_filename", true,
+                        "unique_filename", uniqueFilename,
+                        "overwrite", false
                     )
                 );
             System.out.println("========== CLOUDINARY UPLOAD SUCCESS ==========");

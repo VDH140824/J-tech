@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import type { LessonFormInput, LessonSummary } from "../../api/lessonApi";
 import { kanjiErrorMessage } from "./kanji/kanjiMessages";
 import { lessonDocuments } from "./kanji/lessonDocuments";
-import { useState, useEffect } from "react";
 import type { LessonFormInput, LessonSummary, SkillType } from "../../api/lessonApi";
 import { parseLessonDocuments, serializeDocumentUrls } from "../../utils/lessonDocuments";
 
@@ -29,7 +27,8 @@ export function LessonFormModal({
   defaultLessonNo = 1,
   vietnameseOnly = false,
 }: LessonFormModalProps) {
-  const isVocabulary = skillType === "VOCABULARY";
+  const isVocabulary =
+    (skillType ?? editingLesson?.skillType) === "VOCABULARY" || skillLabel === "Từ vựng";
   const [formData, setFormData] = useState<LessonFormInput>({
     lessonNo: defaultLessonNo,
     title: "",
@@ -50,7 +49,6 @@ export function LessonFormModal({
         lessonNo: editingLesson.lessonNo,
         title: editingLesson.title,
         description: editingLesson.description || "",
-        documents: editingLesson.documents,
         documents: isVocabulary
           ? parseLessonDocuments(editingLesson.documents)
               .map((document) => document.url)
@@ -71,7 +69,6 @@ export function LessonFormModal({
     setErrorMsg(null);
     setDocumentFile(undefined);
     setDocumentLink("");
-  }, [editingLesson, defaultLessonNo, isOpen]);
   }, [editingLesson, defaultLessonNo, isOpen, isVocabulary]);
 
   if (!isOpen) return null;
@@ -93,7 +90,7 @@ export function LessonFormModal({
         return;
       }
     }
-    if (!vietnameseOnly && !editingLesson && !formData.documentFile) {
+    if (!vietnameseOnly && !isVocabulary && !editingLesson && !formData.documentFile) {
       setErrorMsg("Vui lòng chọn tài liệu đính kèm!");
       return;
     }
@@ -111,19 +108,16 @@ export function LessonFormModal({
       documentLink.trim() &&
       !/^https?:\/\/[^\s]+$/i.test(documentLink.trim())
     ) {
-      setErrorMsg(
-        "Vui lòng nhập đường dẫn tài liệu bắt đầu bằng http:// hoặc https://.",
-      );
+      setErrorMsg("Vui lòng nhập đường dẫn tài liệu bắt đầu bằng http:// hoặc https://.");
       return;
     }
-    const documents =
+    let documents =
       vietnameseOnly && documentLink.trim()
         ? JSON.stringify([
             ...lessonDocuments(formData.documents),
             { name: "Tài liệu tham khảo", url: documentLink.trim() },
           ])
         : formData.documents?.trim() || undefined;
-    let documents = formData.documents?.trim() || undefined;
     if (isVocabulary) {
       try {
         documents = serializeDocumentUrls(formData.documents || "", editingLesson?.documents);
@@ -136,7 +130,6 @@ export function LessonFormModal({
       ...formData,
       title: formData.title.trim(),
       description: formData.description?.trim() || undefined,
-      documents: vietnameseOnly ? documents : undefined,
       documents,
     };
 
@@ -151,17 +144,12 @@ export function LessonFormModal({
         response?: { data?: { message?: string } | string };
       };
       const serverMsg =
-        (typeof anyErr?.response?.data === "object"
-          ? anyErr?.response?.data?.message
-          : null) ||
-        (typeof anyErr?.response?.data === "string"
-          ? anyErr.response.data
-          : null);
+        (typeof anyErr?.response?.data === "object" ? anyErr?.response?.data?.message : null) ||
+        (typeof anyErr?.response?.data === "string" ? anyErr.response.data : null);
       setErrorMsg(
         vietnameseOnly
           ? kanjiErrorMessage(err)
-          : serverMsg ||
-              "Đã xảy ra lỗi khi lưu bài học. Vui lòng kiểm tra lại dữ liệu!",
+          : serverMsg || "Đã xảy ra lỗi khi lưu bài học. Vui lòng kiểm tra lại dữ liệu!",
       );
     } finally {
       setSubmitting(false);
@@ -197,10 +185,6 @@ export function LessonFormModal({
               {editingLesson ? "✏️" : "➕"}
             </span>
             <div>
-              <h3 className="modal-title" style={{ margin: 0 }}>
-                {editingLesson
-                  ? "Chỉnh sửa bài học"
-                  : `Thêm bài học mới (${skillLabel})`}
               <h3
                 className="modal-title"
                 style={{ margin: 0 }}
@@ -218,8 +202,7 @@ export function LessonFormModal({
                   "Nhập thông tin và đính kèm tài liệu cho bài học chữ Hán."
                 ) : (
                   <>
-                    Nhập các thông tin của bài học theo bảng cơ sở dữ liệu{" "}
-                    <code>lesson</code>
+                    Nhập các thông tin của bài học theo bảng cơ sở dữ liệu <code>lesson</code>
                   </>
                 )}
               </p>
@@ -274,9 +257,6 @@ export function LessonFormModal({
                 value={formData.lessonNo}
                 onChange={(e) => {
                   const num =
-                    e.target.value === ""
-                      ? 0
-                      : Math.max(0, parseInt(e.target.value, 10) || 0);
                     e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0);
                   setFormData({ ...formData, lessonNo: num });
                 }}
@@ -289,14 +269,12 @@ export function LessonFormModal({
 
             <div className="modal-field-group">
               <label className="modal-label">
-                {vietnameseOnly
-                  ? "Thứ tự sắp xếp"
-                  : "Thứ tự sắp xếp (display_order)"}{" "}
+                {vietnameseOnly ? "Thứ tự sắp xếp" : "Thứ tự sắp xếp (display_order)"}{" "}
                 <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <input
                 type="number"
-                min="0"
+                min="1"
                 className="modal-input"
                 value={formData.displayOrder ?? 0}
                 required
@@ -304,9 +282,6 @@ export function LessonFormModal({
                   setFormData({
                     ...formData,
                     displayOrder:
-                      e.target.value === ""
-                        ? 0
-                        : Math.max(0, parseInt(e.target.value, 10) || 0),
                       e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0),
                   })
                 }
@@ -328,9 +303,7 @@ export function LessonFormModal({
               className="modal-input"
               placeholder="Nhập tên tiêu đề bài học (Ví dụ: Chào hỏi, Danh từ chỉ đồ vật...)"
               value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
             />
           </div>
@@ -348,9 +321,7 @@ export function LessonFormModal({
               rows={3}
               required
               value={formData.description || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
 
@@ -358,9 +329,7 @@ export function LessonFormModal({
           <div className="modal-grid-2">
             <div className="modal-field-group">
               <label className="modal-label">
-                {vietnameseOnly
-                  ? "Trạng thái phát hành"
-                  : "Trạng thái phát hành (status)"}
+                {vietnameseOnly ? "Trạng thái phát hành" : "Trạng thái phát hành (status)"}
               </label>
               <select
                 className="modal-input"
@@ -368,23 +337,15 @@ export function LessonFormModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    status: e.target.value as
-                      | "DRAFT"
-                      | "PUBLISHED"
-                      | "HIDDEN"
-                      | "ARCHIVED",
+                    status: e.target.value as "DRAFT" | "PUBLISHED" | "HIDDEN" | "ARCHIVED",
                   })
                 }
               >
                 <option value="PUBLISHED">
                   {vietnameseOnly ? "Đã xuất bản" : "Đã xuất bản (PUBLISHED)"}
                 </option>
-                <option value="DRAFT">
-                  {vietnameseOnly ? "Bản nháp" : "Bản nháp (DRAFT)"}
-                </option>
-                <option value="HIDDEN">
-                  {vietnameseOnly ? "Ẩn" : "Ẩn (HIDDEN)"}
-                </option>
+                <option value="DRAFT">{vietnameseOnly ? "Bản nháp" : "Bản nháp (DRAFT)"}</option>
+                <option value="HIDDEN">{vietnameseOnly ? "Ẩn" : "Ẩn (HIDDEN)"}</option>
                 <option value="ARCHIVED">
                   {vietnameseOnly ? "Lưu trữ" : "Lưu trữ (ARCHIVED)"}
                 </option>
@@ -409,32 +370,71 @@ export function LessonFormModal({
                       onChange={(e) => setDocumentLink(e.target.value)}
                     />
                     {(documentFile || documentLink) && (
-                      <button type="button" disabled={submitting} aria-label="Bỏ tài liệu đã chọn"
+                      <button
+                        type="button"
+                        disabled={submitting}
+                        aria-label="Bỏ tài liệu đã chọn"
                         onClick={() => {
                           setDocumentFile(undefined);
                           setDocumentLink("");
                           if (documentInputRef.current) documentInputRef.current.value = "";
-                        }}>×</button>
+                        }}
+                      >
+                        ×
+                      </button>
                     )}
-                    <button type="button" disabled={submitting}
-                      onClick={() => documentInputRef.current?.click()}>Chọn tệp</button>
+                    <button
+                      type="button"
+                      disabled={submitting}
+                      onClick={() => documentInputRef.current?.click()}
+                    >
+                      Chọn tệp
+                    </button>
                   </div>
                   {lessonDocuments(formData.documents).map((doc, index) => (
-                    <div key={`${doc.url}-${index}`} style={{ marginTop: 8, overflowWrap: "anywhere" }}>
-                      <a href={doc.url} target="_blank" rel="noopener noreferrer">{doc.name}</a>{" "}
-                      <button type="button" disabled={submitting}
-                        onClick={() => setFormData({ ...formData,
-                          documents: JSON.stringify(lessonDocuments(formData.documents).filter((_, i) => i !== index)),
-                        })}>Bỏ đính kèm</button>
+                    <div
+                      key={`${doc.url}-${index}`}
+                      style={{ marginTop: 8, overflowWrap: "anywhere" }}
+                    >
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {doc.name}
+                      </a>{" "}
+                      <button
+                        type="button"
+                        disabled={submitting}
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            documents: JSON.stringify(
+                              lessonDocuments(formData.documents).filter((_, i) => i !== index),
+                            ),
+                          })
+                        }
+                      >
+                        Bỏ đính kèm
+                      </button>
                     </div>
                   ))}
-                  <input ref={documentInputRef} hidden type="file"
+                  <input
+                    ref={documentInputRef}
+                    hidden
+                    type="file"
                     accept=".pdf,.docx,.txt,.png,.jpg,.jpeg"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file && (file.size === 0 || file.size > 10 * 1024 * 1024 ||
-                        !/\.(pdf|docx|txt|png|jpe?g)$/i.test(file.name))) {
-                        setErrorMsg("Chọn tệp PDF, DOCX, TXT, PNG hoặc JPG có dữ liệu và không quá 10 MB.");
+                      if (
+                        file &&
+                        (file.size === 0 ||
+                          file.size > 10 * 1024 * 1024 ||
+                          !/\.(pdf|docx|txt|png|jpe?g)$/i.test(file.name))
+                      ) {
+                        setErrorMsg(
+                          "Chọn tệp PDF, DOCX, TXT, PNG hoặc JPG có dữ liệu và không quá 10 MB.",
+                        );
                         setDocumentFile(undefined);
                         e.target.value = "";
                         return;
@@ -450,45 +450,7 @@ export function LessonFormModal({
                     Đường dẫn hoặc tệp PDF, DOCX, TXT, PNG, JPG · Tối đa 10 MB.
                   </p>
                 </>
-              ) : (
-              <>
-              <input
-                type="file"
-                accept=".docx,.pptx,.ppt,.pdf,.xlsx"
-                disabled={submitting}
-                required={!editingLesson}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (
-                    file &&
-                    (!/\.(docx|pptx|ppt|pdf|xlsx)$/i.test(file.name) ||
-                      file.size === 0)
-                  ) {
-                    setErrorMsg(
-                      "Chỉ chấp nhận tệp DOCX, PPTX, PPT, PDF, XLSX không rỗng",
-                    );
-                    e.target.value = "";
-                    setFormData({ ...formData, documentFile: undefined });
-                    return;
-                  }
-                  setErrorMsg(null);
-                  setFormData({ ...formData, documentFile: file });
-                }}
-              />
-              {editingLesson?.documents && (
-                <p>
-                  Tài liệu hiện có: {documentName(editingLesson.documents)}.
-                  Chọn tệp mới để thay thế.
-                </p>
-              )}
-              </>
-              <label
-                className="modal-label"
-                htmlFor="lesson-documents"
-              >
-                {isVocabulary ? "URL tài liệu PDF" : "Tài liệu đính kèm (documents)"}
-              </label>
-              {isVocabulary ? (
+              ) : isVocabulary ? (
                 <>
                   <textarea
                     id="lesson-documents"
@@ -503,14 +465,34 @@ export function LessonFormModal({
                   </span>
                 </>
               ) : (
-                <input
-                  id="lesson-documents"
-                  type="text"
-                  className="modal-input"
-                  placeholder="Link tài liệu hoặc ghi chú file JSON..."
-                  value={formData.documents || ""}
-                  onChange={(e) => setFormData({ ...formData, documents: e.target.value })}
-                />
+                <>
+                  <input
+                    type="file"
+                    accept=".docx,.pptx,.ppt,.pdf,.xlsx"
+                    disabled={submitting}
+                    required={!editingLesson}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (
+                        file &&
+                        (!/\.(docx|pptx|ppt|pdf|xlsx)$/i.test(file.name) || file.size === 0)
+                      ) {
+                        setErrorMsg("Chỉ chấp nhận tệp DOCX, PPTX, PPT, PDF, XLSX không rỗng");
+                        e.target.value = "";
+                        setFormData({ ...formData, documentFile: undefined });
+                        return;
+                      }
+                      setErrorMsg(null);
+                      setFormData({ ...formData, documentFile: file });
+                    }}
+                  />
+                  {editingLesson?.documents && (
+                    <p>
+                      Tài liệu hiện có: {documentName(editingLesson.documents)}. Chọn tệp mới để
+                      thay thế.
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -531,11 +513,7 @@ export function LessonFormModal({
               style={{ backgroundColor: skillColor }}
               disabled={submitting}
             >
-              {submitting
-                ? "Đang lưu..."
-                : editingLesson
-                  ? "Lưu thay đổi"
-                  : "Tạo bài học"}
+              {submitting ? "Đang lưu..." : editingLesson ? "Lưu thay đổi" : "Tạo bài học"}
             </button>
           </div>
         </form>

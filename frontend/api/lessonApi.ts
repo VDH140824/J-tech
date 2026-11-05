@@ -1,11 +1,6 @@
 import { apiClient } from "../services/api";
 
-export type SkillType =
-  | "KANJI"
-  | "VOCABULARY"
-  | "GRAMMAR"
-  | "LISTENING"
-  | "READING";
+export type SkillType = "KANJI" | "VOCABULARY" | "GRAMMAR" | "LISTENING" | "READING";
 
 export interface LessonSummary {
   id: number;
@@ -47,10 +42,6 @@ export async function getLessonsByChapter(
   }
 
   // Use the existing working endpoint /chapters/{chapterId}/lessons
-  const { data } = await apiClient.get<LessonSummary[]>(
-    `/chapters/${chapterId}/lessons`,
-    { params },
-  );
   const { data } = await apiClient.get<LessonSummary[]>(`/chapters/${chapterId}/lessons`, {
     params,
   });
@@ -84,8 +75,6 @@ export async function updateLesson(
     `/lessons/${id}`,
     lessonFormData(payload, documentFile),
   );
-export async function updateLesson(id: number, payload: LessonFormInput): Promise<LessonSummary> {
-  const { data } = await apiClient.put<LessonSummary>(`/lessons/${id}`, payload);
   return data;
 }
 
@@ -97,10 +86,7 @@ function lessonFormData(payload: LessonFormInput, file?: File): FormData {
   const { documentFile, ...request } = payload;
   const selectedFile = file ?? documentFile;
   const body = new FormData();
-  body.append(
-    "request",
-    new Blob([JSON.stringify(request)], { type: "application/json" }),
-  );
+  body.append("request", new Blob([JSON.stringify(request)], { type: "application/json" }));
   if (selectedFile) body.append("file", selectedFile);
   return body;
 }

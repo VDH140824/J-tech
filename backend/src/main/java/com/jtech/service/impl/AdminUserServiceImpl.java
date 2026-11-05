@@ -74,15 +74,12 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     @Transactional
     public UserResponse rejectUser(Long userId, RejectUserRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
-        String reason = requireStatusReason(request == null ? null : request.getStatusReason());
-    public UserResponse rejectUser(Long userId) {
         User user = userRepository
             .findById(userId)
             .orElseThrow(() ->
                 new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId)
             );
+        String reason = requireStatusReason(request == null ? null : request.getStatusReason());
         user.setStatus(UserStatus.REJECTED);
         user.setStatusReason(reason);
         user.setReviewedAt(java.time.LocalDateTime.now());
@@ -101,17 +98,11 @@ public class AdminUserServiceImpl implements AdminUserService {
         UserStatus nextStatus;
         try {
             nextStatus = UserStatus.valueOf(request.getStatus().toUpperCase());
-            user.setStatus(UserStatus.valueOf(request.getStatus().toUpperCase()));
-            user.setStatusReason(
-                request.getStatusReason() == null || request.getStatusReason().isBlank()
-                    ? null
-                    : request.getStatusReason().trim()
-            );
-            user.setReviewedAt(java.time.LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ: " + request.getStatus());
         }
-        String reason = nextStatus == UserStatus.LOCKED || nextStatus == UserStatus.REJECTED
+        String reason =
+            nextStatus == UserStatus.LOCKED || nextStatus == UserStatus.REJECTED
                 ? requireStatusReason(request.getStatusReason())
                 : null;
         user.setStatus(nextStatus);
@@ -186,7 +177,9 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new IllegalArgumentException("Email không được vượt quá 255 ký tự");
         }
         if (!email.matches("^[^@\\s]+@[^@\\s.]+(?:\\.[^@\\s.]+)+$")) {
-            throw new IllegalArgumentException("Email không đúng định dạng: cần có tên và tên miền hợp lệ, không chứa khoảng trắng hoặc dấu chấm liên tiếp");
+            throw new IllegalArgumentException(
+                "Email không đúng định dạng: cần có tên và tên miền hợp lệ, không chứa khoảng trắng hoặc dấu chấm liên tiếp"
+            );
         }
 
         if (userRepository.findByEmail(email).isPresent()) {

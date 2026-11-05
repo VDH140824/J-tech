@@ -14,6 +14,10 @@ interface UserAvatarProps {
 }
 
 export function UserAvatar({ user, className = "", size }: UserAvatarProps) {
+  const equipment = useEquipmentStore((s) => s.items);
+  const avatar = equipment.find((i) => i.item_type === "AVATAR" && i.is_equipped);
+  const frame = equipment.find((i) => i.item_type === "AVATAR_FRAME" && i.is_equipped);
+  const badge = equipment.find((i) => i.item_type === "BADGE" && i.is_equipped);
   const displayName = user?.fullName ?? user?.displayName ?? user?.email ?? "";
   const avatarInitial = displayName ? displayName.charAt(0).toUpperCase() : "H";
 

@@ -13,7 +13,6 @@ import "./ModeratorPortalPage.css";
 
 export type ModeratorTab = "courses" | "chapter-detail" | "kanji" | "classes" | "feedback";
 
-
 export interface ModeratorNavState {
   courseId: number;
   chapterId: number;
@@ -46,16 +45,16 @@ export function ModeratorPortalPage() {
     }
   }, [location.pathname, searchParams, navigate]);
 
-  const activeTab: ModeratorTab = location.pathname.replace(/\/$/, "") === "/moderator/kanji"
-    ? "kanji"
-    : matchClasses
-      ? "classes"
   const activeTab: ModeratorTab =
-    location.pathname === "/moderator/feedback"
-      ? "feedback"
-      : matchChapter
-        ? "chapter-detail"
-        : "courses";
+    location.pathname.replace(/\/$/, "") === "/moderator/kanji"
+      ? "kanji"
+      : matchClasses
+        ? "classes"
+        : location.pathname === "/moderator/feedback"
+          ? "feedback"
+          : matchChapter
+            ? "chapter-detail"
+            : "courses";
 
   const handleSelectTab = (tab: string) => {
     if (tab === "kanji") {

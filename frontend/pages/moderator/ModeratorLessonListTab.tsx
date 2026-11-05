@@ -248,9 +248,10 @@ export function ModeratorLessonListTab({
               </span>
             </h2>
             <p className="admin-main-subtitle">
-              {selectedSection === "kanji" ? <>Chương {chapterNo}: {chapterTitle} — Danh sách bài học chữ Hán.</> : <>Chương {chapterNo}: {chapterTitle} — Danh sách bài học từ bảng <code>lesson</code> (skill: <strong>{activeConfig.skillType}</strong>).</>}
               {readOnly ? (
                 `Chương ${chapterNo}: ${chapterTitle} — Danh sách bài học ${activeConfig.label}.`
+              ) : selectedSection === "kanji" ? (
+                `Chương ${chapterNo}: ${chapterTitle} — Danh sách bài học chữ Hán.`
               ) : (
                 <>
                   Chương {chapterNo}: {chapterTitle} — Danh sách bài học từ bảng <code>lesson</code>{" "}
@@ -306,17 +307,25 @@ export function ModeratorLessonListTab({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <select
-            className="mod-toolbar-select"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="PUBLISHED">{selectedSection === "kanji" ? "Đã xuất bản" : "Đã xuất bản (PUBLISHED)"}</option>
-            <option value="DRAFT">{selectedSection === "kanji" ? "Bản nháp" : "Bản nháp (DRAFT)"}</option>
-            <option value="HIDDEN">{selectedSection === "kanji" ? "Ẩn" : "Ẩn (HIDDEN)"}</option>
-            <option value="ARCHIVED">{selectedSection === "kanji" ? "Lưu trữ" : "Lưu trữ (ARCHIVED)"}</option>
-          </select>
+          {!readOnly && (
+            <select
+              className="mod-toolbar-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="PUBLISHED">
+                {selectedSection === "kanji" ? "Đã xuất bản" : "Đã xuất bản (PUBLISHED)"}
+              </option>
+              <option value="DRAFT">
+                {selectedSection === "kanji" ? "Bản nháp" : "Bản nháp (DRAFT)"}
+              </option>
+              <option value="HIDDEN">{selectedSection === "kanji" ? "Ẩn" : "Ẩn (HIDDEN)"}</option>
+              <option value="ARCHIVED">
+                {selectedSection === "kanji" ? "Lưu trữ" : "Lưu trữ (ARCHIVED)"}
+              </option>
+            </select>
+          )}
         </div>
         <div style={{ fontSize: "0.86rem", color: "#64748b", fontWeight: 600 }}>
           Hiển thị <strong>{filteredLessons.length}</strong> bài học {activeConfig.label}
@@ -432,7 +441,11 @@ export function ModeratorLessonListTab({
                       ) : (
                         <span className="status-badge rejected mod-lesson-status">
                           <span className="status-dot rejected" />
-                          {selectedSection === "kanji" ? (lesson.status === "HIDDEN" ? "Ẩn" : "Đã lưu trữ") : lesson.status}
+                          {selectedSection === "kanji"
+                            ? lesson.status === "HIDDEN"
+                              ? "Ẩn"
+                              : "Đã lưu trữ"
+                            : lesson.status}
                         </span>
                       )}
                     </td>
@@ -500,6 +513,7 @@ export function ModeratorLessonListTab({
         onSubmit={handleSubmitForm}
         editingLesson={editingLesson}
         skillLabel={activeConfig.label}
+        skillType={activeConfig.skillType}
         vietnameseOnly={selectedSection === "kanji"}
         skillColor={activeConfig.color}
         defaultLessonNo={nextLessonNo}
