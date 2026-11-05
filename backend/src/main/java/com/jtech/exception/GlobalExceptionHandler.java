@@ -1,5 +1,7 @@
 package com.jtech.exception;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -10,45 +12,65 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatus(
+        org.springframework.web.server.ResponseStatusException ex
+    ) {
+        return ResponseEntity.status(ex.getStatusCode()).body(
+            Map.of("message", ex.getReason() == null ? "Request failed" : ex.getReason())
+        );
+    }
+
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleAuthenticationException(AuthenticationCredentialsNotFoundException ex) {
+    public ResponseEntity<Map<String, String>> handleAuthenticationException(
+        AuthenticationCredentialsNotFoundException ex
+    ) {
         Map<String, String> response = new HashMap<>();
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, String>> handleAccessDeniedException(AccessDeniedException ex) {
+    public ResponseEntity<Map<String, String>> handleAccessDeniedException(
+        AccessDeniedException ex
+    ) {
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Access denied: Bạn không có quyền truy cập hoặc thực hiện thao tác này.");
+        response.put(
+            "message",
+            "Access denied: Bạn không có quyền truy cập hoặc thực hiện thao tác này."
+        );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(
+        IllegalArgumentException ex
+    ) {
         Map<String, String> response = new HashMap<>();
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalStateException(IllegalStateException ex) {
+    public ResponseEntity<Map<String, String>> handleIllegalStateException(
+        IllegalStateException ex
+    ) {
         Map<String, String> response = new HashMap<>();
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(
+        MethodArgumentNotValidException ex
+    ) {
         Map<String, String> response = new HashMap<>();
         FieldError firstError = ex.getBindingResult().getFieldError();
-        String errorMessage = firstError != null ? firstError.getDefaultMessage() : "Validation error";
+        String errorMessage =
+            firstError != null ? firstError.getDefaultMessage() : "Validation error";
         response.put("message", errorMessage);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
@@ -62,7 +84,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         Map<String, String> response = new HashMap<>();
-        response.put("message", ex.getMessage() != null ? ex.getMessage() : "Internal server error");
+        response.put(
+            "message",
+            ex.getMessage() != null ? ex.getMessage() : "Internal server error"
+        );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

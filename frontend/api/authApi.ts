@@ -1,8 +1,5 @@
 import { apiClient } from "../services/api";
-import type {
-  UpdateProfileRequest,
-  UserResponse,
-} from "../types/auth";
+import type { UpdateProfileRequest, UserResponse } from "../types/auth";
 
 /**
  * POST /api/auth/exchange
@@ -43,13 +40,9 @@ export async function updateProfile(
   userId: number,
   payload: UpdateProfileRequest,
 ): Promise<UserResponse> {
-  const { data } = await apiClient.put<UserResponse>(
-    "/users/profile",
-    payload,
-    {
-      params: { userId },
-    },
-  );
+  const { data } = await apiClient.put<UserResponse>("/users/profile", payload, {
+    params: { userId },
+  });
   return data;
 }
 

@@ -15,7 +15,11 @@
   box-sizing: border-box;
   overflow-y: auto;
   z-index: 50;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 .admin-sidebar-header {

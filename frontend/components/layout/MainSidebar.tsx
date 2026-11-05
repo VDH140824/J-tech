@@ -7,7 +7,13 @@ import "./MainSidebar.css";
 // SVG Graphic Component for logo
 function DekiruLogoIcon() {
   return (
-    <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="34"
+      height="34"
+      viewBox="0 0 40 40"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M20 3C20 3 23 9.5 28.5 9.5C34 9.5 37 14 34.5 19.5C32 25 26.5 26.5 26.5 26.5C26.5 26.5 27 33 22.5 35.5C18 38 14 34.5 14 34.5C14 34.5 9.5 36.5 6 32.5C2.5 28.5 6.5 23.5 6.5 23.5C6.5 23.5 2.5 18 6 13C9.5 8 15 10 15 10C15 10 16.5 3 20 3Z"
         fill="#FF4B72"
@@ -23,8 +29,18 @@ function DekiruLogoIcon() {
             fill="#FF4B72"
           />
         ))}
-        <circle cx="0" cy="0" r="3.5" fill="#FFF5F7" />
-        <circle cx="0" cy="0" r="2" fill="#FF8CA3" />
+        <circle
+          cx="0"
+          cy="0"
+          r="3.5"
+          fill="#FFF5F7"
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r="2"
+          fill="#FF8CA3"
+        />
       </g>
     </svg>
   );
@@ -42,7 +58,7 @@ function SidebarCatDecoration() {
   );
 }
 
-export function MainSidebar() {
+export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
@@ -52,7 +68,7 @@ export function MainSidebar() {
   const normalizedRole = user?.role?.trim().toUpperCase();
   const normalizedRoleId = String(user?.roleId ?? "");
   const isAdmin =
-    normalizedRoleId === "1" ||
+    (!normalizedRole && normalizedRoleId === "3") ||
     normalizedRole === "ADMIN" ||
     normalizedRole === "ROLE_ADMIN";
 
@@ -61,11 +77,14 @@ export function MainSidebar() {
     normalizedRole === "MODERATOR" ||
     normalizedRole === "ROLE_MODERATOR";
 
-  const isHomeActive = location.pathname === "/home" || activeTab === "trang-chu";
+  const isHomeActive = location.pathname === "/home";
 
   return (
     <aside className="dekiru-sidebar">
-      <div className="sidebar-brand" onClick={() => navigate("/home")}>
+      <div
+        className="sidebar-brand"
+        onClick={() => navigate("/home")}
+      >
         <DekiruLogoIcon />
         <div className="brand-titles">
           <span className="dekiru-brand-name">JTech</span>
@@ -75,6 +94,34 @@ export function MainSidebar() {
       <div className="sidebar-tagline">Luyện tiếng Nhật cùng JTech</div>
 
       <nav className="sidebar-nav-menu">
+        {!isAdmin && !isModerator && (
+          <>
+            <button type="button" className={`nav-link-btn ${location.pathname === "/streak" ? "active" : ""}`} onClick={() => navigate("/streak")}>
+              <span className="nav-link-icon">🔥</span><span className="nav-link-text">Chuỗi ngày học</span>
+            </button>
+            <button
+              type="button"
+              className={`nav-link-btn ${["/store", "/inventory"].includes(location.pathname) ? "active" : ""}`}
+              onClick={() => navigate("/store")}
+            >
+              <span className="nav-link-icon">🎁</span>
+              <span className="nav-link-text">Cửa hàng đổi quà</span>
+            </button>
+          </>
+        )}
+        {(normalizedRole === "STUDENT" ||
+          normalizedRole === "ROLE_STUDENT" ||
+          (!normalizedRole && normalizedRoleId === "1")) && (
+          <button
+            type="button"
+            className={`nav-link-btn ${location.pathname === "/feedback" ? "active" : ""}`}
+            aria-haspopup="dialog"
+            onClick={onOpenFeedback}
+          >
+            <span className="nav-link-icon">💬</span>
+            <span className="nav-link-text">Phản hồi & Báo lỗi</span>
+          </button>
+        )}
         <button
           type="button"
           className={`nav-link-btn ${isHomeActive ? "active" : ""}`}

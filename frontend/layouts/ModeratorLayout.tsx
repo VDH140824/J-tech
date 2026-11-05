@@ -26,14 +26,18 @@ export function ModeratorLayout({
   return (
     <div className="admin-dekiru-layout">
       {/* Shared Moderator Sidebar with Dekiru theme */}
-      <ModeratorSidebar activeTab={activeTab} onSelectTab={onSelectTab} />
+      <ModeratorSidebar
+        activeTab={activeTab}
+        onSelectTab={onSelectTab}
+      />
 
       {/* Main Right Area: Topbar + Page Content */}
       <div className="admin-dekiru-workspace">
-        <ModeratorTopbar title={title} breadcrumb={breadcrumb} />
-        <main className="admin-dekiru-page-body">
-          {children ?? <Outlet />}
-        </main>
+        <ModeratorTopbar
+          title={title}
+          breadcrumb={breadcrumb}
+        />
+        <main className="admin-dekiru-page-body">{children ?? <Outlet />}</main>
       </div>
     </div>
   );

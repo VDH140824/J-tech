@@ -2,8 +2,7 @@ import { AuthShell, GoogleButton } from "../../components/ui/auth";
 
 export function LoginPage() {
   const handleGoogleSignIn = () => {
-    const backendUrl =
-      import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api";
+    const backendUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api";
     window.location.href = `${backendUrl}/oauth2/authorization/google`;
   };
 
@@ -19,12 +18,13 @@ export function LoginPage() {
             color: "rgba(241, 245, 249, 0.78)",
             marginTop: 4,
           }}
-        >
-          
-        </p>
+        ></p>
       }
     >
-      <GoogleButton type="button" onClick={handleGoogleSignIn}>
+      <GoogleButton
+        type="button"
+        onClick={handleGoogleSignIn}
+      >
         Tiếp tục với Google
       </GoogleButton>
     </AuthShell>

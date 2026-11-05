@@ -92,7 +92,8 @@ export function PendingUsersPage() {
         <div className="admin-header-titles">
           <h2 className="admin-main-title">Duyệt tài khoản người dùng</h2>
           <p className="admin-main-subtitle">
-            Kiểm tra và phê duyệt các tài khoản Google mới đăng ký trước khi cấp quyền truy cập hệ thống.
+            Kiểm tra và phê duyệt các tài khoản Google mới đăng ký trước khi cấp quyền truy cập hệ
+            thống.
           </p>
         </div>
         <button
@@ -143,7 +144,10 @@ export function PendingUsersPage() {
               <tbody>
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="admin-table-empty">
+                    <td
+                      colSpan={6}
+                      className="admin-table-empty"
+                    >
                       🎉 Không có tài khoản nào đang chờ duyệt.
                     </td>
                   </tr>
@@ -183,7 +187,10 @@ export function PendingUsersPage() {
                           </span>
                         </td>
 
-                        <td className="cell-actions" style={{ textAlign: "right" }}>
+                        <td
+                          className="cell-actions"
+                          style={{ textAlign: "right" }}
+                        >
                           <div className="action-buttons-wrap right-align">
                             <button
                               type="button"

@@ -1,5 +1,8 @@
 package com.jtech.security;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.jtech.entity.Role;
 import com.jtech.entity.User;
 import com.jtech.entity.UserStatus;
@@ -8,17 +11,13 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.io.IOException;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class JwtAuthenticationFilterTest {
 
@@ -51,7 +50,8 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void testDoFilterInternal_SingleDbQueryAndSuccessfulAuthentication() throws ServletException, IOException {
+    void testDoFilterInternal_SingleDbQueryAndSuccessfulAuthentication()
+        throws ServletException, IOException {
         String token = "valid.jwt.token";
         String email = "student@jtech.edu.vn";
 
@@ -68,8 +68,15 @@ class JwtAuthenticationFilterTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         org.springframework.security.core.userdetails.User userDetails =
-                new org.springframework.security.core.userdetails.User(
-                        email, "", java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_STUDENT")));
+            new org.springframework.security.core.userdetails.User(
+                email,
+                "",
+                java.util.List.of(
+                    new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        "ROLE_STUDENT"
+                    )
+                )
+            );
         when(customUserDetailsService.buildUserDetails(user)).thenReturn(userDetails);
 
         filter.doFilterInternal(request, response, filterChain);
@@ -86,14 +93,20 @@ class JwtAuthenticationFilterTest {
         // Verify authentication is set in SecurityContext
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
         assertEquals(email, SecurityContextHolder.getContext().getAuthentication().getName());
-        assertTrue(SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-                .stream().anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT")));
+        assertTrue(
+            SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"))
+        );
 
         verify(filterChain, times(1)).doFilter(request, response);
     }
 
     @Test
-    void testDoFilterInternal_UserNotActive_NotAuthenticated() throws ServletException, IOException {
+    void testDoFilterInternal_UserNotActive_NotAuthenticated()
+        throws ServletException, IOException {
         String token = "valid.jwt.token";
         String email = "pending@jtech.edu.vn";
 

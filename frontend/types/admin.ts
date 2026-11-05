@@ -37,4 +37,3 @@ export interface AdminUsersPageResponse {
   size: number;
   last: boolean;
 }
-

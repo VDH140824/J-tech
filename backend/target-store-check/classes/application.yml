@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: jtech-backend
+
+  mail:
+    properties:
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/jtech?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=utf8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      # Schema is managed by doc/jtech.sql; prevent Hibernate from changing other tables.
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 861857930033-6bjua4o1gtsetdq18tr1qksf9g7i8lea.apps.googleusercontent.com
+            client-secret: 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
+            redirect-uri: "http://localhost:8080/api/login/oauth2/code/google"
+            scope:
+              - email
+              - profile
+
+cloudinary:
+  cloud-name: keticbsk
+  api-key: 783866647651171
+  api-secret: dwBfbS4euFzKILrkP3g7y7sWkbM
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+app:
+  feedback:
+    mail-from: ${APP_FEEDBACK_MAIL_FROM:no-reply@jtech.local}
+  jwt:
+    secret: ${APP_JWT_SECRET:jtech-japanese-learning-website-jwt-secret-key-2026}
+    expiration-ms: 1800000 # 30 minutes
+  cookie:
+    secure: ${APP_COOKIE_SECURE:false}
+    same-site: Lax
+    path: /api/auth
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: INFO

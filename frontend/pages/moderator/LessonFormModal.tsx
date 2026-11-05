@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import type { LessonFormInput, LessonSummary } from "../../api/lessonApi";
 import { kanjiErrorMessage } from "./kanji/kanjiMessages";
 import { lessonDocuments } from "./kanji/lessonDocuments";
+import { useState, useEffect } from "react";
+import type { LessonFormInput, LessonSummary, SkillType } from "../../api/lessonApi";
+import { parseLessonDocuments, serializeDocumentUrls } from "../../utils/lessonDocuments";
 
 interface LessonFormModalProps {
   isOpen: boolean;
@@ -9,6 +12,7 @@ interface LessonFormModalProps {
   onSubmit: (formData: LessonFormInput, documentFile?: File) => Promise<void>;
   editingLesson: LessonSummary | null;
   skillLabel: string;
+  skillType?: SkillType;
   skillColor?: string;
   defaultLessonNo?: number;
   vietnameseOnly?: boolean;
@@ -20,10 +24,12 @@ export function LessonFormModal({
   onSubmit,
   editingLesson,
   skillLabel,
+  skillType,
   skillColor = "#0d9488",
   defaultLessonNo = 1,
   vietnameseOnly = false,
 }: LessonFormModalProps) {
+  const isVocabulary = skillType === "VOCABULARY";
   const [formData, setFormData] = useState<LessonFormInput>({
     lessonNo: defaultLessonNo,
     title: "",
@@ -45,6 +51,11 @@ export function LessonFormModal({
         title: editingLesson.title,
         description: editingLesson.description || "",
         documents: editingLesson.documents,
+        documents: isVocabulary
+          ? parseLessonDocuments(editingLesson.documents)
+              .map((document) => document.url)
+              .join("\n")
+          : editingLesson.documents || "",
         displayOrder: editingLesson.displayOrder,
         status: editingLesson.status,
       });
@@ -61,6 +72,7 @@ export function LessonFormModal({
     setDocumentFile(undefined);
     setDocumentLink("");
   }, [editingLesson, defaultLessonNo, isOpen]);
+  }, [editingLesson, defaultLessonNo, isOpen, isVocabulary]);
 
   if (!isOpen) return null;
 
@@ -111,11 +123,21 @@ export function LessonFormModal({
             { name: "Tài liệu tham khảo", url: documentLink.trim() },
           ])
         : formData.documents?.trim() || undefined;
+    let documents = formData.documents?.trim() || undefined;
+    if (isVocabulary) {
+      try {
+        documents = serializeDocumentUrls(formData.documents || "", editingLesson?.documents);
+      } catch (error) {
+        setErrorMsg(error instanceof Error ? error.message : "URL tài liệu không hợp lệ.");
+        return;
+      }
+    }
     const cleanPayload: LessonFormInput = {
       ...formData,
       title: formData.title.trim(),
       description: formData.description?.trim() || undefined,
       documents: vietnameseOnly ? documents : undefined,
+      documents,
     };
 
     try {
@@ -147,7 +169,10 @@ export function LessonFormModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={() => !submitting && onClose()}>
+    <div
+      className="modal-overlay"
+      onClick={() => !submitting && onClose()}
+    >
       <div
         className="modal-card"
         style={{ maxWidth: "600px" }}
@@ -176,6 +201,11 @@ export function LessonFormModal({
                 {editingLesson
                   ? "Chỉnh sửa bài học"
                   : `Thêm bài học mới (${skillLabel})`}
+              <h3
+                className="modal-title"
+                style={{ margin: 0 }}
+              >
+                {editingLesson ? "Chỉnh sửa bài học" : `Thêm bài học mới (${skillLabel})`}
               </h3>
               <p
                 style={{
@@ -225,7 +255,10 @@ export function LessonFormModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="modal-form-body">
+        <form
+          onSubmit={handleSubmit}
+          className="modal-form-body"
+        >
           {/* Row 1: lesson_no & display_order */}
           <div className="modal-grid-2">
             <div className="modal-field-group">
@@ -244,6 +277,7 @@ export function LessonFormModal({
                     e.target.value === ""
                       ? 0
                       : Math.max(0, parseInt(e.target.value, 10) || 0);
+                    e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0);
                   setFormData({ ...formData, lessonNo: num });
                 }}
                 required
@@ -273,6 +307,7 @@ export function LessonFormModal({
                       e.target.value === ""
                         ? 0
                         : Math.max(0, parseInt(e.target.value, 10) || 0),
+                      e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0),
                   })
                 }
               />
@@ -447,6 +482,35 @@ export function LessonFormModal({
                 </p>
               )}
               </>
+              <label
+                className="modal-label"
+                htmlFor="lesson-documents"
+              >
+                {isVocabulary ? "URL tài liệu PDF" : "Tài liệu đính kèm (documents)"}
+              </label>
+              {isVocabulary ? (
+                <>
+                  <textarea
+                    id="lesson-documents"
+                    className="modal-textarea"
+                    rows={3}
+                    placeholder="https://res.cloudinary.com/.../bai-1.pdf"
+                    value={formData.documents || ""}
+                    onChange={(e) => setFormData({ ...formData, documents: e.target.value })}
+                  />
+                  <span className="mod-content-form-hint">
+                    Dán URL PDF trên Cloudinary. Mỗi dòng một tài liệu.
+                  </span>
+                </>
+              ) : (
+                <input
+                  id="lesson-documents"
+                  type="text"
+                  className="modal-input"
+                  placeholder="Link tài liệu hoặc ghi chú file JSON..."
+                  value={formData.documents || ""}
+                  onChange={(e) => setFormData({ ...formData, documents: e.target.value })}
+                />
               )}
             </div>
           </div>

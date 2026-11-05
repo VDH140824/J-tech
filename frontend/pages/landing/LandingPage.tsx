@@ -13,7 +13,8 @@ const practiceCards = [
     icon: "あ",
     title: "Từ vựng",
     subtitle: "Vocabulary",
-    description: "Luyện tập từ vựng tiếng Nhật theo chủ đề và cấp độ, gắn liền với ngữ cảnh thực tế ngành IT.",
+    description:
+      "Luyện tập từ vựng tiếng Nhật theo chủ đề và cấp độ, gắn liền với ngữ cảnh thực tế ngành IT.",
     color: "#38BDF8",
     glow: "rgba(56, 189, 248, 0.4)",
   },
@@ -21,7 +22,8 @@ const practiceCards = [
     icon: "文",
     title: "Ngữ pháp",
     subtitle: "Grammar",
-    description: "Ôn tập và luyện tập ngữ pháp qua các bài tập có cấu trúc rõ ràng, thực tế trong dự án phần mềm.",
+    description:
+      "Ôn tập và luyện tập ngữ pháp qua các bài tập có cấu trúc rõ ràng, thực tế trong dự án phần mềm.",
     color: "#A855F7",
     glow: "rgba(168, 85, 247, 0.4)",
   },
@@ -29,7 +31,8 @@ const practiceCards = [
     icon: "漢",
     title: "Hán tự",
     subtitle: "Kanji Chuyên ngành",
-    description: "Luyện tập và ghi nhớ Kanji theo bộ thủ, nét viết và ý nghĩa trong tài liệu kỹ thuật IT.",
+    description:
+      "Luyện tập và ghi nhớ Kanji theo bộ thủ, nét viết và ý nghĩa trong tài liệu kỹ thuật IT.",
     color: "#F97316",
     glow: "rgba(249, 115, 22, 0.4)",
   },
@@ -37,7 +40,8 @@ const practiceCards = [
     icon: "🎧",
     title: "Luyện nghe",
     subtitle: "Listening Lab",
-    description: "Luyện nghe hiểu tiếng Nhật qua các đoạn hội thoại họp dự án, Standup Meeting và đời sống.",
+    description:
+      "Luyện nghe hiểu tiếng Nhật qua các đoạn hội thoại họp dự án, Standup Meeting và đời sống.",
     color: "#10B981",
     glow: "rgba(16, 185, 129, 0.4)",
   },
@@ -45,7 +49,8 @@ const practiceCards = [
     icon: "📖",
     title: "Luyện đọc",
     subtitle: "Reading Specs",
-    description: "Luyện đọc hiểu tiếng Nhật qua tài liệu đặc tả yêu cầu (SRS), task ticket và tài liệu chuyên ngành.",
+    description:
+      "Luyện đọc hiểu tiếng Nhật qua tài liệu đặc tả yêu cầu (SRS), task ticket và tài liệu chuyên ngành.",
     color: "#F59E0B",
     glow: "rgba(245, 158, 11, 0.4)",
   },
@@ -53,7 +58,8 @@ const practiceCards = [
     icon: "🎤",
     title: "Luyện nói",
     subtitle: "Speaking Practice",
-    description: "Thực hành nói và giao tiếp tiếng Nhật, rèn phát âm, phản xạ và ngữ điệu tự nhiên chuẩn Nhật.",
+    description:
+      "Thực hành nói và giao tiếp tiếng Nhật, rèn phát âm, phản xạ và ngữ điệu tự nhiên chuẩn Nhật.",
     color: "#EC4899",
     glow: "rgba(236, 72, 153, 0.4)",
   },
@@ -61,7 +67,8 @@ const practiceCards = [
     icon: "🎮",
     title: "Trò chơi học tập",
     subtitle: "Practice Games",
-    description: "Củng cố kiến thức qua các mini-game tương tác hấp dẫn, tăng phản xạ từ vựng và Kanji.",
+    description:
+      "Củng cố kiến thức qua các mini-game tương tác hấp dẫn, tăng phản xạ từ vựng và Kanji.",
     color: "#06B6D4",
     glow: "rgba(6, 182, 212, 0.4)",
   },
@@ -69,7 +76,8 @@ const practiceCards = [
     icon: "🤖",
     title: "Luyện nói với AI",
     subtitle: "AI Speaking Bot",
-    description: "Thực hành hội thoại với trợ lý AI thông minh, nhận phân tích phát âm và chỉnh sửa thời gian thực.",
+    description:
+      "Thực hành hội thoại với trợ lý AI thông minh, nhận phân tích phát âm và chỉnh sửa thời gian thực.",
     color: "#6366F1",
     glow: "rgba(99, 102, 241, 0.4)",
   },
@@ -79,32 +87,38 @@ const benefits = [
   {
     icon: "📅",
     title: "Phù hợp lịch học IT",
-    description: "Được thiết kế linh hoạt phù hợp với cường độ code và lịch học dày của sinh viên IT FPT University.",
+    description:
+      "Được thiết kế linh hoạt phù hợp với cường độ code và lịch học dày của sinh viên IT FPT University.",
   },
   {
     icon: "📝",
     title: "Luyện tập theo từng bài",
-    description: "Nội dung chia theo lộ trình từng sprint rõ ràng, dễ theo dõi và luyện tập có hệ thống.",
+    description:
+      "Nội dung chia theo lộ trình từng sprint rõ ràng, dễ theo dõi và luyện tập có hệ thống.",
   },
   {
     icon: "🧩",
     title: "Chia nhỏ kiến thức",
-    description: "Từ vựng, ngữ pháp, Kanji được module hóa thành các micro-lessons dễ tiếp thu và ôn luyện.",
+    description:
+      "Từ vựng, ngữ pháp, Kanji được module hóa thành các micro-lessons dễ tiếp thu và ôn luyện.",
   },
   {
     icon: "🔄",
     title: "Ôn tập chủ động",
-    description: "Hệ thống thuật toán lặp lại ngắt quãng (Spaced Repetition) thông minh giúp ghi nhớ lâu bền.",
+    description:
+      "Hệ thống thuật toán lặp lại ngắt quãng (Spaced Repetition) thông minh giúp ghi nhớ lâu bền.",
   },
   {
     icon: "📊",
     title: "Theo dõi tiến độ thông minh",
-    description: "Dashboard trực quan với biểu đồ phân tích thời gian thực giúp bạn kiểm soát mục tiêu học tập.",
+    description:
+      "Dashboard trực quan với biểu đồ phân tích thời gian thực giúp bạn kiểm soát mục tiêu học tập.",
   },
   {
     icon: "🤖",
     title: "AI tương tác giọng nói",
-    description: "Áp dụng công nghệ nhận diện giọng nói AI tiên tiến để luyện phát âm chuẩn người bản xứ.",
+    description:
+      "Áp dụng công nghệ nhận diện giọng nói AI tiên tiến để luyện phát âm chuẩn người bản xứ.",
   },
 ];
 
@@ -143,14 +157,24 @@ function BannerSlider() {
   };
 
   return (
-    <div className="banner-slider" aria-label="Banner quảng bá J-Tech">
+    <div
+      className="banner-slider"
+      aria-label="Banner quảng bá J-Tech"
+    >
       <div
         className="banner-track"
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
         {banners.map((src, i) => (
-          <div className="banner-slide" key={i}>
-            <img src={src} alt={`Banner J-Tech Cyber ${i + 1}`} className="banner-img" />
+          <div
+            className="banner-slide"
+            key={i}
+          >
+            <img
+              src={src}
+              alt={`Banner J-Tech Cyber ${i + 1}`}
+              className="banner-img"
+            />
             <div className="banner-overlay-gradient" />
           </div>
         ))}
@@ -173,7 +197,10 @@ function BannerSlider() {
 
 function CyberAmbient() {
   return (
-    <div className="cyber-ambient" aria-hidden="true">
+    <div
+      className="cyber-ambient"
+      aria-hidden="true"
+    >
       {/* Tech Grid */}
       <div className="cyber-grid" />
 
@@ -184,13 +211,23 @@ function CyberAmbient() {
 
       {/* Ambient Code Lines */}
       <div className="cyber-code cyber-code--1">
-        <code>{"const ano = \"JavaScript\";\nwarding: <errinc>;\nopclude <string>;\npclude <string>;"}</code>
+        <code>
+          {'const ano = "JavaScript";\nwarding: <errinc>;\nopclude <string>;\npclude <string>;'}
+        </code>
       </div>
       <div className="cyber-code cyber-code--2">
-        <code>{"int main() {\n  public defating func() {\n    const k = ...\n    codenitite array(o...;\n    if (dn == 0) {\n      system.out.println(\"J-Tech\");\n    }\n  }\n}"}</code>
+        <code>
+          {
+            'int main() {\n  public defating func() {\n    const k = ...\n    codenitite array(o...;\n    if (dn == 0) {\n      system.out.println("J-Tech");\n    }\n  }\n}'
+          }
+        </code>
       </div>
       <div className="cyber-code cyber-code--3">
-        <code>{"public antsole ga array(fano) {\n  asskats<tnct\"cebc...;\n  continue.get\"affi...;\n  console.string;\n}"}</code>
+        <code>
+          {
+            'public antsole ga array(fano) {\n  asskats<tnct"cebc...;\n  continue.get"affi...;\n  console.string;\n}'
+          }
+        </code>
       </div>
 
       {/* Ambient Binary Matrix Columns */}
@@ -267,14 +304,21 @@ export function LandingPage() {
   };
 
   return (
-    <div className="lp-root" id="top">
+    <div
+      className="lp-root"
+      id="top"
+    >
       {/* Global Ambient Cyber Layer */}
       <CyberAmbient />
 
       {/* ── Navbar ── */}
       <header className={`lp-nav${scrolled ? " lp-nav--scrolled" : ""}`}>
         <div className="lp-nav-inner">
-          <button className="lp-logo" onClick={() => scrollTo("#top")} type="button">
+          <button
+            className="lp-logo"
+            onClick={() => scrollTo("#top")}
+            type="button"
+          >
             <span className="lp-logo-mark">
               <span className="lp-bracket">&#123;</span>
               <span className="lp-j">J</span>
@@ -285,7 +329,10 @@ export function LandingPage() {
             </span>
           </button>
 
-          <nav className="lp-nav-links" aria-label="Điều hướng chính">
+          <nav
+            className="lp-nav-links"
+            aria-label="Điều hướng chính"
+          >
             {navLinks.map((l) => (
               <button
                 key={l.label}
@@ -298,7 +345,11 @@ export function LandingPage() {
             ))}
           </nav>
 
-          <button className="lp-nav-cta" onClick={() => navigate("/login")} type="button">
+          <button
+            className="lp-nav-cta"
+            onClick={() => navigate("/login")}
+            type="button"
+          >
             <span>Cùng nhau khám phá</span>
             <span className="lp-nav-cta-arrow">›</span>
           </button>
@@ -309,7 +360,9 @@ export function LandingPage() {
             type="button"
             aria-label="Mở menu"
           >
-            <span /><span /><span />
+            <span />
+            <span />
+            <span />
           </button>
         </div>
 
@@ -325,7 +378,11 @@ export function LandingPage() {
                 {l.label}
               </button>
             ))}
-            <button className="lp-nav-cta lp-mobile-cta" onClick={() => navigate("/login")} type="button">
+            <button
+              className="lp-nav-cta lp-mobile-cta"
+              onClick={() => navigate("/login")}
+              type="button"
+            >
               <span>Cùng nhau khám phá</span>
               <span className="lp-nav-cta-arrow">›</span>
             </button>
@@ -334,7 +391,10 @@ export function LandingPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="lp-hero" aria-label="Giới thiệu J-Tech">
+      <section
+        className="lp-hero"
+        aria-label="Giới thiệu J-Tech"
+      >
         <div className="lp-hero-content">
           {/* Left Column */}
           <div className="lp-hero-left">
@@ -354,13 +414,15 @@ export function LandingPage() {
               <div className="lp-hero-desc-item">
                 <span className="lp-bullet-dot" />
                 <p>
-                  Nền tảng luyện tập tiếng Nhật dành cho sinh viên IT tại FPT University, tiếng Nhật IT, giao tiếp để dự án, thuật ngữ chuyên ngành.
+                  Nền tảng luyện tập tiếng Nhật dành cho sinh viên IT tại FPT University, tiếng Nhật
+                  IT, giao tiếp để dự án, thuật ngữ chuyên ngành.
                 </p>
               </div>
               <div className="lp-hero-desc-item">
                 <span className="lp-bullet-dot" />
                 <p>
-                  Luyện tập từ vựng, ngữ pháp, Kanji, nghe, đọc và nói theo cách trực quan, chủ động và phù hợp với hành trình học tập của sinh viên IT.
+                  Luyện tập từ vựng, ngữ pháp, Kanji, nghe, đọc và nói theo cách trực quan, chủ động
+                  và phù hợp với hành trình học tập của sinh viên IT.
                 </p>
               </div>
             </div>
@@ -373,7 +435,12 @@ export function LandingPage() {
                 type="button"
               >
                 <span>Cùng nhau khám phá</span>
-                <span className="lp-cta-arrow" aria-hidden="true">→</span>
+                <span
+                  className="lp-cta-arrow"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
               </button>
             </div>
 
@@ -405,17 +472,25 @@ export function LandingPage() {
           </div>
 
           {/* Right Column – Interactive Cyber HUD */}
-          <div className="lp-hero-right" aria-hidden="true">
+          <div
+            className="lp-hero-right"
+            aria-hidden="true"
+          >
             {/* Main Cyber Card */}
             <div className="lp-hero-card lp-hero-card--cyber">
               {/* Card Header */}
               <div className="lp-hero-card-header">
                 <div className="lp-practice-badge">J-Tech</div>
                 <span className="lp-practice-label">Luyện tập hôm nay</span>
-                
+
                 {/* Audio Wave Visualizer */}
                 <div className="lp-soundwave">
-                  <span /><span /><span /><span /><span /><span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
                 </div>
 
                 {/* Cyber Radar */}
@@ -434,7 +509,10 @@ export function LandingPage() {
                     <span className="lp-progress-pct lp-progress-pct--orange">78%</span>
                   </div>
                   <div className="lp-progress-bar">
-                    <div className="lp-progress-fill lp-progress-fill--orange" style={{ width: "78%" }} />
+                    <div
+                      className="lp-progress-fill lp-progress-fill--orange"
+                      style={{ width: "78%" }}
+                    />
                   </div>
                 </div>
 
@@ -444,7 +522,10 @@ export function LandingPage() {
                     <span className="lp-progress-pct lp-progress-pct--pink">54%</span>
                   </div>
                   <div className="lp-progress-bar">
-                    <div className="lp-progress-fill lp-progress-fill--pink" style={{ width: "54%" }} />
+                    <div
+                      className="lp-progress-fill lp-progress-fill--pink"
+                      style={{ width: "54%" }}
+                    />
                   </div>
                 </div>
 
@@ -454,7 +535,10 @@ export function LandingPage() {
                     <span className="lp-progress-pct lp-progress-pct--purple">91%</span>
                   </div>
                   <div className="lp-progress-bar">
-                    <div className="lp-progress-fill lp-progress-fill--purple" style={{ width: "91%" }} />
+                    <div
+                      className="lp-progress-fill lp-progress-fill--purple"
+                      style={{ width: "91%" }}
+                    />
                   </div>
                 </div>
               </div>
@@ -473,11 +557,36 @@ export function LandingPage() {
 
               {/* PCB Circuit Trace SVG */}
               <div className="lp-circuit-svg">
-                <svg width="120" height="40" viewBox="0 0 120 40" fill="none">
-                  <path d="M 0 20 H 40 L 60 5 H 100 L 120 20" stroke="rgba(56, 189, 248, 0.7)" strokeWidth="2" strokeDasharray="3 3" />
-                  <circle cx="10" cy="20" r="3" fill="#38BDF8" />
-                  <circle cx="60" cy="5" r="3" fill="#00F0FF" />
-                  <circle cx="110" cy="20" r="3" fill="#38BDF8" />
+                <svg
+                  width="120"
+                  height="40"
+                  viewBox="0 0 120 40"
+                  fill="none"
+                >
+                  <path
+                    d="M 0 20 H 40 L 60 5 H 100 L 120 20"
+                    stroke="rgba(56, 189, 248, 0.7)"
+                    strokeWidth="2"
+                    strokeDasharray="3 3"
+                  />
+                  <circle
+                    cx="10"
+                    cy="20"
+                    r="3"
+                    fill="#38BDF8"
+                  />
+                  <circle
+                    cx="60"
+                    cy="5"
+                    r="3"
+                    fill="#00F0FF"
+                  />
+                  <circle
+                    cx="110"
+                    cy="20"
+                    r="3"
+                    fill="#38BDF8"
+                  />
                 </svg>
               </div>
 
@@ -488,10 +597,14 @@ export function LandingPage() {
                   <div className="lp-chip-glow" />
                 </div>
                 <div className="lp-chip-pins lp-chip-pins--left">
-                  <i /><i /><i />
+                  <i />
+                  <i />
+                  <i />
                 </div>
                 <div className="lp-chip-pins lp-chip-pins--right">
-                  <i /><i /><i />
+                  <i />
+                  <i />
+                  <i />
                 </div>
               </div>
             </div>
@@ -508,7 +621,11 @@ export function LandingPage() {
             {/* 3D Cyber Anime Coder & Robot Illustration */}
             <div className="lp-coder-visual">
               <div className="lp-coder-glow" />
-              <img src={cyberCoder} alt="Sinh viên IT và AI luyện tập tiếng Nhật" className="lp-coder-img" />
+              <img
+                src={cyberCoder}
+                alt="Sinh viên IT và AI luyện tập tiếng Nhật"
+                className="lp-coder-img"
+              />
               <div className="lp-coder-hologram">
                 <div className="lp-holo-tag">AI CORE ONLINE</div>
                 <div className="lp-holo-status">● SYNC 100%</div>
@@ -519,7 +636,10 @@ export function LandingPage() {
       </section>
 
       {/* ── Banner Section ── */}
-      <section className="lp-banner-section" aria-label="Ảnh bìa">
+      <section
+        className="lp-banner-section"
+        aria-label="Ảnh bìa"
+      >
         <div className="lp-banner-frame">
           <div className="lp-banner-top-bar">
             <span className="lp-dot-red" />
@@ -532,11 +652,18 @@ export function LandingPage() {
       </section>
 
       {/* ── About Section ── */}
-      <section className="lp-section lp-about" id="about" aria-labelledby="about-title">
+      <section
+        className="lp-section lp-about"
+        id="about"
+        aria-labelledby="about-title"
+      >
         <div className="lp-container">
           <div className="lp-about-grid">
             {/* Holographic Core Reactor */}
-            <div className="lp-about-art" aria-hidden="true">
+            <div
+              className="lp-about-art"
+              aria-hidden="true"
+            >
               <div className="lp-reactor">
                 <div className="lp-reactor-ring lp-reactor-ring--outer" />
                 <div className="lp-reactor-ring lp-reactor-ring--mid" />
@@ -545,7 +672,10 @@ export function LandingPage() {
                   <div className="lp-reactor-pulse" />
                 </div>
                 <div className="lp-reactor-particles">
-                  <span /><span /><span /><span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
                 </div>
               </div>
               <div className="lp-about-tag lp-about-tag--1">
@@ -564,15 +694,22 @@ export function LandingPage() {
                 <span className="lp-section-eyebrow-line" />
                 <span>J-Tech là gì?</span>
               </div>
-              <h2 id="about-title" className="lp-section-title">
+              <h2
+                id="about-title"
+                className="lp-section-title"
+              >
                 Môi trường luyện tập tiếng Nhật <br />
                 <em>dành riêng</em> cho sinh viên IT
               </h2>
               <p className="lp-about-desc">
-                J-Tech được xây dựng để hỗ trợ sinh viên IT tại FPT University luyện tập và củng cố tiếng Nhật thông qua hệ thống bài tập và nội dung tương tác chuyên ngành công nghệ thông tin.
+                J-Tech được xây dựng để hỗ trợ sinh viên IT tại FPT University luyện tập và củng cố
+                tiếng Nhật thông qua hệ thống bài tập và nội dung tương tác chuyên ngành công nghệ
+                thông tin.
               </p>
               <p className="lp-about-desc">
-                Mục tiêu không phải thay thế lớp học, mà tạo ra một môi trường để sinh viên có thể <strong>chủ động luyện tập và ôn lại kiến thức</strong> ngoài giờ học — theo nhịp độ và lịch học của riêng bạn.
+                Mục tiêu không phải thay thế lớp học, mà tạo ra một môi trường để sinh viên có thể{" "}
+                <strong>chủ động luyện tập và ôn lại kiến thức</strong> ngoài giờ học — theo nhịp độ
+                và lịch học của riêng bạn.
               </p>
 
               <div className="lp-about-pills">
@@ -595,7 +732,11 @@ export function LandingPage() {
       </section>
 
       {/* ── Practice Features Section ── */}
-      <section className="lp-section lp-features" id="features" aria-labelledby="features-title">
+      <section
+        className="lp-section lp-features"
+        id="features"
+        aria-labelledby="features-title"
+      >
         <div className="lp-container">
           <div className="lp-section-header lp-section-header--center">
             <div className="lp-section-eyebrow">
@@ -603,11 +744,15 @@ export function LandingPage() {
               <span>Luyện tập cùng J-Tech</span>
               <span className="lp-section-eyebrow-line" />
             </div>
-            <h2 id="features-title" className="lp-section-title">
+            <h2
+              id="features-title"
+              className="lp-section-title"
+            >
               Đầy đủ kỹ năng luyện tập <em>tiếng Nhật IT</em>
             </h2>
             <p className="lp-section-desc">
-              Từ từ vựng, ngữ pháp đến Kanji, nghe, đọc, nói — J-Tech tổng hợp mọi kỹ năng để bạn tự tin làm việc trong các công ty IT Nhật Bản.
+              Từ từ vựng, ngữ pháp đến Kanji, nghe, đọc, nói — J-Tech tổng hợp mọi kỹ năng để bạn tự
+              tin làm việc trong các công ty IT Nhật Bản.
             </p>
           </div>
 
@@ -616,14 +761,16 @@ export function LandingPage() {
               <article
                 className="lp-feature-card"
                 key={card.title}
-                style={{
-                  "--accent-color": card.color,
-                  "--accent-glow": card.glow,
-                } as React.CSSProperties}
+                style={
+                  {
+                    "--accent-color": card.color,
+                    "--accent-glow": card.glow,
+                  } as React.CSSProperties
+                }
               >
                 <div className="lp-card-corner lp-card-corner--tl" />
                 <div className="lp-card-corner lp-card-corner--br" />
-                
+
                 <div className="lp-feature-icon-box">
                   <span className="lp-feature-icon">{card.icon}</span>
                   <div className="lp-feature-icon-glow" />
@@ -645,7 +792,11 @@ export function LandingPage() {
       </section>
 
       {/* ── Benefits / For IT Students ── */}
-      <section className="lp-section lp-benefits" id="benefits" aria-labelledby="benefits-title">
+      <section
+        className="lp-section lp-benefits"
+        id="benefits"
+        aria-labelledby="benefits-title"
+      >
         <div className="lp-container">
           <div className="lp-benefits-grid">
             <div className="lp-benefits-left">
@@ -653,16 +804,23 @@ export function LandingPage() {
                 <span className="lp-section-eyebrow-line" />
                 <span>Dành cho sinh viên IT tại FPT</span>
               </div>
-              <h2 id="benefits-title" className="lp-section-title">
+              <h2
+                id="benefits-title"
+                className="lp-section-title"
+              >
                 Được thiết kế riêng cho <em>hành trình của bạn</em>
               </h2>
               <p className="lp-section-desc">
-                J-Tech hiểu rằng sinh viên IT có lịch học code và dự án dày đặc. Vì vậy nền tảng được tối ưu để bạn luyện tập hiệu quả nhất mà không tốn quá nhiều thời gian.
+                J-Tech hiểu rằng sinh viên IT có lịch học code và dự án dày đặc. Vì vậy nền tảng
+                được tối ưu để bạn luyện tập hiệu quả nhất mà không tốn quá nhiều thời gian.
               </p>
 
               <div className="lp-benefits-list">
                 {benefits.map((b) => (
-                  <div className="lp-benefit-item" key={b.title}>
+                  <div
+                    className="lp-benefit-item"
+                    key={b.title}
+                  >
                     <div className="lp-benefit-icon-wrap">
                       <span className="lp-benefit-icon">{b.icon}</span>
                     </div>
@@ -676,7 +834,10 @@ export function LandingPage() {
             </div>
 
             {/* Interactive Cyber Mockup */}
-            <div className="lp-benefits-art" aria-hidden="true">
+            <div
+              className="lp-benefits-art"
+              aria-hidden="true"
+            >
               <div className="lp-mockup">
                 <div className="lp-mockup-bar">
                   <span className="lp-mockup-dot lp-mockup-dot--red" />
@@ -692,7 +853,10 @@ export function LandingPage() {
 
                   <div className="lp-mockup-week">
                     {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((d, i) => (
-                      <div className="lp-mockup-day" key={d}>
+                      <div
+                        className="lp-mockup-day"
+                        key={d}
+                      >
                         <div
                           className="lp-mockup-bar-fill"
                           style={{ height: `${[45, 75, 60, 95, 80, 50, 70][i]}%` }}
@@ -724,7 +888,10 @@ export function LandingPage() {
                       { name: "Kanji IT - Network & Cloud", score: "84%", level: "PASSED" },
                       { name: "Project Grammar - Git & Scrum", score: "92%", level: "EXCELLENT" },
                     ].map((item) => (
-                      <div className="lp-mockup-recent-item" key={item.name}>
+                      <div
+                        className="lp-mockup-recent-item"
+                        key={item.name}
+                      >
                         <div className="lp-mockup-recent-name-wrap">
                           <span className="lp-recent-dot" />
                           <span>{item.name}</span>
@@ -744,7 +911,10 @@ export function LandingPage() {
       </section>
 
       {/* ── Progress Tracking Section ── */}
-      <section className="lp-section lp-tracking" aria-labelledby="tracking-title">
+      <section
+        className="lp-section lp-tracking"
+        aria-labelledby="tracking-title"
+      >
         <div className="lp-container">
           <div className="lp-section-header lp-section-header--center">
             <div className="lp-section-eyebrow">
@@ -752,11 +922,15 @@ export function LandingPage() {
               <span>Theo dõi tiến độ luyện tập</span>
               <span className="lp-section-eyebrow-line" />
             </div>
-            <h2 id="tracking-title" className="lp-section-title">
+            <h2
+              id="tracking-title"
+              className="lp-section-title"
+            >
               Nắm rõ hành trình <em>luyện tập mỗi ngày</em>
             </h2>
             <p className="lp-section-desc">
-              Theo dõi kết quả, xem thống kê chi tiết và duy trì chuỗi ngày rèn luyện với dashboard chuẩn phong cách công nghệ.
+              Theo dõi kết quả, xem thống kê chi tiết và duy trì chuỗi ngày rèn luyện với dashboard
+              chuẩn phong cách công nghệ.
             </p>
           </div>
 
@@ -810,10 +984,16 @@ export function LandingPage() {
       </section>
 
       {/* ── AI Speaking Section ── */}
-      <section className="lp-section lp-ai" aria-labelledby="ai-title">
+      <section
+        className="lp-section lp-ai"
+        aria-labelledby="ai-title"
+      >
         <div className="lp-container">
           <div className="lp-ai-grid">
-            <div className="lp-ai-art" aria-hidden="true">
+            <div
+              className="lp-ai-art"
+              aria-hidden="true"
+            >
               <div className="lp-ai-visual">
                 <div className="lp-ai-avatar">
                   <span className="lp-ai-avatar-icon">🤖</span>
@@ -821,21 +1001,31 @@ export function LandingPage() {
                 </div>
                 <div className="lp-ai-waves">
                   {[1, 2, 3, 4, 5].map((n) => (
-                    <div key={n} className={`lp-ai-wave lp-ai-wave--${n}`} />
+                    <div
+                      key={n}
+                      className={`lp-ai-wave lp-ai-wave--${n}`}
+                    />
                   ))}
                 </div>
                 <div className="lp-ai-bubble lp-ai-bubble--bot">
                   <span className="lp-ai-bubble-flag">🇯🇵</span>
                   <div>
                     <div className="lp-ai-bubble-speaker">AI SENPAI // VOICE ASSISTANT</div>
-                    <div className="lp-ai-bubble-text">おはようございます！今日の練習を始めましょうか？</div>
+                    <div className="lp-ai-bubble-text">
+                      おはようございます！今日の練習を始めましょうか？
+                    </div>
                   </div>
                 </div>
                 <div className="lp-ai-bubble lp-ai-bubble--user">
                   <span className="lp-ai-bubble-mic">🎤</span>
                   <div className="lp-ai-user-speech">
                     <div className="lp-ai-wave-bars">
-                      <span /><span /><span /><span /><span /><span />
+                      <span />
+                      <span />
+                      <span />
+                      <span />
+                      <span />
+                      <span />
                     </div>
                     <span>はい、よろしくお願いします！</span>
                   </div>
@@ -856,16 +1046,23 @@ export function LandingPage() {
                 <span className="lp-section-eyebrow-line" />
                 <span>Luyện nói AI</span>
               </div>
-              <h2 id="ai-title" className="lp-section-title">
+              <h2
+                id="ai-title"
+                className="lp-section-title"
+              >
                 Luyện nói cùng <em>Trợ lý AI thông minh</em>
               </h2>
               <p className="lp-ai-desc">
-                Thực hành giao tiếp tiếng Nhật với trợ lý AI và nhận đánh giá tức thì sau mỗi câu thoại. Tính năng mô phỏng tình huống trao đổi công việc, phỏng vấn dự án IT thực tế giúp bạn tự tin giao tiếp.
+                Thực hành giao tiếp tiếng Nhật với trợ lý AI và nhận đánh giá tức thì sau mỗi câu
+                thoại. Tính năng mô phỏng tình huống trao đổi công việc, phỏng vấn dự án IT thực tế
+                giúp bạn tự tin giao tiếp.
               </p>
               <ul className="lp-ai-points">
                 <li>
                   <span className="lp-ai-point-check">✓</span>
-                  <span>Nhận xét và sửa lỗi phát âm theo thời gian thực (Real-time Speech Recognition)</span>
+                  <span>
+                    Nhận xét và sửa lỗi phát âm theo thời gian thực (Real-time Speech Recognition)
+                  </span>
                 </li>
                 <li>
                   <span className="lp-ai-point-check">✓</span>
@@ -886,8 +1083,14 @@ export function LandingPage() {
       </section>
 
       {/* ── Final CTA Section ── */}
-      <section className="lp-section lp-final-cta" aria-labelledby="final-cta-title">
-        <div className="lp-final-cta-bg" aria-hidden="true">
+      <section
+        className="lp-section lp-final-cta"
+        aria-labelledby="final-cta-title"
+      >
+        <div
+          className="lp-final-cta-bg"
+          aria-hidden="true"
+        >
           <div className="lp-final-glow lp-final-glow--1" />
           <div className="lp-final-glow lp-final-glow--2" />
           <div className="lp-final-kanji">練習</div>
@@ -899,12 +1102,16 @@ export function LandingPage() {
             <span>Bắt đầu ngay hôm nay</span>
             <span className="lp-section-eyebrow-line" />
           </div>
-          <h2 id="final-cta-title" className="lp-final-cta-title">
+          <h2
+            id="final-cta-title"
+            className="lp-final-cta-title"
+          >
             Sẵn sàng cùng J-Tech <br />
             chinh phục tiếng Nhật IT?
           </h2>
           <p className="lp-final-cta-sub">
-            Khám phá lộ trình luyện tập bài bản, làm chủ từ vựng chuyên ngành và nâng cao lợi thế cạnh tranh ngay hôm nay.
+            Khám phá lộ trình luyện tập bài bản, làm chủ từ vựng chuyên ngành và nâng cao lợi thế
+            cạnh tranh ngay hôm nay.
           </p>
           <div className="lp-final-btn-wrap">
             <button
@@ -914,7 +1121,12 @@ export function LandingPage() {
               type="button"
             >
               <span>Cùng nhau khám phá</span>
-              <span className="lp-cta-arrow" aria-hidden="true">→</span>
+              <span
+                className="lp-cta-arrow"
+                aria-hidden="true"
+              >
+                →
+              </span>
             </button>
           </div>
           <p className="lp-final-tagline">

@@ -45,8 +45,22 @@ export function AccountRejectedPage() {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  page: { minHeight: "100vh", display: "grid", placeItems: "center", padding: 24, background: "#0b0f17", color: "#e6edf3" },
-  card: { width: "min(100%, 520px)", textAlign: "center", padding: "40px 32px", border: "1px solid #5a2121", borderRadius: 14, background: "#121824" },
+  page: {
+    minHeight: "100vh",
+    display: "grid",
+    placeItems: "center",
+    padding: 24,
+    background: "#0b0f17",
+    color: "#e6edf3",
+  },
+  card: {
+    width: "min(100%, 520px)",
+    textAlign: "center",
+    padding: "40px 32px",
+    border: "1px solid #5a2121",
+    borderRadius: 14,
+    background: "#121824",
+  },
   icon: { fontSize: 48, marginBottom: 16 },
   title: { margin: "0 0 16px", fontSize: 26 },
   message: { margin: "0 0 10px", fontSize: 18, fontWeight: 600 },

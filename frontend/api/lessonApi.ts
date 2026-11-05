@@ -51,6 +51,9 @@ export async function getLessonsByChapter(
     `/chapters/${chapterId}/lessons`,
     { params },
   );
+  const { data } = await apiClient.get<LessonSummary[]>(`/chapters/${chapterId}/lessons`, {
+    params,
+  });
   return data;
 }
 
@@ -81,6 +84,8 @@ export async function updateLesson(
     `/lessons/${id}`,
     lessonFormData(payload, documentFile),
   );
+export async function updateLesson(id: number, payload: LessonFormInput): Promise<LessonSummary> {
+  const { data } = await apiClient.put<LessonSummary>(`/lessons/${id}`, payload);
   return data;
 }
 

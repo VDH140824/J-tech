@@ -5,12 +5,12 @@ import com.jtech.dto.request.ChangeUserRoleRequest;
 import com.jtech.dto.request.PreCreateUserRequest;
 import com.jtech.dto.request.RejectUserRequest;
 import com.jtech.dto.response.UserResponse;
-import com.jtech.entity.User;
 import com.jtech.entity.Role;
+import com.jtech.entity.User;
 import com.jtech.entity.UserStatus;
 import com.jtech.mapper.UserMapper;
-import com.jtech.repository.UserRepository;
 import com.jtech.repository.RoleRepository;
+import com.jtech.repository.UserRepository;
 import com.jtech.service.AdminUserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +30,12 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserResponse> getUsers(String search, Long roleId, String statusStr, Pageable pageable) {
+    public Page<UserResponse> getUsers(
+        String search,
+        Long roleId,
+        String statusStr,
+        Pageable pageable
+    ) {
         UserStatus status = null;
         if (statusStr != null && !statusStr.isBlank()) {
             try {
@@ -39,21 +44,27 @@ public class AdminUserServiceImpl implements AdminUserService {
                 status = null;
             }
         }
-        return userRepository.findAdminUsers(search, roleId, status, pageable).map(UserMapper::toResponse);
+        return userRepository
+            .findAdminUsers(search, roleId, status, pageable)
+            .map(UserMapper::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> getPendingUsers(Pageable pageable) {
-        return userRepository.findAdminUsers(null, null, UserStatus.PENDING, pageable)
-                .map(UserMapper::toResponse);
+        return userRepository
+            .findAdminUsers(null, null, UserStatus.PENDING, pageable)
+            .map(UserMapper::toResponse);
     }
 
     @Override
     @Transactional
     public UserResponse approveUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
+        User user = userRepository
+            .findById(userId)
+            .orElseThrow(() ->
+                new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId)
+            );
         user.setStatus(UserStatus.ACTIVE);
         user.setStatusReason(null);
         user.setReviewedAt(java.time.LocalDateTime.now());
@@ -66,6 +77,12 @@ public class AdminUserServiceImpl implements AdminUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
         String reason = requireStatusReason(request == null ? null : request.getStatusReason());
+    public UserResponse rejectUser(Long userId) {
+        User user = userRepository
+            .findById(userId)
+            .orElseThrow(() ->
+                new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId)
+            );
         user.setStatus(UserStatus.REJECTED);
         user.setStatusReason(reason);
         user.setReviewedAt(java.time.LocalDateTime.now());
@@ -75,12 +92,22 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     @Transactional
     public UserResponse updateUserStatus(Long userId, AdminUserStatusRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
+        User user = userRepository
+            .findById(userId)
+            .orElseThrow(() ->
+                new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId)
+            );
 
         UserStatus nextStatus;
         try {
             nextStatus = UserStatus.valueOf(request.getStatus().toUpperCase());
+            user.setStatus(UserStatus.valueOf(request.getStatus().toUpperCase()));
+            user.setStatusReason(
+                request.getStatusReason() == null || request.getStatusReason().isBlank()
+                    ? null
+                    : request.getStatusReason().trim()
+            );
+            user.setReviewedAt(java.time.LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ: " + request.getStatus());
         }
@@ -107,19 +134,33 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     @Transactional
-    public UserResponse changeUserRole(Long userId, ChangeUserRoleRequest request, String currentUserEmail) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId));
+    public UserResponse changeUserRole(
+        Long userId,
+        ChangeUserRoleRequest request,
+        String currentUserEmail
+    ) {
+        User user = userRepository
+            .findById(userId)
+            .orElseThrow(() ->
+                new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId)
+            );
         if (currentUserEmail != null && currentUserEmail.equalsIgnoreCase(user.getEmail())) {
             throw new IllegalArgumentException("Admin không thể tự thay đổi role của chính mình.");
         }
 
         String roleName = request.getRole() == null ? "" : request.getRole().trim().toUpperCase();
-        if (!roleName.equals("ADMIN") && !roleName.equals("STUDENT") && !roleName.equals("MODERATOR")) {
-            throw new IllegalArgumentException("Role không hợp lệ. Chỉ chấp nhận ADMIN, STUDENT hoặc MODERATOR.");
+        if (
+            !roleName.equals("ADMIN") &&
+            !roleName.equals("STUDENT") &&
+            !roleName.equals("MODERATOR")
+        ) {
+            throw new IllegalArgumentException(
+                "Role không hợp lệ. Chỉ chấp nhận ADMIN, STUDENT hoặc MODERATOR."
+            );
         }
-        Role role = roleRepository.findByRoleName(roleName)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy role: " + roleName));
+        Role role = roleRepository
+            .findByRoleName(roleName)
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy role: " + roleName));
         user.setRole(role);
         return UserMapper.toResponse(userRepository.save(user));
     }
@@ -153,12 +194,19 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
 
         String roleName = request.getRole() == null ? "" : request.getRole().trim().toUpperCase();
-        if (!roleName.equals("ADMIN") && !roleName.equals("STUDENT") && !roleName.equals("MODERATOR")) {
-            throw new IllegalArgumentException("Role không hợp lệ. Chỉ chấp nhận ADMIN, STUDENT hoặc MODERATOR.");
+        if (
+            !roleName.equals("ADMIN") &&
+            !roleName.equals("STUDENT") &&
+            !roleName.equals("MODERATOR")
+        ) {
+            throw new IllegalArgumentException(
+                "Role không hợp lệ. Chỉ chấp nhận ADMIN, STUDENT hoặc MODERATOR."
+            );
         }
 
-        Role role = roleRepository.findByRoleName(roleName)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy role: " + roleName));
+        Role role = roleRepository
+            .findByRoleName(roleName)
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy role: " + roleName));
 
         String fullName = email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
 

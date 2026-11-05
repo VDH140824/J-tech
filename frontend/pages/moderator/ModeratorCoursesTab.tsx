@@ -1,12 +1,24 @@
 import { useEffect, useState } from "react";
-import { getCourses, getCourse, type CourseSummary, type CourseDetail, type ChapterSummary } from "../../api/courseApi";
+import {
+  getCourses,
+  getCourse,
+  type CourseSummary,
+  type CourseDetail,
+  type ChapterSummary,
+} from "../../api/courseApi";
 import type { ModeratorNavState } from "./ModeratorPortalPage";
 
 interface ModeratorCoursesTabProps {
   onViewChapter: (state: ModeratorNavState) => void;
+  initialCourseId?: number;
+  readOnly?: boolean;
 }
 
-export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps) {
+export function ModeratorCoursesTab({
+  onViewChapter,
+  initialCourseId,
+  readOnly = false,
+}: ModeratorCoursesTabProps) {
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,7 +47,7 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
     const selectedCourse = courses.find((c) => c.id === courseId);
     try {
       const detail = await getCourse(courseId);
-      if (detail && detail.chapters && detail.chapters.length > 0) {
+      if (readOnly || (detail && detail.chapters && detail.chapters.length > 0)) {
         setCourseDetail(detail);
       } else {
         // Fallback default chapters if empty
@@ -45,13 +57,32 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
           name: selectedCourse?.name || "Khóa học tiếng Nhật",
           description: selectedCourse?.description,
           chapters: [
-            { id: 1, chapterNo: 1, title: "Chương 1: Giới thiệu bản thân", description: "Làm quen với tiếng Nhật, bảng chữ cái, ngữ pháp và từ vựng cơ bản" },
-            { id: 2, chapterNo: 2, title: "Chương 2: Đồ vật xung quanh", description: "Chỉ thị từ これ, それ, あれ và đồ dùng hàng ngày" },
-            { id: 3, chapterNo: 3, title: "Chương 3: Nơi chốn và vị trí", description: "Chỉ vị trí ここ, そこ, あそこ và hỏi giá cả" },
+            {
+              id: 1,
+              chapterNo: 1,
+              title: "Chương 1: Giới thiệu bản thân",
+              description: "Làm quen với tiếng Nhật, bảng chữ cái, ngữ pháp và từ vựng cơ bản",
+            },
+            {
+              id: 2,
+              chapterNo: 2,
+              title: "Chương 2: Đồ vật xung quanh",
+              description: "Chỉ thị từ これ, それ, あれ và đồ dùng hàng ngày",
+            },
+            {
+              id: 3,
+              chapterNo: 3,
+              title: "Chương 3: Nơi chốn và vị trí",
+              description: "Chỉ vị trí ここ, そこ, あそこ và hỏi giá cả",
+            },
           ],
         });
       }
     } catch {
+      if (readOnly) {
+        setCourseDetail(null);
+        return;
+      }
       // Fallback for offline/preview
       setCourseDetail({
         id: courseId,
@@ -59,15 +90,40 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
         name: selectedCourse?.name || "Khóa học tiếng Nhật",
         description: selectedCourse?.description,
         chapters: [
-          { id: 1, chapterNo: 1, title: "Chương 1: Giới thiệu bản thân", description: "Làm quen với tiếng Nhật, bảng chữ cái, ngữ pháp và từ vựng cơ bản" },
-          { id: 2, chapterNo: 2, title: "Chương 2: Đồ vật xung quanh", description: "Chỉ thị từ これ, それ, あれ và đồ dùng hàng ngày" },
-          { id: 3, chapterNo: 3, title: "Chương 3: Nơi chốn và vị trí", description: "Chỉ vị trí ここ, そこ, あそこ và hỏi giá cả" },
+          {
+            id: 1,
+            chapterNo: 1,
+            title: "Chương 1: Giới thiệu bản thân",
+            description: "Làm quen với tiếng Nhật, bảng chữ cái, ngữ pháp và từ vựng cơ bản",
+          },
+          {
+            id: 2,
+            chapterNo: 2,
+            title: "Chương 2: Đồ vật xung quanh",
+            description: "Chỉ thị từ これ, それ, あれ và đồ dùng hàng ngày",
+          },
+          {
+            id: 3,
+            chapterNo: 3,
+            title: "Chương 3: Nơi chốn và vị trí",
+            description: "Chỉ vị trí ここ, そこ, あそこ và hỏi giá cả",
+          },
         ],
       });
     } finally {
       setLoadingDetail(false);
     }
   };
+
+  useEffect(() => {
+    if (
+      initialCourseId &&
+      expandedCourseId !== initialCourseId &&
+      courses.some((course) => course.id === initialCourseId)
+    ) {
+      void handleToggleCourse(initialCourseId);
+    }
+  }, [initialCourseId, courses]);
 
   const filteredCourses = courses.filter((c) => {
     const q = searchQuery.toLowerCase();
@@ -89,7 +145,11 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
       <div className="admin-page-header">
         <div className="admin-header-titles">
           <h2 className="admin-main-title">📚 Danh sách môn học</h2>
-          <p className="admin-main-subtitle">Quản lý nội dung các môn học theo giáo trình Dekiru.</p>
+          <p className="admin-main-subtitle">
+            {readOnly
+              ? "Nội dung các môn học theo giáo trình Dekiru."
+              : "Quản lý nội dung các môn học theo giáo trình Dekiru."}
+          </p>
         </div>
       </div>
 
@@ -111,9 +171,7 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
         {/* Quick Stats */}
         <div className="admin-quick-stats-row">
           <span className="quick-stats-label">Tổng quan:</span>
-          <span className="stat-pill pill-total">
-            {courses.length} Môn học
-          </span>
+          <span className="stat-pill pill-total">{courses.length} Môn học</span>
           <span className="stat-pill pill-active">
             {courses.reduce((sum, c) => sum + c.chapterCount, 0)} Chương
           </span>
@@ -140,12 +198,13 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
       ) : (
         <div className="mod-courses-grid">
           {filteredCourses.map((course, index) => (
-            <div key={course.id} className={`mod-course-card ${courseColorClass(index)}`}>
+            <div
+              key={course.id}
+              className={`mod-course-card ${courseColorClass(index)}`}
+            >
               {/* Card Header */}
               <div className="mod-course-card-header">
-                <div className="mod-course-icon-badge">
-                  {["📘", "📗", "📕", "📙"][index % 4]}
-                </div>
+                <div className="mod-course-icon-badge">{["📘", "📗", "📕", "📙"][index % 4]}</div>
                 <div className="mod-course-info">
                   <h3 className="mod-course-name">{course.name}</h3>
                   <span className="mod-course-code">{course.code}</span>
@@ -157,9 +216,7 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
               </div>
 
               {/* Description */}
-              {course.description && (
-                <p className="mod-course-desc">{course.description}</p>
-              )}
+              {course.description && <p className="mod-course-desc">{course.description}</p>}
 
               {/* Actions */}
               <div className="mod-course-actions">
@@ -192,11 +249,16 @@ export function ModeratorCoursesTab({ onViewChapter }: ModeratorCoursesTabProps)
                     <>
                       <div className="mod-chapters-header">
                         <span className="mod-chapters-title">Danh sách chương</span>
-                        <span className="mod-chapters-count">{courseDetail.chapters.length} chương</span>
+                        <span className="mod-chapters-count">
+                          {courseDetail.chapters.length} chương
+                        </span>
                       </div>
                       <div className="mod-chapters-list">
                         {courseDetail.chapters.map((ch: ChapterSummary) => (
-                          <div key={ch.id} className="mod-chapter-row">
+                          <div
+                            key={ch.id}
+                            className="mod-chapter-row"
+                          >
                             <div className="mod-chapter-info">
                               <span className="mod-chapter-no">Chương {ch.chapterNo}</span>
                               <span className="mod-chapter-title">{ch.title}</span>

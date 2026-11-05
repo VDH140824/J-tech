@@ -26,14 +26,18 @@ export function AdminLayout({
   return (
     <div className="admin-dekiru-layout">
       {/* Shared Admin Sidebar with Dekiru theme */}
-      <AdminSidebar activeTab={activeTab} onSelectTab={onSelectTab} />
+      <AdminSidebar
+        activeTab={activeTab}
+        onSelectTab={onSelectTab}
+      />
 
       {/* Main Right Area: Topbar + Page Content */}
       <div className="admin-dekiru-workspace">
-        <AdminTopbar title={title} breadcrumb={breadcrumb} />
-        <main className="admin-dekiru-page-body">
-          {children ?? <Outlet />}
-        </main>
+        <AdminTopbar
+          title={title}
+          breadcrumb={breadcrumb}
+        />
+        <main className="admin-dekiru-page-body">{children ?? <Outlet />}</main>
       </div>
     </div>
   );

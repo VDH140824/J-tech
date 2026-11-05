@@ -22,8 +22,7 @@ public class UpdateProfileRequest {
     @Size(max = 255)
     private String avatarPublicId;
 
-    public UpdateProfileRequest() {
-    }
+    public UpdateProfileRequest() {}
 
     public UpdateProfileRequest(String fullName, LocalDate dateOfBirth) {
         this.fullName = fullName;

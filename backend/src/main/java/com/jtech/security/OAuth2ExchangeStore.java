@@ -1,23 +1,28 @@
 package com.jtech.security;
 
-import org.springframework.stereotype.Component;
-
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Component;
 
 @Component
 public class OAuth2ExchangeStore {
 
     public static class ExchangePayload {
+
         private final Long userId;
         private final String accessToken;
         private final String refreshToken;
         private final Instant expiresAt;
         private Instant consumedAt;
 
-        public ExchangePayload(Long userId, String accessToken, String refreshToken, Instant expiresAt) {
+        public ExchangePayload(
+            Long userId,
+            String accessToken,
+            String refreshToken,
+            Instant expiresAt
+        ) {
             this.userId = userId;
             this.accessToken = accessToken;
             this.refreshToken = refreshToken;
@@ -92,8 +97,10 @@ public class OAuth2ExchangeStore {
         Instant now = Instant.now();
         store.entrySet().removeIf(entry -> {
             ExchangePayload p = entry.getValue();
-            return p.getExpiresAt().isBefore(now)
-                    || (p.getConsumedAt() != null && p.getConsumedAt().plusSeconds(10).isBefore(now));
+            return (
+                p.getExpiresAt().isBefore(now) ||
+                (p.getConsumedAt() != null && p.getConsumedAt().plusSeconds(10).isBefore(now))
+            );
         });
     }
 }

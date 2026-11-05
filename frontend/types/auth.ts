@@ -48,13 +48,9 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
 
-  setAuth: (
-    user: UserResponse,
-    accessToken: string,
-  ) => void;
+  setAuth: (user: UserResponse, accessToken: string) => void;
   setUser: (user: UserResponse | null) => void;
   setTokens: (accessToken: string) => void;
   clearAuth: () => void;
   setLoading: (loading: boolean) => void;
 }
-

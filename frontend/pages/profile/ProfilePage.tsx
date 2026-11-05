@@ -215,7 +215,10 @@ export function ProfilePage() {
             </div>
 
             <div className="profile-actions">
-              <button type="submit" disabled={saving || !user?.id}>
+              <button
+                type="submit"
+                disabled={saving || !user?.id}
+              >
                 {saving ? "Đang lưu..." : "Lưu thay đổi"}
               </button>
             </div>

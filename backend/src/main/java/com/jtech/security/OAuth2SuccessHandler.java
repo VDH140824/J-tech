@@ -10,6 +10,9 @@ import com.jtech.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -17,10 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -36,13 +35,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final String frontendUrl;
 
     public OAuth2SuccessHandler(
-            UserRepository userRepository,
-            RoleRepository roleRepository,
-            RefreshTokenRepository refreshTokenRepository,
-            JwtService jwtService,
-            OAuth2ExchangeStore oAuth2ExchangeStore,
-            CookieService cookieService,
-            @Value("${app.frontend.url:http://localhost:5173}") String frontendUrl) {
+        UserRepository userRepository,
+        RoleRepository roleRepository,
+        RefreshTokenRepository refreshTokenRepository,
+        JwtService jwtService,
+        OAuth2ExchangeStore oAuth2ExchangeStore,
+        CookieService cookieService,
+        @Value("${app.frontend.url:http://localhost:5173}") String frontendUrl
+    ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -53,15 +53,22 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Authentication authentication
+    ) throws IOException, ServletException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
         String picture = oAuth2User.getAttribute("picture");
         String googleSub = oAuth2User.getAttribute("sub");
 
         if (email == null || email.isBlank()) {
-            getRedirectStrategy().sendRedirect(request, response, frontendUrl + "/login?error=no_email");
+            getRedirectStrategy().sendRedirect(
+                request,
+                response,
+                frontendUrl + "/login?error=no_email"
+            );
             return;
         }
 
@@ -99,10 +106,57 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             newUser.setCoinBalance(0);
             LocalDateTime loginAt = LocalDateTime.now();
             newUser.setLastLogin(loginAt);
+        String displayName = oAuth2User.getAttribute("name");
 
-            return userRepository.save(newUser);
+        User user = userRepository
+            .findByEmail(email)
+            .map(existingUser -> {
+                LocalDateTime loginAt = LocalDateTime.now();
+                existingUser.setLastLogin(loginAt);
+                if (
+                    (existingUser.getGoogleSub() == null ||
+                        existingUser.getGoogleSub().isBlank()) &&
+                    googleSub != null &&
+                    !googleSub.isBlank()
+                ) {
+                    existingUser.setGoogleSub(googleSub);
+                }
+                if (
+                    (existingUser.getDisplayName() == null ||
+                        existingUser.getDisplayName().isBlank()) &&
+                    displayName != null &&
+                    !displayName.isBlank()
+                ) {
+                    existingUser.setDisplayName(displayName);
+                }
+                return userRepository.save(existingUser);
+            })
+            .orElseGet(() -> {
+                Role userRole = roleRepository.findByRoleName("STUDENT").orElseGet(() -> {
+                    Role role = new Role();
+                    role.setRoleName("STUDENT");
+                    role.setName("Học viên");
+                    role.setDescription("Default student role");
+                    return roleRepository.save(role);
+                });
 
-        });
+                User newUser = new User();
+                newUser.setRole(userRole);
+                newUser.setEmail(email);
+                newUser.setGoogleSub(googleSub);
+                String resolvedName =
+                    displayName != null && !displayName.isBlank() ? displayName : email;
+                newUser.setDisplayName(
+                    resolvedName.length() > 50 ? resolvedName.substring(0, 50) : resolvedName
+                );
+                newUser.setAvatarUrl(picture);
+                newUser.setStatus(UserStatus.PENDING);
+                newUser.setCoinBalance(0);
+                LocalDateTime loginAt = LocalDateTime.now();
+                newUser.setLastLogin(loginAt);
+
+                return userRepository.save(newUser);
+            });
 
         if (user.getStatus() != UserStatus.ACTIVE) {
             var session = request.getSession();
@@ -129,13 +183,19 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .token(UUID.randomUUID().toString())
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .revoked(false)
-                .build());
+                .build()
+        );
 
         String token = jwtService.generateToken(user.getEmail());
         String exchangeCode = oAuth2ExchangeStore.createExchangeCode(
-                user.getUserId(), token, refreshToken.getToken());
+            user.getUserId(),
+            token,
+            refreshToken.getToken()
+        );
 
-        ResponseCookie refreshCookie = cookieService.createRefreshTokenCookie(refreshToken.getToken());
+        ResponseCookie refreshCookie = cookieService.createRefreshTokenCookie(
+            refreshToken.getToken()
+        );
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         ResponseCookie exchangeCookie = cookieService.createExchangeCookie(exchangeCode);

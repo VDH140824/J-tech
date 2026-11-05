@@ -9,14 +9,13 @@ import com.jtech.service.AdminUserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.security.Principal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/admin/users")
@@ -30,20 +29,30 @@ public class AdminUserController {
 
     @GetMapping
     public ResponseEntity<Page<UserResponse>> getUsers(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long roleId,
-            @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Long roleId,
+        @RequestParam(required = false) String status,
+        @RequestParam(defaultValue = "0") @Min(0) int page,
+        @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size
+    ) {
+        PageRequest pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+        );
         return ResponseEntity.ok(adminUserService.getUsers(search, roleId, status, pageable));
     }
 
     @GetMapping("/pending")
     public ResponseEntity<Page<UserResponse>> getPendingUsers(
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        @RequestParam(defaultValue = "0") @Min(0) int page,
+        @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size
+    ) {
+        PageRequest pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+        );
         return ResponseEntity.ok(adminUserService.getPendingUsers(pageable));
     }
 
@@ -58,28 +67,36 @@ public class AdminUserController {
         return ResponseEntity.ok(adminUserService.rejectUser(id, request));
     }
 
-
     @PatchMapping("/{id}/status")
     public ResponseEntity<UserResponse> updateUserStatus(
-            @PathVariable Long id,
-            @Valid @RequestBody AdminUserStatusRequest request) {
+        @PathVariable Long id,
+        @Valid @RequestBody AdminUserStatusRequest request
+    ) {
         return ResponseEntity.ok(adminUserService.updateUserStatus(id, request));
     }
 
     @PutMapping("/{id}/role")
     public ResponseEntity<UserResponse> changeUserRole(
-            @PathVariable Long id,
-            @Valid @RequestBody ChangeUserRoleRequest request,
-            Principal principal) {
-        return ResponseEntity.ok(adminUserService.changeUserRole(id, request,
-                principal != null ? principal.getName() : null));
+        @PathVariable Long id,
+        @Valid @RequestBody ChangeUserRoleRequest request,
+        Principal principal
+    ) {
+        return ResponseEntity.ok(
+            adminUserService.changeUserRole(
+                id,
+                request,
+                principal != null ? principal.getName() : null
+            )
+        );
     }
 
     @PostMapping("/pre-create")
     public ResponseEntity<UserResponse> preCreateUser(
-            @Valid @RequestBody PreCreateUserRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(adminUserService.preCreateUser(request));
+        @Valid @RequestBody PreCreateUserRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            adminUserService.preCreateUser(request)
+        );
     }
 
     @DeleteMapping("/{id}")

@@ -5,12 +5,14 @@ import { ClassListPage } from "./ClassListPage";
 import { ModeratorChapterDetailPage } from "./ModeratorChapterDetailPage";
 import { ModeratorLayout } from "../../layouts/ModeratorLayout";
 import { ModeratorKanjiManagementPage } from "./kanji/ModeratorKanjiManagementPage";
+import { FeedbackPage } from "../feedback/FeedbackPage";
 import { SECTIONS } from "./sectionConfig";
 import type { ChapterDetail } from "../../api/courseApi";
 import "../admin/AdminPortalPage.css";
 import "./ModeratorPortalPage.css";
 
-export type ModeratorTab = "courses" | "chapter-detail" | "kanji" | "classes";
+export type ModeratorTab = "courses" | "chapter-detail" | "kanji" | "classes" | "feedback";
+
 
 export interface ModeratorNavState {
   courseId: number;
@@ -48,6 +50,9 @@ export function ModeratorPortalPage() {
     ? "kanji"
     : matchClasses
       ? "classes"
+  const activeTab: ModeratorTab =
+    location.pathname === "/moderator/feedback"
+      ? "feedback"
       : matchChapter
         ? "chapter-detail"
         : "courses";
@@ -63,6 +68,7 @@ export function ModeratorPortalPage() {
       navigate("/moderator/classes");
       return;
     }
+    if (tab === "feedback") navigate("/moderator/feedback");
     if (tab === "courses") {
       setChapterInfo(null);
       navigate("/moderator");
@@ -108,8 +114,12 @@ export function ModeratorPortalPage() {
     >
       {activeTab === "kanji" && <ModeratorKanjiManagementPage />}
       {activeTab === "classes" && <ClassListPage />}
+      {activeTab === "feedback" && <FeedbackPage portal="moderator" />}
       {activeTab === "courses" && (
-        <ModeratorCoursesTab onViewChapter={handleViewChapter} />
+        <ModeratorCoursesTab
+          onViewChapter={handleViewChapter}
+          initialCourseId={Number(searchParams.get("courseId")) || undefined}
+        />
       )}
       {activeTab === "chapter-detail" && courseId && chapterId && (
         <ModeratorChapterDetailPage
