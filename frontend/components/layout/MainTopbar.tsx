@@ -29,7 +29,11 @@ export function MainTopbar({ onSearch }: MainTopbarProps) {
 
       <div className="topbar-actions">
         {/* Notification Bell */}
-        <button type="button" className="icon-btn notif-btn" title="Thông báo">
+        <button
+          type="button"
+          className="icon-btn notif-btn"
+          title="Thông báo"
+        >
           <span className="bell-icon">🔔</span>
           <span className="notif-badge-dot" />
         </button>

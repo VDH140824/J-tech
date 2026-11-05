@@ -666,6 +666,13 @@
   text-align: left;
 }
 
+.modal-field-error {
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .modal-input,
 .modal-select {
   border: 1.5px solid #e2e8f0;
@@ -753,7 +760,9 @@
   align-items: flex-start;
   gap: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .admin-kpi-card-clean:hover {
@@ -958,10 +967,18 @@
   flex-shrink: 0;
 }
 
-.dot-green { background-color: #10b981; }
-.dot-amber { background-color: #f59e0b; }
-.dot-orange { background-color: #f97316; }
-.dot-red { background-color: #ef4444; }
+.dot-green {
+  background-color: #10b981;
+}
+.dot-amber {
+  background-color: #f59e0b;
+}
+.dot-orange {
+  background-color: #f97316;
+}
+.dot-red {
+  background-color: #ef4444;
+}
 
 .box-metric-info {
   display: flex;

@@ -7,7 +7,12 @@ import "./AdminSidebar.css";
 function DekiruAdminBadgeIcon() {
   return (
     <div className="admin-brand-icon-box">
-      <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 40 40"
+        fill="none"
+      >
         <g transform="translate(20, 20)">
           {[0, 72, 144, 216, 288].map((angle, i) => (
             <path
@@ -17,8 +22,18 @@ function DekiruAdminBadgeIcon() {
               fill="#F43F5E"
             />
           ))}
-          <circle cx="0" cy="0" r="3.5" fill="#FFF5F7" />
-          <circle cx="0" cy="0" r="2" fill="#FF8CA3" />
+          <circle
+            cx="0"
+            cy="0"
+            r="3.5"
+            fill="#FFF5F7"
+          />
+          <circle
+            cx="0"
+            cy="0"
+            r="2"
+            fill="#FF8CA3"
+          />
         </g>
       </svg>
     </div>
@@ -62,9 +77,9 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
         ? "pending"
         : currentPath.includes("/admin/settings")
           ? "settings"
-            : currentPath === "/admin" || currentPath.includes("/admin/dashboard")
-              ? "dashboard"
-              : "users");
+          : currentPath === "/admin" || currentPath.includes("/admin/dashboard")
+            ? "dashboard"
+            : "users");
 
   const handleNavClick = (tabKey: string, route: string) => {
     if (onSelectTab) {
@@ -76,11 +91,14 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
   return (
     <aside className="admin-dekiru-sidebar">
       {/* Brand Header */}
-      <div className="admin-sidebar-header" onClick={() => navigate("/home")}>
+      <div
+        className="admin-sidebar-header"
+        onClick={() => navigate("/home")}
+      >
         <DekiruAdminBadgeIcon />
         <div className="admin-sidebar-brand-text">
           <div className="brand-name-row">
-            <span className="brand-name">J-Tech</span>
+            <span className="brand-name">JTech</span>
             <span className="admin-pill-badge">ADMIN</span>
           </div>
           <span className="brand-sub">Hệ sinh thái tiếng Nhật</span>
@@ -89,6 +107,15 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
 
       {/* Nav Menu */}
       <nav className="admin-sidebar-menu">
+        {([["items", "Quản lý cửa hàng đổi quà"], ["rules", "Cấu hình điểm thưởng"], ["milestones", "Mốc chuỗi học tập"]] as const).map(([key,label]) => <button key={key} type="button" className={`admin-nav-item ${currentTab === key ? "active" : ""}`} onClick={() => handleNavClick(key, `/admin/rewards/${key}`)}><span className="admin-nav-label">{label}</span></button>)}
+        <button
+          type="button"
+          className={`admin-nav-item ${currentTab === "feedback" ? "active" : ""}`}
+          onClick={() => handleNavClick("feedback", "/admin/feedback")}
+        >
+          <span className="admin-nav-icon">💬</span>
+          <span className="admin-nav-label">Phản hồi & Báo lỗi hệ thống</span>
+        </button>
         <div className="admin-menu-section-label">CHỨC NĂNG QUẢN TRỊ</div>
 
         {/* 1. Sơ đồ & Thống kê */}
@@ -119,9 +146,7 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
         >
           <span className="admin-nav-icon">⏳</span>
           <span className="admin-nav-label">Duyệt tài khoản sinh viên</span>
-          {pendingCount > 0 && (
-            <span className="admin-pending-count-badge">{pendingCount}</span>
-          )}
+          {pendingCount > 0 && <span className="admin-pending-count-badge">{pendingCount}</span>}
         </button>
 
         {/* 5. Cấu hình hệ thống (Placeholder for future development) */}

@@ -40,7 +40,11 @@ export function AdminDashboardTab() {
       <div className="admin-page-container">
         <div className="admin-alert-banner error">
           <span>⚠️ {error}</span>
-          <button type="button" onClick={fetchStats} className="admin-retry-btn">
+          <button
+            type="button"
+            onClick={fetchStats}
+            className="admin-retry-btn"
+          >
             Thử lại
           </button>
         </div>
@@ -81,7 +85,9 @@ export function AdminDashboardTab() {
             <span className="kpi-number-val">{stats?.totalUsers.toLocaleString()}</span>
             <div className="kpi-sub-pills">
               <span className="pill-mini pill-mini-success">● {stats?.activeUsers} Hoạt động</span>
-              <span className="pill-mini pill-mini-danger">● {stats?.rejectedUsers} Bị từ chối</span>
+              <span className="pill-mini pill-mini-danger">
+                ● {stats?.rejectedUsers} Bị từ chối
+              </span>
             </div>
           </div>
         </div>
@@ -140,7 +146,10 @@ export function AdminDashboardTab() {
           {stats?.userGrowthStats.map((item) => {
             const heightPercent = Math.round((item.value / maxGrowthValue) * 100);
             return (
-              <div key={item.label} className="barchart-column">
+              <div
+                key={item.label}
+                className="barchart-column"
+              >
                 <span className="barchart-tooltip">{item.value}</span>
                 <div className="barchart-track">
                   <div
@@ -160,7 +169,9 @@ export function AdminDashboardTab() {
         <div className="chart-card-header">
           <div className="chart-title-group">
             <h3 className="chart-title">🛡️ Phân bổ trạng thái tài khoản hệ thống</h3>
-            <span className="chart-subtitle">Chi tiết mức độ phân bổ quyền & an toàn tài khoản</span>
+            <span className="chart-subtitle">
+              Chi tiết mức độ phân bổ quyền & an toàn tài khoản
+            </span>
           </div>
         </div>
 

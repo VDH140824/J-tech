@@ -1,9 +1,9 @@
 package com.jtech.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 @Entity
 @Table(name = "chapter")
@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class Chapter {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

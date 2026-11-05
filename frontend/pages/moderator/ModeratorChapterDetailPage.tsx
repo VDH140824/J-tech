@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { LessonSummary } from "../../api/lessonApi";
+import { getLessonById, type LessonSummary } from "../../api/lessonApi";
 import { getChapter, getCourse, type ChapterDetail } from "../../api/courseApi";
 import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
 import { ModeratorChapterSkillsOverview } from "./ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "./ModeratorLessonListTab";
+import { ModeratorGrammarDetailPage } from "./grammar/ModeratorGrammarDetailPage";
+import { GrammarQuestionListPage } from "./grammar/GrammarQuestionListPage";
 import { ModeratorGrammarListPage } from "./ModeratorGrammarListPage";
+import { ModeratorVocabularyLessonPage } from "./ModeratorVocabularyLessonPage";
+import { VocabularyChapterFlashcards } from "./VocabularyChapterFlashcards";
+import { VocabularyChapterTestPage } from "./VocabularyChapterTestPage";
 import { ModeratorSkillItemListPage } from "./ModeratorSkillItemListPage";
+import { ModeratorKanjiPage } from "./kanji/ModeratorKanjiPage";
 
 // Re-export for external consumers
 export { SECTIONS, type LessonSection, type SectionConfig };
@@ -86,7 +92,9 @@ export function ModeratorChapterDetailPage({
   const skillFromUrl = searchParams.get("skill") as LessonSection | null;
   const validSkill = SECTIONS.some((s) => s.key === skillFromUrl) ? skillFromUrl : null;
 
-  const [selectedSection, setSelectedSectionState] = useState<LessonSection | null>(() => validSkill);
+  const [selectedSection, setSelectedSectionState] = useState<LessonSection | null>(
+    () => validSkill,
+  );
 
   // Sync if URL query changes
   useEffect(() => {
@@ -103,9 +111,11 @@ export function ModeratorChapterDetailPage({
           const next = new URLSearchParams(prev);
           next.set("skill", sec);
           next.delete("lessonId");
+          next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
-        { replace: true }
+        { replace: true },
       );
     } else {
       setSearchParams(
@@ -113,28 +123,55 @@ export function ModeratorChapterDetailPage({
           const next = new URLSearchParams(prev);
           next.delete("skill");
           next.delete("lessonId");
+          next.delete("grammarId");
+          next.delete("questionList");
           return next;
         },
-        { replace: true }
+        { replace: true },
       );
     }
   };
 
   // Only show lesson sub-items if lessonId is explicitly in URL query
   const lessonIdParam = searchParams.get("lessonId");
-  const [activeLessonForItems, setActiveLessonForItemsState] = useState<LessonSummary | null>(() => {
-    if (!lessonIdParam) return null;
-    const saved = sessionStorage.getItem("moderator-active-lesson");
-    if (saved) {
-      try {
-        const item = JSON.parse(saved) as LessonSummary;
-        if (String(item.id) === lessonIdParam) return item;
-      } catch {
-        return null;
+  const [activeLessonForItems, setActiveLessonForItemsState] = useState<LessonSummary | null>(
+    () => {
+      if (!lessonIdParam) return null;
+      const saved = sessionStorage.getItem("moderator-active-lesson");
+      if (saved) {
+        try {
+          const item = JSON.parse(saved) as LessonSummary;
+          if (String(item.id) === lessonIdParam) return item;
+        } catch {
+          return null;
+        }
       }
-    }
-    return null;
-  });
+      return null;
+    },
+  );
+
+  const [lessonLoading, setLessonLoading] = useState(false);
+  const [lessonError, setLessonError] = useState("");
+  const [lessonRetry, setLessonRetry] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setLessonError("");
+    setActiveLessonForItemsState(null);
+    if (!lessonIdParam) { setLessonLoading(false); return; }
+    const id = Number(lessonIdParam);
+    if (!Number.isSafeInteger(id) || id <= 0) { setLessonError("Bài học không hợp lệ."); return; }
+    setLessonLoading(true);
+    getLessonById(id).then(lesson => {
+      if (!active) return;
+      const section = SECTIONS.find(s => s.key === validSkill);
+      if (lesson.chapterId !== chapterId || (section && lesson.skillType !== section.skillType)) {
+        setLessonError("Bài học không thuộc chương hoặc kỹ năng đã chọn."); return;
+      }
+      setActiveLessonForItemsState(lesson);
+    }).catch(() => { if (active) setLessonError("Không thể tải bài học. Vui lòng thử lại."); })
+      .finally(() => { if (active) setLessonLoading(false); });
+    return () => { active = false; };
+  }, [lessonIdParam, chapterId, validSkill, lessonRetry]);
 
   // Sync if lessonId in URL is removed (e.g. user pressed back)
   useEffect(() => {
@@ -151,9 +188,12 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.set("lessonId", String(lesson.id));
+          next.delete("grammarId");
+          next.delete("questionList");
+          next.delete("vocabTab");
           return next;
         },
-        { replace: true }
+        { replace: true },
       );
     } else {
       sessionStorage.removeItem("moderator-active-lesson");
@@ -161,9 +201,12 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.delete("lessonId");
+          next.delete("grammarId");
+          next.delete("questionList");
+          next.delete("vocabTab");
           return next;
         },
-        { replace: true }
+        { replace: true },
       );
     }
   };
@@ -172,17 +215,109 @@ export function ModeratorChapterDetailPage({
   const chapterNo = chapterDetail?.chapterNo || initialChapterNo || chapterId;
   const chapterTitle = chapterDetail?.title || initialChapterTitle || `Chương ${chapterNo}`;
   const activeConfig = SECTIONS.find((s) => s.key === selectedSection);
+  const grammarIdParam = searchParams.get("grammarId");
+  const grammarId = grammarIdParam && /^\d+$/.test(grammarIdParam) ? Number(grammarIdParam) : null;
+
+  // Show the selected lesson's grammar detail directly.
+  if (lessonIdParam && (lessonLoading || lessonError)) {
+    return <div className="admin-page-container">
+      <button className="mod-btn-back" onClick={() => handleViewLessonItems(null)}>← Danh sách bài học</button>
+      {lessonLoading ? <p role="status">Đang tải bài học…</p> : <p role="alert">{lessonError} <button onClick={() => setLessonRetry(n => n + 1)}>Thử lại</button></p>}
+    </div>;
+  }
+  const setChapterView = (view: string | null) =>
+    setSearchParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("lessonId");
+        next.delete("vocabTab");
+        if (view) next.set("vocabChapterView", view);
+        else next.delete("vocabChapterView");
+        return next;
+      },
+      { replace: true },
+    );
+  if (activeConfig?.key === "vocabulary" && searchParams.get("vocabChapterView") === "flashcards") {
+    return (
+      <VocabularyChapterFlashcards
+        chapterId={chapterId}
+        chapterNo={chapterNo}
+        courseName={courseName}
+        onBack={() => setChapterView(null)}
+      />
+    );
+  }
+  if (activeConfig?.key === "vocabulary" && searchParams.get("vocabChapterView") === "test") {
+    return (
+      <VocabularyChapterTestPage
+        chapterId={chapterId}
+        chapterNo={chapterNo}
+        courseName={courseName}
+        onBack={() => setChapterView(null)}
+      />
+    );
+  }
+
+  if (lessonIdParam && activeConfig?.key === "vocabulary") {
+    return (
+      <ModeratorVocabularyLessonPage
+        key={lessonIdParam}
+        lessonId={Number(lessonIdParam)}
+        chapterId={chapterId}
+        courseName={courseName}
+        chapterNo={chapterNo}
+        chapterTitle={chapterTitle}
+        onBack={() => handleViewLessonItems(null)}
+      />
+    );
+  }
 
   // 1. SUB-PAGE: LIST OF ITEMS FOR A SPECIFIC LESSON (e.g. list_grammar)
   // ONLY render when lessonId is in URL and activeLessonForItems exists
   if (lessonIdParam && activeLessonForItems && activeConfig) {
+    if (activeConfig.key === "kanji") {
+      return <ModeratorKanjiPage key={activeLessonForItems.id} lesson={activeLessonForItems} onBack={() => handleViewLessonItems(null)} />;
+    }
     if (activeConfig.key === "grammar") {
+      if (searchParams.get("questionList") === "1" && grammarId != null && grammarId > 0) {
+        return (
+          <GrammarQuestionListPage
+            key={grammarId}
+            grammarId={grammarId}
+            courseName={courseName}
+            chapterNo={chapterNo}
+            lessonTitle={activeLessonForItems.title}
+            lessonId={activeLessonForItems.id}
+            onBack={() => {
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.delete("questionList");
+                return next;
+              });
+            }}
+          />
+        );
+      }
       return (
-        <ModeratorGrammarListPage
+        <ModeratorGrammarDetailPage
+          grammarId={grammarId}
           courseName={courseName}
           chapterNo={chapterNo}
-          chapterTitle={chapterTitle}
           lesson={activeLessonForItems}
+          onSelectGrammar={(id) => setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (id == null) next.delete("grammarId");
+            else next.set("grammarId", String(id));
+            return next;
+          }, { replace: true })}
+          onViewQuestions={(selectedGrammarId) => {
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set("grammarId", String(selectedGrammarId));
+              next.set("questionList", "1");
+              return next;
+            });
+          }}
           onBack={() => handleViewLessonItems(null)}
         />
       );
@@ -228,6 +363,8 @@ export function ModeratorChapterDetailPage({
       onSelectSection={(secKey) => handleSelectSection(secKey)}
       onBackToOverview={() => handleSelectSection(null)}
       onViewLessonItems={(lesson) => handleViewLessonItems(lesson)}
+      onOpenChapterFlashcards={() => setChapterView("flashcards")}
+      onOpenChapterTest={() => setChapterView("test")}
     />
   );
 }

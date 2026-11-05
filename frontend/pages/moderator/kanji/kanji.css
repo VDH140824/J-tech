@@ -1,0 +1,42 @@
+.kanji-page input,.kanji-page select,.kanji-page textarea{padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;max-width:100%}
+.kanji-page button{cursor:pointer;border:none;border-radius:8px;padding:8px 16px;font:inherit;font-weight:500;transition:background .18s,opacity .18s,transform .1s}
+.kanji-page button:not(:disabled):active{transform:scale(.97)}
+.kanji-page button:disabled{cursor:default;opacity:.55}
+
+/* Nút + Thêm Kanji & Quản lý Kanji */
+.kanji-page .mod-btn-add{background:#7c3aed;color:#fff}
+.kanji-page .mod-btn-add:not(:disabled):hover{background:#6d28d9;transform:translateY(-1px);box-shadow:0 4px 14px rgba(109,40,217,.35)}
+.kanji-page .mod-btn-add:disabled{opacity:.55;cursor:default}
+
+/* Nút xem chi tiết trong bảng danh sách */
+.kanji-table button{background:#3b82f6;color:#fff}
+.kanji-table button:not(:disabled):hover{background:#2563eb}
+
+/* Nút phân trang */
+.kanji-pagination button{background:#e2e8f0;color:#1e293b;padding:8px 20px}
+.kanji-pagination button:not(:disabled):hover{background:#cbd5e1}
+
+/* Nút đóng popup */
+.kanji-close{position:absolute;right:16px;top:12px;font-size:24px;border:0!important;background:transparent!important;color:#64748b;padding:4px 8px!important;border-radius:6px!important}
+.kanji-close:not(:disabled):hover{background:#f1f5f9!important;color:#1e293b}
+
+/* Nút Chọn ảnh */
+.kanji-dialog button[type="button"]{background:#64748b;color:#fff}
+.kanji-dialog button[type="button"]:not(:disabled):hover{background:#475569}
+
+/* Nút Lưu Kanji */
+.kanji-dialog button[type="submit"]{background:#16a34a;color:#fff;width:100%;padding:12px;font-size:1rem;margin-top:8px;text-align:center;justify-content:center}
+.kanji-dialog button[type="submit"]:not(:disabled):hover{background:#15803d}
+
+/* Nút Chỉnh sửa & Xóa trong chi tiết */
+.kanji-pagination button.btn-edit{background:#f59e0b;color:#fff}
+.kanji-pagination button.btn-edit:not(:disabled):hover{background:#d97706}
+.kanji-pagination button.btn-delete{background:#ef4444;color:#fff}
+.kanji-pagination button.btn-delete:not(:disabled):hover{background:#dc2626}
+
+.kanji-table{overflow-x:auto}.kanji-table table{width:100%;border-collapse:collapse;text-align:left}.kanji-table th,.kanji-table td{padding:16px;border-bottom:1px solid #e2e8f0}
+.kanji-character{font-size:2rem}.kanji-pagination{display:flex;gap:16px;align-items:center;margin:20px 0}.kanji-error{color:#b91c1c}
+.kanji-overlay{position:fixed;inset:0;z-index:1000;background:#0f172a88;display:flex;align-items:center;justify-content:center;padding:20px}
+.kanji-dialog{position:relative;background:white;border-radius:16px;padding:28px;width:640px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px #0003}
+.kanji-dialog fieldset{border:0;padding:0}.kanji-dialog label{display:flex;flex-direction:column;gap:6px;margin:14px 0}.kanji-dialog textarea{min-height:90px;resize:vertical}
+.kanji-image{max-width:100%;max-height:220px;object-fit:contain}.kanji-dialog .kanji-check{flex-direction:row}.kanji-dialog dt{font-weight:700;margin-top:14px}.kanji-dialog dd{margin:6px 0;white-space:pre-wrap;overflow-wrap:anywhere}

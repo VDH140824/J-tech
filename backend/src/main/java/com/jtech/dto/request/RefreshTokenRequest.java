@@ -9,8 +9,7 @@ public class RefreshTokenRequest {
     @Size(min = 1, max = 5000)
     private String refreshToken;
 
-    public RefreshTokenRequest() {
-    }
+    public RefreshTokenRequest() {}
 
     public RefreshTokenRequest(String refreshToken) {
         this.refreshToken = refreshToken;

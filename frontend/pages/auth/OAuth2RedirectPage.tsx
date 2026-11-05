@@ -23,7 +23,7 @@ export function OAuth2RedirectPage() {
     }
 
     const code = searchParams.get("code") || undefined;
-
+    // gửi exchangeOAuth2Code(code) nhận user (định nghĩa ở authApi.ts)
     exchangeOAuth2Code(code)
       .then((user) => {
         if (!user || !user.accessToken) {

@@ -6,7 +6,12 @@ import "./ModeratorSidebar.css";
 function DekiruModBadgeIcon() {
   return (
     <div className="mod-brand-icon-box">
-      <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 40 40"
+        fill="none"
+      >
         <g transform="translate(20, 20)">
           {[0, 72, 144, 216, 288].map((angle, i) => (
             <path
@@ -16,8 +21,18 @@ function DekiruModBadgeIcon() {
               fill="#0D9488"
             />
           ))}
-          <circle cx="0" cy="0" r="3.5" fill="#F0FDFA" />
-          <circle cx="0" cy="0" r="2" fill="#5EEAD4" />
+          <circle
+            cx="0"
+            cy="0"
+            r="3.5"
+            fill="#F0FDFA"
+          />
+          <circle
+            cx="0"
+            cy="0"
+            r="2"
+            fill="#5EEAD4"
+          />
         </g>
       </svg>
     </div>
@@ -44,11 +59,14 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
   return (
     <aside className="admin-dekiru-sidebar mod-sidebar">
       {/* Brand Header */}
-      <div className="admin-sidebar-header" onClick={() => navigate("/home")}>
+      <div
+        className="admin-sidebar-header"
+        onClick={() => navigate("/home")}
+      >
         <DekiruModBadgeIcon />
         <div className="admin-sidebar-brand-text">
           <div className="brand-name-row">
-            <span className="brand-name">J-Tech</span>
+            <span className="brand-name">JTech</span>
             <span className="mod-pill-badge">MOD</span>
           </div>
           <span className="brand-sub">Quản trị nội dung</span>
@@ -57,6 +75,14 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
 
       {/* Nav Menu */}
       <nav className="admin-sidebar-menu">
+        <button
+          type="button"
+          className={`admin-nav-item ${currentTab === "feedback" ? "active mod-active" : ""}`}
+          onClick={() => handleNavClick("feedback", "/moderator/feedback")}
+        >
+          <span className="admin-nav-icon">💬</span>
+          <span className="admin-nav-label">Phản hồi nội dung học</span>
+        </button>
         <div className="admin-menu-section-label">QUẢN TRỊ NỘI DUNG</div>
 
         {/* 1. Danh sách môn học */}
@@ -67,6 +93,14 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
         >
           <span className="admin-nav-icon">📚</span>
           <span className="admin-nav-label">Danh sách môn học</span>
+        </button>
+        <button
+          type="button"
+          className={`admin-nav-item ${currentTab === "classes" ? "active mod-active" : ""}`}
+          onClick={() => handleNavClick("classes", "/moderator/classes")}
+        >
+          <span className="admin-nav-icon">👥</span>
+          <span className="admin-nav-label">Danh sách lớp học</span>
         </button>
       </nav>
 

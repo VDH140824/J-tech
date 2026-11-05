@@ -6,7 +6,11 @@
   min-height: 100vh;
   background-color: #f8fafc;
   color: #1e293b;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
   box-sizing: border-box;
   width: 100%;
 }

@@ -2,7 +2,9 @@
    BASE & RESET STYLES
    ========================================================================== */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -32,7 +34,12 @@ body {
 }
 
 /* Headings */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   color: var(--text-main);
   font-weight: 700;
@@ -75,7 +82,10 @@ a:hover {
 }
 
 /* Code */
-code, kbd, samp, pre {
+code,
+kbd,
+samp,
+pre {
   font-family: var(--font-mono);
   font-size: 0.875em;
 }
@@ -88,7 +98,10 @@ code {
 }
 
 /* Buttons and Inputs default reset */
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font-family: inherit;
   font-size: inherit;
 }

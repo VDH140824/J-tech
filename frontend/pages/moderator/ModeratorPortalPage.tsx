@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useMatch, useSearchParams } from "react-router-dom";
 import { ModeratorCoursesTab } from "./ModeratorCoursesTab";
+import { ClassListPage } from "./ClassListPage";
 import { ModeratorChapterDetailPage } from "./ModeratorChapterDetailPage";
 import { ModeratorLayout } from "../../layouts/ModeratorLayout";
+import { ModeratorKanjiManagementPage } from "./kanji/ModeratorKanjiManagementPage";
+import { FeedbackPage } from "../feedback/FeedbackPage";
 import { SECTIONS } from "./sectionConfig";
 import type { ChapterDetail } from "../../api/courseApi";
 import "../admin/AdminPortalPage.css";
 import "./ModeratorPortalPage.css";
 
-export type ModeratorTab = "courses" | "chapter-detail";
+export type ModeratorTab = "courses" | "chapter-detail" | "kanji" | "classes" | "feedback";
 
 export interface ModeratorNavState {
   courseId: number;
@@ -25,6 +28,7 @@ export function ModeratorPortalPage() {
 
   // Match clean URL pattern: /moderator/courses/:courseId/chapters/:chapterId
   const matchChapter = useMatch("/moderator/courses/:courseId/chapters/:chapterId");
+  const matchClasses = useMatch("/moderator/classes");
 
   const [chapterInfo, setChapterInfo] = useState<ChapterDetail | null>(null);
 
@@ -41,9 +45,29 @@ export function ModeratorPortalPage() {
     }
   }, [location.pathname, searchParams, navigate]);
 
-  const activeTab: ModeratorTab = matchChapter ? "chapter-detail" : "courses";
+  const activeTab: ModeratorTab =
+    location.pathname.replace(/\/$/, "") === "/moderator/kanji"
+      ? "kanji"
+      : matchClasses
+        ? "classes"
+        : location.pathname === "/moderator/feedback"
+          ? "feedback"
+          : matchChapter
+            ? "chapter-detail"
+            : "courses";
 
   const handleSelectTab = (tab: string) => {
+    if (tab === "kanji") {
+      setChapterInfo(null);
+      navigate("/moderator/kanji");
+      return;
+    }
+    if (tab === "classes") {
+      setChapterInfo(null);
+      navigate("/moderator/classes");
+      return;
+    }
+    if (tab === "feedback") navigate("/moderator/feedback");
     if (tab === "courses") {
       setChapterInfo(null);
       navigate("/moderator");
@@ -64,6 +88,7 @@ export function ModeratorPortalPage() {
   const skillConfig = SECTIONS.find((s) => s.key === skillParam);
 
   let breadcrumb = "Trang chủ / Danh sách môn học";
+  if (activeTab === "classes") breadcrumb = "Trang chủ / Quản lý lớp học";
   if (activeTab === "chapter-detail") {
     if (chapterInfo && chapterInfo.courseName) {
       breadcrumb = `Trang chủ / ${chapterInfo.courseName} / Chương ${chapterInfo.chapterNo}: ${chapterInfo.title}`;
@@ -76,6 +101,7 @@ export function ModeratorPortalPage() {
   }
 
   const courseId = matchChapter?.params.courseId ? Number(matchChapter.params.courseId) : null;
+  if (activeTab === "kanji") breadcrumb = "Trang chủ / Quản lý Kanji";
   const chapterId = matchChapter?.params.chapterId ? Number(matchChapter.params.chapterId) : null;
 
   return (
@@ -85,8 +111,14 @@ export function ModeratorPortalPage() {
       title="Quản trị nội dung"
       breadcrumb={breadcrumb}
     >
+      {activeTab === "kanji" && <ModeratorKanjiManagementPage />}
+      {activeTab === "classes" && <ClassListPage />}
+      {activeTab === "feedback" && <FeedbackPage portal="moderator" />}
       {activeTab === "courses" && (
-        <ModeratorCoursesTab onViewChapter={handleViewChapter} />
+        <ModeratorCoursesTab
+          onViewChapter={handleViewChapter}
+          initialCourseId={Number(searchParams.get("courseId")) || undefined}
+        />
       )}
       {activeTab === "chapter-detail" && courseId && chapterId && (
         <ModeratorChapterDetailPage

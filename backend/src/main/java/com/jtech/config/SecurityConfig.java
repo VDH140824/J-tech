@@ -1,10 +1,11 @@
 package com.jtech.config;
 
 import com.jtech.repository.UserRepository;
+import com.jtech.security.CustomUserDetailsService;
 import com.jtech.security.JwtAuthenticationFilter;
 import com.jtech.security.JwtService;
 import com.jtech.security.RestAuthenticationEntryPoint;
-import com.jtech.security.CustomUserDetailsService;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -18,8 +19,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -32,11 +31,12 @@ public class SecurityConfig {
     private final com.jtech.security.OAuth2SuccessHandler oAuth2SuccessHandler;
 
     public SecurityConfig(
-            JwtService jwtService,
-            CustomUserDetailsService customUserDetailsService,
-            UserRepository userRepository,
-            RestAuthenticationEntryPoint restAuthenticationEntryPoint,
-            com.jtech.security.OAuth2SuccessHandler oAuth2SuccessHandler) {
+        JwtService jwtService,
+        CustomUserDetailsService customUserDetailsService,
+        UserRepository userRepository,
+        RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+        com.jtech.security.OAuth2SuccessHandler oAuth2SuccessHandler
+    ) {
         this.jwtService = jwtService;
         this.customUserDetailsService = customUserDetailsService;
         this.userRepository = userRepository;
@@ -46,8 +46,11 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        JwtAuthenticationFilter jwtAuthenticationFilter =
-                new JwtAuthenticationFilter(jwtService, customUserDetailsService, userRepository);
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(
+            jwtService,
+            customUserDetailsService,
+            userRepository
+        );
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -66,6 +69,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**")
                         .permitAll()
+                        .requestMatchers("/kanji/**", "/lessons/*/kanji").hasAnyAuthority("ROLE_MODERATOR", "MODERATOR")
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ADMIN")
                         .anyRequest()
                         .authenticated())

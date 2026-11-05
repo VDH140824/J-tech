@@ -176,10 +176,18 @@
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
 }
 
-.pink-card { border-color: #fecdd3; }
-.blue-card { border-color: #bfdbfe; }
-.green-card { border-color: #bbf7d0; }
-.orange-card { border-color: #fed7aa; }
+.pink-card {
+  border-color: #fecdd3;
+}
+.blue-card {
+  border-color: #bfdbfe;
+}
+.green-card {
+  border-color: #bbf7d0;
+}
+.orange-card {
+  border-color: #fed7aa;
+}
 
 .card-art-box {
   height: 80px;
@@ -225,10 +233,18 @@
   border-radius: inherit;
 }
 
-.pink-fill { background-color: #f43f5e; }
-.blue-fill { background-color: #3b82f6; }
-.green-fill { background-color: #10b981; }
-.orange-fill { background-color: #f97316; }
+.pink-fill {
+  background-color: #f43f5e;
+}
+.blue-fill {
+  background-color: #3b82f6;
+}
+.green-fill {
+  background-color: #10b981;
+}
+.orange-fill {
+  background-color: #f97316;
+}
 
 .course-progress-info {
   display: flex;
@@ -261,11 +277,21 @@
   transform: scale(1.1);
 }
 
-.pink-btn { background-color: #f43f5e; }
-.blue-btn { background-color: #3b82f6; }
-.green-btn { background-color: #10b981; }
-.orange-btn { background-color: #f97316; }
-.purple-btn { background-color: #a855f7; }
+.pink-btn {
+  background-color: #f43f5e;
+}
+.blue-btn {
+  background-color: #3b82f6;
+}
+.green-btn {
+  background-color: #10b981;
+}
+.orange-btn {
+  background-color: #f97316;
+}
+.purple-btn {
+  background-color: #a855f7;
+}
 
 /* ==========================================================================
    FEATURE CARDS GRID
@@ -292,10 +318,22 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
 
-.pink-feature { background-color: #fff5f7; border-color: #fecdd3; }
-.blue-feature { background-color: #f0f7ff; border-color: #bfdbfe; }
-.green-feature { background-color: #f0fdf4; border-color: #bbf7d0; }
-.purple-feature { background-color: #faf5ff; border-color: #e9d5ff; }
+.pink-feature {
+  background-color: #fff5f7;
+  border-color: #fecdd3;
+}
+.blue-feature {
+  background-color: #f0f7ff;
+  border-color: #bfdbfe;
+}
+.green-feature {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.purple-feature {
+  background-color: #faf5ff;
+  border-color: #e9d5ff;
+}
 
 .feature-icon-badge {
   width: 38px;
@@ -517,9 +555,15 @@
   border-radius: 50%;
 }
 
-.green-dot { background-color: #10b981; }
-.blue-dot { background-color: #3b82f6; }
-.purple-dot { background-color: #a855f7; }
+.green-dot {
+  background-color: #10b981;
+}
+.blue-dot {
+  background-color: #3b82f6;
+}
+.purple-dot {
+  background-color: #a855f7;
+}
 
 .breakdown-val {
   color: #64748b;
@@ -538,9 +582,15 @@
   border-radius: inherit;
 }
 
-.green-bg-fill { background-color: #10b981; }
-.blue-bg-fill { background-color: #3b82f6; }
-.purple-bg-fill { background-color: #a855f7; }
+.green-bg-fill {
+  background-color: #10b981;
+}
+.blue-bg-fill {
+  background-color: #3b82f6;
+}
+.purple-bg-fill {
+  background-color: #a855f7;
+}
 
 /* Motivation Card */
 .motivation-card {
@@ -615,9 +665,15 @@
   color: #ffffff;
 }
 
-.green-shield { background-color: #10b981; }
-.blue-shield { background-color: #3b82f6; }
-.purple-shield { background-color: #a855f7; }
+.green-shield {
+  background-color: #10b981;
+}
+.blue-shield {
+  background-color: #3b82f6;
+}
+.purple-shield {
+  background-color: #a855f7;
+}
 
 .badge-label-text {
   font-size: 0.82rem;

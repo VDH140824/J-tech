@@ -11,18 +11,18 @@ public class CloudinaryUploadResponse {
     private Integer height;
     private String thumbnailUrl;
 
-    public CloudinaryUploadResponse() {
-    }
+    public CloudinaryUploadResponse() {}
 
     public CloudinaryUploadResponse(
-            String videoUrl,
-            String publicId,
-            String resourceType,
-            String format,
-            Double duration,
-            Integer width,
-            Integer height,
-            String thumbnailUrl) {
+        String videoUrl,
+        String publicId,
+        String resourceType,
+        String format,
+        Double duration,
+        Integer width,
+        Integer height,
+        String thumbnailUrl
+    ) {
         this.videoUrl = videoUrl;
         this.publicId = publicId;
         this.resourceType = resourceType;

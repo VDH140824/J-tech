@@ -1,16 +1,22 @@
 package com.jtech.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import lombok.*;
 
 @Entity
 @Table(name = "user_account")
-@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", columnDefinition = "BIGINT UNSIGNED")
     private Long userId;
 
@@ -37,31 +43,55 @@ public class User {
     private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20,
-            columnDefinition = "ENUM('PENDING','ACTIVE','REJECTED','LOCKED') NOT NULL DEFAULT 'PENDING'")
+    @Column(
+        name = "status",
+        nullable = false,
+        length = 20,
+        columnDefinition = "ENUM('PENDING','ACTIVE','REJECTED','LOCKED') NOT NULL DEFAULT 'PENDING'"
+    )
     @Builder.Default
     private UserStatus status = UserStatus.PENDING;
 
-    @Column(name = "coin_balance", nullable = false, columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0")
+    @Column(
+        name = "coin_balance",
+        nullable = false,
+        columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0"
+    )
     @Builder.Default
     private Integer coinBalance = 0;
 
-    @Column(name = "current_streak", nullable = false, columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0")
+    @Column(
+        name = "current_streak",
+        nullable = false,
+        columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0"
+    )
     @Builder.Default
     private Integer currentStreak = 0;
 
-    @Column(name = "longest_streak", nullable = false, columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0")
+    @Column(
+        name = "longest_streak",
+        nullable = false,
+        columnDefinition = "INT UNSIGNED NOT NULL DEFAULT 0"
+    )
     @Builder.Default
     private Integer longestStreak = 0;
 
     @Column(name = "last_study_date")
     private LocalDate lastStudyDate;
 
-    @Column(name = "reminder_enabled", nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT FALSE")
+    @Column(
+        name = "reminder_enabled",
+        nullable = false,
+        columnDefinition = "BOOLEAN NOT NULL DEFAULT FALSE"
+    )
     @Builder.Default
     private Boolean reminderEnabled = false;
 
-    @Column(name = "reminder_time", nullable = false, columnDefinition = "TIME NOT NULL DEFAULT '20:00:00'")
+    @Column(
+        name = "reminder_time",
+        nullable = false,
+        columnDefinition = "TIME NOT NULL DEFAULT '20:00:00'"
+    )
     @Builder.Default
     private LocalTime reminderTime = LocalTime.of(20, 0);
 
@@ -95,5 +125,4 @@ public class User {
     public void setDisplayName(String displayName) {
         this.fullName = displayName;
     }
-
 }

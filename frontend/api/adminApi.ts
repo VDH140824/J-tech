@@ -31,7 +31,9 @@ export async function getAdminUsers(params: {
 /**
  * GET /api/admin/users/pending
  */
-export async function getPendingAdminUsers(params: { page?: number; size?: number } = {}): Promise<AdminUsersPageResponse> {
+export async function getPendingAdminUsers(
+  params: { page?: number; size?: number } = {},
+): Promise<AdminUsersPageResponse> {
   const { data } = await apiClient.get<AdminUsersPageResponse>("/admin/users/pending", { params });
   return data;
 }
@@ -43,22 +45,25 @@ export async function approvePendingUser(userId: number): Promise<UserResponse> 
 }
 
 /** PUT /api/admin/users/:id/reject */
-export async function rejectPendingUser(userId: number): Promise<UserResponse> {
-  const { data } = await apiClient.put<UserResponse>(`/admin/users/${userId}/reject`);
+export async function rejectPendingUser(userId: number, statusReason: string): Promise<UserResponse> {
+  const { data } = await apiClient.put<UserResponse>(`/admin/users/${userId}/reject`, { statusReason });
   return data;
 }
 
 /**
  * PATCH /api/admin/users/:id/status
  */
-export async function changeAdminUserRole(userId: number, role: "STUDENT" | "MODERATOR" | "ADMIN"): Promise<UserResponse> {
+export async function changeAdminUserRole(
+  userId: number,
+  role: "STUDENT" | "MODERATOR" | "ADMIN",
+): Promise<UserResponse> {
   const { data } = await apiClient.put<UserResponse>(`/admin/users/${userId}/role`, { role });
   return data;
 }
 
 export async function updateAdminUserStatus(
   userId: number,
-  payload: AdminUserStatusRequest
+  payload: AdminUserStatusRequest,
 ): Promise<UserResponse> {
   const { data } = await apiClient.patch<UserResponse>(`/admin/users/${userId}/status`, payload);
   return data;

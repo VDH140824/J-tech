@@ -13,6 +13,7 @@ public class AdminDashboardStatsResponse {
     private List<MonthlyStat> userGrowthStats;
 
     public static class MonthlyStat {
+
         private String label;
         private long value;
 
@@ -21,27 +22,62 @@ public class AdminDashboardStatsResponse {
             this.value = value;
         }
 
-        public String getLabel() { return label; }
-        public long getValue() { return value; }
+        public String getLabel() {
+            return label;
+        }
+
+        public long getValue() {
+            return value;
+        }
     }
 
     public AdminDashboardStatsResponse() {}
 
-    public long getTotalUsers() { return totalUsers; }
-    public void setTotalUsers(long totalUsers) { this.totalUsers = totalUsers; }
+    public long getTotalUsers() {
+        return totalUsers;
+    }
 
-    public long getActiveUsers() { return activeUsers; }
-    public void setActiveUsers(long activeUsers) { this.activeUsers = activeUsers; }
+    public void setTotalUsers(long totalUsers) {
+        this.totalUsers = totalUsers;
+    }
 
-    public long getPendingUsers() { return pendingUsers; }
-    public void setPendingUsers(long pendingUsers) { this.pendingUsers = pendingUsers; }
+    public long getActiveUsers() {
+        return activeUsers;
+    }
 
-    public long getRejectedUsers() { return rejectedUsers; }
-    public void setRejectedUsers(long rejectedUsers) { this.rejectedUsers = rejectedUsers; }
+    public void setActiveUsers(long activeUsers) {
+        this.activeUsers = activeUsers;
+    }
 
-    public long getLockedUsers() { return lockedUsers; }
-    public void setLockedUsers(long lockedUsers) { this.lockedUsers = lockedUsers; }
+    public long getPendingUsers() {
+        return pendingUsers;
+    }
 
-    public List<MonthlyStat> getUserGrowthStats() { return userGrowthStats; }
-    public void setUserGrowthStats(List<MonthlyStat> userGrowthStats) { this.userGrowthStats = userGrowthStats; }
+    public void setPendingUsers(long pendingUsers) {
+        this.pendingUsers = pendingUsers;
+    }
+
+    public long getRejectedUsers() {
+        return rejectedUsers;
+    }
+
+    public void setRejectedUsers(long rejectedUsers) {
+        this.rejectedUsers = rejectedUsers;
+    }
+
+    public long getLockedUsers() {
+        return lockedUsers;
+    }
+
+    public void setLockedUsers(long lockedUsers) {
+        this.lockedUsers = lockedUsers;
+    }
+
+    public List<MonthlyStat> getUserGrowthStats() {
+        return userGrowthStats;
+    }
+
+    public void setUserGrowthStats(List<MonthlyStat> userGrowthStats) {
+        this.userGrowthStats = userGrowthStats;
+    }
 }
