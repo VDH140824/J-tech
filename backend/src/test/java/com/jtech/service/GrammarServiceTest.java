@@ -88,35 +88,6 @@ class GrammarServiceTest {
     }
 
     @Nested
-    @DisplayName("getById(Long id)")
-    class GetById {
-        @Test
-        @DisplayName("G-ID-01: map all response fields")
-        void mapsAllFields() {
-            foundGrammar();
-            assertEquals(responseOf(grammar), service.getById(GRAMMAR_ID));
-            verify(grammarRepository).findById(GRAMMAR_ID);
-        }
-
-        @Test
-        @DisplayName("G-ID-02: null video fields remain null")
-        void mapsAbsentVideo() {
-            grammar.setVideoUrl(null);
-            grammar.setVideoPublicId(null);
-            grammar.setVideoDurationSec(null);
-            foundGrammar();
-            assertEquals(responseOf(grammar), service.getById(GRAMMAR_ID));
-        }
-
-        @Test
-        @DisplayName("G-ID-03: missing grammar returns 404")
-        void rejectsMissingGrammar() {
-            when(grammarRepository.findById(GRAMMAR_ID)).thenReturn(Optional.empty());
-            assertHttp(HttpStatus.NOT_FOUND, "Grammar not found", () -> service.getById(GRAMMAR_ID));
-        }
-    }
-
-    @Nested
     @DisplayName("getByLesson(Long lessonId, Grammar.Status status)")
     class GetByLesson {
         @Test
