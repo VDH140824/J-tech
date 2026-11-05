@@ -102,6 +102,14 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
           <span className="admin-nav-icon">👥</span>
           <span className="admin-nav-label">Danh sách lớp học</span>
         </button>
+        <button
+          type="button"
+          className={`admin-nav-item ${currentTab === "conjugations" ? "active mod-active" : ""}`}
+          onClick={() => handleNavClick("conjugations", "/moderator/conjugation-forms")}
+        >
+          <span className="admin-nav-icon">🔄</span>
+          <span className="admin-nav-label">Quản lý thể chia</span>
+        </button>
       </nav>
 
       {/* Footer Back Home */}
