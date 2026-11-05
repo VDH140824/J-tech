@@ -188,3 +188,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+.feedback-popup-host { padding: 0; margin: 0; }
+.feedback-popup-host > :not(dialog) { display: none; }
+.feedback-modal { width: min(720px, calc(100% - 32px)); max-height: 90vh; overflow: auto; padding: 0; border: 0; border-radius: 20px; background: var(--bg-surface, #fff); color: inherit; box-shadow: 0 24px 80px #0f172a55; }
+.feedback-modal::backdrop { background: #0f172a99; }
+.feedback-modal .feedback-card { position: relative; margin: 0; padding: 28px; }
+.feedback-modal h2 { text-align: center; padding-inline: 32px; margin-bottom: 0; }
+.feedback-modal .feedback-close { position: absolute; top: 10px; right: 12px; border: 0; background: transparent; font-size: 24px; padding: 2px 10px; }
+.feedback-intro { text-align: center; color: #64748b; margin: 0; }

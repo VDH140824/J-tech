@@ -1,0 +1,40 @@
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (C:\Users\MSI-LAP\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.18\byte-buddy-agent-1.14.18.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+04:13:23.468 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+04:13:23.942 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+04:13:23.942 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+04:13:23.945 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+04:13:24.342 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.jtech.service.VocabularyMiniTestPersistenceTest]: VocabularyMiniTestPersistenceTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+04:13:24.792 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.jtech.JTechApplication for test class com.jtech.service.VocabularyMiniTestPersistenceTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.2)
+
+2026-11-05T04:13:25.145+07:00  INFO 41652 --- [jtech-backend] [           main] c.j.s.VocabularyMiniTestPersistenceTest  : Starting VocabularyMiniTestPersistenceTest using Java 21.0.12 with PID 41652 (started by MSI-LAP in D:\FPTU\K9_FALL2026\SEP490\J-tech\backend)
+2026-11-05T04:13:25.148+07:00  INFO 41652 --- [jtech-backend] [           main] c.j.s.VocabularyMiniTestPersistenceTest  : No active profile set, falling back to 1 default profile: "default"
+2026-11-05T04:13:26.561+07:00  INFO 41652 --- [jtech-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-05T04:13:26.645+07:00  INFO 41652 --- [jtech-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 74 ms. Found 10 JPA repository interfaces.
+2026-11-05T04:13:27.152+07:00  INFO 41652 --- [jtech-backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-11-05T04:13:27.219+07:00  INFO 41652 --- [jtech-backend] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2026-11-05T04:13:27.262+07:00  INFO 41652 --- [jtech-backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-11-05T04:13:27.406+07:00  INFO 41652 --- [jtech-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-05T04:13:27.447+07:00  INFO 41652 --- [jtech-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-05T04:13:27.636+07:00  INFO 41652 --- [jtech-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@14c7ab73
+2026-11-05T04:13:27.638+07:00  INFO 41652 --- [jtech-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-05T04:13:27.690+07:00  WARN 41652 --- [jtech-backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-11-05T04:13:28.696+07:00  INFO 41652 --- [jtech-backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-05T04:13:28.772+07:00  INFO 41652 --- [jtech-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-05T04:13:29.155+07:00  INFO 41652 --- [jtech-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-05T04:13:30.720+07:00  INFO 41652 --- [jtech-backend] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+2026-11-05T04:13:31.003+07:00 DEBUG 41652 --- [jtech-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, OAuth2AuthorizationRequestRedirectFilter, OAuth2LoginAuthenticationFilter, JwtAuthenticationFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2026-11-05T04:13:31.350+07:00  INFO 41652 --- [jtech-backend] [           main] c.j.s.VocabularyMiniTestPersistenceTest  : Started VocabularyMiniTestPersistenceTest in 6.474 seconds (process running for 10.419)

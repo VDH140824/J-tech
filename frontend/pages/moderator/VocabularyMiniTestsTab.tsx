@@ -16,6 +16,7 @@ const statusNames = { DRAFT: "Bản nháp", PUBLISHED: "Đã xuất bản", ARCH
 export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
   const [test, setTest] = useState<VocabularyMiniTest | null>(null);
   const [words, setWords] = useState<VocabularyItem[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -23,7 +24,7 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
   const [preview, setPreview] = useState<VocabularyMiniTest | null>(null);
   const [busy, setBusy] = useState(false);
   const [settings, setSettings] = useState<Settings>({
-    title: "Mini-test từ vựng",
+    title: "Exercise từ vựng",
     description: "Chọn định nghĩa đúng cho mỗi từ vựng.",
     durationMinutes: 10,
     passingScore: 70,
@@ -38,20 +39,24 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
       getMiniTests(lessonId, controller.signal),
       getVocabularies(`/lessons/${lessonId}/vocabularies`, controller.signal),
     ])
-      .then(([tests, vocabulary]) => {
+      .then(async ([tests, vocabulary]) => {
         if (!active) return;
         if (tests.length > 1) {
           setError(
-            "Bài này có nhiều mini-test cũ. Cần xử lý dữ liệu cũ trước khi áp dụng một mini-test mỗi bài.",
+            "Bài này có nhiều exercise cũ. Cần xử lý dữ liệu cũ trước khi áp dụng một exercise mỗi bài.",
           );
           setTest(null);
           return;
         }
-        const existing = tests[0] ?? null;
-        setTest(existing);
-        setWords(
-          vocabulary.filter((word) => word.status === "PUBLISHED" || word.status === "DRAFT"),
+        const existing = tests[0] ? await getMiniTest(tests[0].id) : null;
+        if (!active) return;
+        const available = vocabulary.filter(
+          (word) => word.status === "PUBLISHED" || word.status === "DRAFT",
         );
+        const previousIds = new Set(existing?.questions.map((question) => question.sourceVocabularyId));
+        setTest(existing);
+        setWords(available);
+        setSelectedIds(available.filter((word) => previousIds.has(word.id)).map((word) => word.id));
         if (existing)
           setSettings({
             title: existing.title,
@@ -79,10 +84,12 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
     setError("");
     setNotice("");
     try {
-      const saved = await generateMiniTest(lessonId, settings);
+      const saved = await generateMiniTest(lessonId, { ...settings, vocabularyIds: selectedIds });
       setTest(saved);
       setNotice(
-        `Đã lưu mini-test với ${saved.questionCount} câu từ đúng danh sách từ vựng của bài.`,
+        saved.status === "PUBLISHED"
+          ? `Đã xuất bản exercise với ${saved.questionCount} câu.`
+          : `Đã lưu exercise với ${saved.questionCount} câu ở trạng thái ${statusNames[saved.status].toLowerCase()}.`,
       );
     } catch (failure) {
       setError(miniTestError(failure));
@@ -116,19 +123,19 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
         role="status"
       >
         <div className="admin-loading-spinner" />
-        <p>Đang tải mini-test và từ vựng của bài...</p>
+        <p>Đang tải exercise và từ vựng của bài...</p>
       </div>
     );
   const hasHistory = !!test && test.attemptCount > 0;
-  const canGenerate = words.length >= 2 && !hasHistory;
+  const selectedWords = words.filter((word) => selectedIds.includes(word.id));
+  const canGenerate = selectedWords.length >= 2 && !hasHistory;
   return (
     <div className="mod-mini-tab">
       <div className="mod-mini-heading">
         <div>
-          <h3>Mini-test của bài học</h3>
+          <h3>Exercise của bài học</h3>
           <p>
-            Mỗi bài có một mini-test. Mỗi từ được gán cho bài tạo thành một câu; đáp án là các định
-            nghĩa được trộn ngẫu nhiên.
+            Chọn từ vựng để tạo câu hỏi. Mỗi từ được chọn tạo thành một câu.
           </p>
         </div>
         {test && (
@@ -172,25 +179,42 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
           <span>{test.attemptCount} lượt làm</span>
         </div>
       )}
-      <details className="mod-mini-source">
-        <summary>{words.length} từ vựng được gán cho bài này</summary>
+      <details className="mod-mini-source" open>
+        <summary>Chọn từ cho exercise · Đã chọn {selectedWords.length}/{words.length} từ</summary>
         <div className="table-responsive">
           <table className="admin-users-table">
             <thead>
               <tr>
+                <th>Chọn</th>
                 <th>Thứ tự</th>
                 <th>Thuật ngữ</th>
                 <th>Cách đọc</th>
                 <th>Định nghĩa</th>
+                <th>Trạng thái</th>
               </tr>
             </thead>
             <tbody>
               {words.map((word, index) => (
                 <tr key={word.id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      aria-label={`Chọn từ ${word.word}`}
+                      checked={selectedIds.includes(word.id)}
+                      disabled={busy || hasHistory}
+                      onChange={(event) => {
+                        const checked = event.target.checked;
+                        setSelectedIds((current) => checked
+                          ? [...current, word.id]
+                          : current.filter((id) => id !== word.id));
+                      }}
+                    />
+                  </td>
                   <td>{index + 1}</td>
                   <td>{word.word}</td>
                   <td>{word.reading}</td>
                   <td>{word.meaningVi}</td>
+                  <td>{word.status === "PUBLISHED" ? "Đã xuất bản" : "Bản nháp"}</td>
                 </tr>
               ))}
             </tbody>
@@ -200,8 +224,8 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
       {!canGenerate && (
         <p className="mod-mini-error">
           {hasHistory
-            ? "Mini-test đã có lượt làm nên không thể tạo lại câu hỏi, để giữ nguyên kết quả cũ."
-            : "Cần ít nhất hai từ có định nghĩa khác nhau để tạo đáp án trắc nghiệm. Số câu luôn bằng số từ được gán cho bài."}
+            ? "Exercise đã có lượt làm nên không thể tạo lại câu hỏi, để giữ nguyên kết quả cũ."
+            : "Chọn ít nhất hai từ có nghĩa khác nhau để tạo đáp án trắc nghiệm."}
         </p>
       )}
       <form
@@ -218,7 +242,7 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
                 className="modal-label"
                 htmlFor="generated-mini-title"
               >
-                Tên mini-test *
+                Tên exercise *
               </label>
               <input
                 id="generated-mini-title"
@@ -314,8 +338,7 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
           </div>
         </fieldset>
         <p className="mod-mini-list-note">
-          Câu hỏi và đáp án lấy từ DB, không nhập tay. Sau khi thay đổi từ vựng của bài, hãy cập
-          nhật lại mini-test trước khi cho học sinh làm.
+          Chọn trạng thái Đã xuất bản rồi bấm Xuất bản exercise để học sinh làm bài.
         </p>
         <div className="modal-actions-row">
           <button
@@ -325,9 +348,11 @@ export function VocabularyMiniTestsTab({ lessonId }: { lessonId: number }) {
           >
             {busy
               ? "Đang lưu..."
-              : test
-                ? "Cập nhật từ danh sách từ vựng"
-                : `Tạo mini-test từ ${words.length} từ`}
+              : settings.status === "PUBLISHED"
+                ? "Xuất bản exercise"
+                : test
+                ? "Cập nhật exercise"
+                : `Tạo exercise từ ${selectedWords.length} từ`}
           </button>
         </div>
       </form>

@@ -54,6 +54,22 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource><directory>src/main/resources</directory></resource>
+            <resource>
+                <directory>${project.basedir}/../doc/migrations</directory>
+                <targetPath>reward-migrations</targetPath>
+                <includes>
+                    <include>20261104_learning_streak.sql</include>
+                    <include>20261104_coin_reward_exp.sql</include>
+                    <include>20261104_coin_rules.sql</include>
+                    <include>20261104_feedback_roles.sql</include>
+                    <include>20261104_feedback_version.sql</include>
+                    <include>20261105_correct_reward_frames.sql</include>
+                    <include>20261105_correct_reward_avatars.sql</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin><groupId>org.springframework.boot</groupId><artifactId
         >spring-boot-maven-plugin</artifactId></plugin>

@@ -3,6 +3,7 @@ import {
   gradeMiniTestPreview,
   miniTestError,
   type MiniTestResult,
+  type StudentVocabularyExercise,
   type VocabularyMiniTest,
 } from "../../api/vocabularyMiniTestApi";
 
@@ -10,10 +11,12 @@ export function VocabularyMiniTestPreview({
   test,
   onBack,
   grade = gradeMiniTestPreview,
+  student = false,
 }: {
-  test: VocabularyMiniTest;
+  test: VocabularyMiniTest | StudentVocabularyExercise;
   onBack: () => void;
   grade?: (id: number, answers: Record<string, string>) => Promise<MiniTestResult>;
+  student?: boolean;
 }) {
   const [started, setStarted] = useState(false);
   const [deadline, setDeadline] = useState(0);
@@ -32,7 +35,9 @@ export function VocabularyMiniTestPreview({
         test.questions
           .filter((question) => question.questionType === "MATCHING")
           .map((question) => {
-            const choices = Object.values(question.matches);
+            const choices = "matches" in question
+              ? Object.values(question.matches)
+              : [...question.matchingOptions];
             for (let index = choices.length - 1; index > 0; index--) {
               const position = Math.floor(Math.random() * (index + 1));
               [choices[index], choices[position]] = [choices[position], choices[index]];
@@ -102,7 +107,7 @@ export function VocabularyMiniTestPreview({
     try {
       return (
         Object.values(JSON.parse(answer || "{}")).filter(Boolean).length ===
-        Object.keys(question.matches).length
+        ("matches" in question ? Object.keys(question.matches) : question.matchingPrompts).length
       );
     } catch {
       return false;
@@ -115,7 +120,7 @@ export function VocabularyMiniTestPreview({
       <div className="mod-mini-heading">
         <div>
           <h3>{test.title}</h3>
-          <p>Chế độ làm thử dành cho moderator, không ghi vào lịch sử học sinh.</p>
+          {!student && <p>Chế độ làm thử dành cho moderator, không ghi vào lịch sử học sinh.</p>}
         </div>
         <button
           type="button"
@@ -123,7 +128,7 @@ export function VocabularyMiniTestPreview({
           disabled={busy}
           onClick={onBack}
         >
-          Về danh sách
+          {student ? "Về bài học" : "Về danh sách"}
         </button>
       </div>
       {!started ? (
@@ -141,7 +146,7 @@ export function VocabularyMiniTestPreview({
             className="btn-modal-submit"
             onClick={start}
           >
-            Bắt đầu làm thử
+            {student ? "Bắt đầu làm bài" : "Bắt đầu làm thử"}
           </button>
         </div>
       ) : (
@@ -242,7 +247,7 @@ export function VocabularyMiniTestPreview({
                   )}
                   {question.questionType === "MATCHING" && (
                     <div className="mod-mini-matching">
-                      {Object.keys(question.matches).map((left) => (
+                      {("matches" in question ? Object.keys(question.matches) : question.matchingPrompts).map((left) => (
                         <label key={left}>
                           <span>{left}</span>
                           <select
@@ -294,7 +299,7 @@ export function VocabularyMiniTestPreview({
                 className="btn-modal-submit"
                 onClick={start}
               >
-                Làm thử lại
+                {student ? "Làm lại" : "Làm thử lại"}
               </button>
             ) : (
               <>

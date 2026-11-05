@@ -74,7 +74,8 @@ class VocabularyMiniTestUnitTest {
                         "",
                         10,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT
+                        VocabularyMiniTest.Status.DRAFT,
+                        List.of(1L, 2L)
                     )
                 );
             assertTrue(v.isEmpty());
@@ -93,7 +94,8 @@ class VocabularyMiniTestUnitTest {
                         "",
                         5,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT
+                        VocabularyMiniTest.Status.DRAFT,
+                        List.of(1L, 2L)
                     )
                 );
             assertTrue(v.isEmpty());
@@ -112,7 +114,8 @@ class VocabularyMiniTestUnitTest {
                         "",
                         30,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT
+                        VocabularyMiniTest.Status.DRAFT,
+                        List.of(1L, 2L)
                     )
                 );
             assertTrue(v.isEmpty());
@@ -131,7 +134,8 @@ class VocabularyMiniTestUnitTest {
                         "",
                         4,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT
+                        VocabularyMiniTest.Status.DRAFT,
+                        List.of(1L, 2L)
                     )
                 );
             assertFalse(v.isEmpty());
@@ -153,7 +157,8 @@ class VocabularyMiniTestUnitTest {
                         "",
                         31,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT
+                        VocabularyMiniTest.Status.DRAFT,
+                        List.of(1L, 2L)
                     )
                 );
             assertFalse(v.isEmpty());
@@ -175,7 +180,8 @@ class VocabularyMiniTestUnitTest {
                         "",
                         null,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT
+                        VocabularyMiniTest.Status.DRAFT,
+                        List.of(1L, 2L)
                     )
                 );
             assertFalse(v.isEmpty());

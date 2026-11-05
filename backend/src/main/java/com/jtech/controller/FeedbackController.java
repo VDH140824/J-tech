@@ -124,6 +124,17 @@ public class FeedbackController {
         return service.resolve(id, type(portal), service.actor(principal, role(portal)), request);
     }
 
+    @GetMapping("/moderator/feedback/{id}/content-link")
+    public Map<String,String> contentLink(Principal principal,@PathVariable long id) {
+        service.actor(principal,"MODERATOR");
+        var detail=service.detail(id,null,"CONTENT");
+        Object available=detail.get("contentAvailable");
+        if(!(Boolean.TRUE.equals(available) || available instanceof Number n && n.intValue()==1))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Học liệu hoặc câu hỏi liên quan không còn khả dụng.");
+        return Map.of("url","/moderator/courses/"+detail.get("courseId")+"/chapters/"+detail.get("chapterId")+
+            "?lessonId="+detail.get("lessonId")+"&skill="+Objects.toString(detail.get("skillType"),"").toLowerCase(Locale.ROOT));
+    }
+
     @GetMapping("/feedback/notifications")
     public List<Map<String, Object>> notifications(Principal principal) {
         long userId = service.actor(principal, "STUDENT").getUserId();

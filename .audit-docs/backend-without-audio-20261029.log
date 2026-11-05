@@ -1,0 +1,343 @@
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.2)
+
+2026-10-29T22:38:42.193+07:00  INFO 24352 --- [jtech-backend] [           main] com.jtech.JTechApplication               : Starting JTechApplication using Java 21.0.12 with PID 24352 (D:\FPTU\K9_FALL2026\SEP490\J-tech\backend\target\classes started by MSI-LAP in D:\FPTU\K9_FALL2026\SEP490\J-tech\backend)
+2026-10-29T22:38:42.196+07:00  INFO 24352 --- [jtech-backend] [           main] com.jtech.JTechApplication               : No active profile set, falling back to 1 default profile: "default"
+2026-10-29T22:38:43.076+07:00  INFO 24352 --- [jtech-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:38:43.153+07:00  INFO 24352 --- [jtech-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 71 ms. Found 10 JPA repository interfaces.
+2026-10-29T22:38:44.116+07:00  INFO 24352 --- [jtech-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-10-29T22:38:44.134+07:00  INFO 24352 --- [jtech-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-29T22:38:44.134+07:00  INFO 24352 --- [jtech-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.26]
+2026-10-29T22:38:44.228+07:00  INFO 24352 --- [jtech-backend] [           main] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+2026-10-29T22:38:44.229+07:00  INFO 24352 --- [jtech-backend] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1984 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-10-29T22:38:44.439+07:00  INFO 24352 --- [jtech-backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:38:44.508+07:00  INFO 24352 --- [jtech-backend] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2026-10-29T22:38:44.561+07:00  INFO 24352 --- [jtech-backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-29T22:38:44.897+07:00  INFO 24352 --- [jtech-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:38:44.948+07:00  INFO 24352 --- [jtech-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-29T22:38:45.165+07:00  INFO 24352 --- [jtech-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@144e36ae
+2026-10-29T22:38:45.168+07:00  INFO 24352 --- [jtech-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-29T22:38:45.232+07:00  WARN 24352 --- [jtech-backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-29T22:38:46.301+07:00  INFO 24352 --- [jtech-backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:38:46.360+07:00  INFO 24352 --- [jtech-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:38:46.774+07:00  INFO 24352 --- [jtech-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-29T22:38:48.206+07:00  INFO 24352 --- [jtech-backend] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+2026-10-29T22:38:48.603+07:00 DEBUG 24352 --- [jtech-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, OAuth2AuthorizationRequestRedirectFilter, OAuth2LoginAuthenticationFilter, JwtAuthenticationFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2026-10-29T22:38:48.892+07:00  INFO 24352 --- [jtech-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/api'
+2026-10-29T22:38:48.908+07:00  INFO 24352 --- [jtech-backend] [           main] com.jtech.JTechApplication               : Started JTechApplication in 7.167 seconds (process running for 7.606)
+2026-10-29T22:39:16.743+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-29T22:39:16.743+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-29T22:39:16.743+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-10-29T22:39:16.771+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:16.771+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:16.803+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:17.038+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:17.187+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:17.209+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:19.416+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /moderator/vocabulary/chapters/1/flashcards
+2026-10-29T22:39:19.422+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /moderator/vocabulary/chapters/1/flashcards
+2026-10-29T22:39:19.431+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /moderator/vocabulary/chapters/1/flashcards
+2026-10-29T22:39:19.437+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public java.util.List com.jtech.controller.VocabularyChapterController.flashcards(java.lang.Long); target is of class [com.jtech.controller.VocabularyChapterController]
+2026-10-29T22:39:19.457+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public java.util.List com.jtech.controller.VocabularyChapterController.flashcards(java.lang.Long); target is of class [com.jtech.controller.VocabularyChapterController]
+2026-10-29T22:39:32.660+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:32.660+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:32.664+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:32.677+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:32.686+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:32.696+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:34.578+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /moderator/vocabulary/chapters/1/test
+2026-10-29T22:39:34.585+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /moderator/vocabulary/chapters/1/test
+2026-10-29T22:39:34.594+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /moderator/vocabulary/chapters/1/test
+2026-10-29T22:39:34.597+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public com.jtech.service.VocabularyChapterTestService$Setup com.jtech.controller.VocabularyChapterTestController.setup(java.lang.Long); target is of class [com.jtech.controller.VocabularyChapterTestController]
+2026-10-29T22:39:34.598+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public com.jtech.service.VocabularyChapterTestService$Setup com.jtech.controller.VocabularyChapterTestController.setup(java.lang.Long); target is of class [com.jtech.controller.VocabularyChapterTestController]
+2026-10-29T22:39:36.894+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:36.908+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:36.921+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:39:36.933+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:40:08.116+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /lessons/1
+2026-10-29T22:40:08.116+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /lessons/1
+2026-10-29T22:40:08.121+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1
+2026-10-29T22:40:08.134+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /lessons/1
+2026-10-29T22:40:08.146+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1
+2026-10-29T22:40:08.155+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /lessons/1
+2026-10-29T22:40:11.292+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /moderator/vocabulary/lessons/1/mini-tests
+2026-10-29T22:40:11.292+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /lessons/1/vocabularies
+2026-10-29T22:40:11.297+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /moderator/vocabulary/lessons/1/mini-tests
+2026-10-29T22:40:11.297+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1/vocabularies
+2026-10-29T22:40:11.311+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /moderator/vocabulary/lessons/1/mini-tests
+2026-10-29T22:40:11.313+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /lessons/1/vocabularies
+2026-10-29T22:40:11.315+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public java.util.List com.jtech.controller.VocabularyMiniTestController.list(java.lang.Long,org.springframework.security.core.Authentication); target is of class [com.jtech.controller.VocabularyMiniTestController]
+2026-10-29T22:40:11.316+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public java.util.List com.jtech.controller.VocabularyMiniTestController.list(java.lang.Long,org.springframework.security.core.Authentication); target is of class [com.jtech.controller.VocabularyMiniTestController]
+2026-10-29T22:40:47.162+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /lessons/1/vocabularies
+2026-10-29T22:40:47.167+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1/vocabularies
+2026-10-29T22:40:47.178+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /lessons/1/vocabularies
+2026-10-29T22:40:56.969+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:40:56.969+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:40:56.980+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:40:56.991+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:40:56.999+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:40:57.007+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:41:06.795+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /moderator/vocabulary/chapters/1/test
+2026-10-29T22:41:06.808+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /moderator/vocabulary/chapters/1/test
+2026-10-29T22:41:06.819+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /moderator/vocabulary/chapters/1/test
+2026-10-29T22:41:06.821+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public com.jtech.service.VocabularyChapterTestService$Setup com.jtech.controller.VocabularyChapterTestController.setup(java.lang.Long); target is of class [com.jtech.controller.VocabularyChapterTestController]
+2026-10-29T22:41:06.822+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public com.jtech.service.VocabularyChapterTestService$Setup com.jtech.controller.VocabularyChapterTestController.setup(java.lang.Long); target is of class [com.jtech.controller.VocabularyChapterTestController]
+2026-10-29T22:41:19.215+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:41:19.215+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:41:19.222+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:41:19.242+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:41:19.255+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:41:19.278+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:42:44.825+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /lessons/1
+2026-10-29T22:42:44.827+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /lessons/1
+2026-10-29T22:42:44.831+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1
+2026-10-29T22:42:44.837+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T22:42:44.839+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T22:42:44.847+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1
+2026-10-29T22:42:44.848+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /auth/refresh
+2026-10-29T22:42:44.851+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T22:42:44.851+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T22:42:44.853+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing POST /auth/refresh
+2026-10-29T22:42:44.854+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T22:42:44.854+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T22:42:44.854+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured POST /auth/refresh
+2026-10-29T22:42:44.937+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /users/me
+2026-10-29T22:42:44.937+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1
+2026-10-29T22:42:44.941+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T22:42:44.947+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /lessons/1
+2026-10-29T22:42:44.947+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T22:42:44.947+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-5] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=hoangtulam17@gmail.com authenticated=true
+2026-10-29T22:42:44.953+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1
+2026-10-29T22:42:44.962+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses/1/chapters/1
+2026-10-29T22:42:44.962+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses/1/chapters/1
+2026-10-29T22:42:44.963+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /lessons/1
+2026-10-29T22:42:44.965+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /courses/1/chapters/1
+2026-10-29T22:42:44.969+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1
+2026-10-29T22:42:44.976+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /courses/1/chapters/1
+2026-10-29T22:42:44.981+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /lessons/1
+2026-10-29T22:42:44.988+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /lessons/1
+2026-10-29T22:42:44.988+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /courses/1/chapters/1
+2026-10-29T22:42:44.991+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses/1
+2026-10-29T22:42:44.994+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T22:42:44.996+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /lessons/1
+2026-10-29T22:42:44.996+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /courses/1/chapters/1
+2026-10-29T22:42:45.003+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /courses/1
+2026-10-29T22:42:45.021+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T22:42:45.028+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /courses/1
+2026-10-29T22:42:49.867+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T22:42:49.867+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T22:42:49.870+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T22:42:49.879+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T22:42:49.880+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T22:42:49.895+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T22:42:49.899+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T22:42:49.903+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /courses/1
+2026-10-29T22:42:51.434+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses/1/chapters/1
+2026-10-29T22:42:51.434+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses/1/chapters/1
+2026-10-29T22:42:51.439+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /courses/1/chapters/1
+2026-10-29T22:42:51.449+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /courses/1/chapters/1
+2026-10-29T22:42:51.457+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /courses/1/chapters/1
+2026-10-29T22:42:51.458+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses/1
+2026-10-29T22:42:51.462+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T22:42:51.467+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /courses/1/chapters/1
+2026-10-29T22:42:51.470+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /courses/1
+2026-10-29T22:42:51.481+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T22:42:51.489+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /courses/1
+2026-10-29T22:42:52.768+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:42:52.768+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:42:52.774+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:42:52.777+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:42:52.777+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T22:42:52.806+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /chapters/1/lessons?skillType=VOCABULARY
+2026-10-29T23:11:39.727+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:11:39.727+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:11:39.739+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:39.743+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:39.758+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:39.766+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:50.419+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:11:50.420+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:11:50.420+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /users/me
+2026-10-29T23:11:50.427+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:11:50.427+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:50.435+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:11:50.435+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:50.436+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-5] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=hoangtulam17@gmail.com authenticated=true
+2026-10-29T23:11:50.443+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:50.449+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:53.190+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:53.207+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:53.217+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:53.222+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses/1
+2026-10-29T23:11:53.224+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T23:11:53.228+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:53.233+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /courses/1
+2026-10-29T23:11:56.732+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:11:56.732+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:11:56.736+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:56.739+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:56.760+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:56.772+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:57.539+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:57.562+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:57.573+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:11:57.577+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T23:11:57.586+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:11:57.586+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /courses/1
+2026-10-29T23:12:00.698+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:12:00.709+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:12:00.722+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:12:00.735+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:18:21.299+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /users/me
+2026-10-29T23:18:21.299+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:18:21.299+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:18:21.307+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:18:21.307+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:18:21.311+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:18:21.311+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:18:21.313+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T23:18:21.313+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T23:18:21.317+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:18:21.320+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:18:21.321+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T23:18:21.325+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /auth/refresh
+2026-10-29T23:18:21.328+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /auth/refresh
+2026-10-29T23:18:21.328+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:18:21.330+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T23:18:21.330+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /auth/refresh
+2026-10-29T23:18:21.354+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:18:21.354+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:18:21.363+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:18:21.363+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:18:21.365+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-7] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=hoangtulam17@gmail.com authenticated=true
+2026-10-29T23:18:21.375+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:18:21.375+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:18:21.384+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:18:21.385+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-4] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=hoangtulam17@gmail.com authenticated=true
+2026-10-29T23:18:21.386+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:18:21.394+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:18:21.405+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:18:21.415+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:18:21.419+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses/1
+2026-10-29T23:18:21.422+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T23:18:21.426+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:18:21.426+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:18:21.426+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T23:18:21.432+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /auth/refresh
+2026-10-29T23:18:21.433+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:18:21.433+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0EBAE6F4DE387179750A9417D375F641
+2026-10-29T23:18:21.434+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured POST /auth/refresh
+2026-10-29T23:18:21.454+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /courses/1
+2026-10-29T23:18:21.466+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /courses/1
+2026-10-29T23:18:23.610+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:18:23.623+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:18:23.636+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:18:23.643+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:28:31.245+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:28:31.249+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:28:31.265+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:31:55.312+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:31:55.313+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /users/me
+2026-10-29T23:31:55.322+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:31:55.322+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:31:55.337+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:31:55.337+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:31:55.338+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-4] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=hoangtulam17@gmail.com authenticated=true
+2026-10-29T23:31:56.276+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /admin/users/pending?size=100
+2026-10-29T23:31:56.277+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /admin/stats/dashboard
+2026-10-29T23:31:56.277+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /users/me
+2026-10-29T23:31:56.287+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /admin/users/pending?size=100
+2026-10-29T23:31:56.291+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:31:56.291+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:31:56.291+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:31:56.291+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0168F36AF2C7A574195C226BA998312E
+2026-10-29T23:31:56.293+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:31:56.294+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0168F36AF2C7A574195C226BA998312E
+2026-10-29T23:31:56.295+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:31:56.295+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0168F36AF2C7A574195C226BA998312E
+2026-10-29T23:31:56.307+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /auth/refresh
+2026-10-29T23:31:56.311+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing POST /auth/refresh
+2026-10-29T23:31:56.313+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:31:56.313+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0168F36AF2C7A574195C226BA998312E
+2026-10-29T23:31:56.314+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured POST /auth/refresh
+2026-10-29T23:31:56.393+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /admin/users/pending?size=100
+2026-10-29T23:31:56.393+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:31:56.393+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:31:56.401+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /admin/stats/dashboard
+2026-10-29T23:31:56.401+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /admin/users/pending?size=100
+2026-10-29T23:31:56.401+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:31:56.403+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-4] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=tuhahe182111@fpt.edu.vn authenticated=true
+2026-10-29T23:31:56.416+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:31:56.427+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:31:56.428+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-1] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=tuhahe182111@fpt.edu.vn authenticated=true
+2026-10-29T23:31:56.526+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:31:56.537+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /admin/stats/dashboard
+2026-10-29T23:31:56.539+07:00  WARN 24352 --- [jtech-backend] [nio-8080-exec-6] PageModule$PlainPageSerializationWarning : Serializing PageImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure!
+	For a stable JSON structure, please use Spring Data's PagedModel (globally via @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO))
+	or Spring HATEOAS and Spring Data's PagedResourcesAssembler as documented in https://docs.spring.io/spring-data/commons/reference/repositories/core-extensions.html#core.web.pageables.
+
+2026-10-29T23:31:56.555+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /admin/users/pending?size=100
+2026-10-29T23:31:56.557+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:31:56.567+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /admin/users/pending?size=100
+2026-10-29T23:31:56.567+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /admin/stats/dashboard
+2026-10-29T23:31:56.580+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /admin/users/pending?size=100
+2026-10-29T23:31:56.607+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /admin/users/pending?size=100
+2026-10-29T23:31:59.239+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:31:59.242+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:31:59.243+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0168F36AF2C7A574195C226BA998312E
+2026-10-29T23:31:59.254+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing POST /auth/refresh
+2026-10-29T23:31:59.256+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-10-29T23:31:59.257+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 0168F36AF2C7A574195C226BA998312E
+2026-10-29T23:31:59.257+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured POST /auth/refresh
+2026-10-29T23:31:59.279+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:31:59.279+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:31:59.291+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:31:59.291+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /admin/stats/dashboard
+2026-10-29T23:31:59.291+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-1] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=tuhahe182111@fpt.edu.vn authenticated=true
+2026-10-29T23:31:59.316+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /admin/users/pending?size=100
+2026-10-29T23:31:59.333+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:31:59.341+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /admin/stats/dashboard
+2026-10-29T23:31:59.341+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /admin/users/pending?size=100
+2026-10-29T23:31:59.354+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /admin/users/pending?size=100
+2026-10-29T23:31:59.367+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /admin/users/pending?size=100
+2026-10-29T23:31:59.374+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:31:59.384+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /admin/stats/dashboard
+2026-10-29T23:32:00.565+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:32:00.577+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:32:00.578+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-5] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=tuhahe182111@fpt.edu.vn authenticated=true
+2026-10-29T23:32:00.981+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /admin/users/pending?size=100
+2026-10-29T23:32:00.984+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:32:00.991+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /admin/users/pending?size=100
+2026-10-29T23:32:00.996+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /admin/stats/dashboard
+2026-10-29T23:32:01.008+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /admin/users/pending?size=100
+2026-10-29T23:32:01.019+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /admin/stats/dashboard
+2026-10-29T23:32:01.019+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /admin/users/pending?size=100
+2026-10-29T23:32:01.030+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /admin/stats/dashboard
+2026-10-29T23:32:01.048+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:32:01.049+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /users/me
+2026-10-29T23:32:01.053+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:32:01.053+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:32:01.064+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:32:01.064+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:32:01.066+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-3] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=hoangtulam17@gmail.com authenticated=true
+2026-10-29T23:32:01.083+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:32:01.095+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:37:59.025+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:37:59.025+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /users/me
+2026-10-29T23:37:59.025+07:00 DEBUG 24352 --- [jtech-backend] [io-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /courses
+2026-10-29T23:37:59.030+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /users/me
+2026-10-29T23:37:59.030+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:37:59.040+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /users/me
+2026-10-29T23:37:59.041+07:00  INFO 24352 --- [jtech-backend] [nio-8080-exec-5] com.jtech.controller.UserController      : [AUTH-TRACE] path=/users/me authenticationClass=org.springframework.security.authentication.UsernamePasswordAuthenticationToken principalClass=org.springframework.security.core.userdetails.User principalName=hoangtulam17@gmail.com authenticated=true
+2026-10-29T23:37:59.044+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /courses
+2026-10-29T23:37:59.055+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /courses
+2026-10-29T23:37:59.064+07:00 DEBUG 24352 --- [jtech-backend] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /courses

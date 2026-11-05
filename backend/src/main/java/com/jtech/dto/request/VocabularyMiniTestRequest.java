@@ -19,7 +19,7 @@ public record VocabularyMiniTestRequest(
     BigDecimal passingScore,
     @NotNull VocabularyMiniTest.Status status,
     @NotNull
-    @Size(min = 1, message = "Mini-test phải có câu hỏi từ danh sách từ vựng của bài.")
+    @Size(min = 1, message = "Exercise phải có câu hỏi từ danh sách từ vựng của bài.")
     List<@NotNull @Valid Question> questions
 ) {
     public record Question(

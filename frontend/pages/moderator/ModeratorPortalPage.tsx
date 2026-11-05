@@ -42,7 +42,12 @@ export function ModeratorPortalPage() {
     }
   }, [location.pathname, searchParams, navigate]);
 
-  const activeTab: ModeratorTab = location.pathname === "/moderator/feedback" ? "feedback" : matchChapter ? "chapter-detail" : "courses";
+  const activeTab: ModeratorTab =
+    location.pathname === "/moderator/feedback"
+      ? "feedback"
+      : matchChapter
+        ? "chapter-detail"
+        : "courses";
 
   const handleSelectTab = (tab: string) => {
     if (tab === "feedback") navigate("/moderator/feedback");
@@ -89,7 +94,10 @@ export function ModeratorPortalPage() {
     >
       {activeTab === "feedback" && <FeedbackPage portal="moderator" />}
       {activeTab === "courses" && (
-        <ModeratorCoursesTab onViewChapter={handleViewChapter} initialCourseId={Number(searchParams.get("courseId")) || undefined} />
+        <ModeratorCoursesTab
+          onViewChapter={handleViewChapter}
+          initialCourseId={Number(searchParams.get("courseId")) || undefined}
+        />
       )}
       {activeTab === "chapter-detail" && courseId && chapterId && (
         <ModeratorChapterDetailPage

@@ -1,0 +1,8 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "editor.formatOnSave": true,
+  "prettier.prettierPath": "./frontend/node_modules/prettier",
+  "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc][css][html][java][xml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

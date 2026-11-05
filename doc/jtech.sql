@@ -220,8 +220,6 @@ CREATE TABLE vocabulary (
   word_type VARCHAR(50) NULL,
   example_jp VARCHAR(500) NULL,
   example_vi VARCHAR(500) NULL,
-  audio_url VARCHAR(500) NULL,
-  audio_public_id VARCHAR(255) NULL,
   display_order INT NOT NULL DEFAULT 0,
   status ENUM('DRAFT','PUBLISHED','HIDDEN','ARCHIVED') NOT NULL DEFAULT 'DRAFT',
   created_by BIGINT UNSIGNED NULL,
@@ -581,7 +579,7 @@ CREATE TABLE coin_transaction (
 
 CREATE TABLE store_item (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  item_type ENUM('BADGE','AVATAR_FRAME','THEME') NOT NULL,
+  item_type ENUM('BADGE','AVATAR_FRAME','THEME','AVATAR') NOT NULL,
   name VARCHAR(100) NOT NULL,
   description VARCHAR(500) NULL,
   image_url VARCHAR(500) NOT NULL,

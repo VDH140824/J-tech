@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jtech.dto.request.VocabularyMiniTestGenerateRequest;
 import com.jtech.dto.request.VocabularyMiniTestRequest;
 import com.jtech.dto.response.VocabularyMiniTestResponse;
+import com.jtech.dto.response.StudentVocabularyExercise;
 import com.jtech.entity.*;
 import com.jtech.repository.*;
 import java.math.BigDecimal;
@@ -86,28 +87,25 @@ public class VocabularyMiniTestService {
             VocabularyMiniTest.Skill.VOCABULARY
         );
         if (existing.size() > 1) throw new IllegalStateException(
-            "Bài học đang có nhiều mini-test cũ. Cần xử lý dữ liệu cũ trước khi áp dụng một mini-test mỗi bài."
+            "Bài học đang có nhiều exercise cũ. Cần xử lý dữ liệu cũ trước khi áp dụng một exercise mỗi bài."
         );
+        if (settings.vocabularyIds() == null || settings.vocabularyIds().isEmpty()) {
+            throw new IllegalArgumentException("Hãy chọn từ vựng để tạo exercise.");
+        }
+        var selectedIds = new HashSet<>(settings.vocabularyIds());
         var source = words
             .findByLessonIdOrderByDisplayOrderAscIdAsc(lessonId)
             .stream()
+            .filter(word -> selectedIds.contains(word.getId()))
             .filter(
                 word ->
                     word.getStatus() == Course.Status.PUBLISHED ||
                     word.getStatus() == Course.Status.DRAFT
             )
             .toList();
-        if (source.isEmpty()) throw new IllegalArgumentException(
-            "Hãy gán từ vựng cho bài trước khi tạo mini-test."
+        if (source.size() != selectedIds.size()) throw new IllegalArgumentException(
+            "Một số từ đã chọn không thuộc bài học hoặc không còn dùng được."
         );
-        if (
-            settings.status() == VocabularyMiniTest.Status.PUBLISHED &&
-            source.stream().anyMatch(word -> word.getStatus() != Course.Status.PUBLISHED)
-        ) {
-            throw new IllegalArgumentException(
-                "Hãy xuất bản toàn bộ từ vựng của bài trước khi xuất bản mini-test."
-            );
-        }
         var definitions = source
             .stream()
             .map(Vocabulary::getMeaningVi)
@@ -121,7 +119,7 @@ public class VocabularyMiniTestService {
                 )
             );
         if (definitions.size() < 2) throw new IllegalArgumentException(
-            "Cần ít nhất hai định nghĩa khác nhau trong bài để tạo đáp án trắc nghiệm."
+            "Hãy chọn ít nhất hai từ có nghĩa khác nhau để tạo đáp án trắc nghiệm."
         );
         var inputs = new ArrayList<VocabularyMiniTestRequest.Question>();
         for (var word : source) {
@@ -184,7 +182,7 @@ public class VocabularyMiniTestService {
                 .isEmpty()
         ) {
             throw new IllegalStateException(
-                "Mỗi bài học chỉ có một mini-test. Hãy cập nhật mini-test hiện có."
+                "Mỗi bài học chỉ có một exercise. Hãy cập nhật exercise hiện có."
             );
         }
         validate(request);
@@ -201,7 +199,7 @@ public class VocabularyMiniTestService {
         var test = requireTest(id, true);
         if (tests.countAttempts(id) > 0) {
             throw new IllegalStateException(
-                "Mini-test đã có lượt làm nên không thể tạo lại câu hỏi, để giữ nguyên nội dung và kết quả cũ."
+                "Exercise đã có lượt làm nên không thể tạo lại câu hỏi, để giữ nguyên nội dung và kết quả cũ."
             );
         }
         validate(request);
@@ -236,12 +234,49 @@ public class VocabularyMiniTestService {
         return grade(test, items, answers);
     }
 
+    public StudentVocabularyExercise studentExercise(Long lessonId, Authentication authentication) {
+        vocabulary.checkLesson(lessonId, authentication);
+        var test = tests.findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
+                lessonId, VocabularyMiniTest.Type.MINI_TEST, VocabularyMiniTest.Skill.VOCABULARY
+            ).stream()
+            .filter(item -> item.getStatus() == VocabularyMiniTest.Status.PUBLISHED)
+            .findFirst()
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bài học chưa có exercise được xuất bản."));
+        var items = questions.findForTest(test.getId()).stream().map(question -> {
+            var data = readAnswer(question);
+            return new StudentVocabularyExercise.Question(
+                question.getId(), question.getQuestionType(), question.getContent(), data.options(),
+                List.copyOf(data.matches().keySet()), data.matches().values().stream().distinct().sorted().toList()
+            );
+        }).toList();
+        return new StudentVocabularyExercise(
+            test.getId(), test.getTitle(), test.getDescription(), test.getDurationMinutes(), test.getPassingScore(), items
+        );
+    }
+
+    public record GradedExercise(Long lessonId, VocabularyMiniTestResponse.Result result) {}
+
+    public GradedExercise submitExercise(
+        Long id, List<Long> questionIds, Map<String, String> answers, Authentication authentication
+    ) {
+        var test = requireTest(id, false);
+        if (test.getStatus() != VocabularyMiniTest.Status.PUBLISHED) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise chưa được xuất bản.");
+        }
+        vocabulary.checkLesson(test.getLessonId(), authentication);
+        var items = questions.findForTest(id);
+        if (!items.stream().map(VocabularyMiniTestQuestion::getId).toList().equals(questionIds)) {
+            throw new IllegalStateException("Exercise đã thay đổi. Vui lòng mở lại bài để làm đề mới.");
+        }
+        return new GradedExercise(test.getLessonId(), grade(test, items, answers));
+    }
+
     VocabularyMiniTestResponse.Result grade(
         VocabularyMiniTest test,
         List<VocabularyMiniTestQuestion> items,
         Map<String, String> answers
     ) {
-        if (items.isEmpty()) throw new IllegalStateException("Mini-test chưa có câu hỏi.");
+        if (items.isEmpty()) throw new IllegalStateException("Exercise chưa có câu hỏi.");
         Set<String> questionIds = new HashSet<>();
         items.forEach(question -> questionIds.add(question.getId().toString()));
         if (
@@ -304,7 +339,7 @@ public class VocabularyMiniTestService {
         if (
             request.questions() == null || request.questions().isEmpty()
         ) throw new IllegalArgumentException(
-            "Mini-test phải có câu hỏi từ danh sách từ vựng của bài."
+            "Exercise phải có câu hỏi từ danh sách từ vựng của bài."
         );
         for (var question : request.questions()) validateAnswer(question);
     }
@@ -420,7 +455,7 @@ public class VocabularyMiniTestService {
 
     private VocabularyMiniTest requireTest(Long id, boolean lock) {
         var test = (lock ? tests.findForUpdate(id) : tests.findById(id)).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy mini-test.")
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy exercise.")
         );
         if (
             test.getSkill() != VocabularyMiniTest.Skill.VOCABULARY ||
@@ -429,7 +464,7 @@ public class VocabularyMiniTestService {
         ) {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
-                "Không tìm thấy mini-test Vocab."
+                "Không tìm thấy exercise Vocab."
             );
         }
         return test;
@@ -483,7 +518,7 @@ public class VocabularyMiniTestService {
             return data;
         } catch (JsonProcessingException | IllegalArgumentException ex) {
             throw new IllegalStateException(
-                "Đáp án câu " + question.getId() + " chưa đúng định dạng mini-test Vocab."
+                "Đáp án câu " + question.getId() + " chưa đúng định dạng exercise Vocab."
             );
         }
     }

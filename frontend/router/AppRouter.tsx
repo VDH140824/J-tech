@@ -1,3 +1,7 @@
+import { StudentProtectedRoute } from "../components/auth/StudentProtectedRoute";
+import { StudentStreakPage } from "../pages/streak/StudentStreakPage";
+import { CoinHistoryPage } from "../pages/store/CoinHistoryPage";
+import { RewardStorePage } from "../pages/store/RewardStorePage";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { LandingPage } from "../pages/landing/LandingPage";
@@ -70,10 +74,28 @@ export function AppRouter() {
           />
           <Route
             path="/feedback"
-            element={<FeedbackPage />}
+            element={<StudentProtectedRoute><FeedbackPage /></StudentProtectedRoute>}
           />
         </Route>
 
+        <Route
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="/store"
+            element={<StudentProtectedRoute><RewardStorePage /></StudentProtectedRoute>}
+          />
+          <Route
+            path="/inventory"
+            element={<StudentProtectedRoute><RewardStorePage /></StudentProtectedRoute>}
+          />
+        </Route>
+        <Route path="/coins" element={<ProtectedRoute><StudentProtectedRoute><MainLayout /></StudentProtectedRoute></ProtectedRoute>}><Route index element={<CoinHistoryPage />} /></Route>
+        <Route path="/streak" element={<ProtectedRoute><StudentProtectedRoute><MainLayout /></StudentProtectedRoute></ProtectedRoute>}><Route index element={<StudentStreakPage />} /></Route>
         {/* Admin routes (Admin has its own dedicated portal layout) */}
         <Route
           path="/admin"

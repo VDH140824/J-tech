@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { apiClient } from "../../services/api";
 import {
   feedbackCategories,
@@ -20,7 +20,8 @@ import type {
 import "./FeedbackPage.css";
 
 function errorMessage(error: unknown) {
-  const err = error as { response?: { data?: { message?: string } } };
+  const err = error as { response?: { status?: number; data?: { message?: string } } };
+  if ((err.response?.status ?? 500) >= 500) return "Không tải hoặc lưu được dữ liệu. Vui lòng thử lại.";
   return err.response?.data?.message || "Không tải hoặc lưu được dữ liệu. Vui lòng thử lại.";
 }
 const empty: FeedbackInput = {
@@ -30,12 +31,13 @@ const empty: FeedbackInput = {
   content: "",
 };
 
-export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }) {
+export function FeedbackPage({ portal = "student", onPopupClose }: { portal?: FeedbackPortal; onPopupClose?: (message?: string) => void }) {
+  const popupOnly = !!onPopupClose;
   const student = portal === "student";
   const client = useQueryClient();
   const [params, setParams] = useSearchParams();
   const [input, setInput] = useState<FeedbackInput>(() => {
-    const lessonId = Number(params.get("lessonId"));
+    const lessonId = popupOnly ? 0 : Number(params.get("lessonId"));
     const questionId = Number(params.get("questionId"));
     return lessonId > 0
       ? {
@@ -47,11 +49,18 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
         }
       : empty;
   });
+  const [compose, setCompose] = useState(() => popupOnly || params.has("lessonId"));
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const dialogTitleId = useId();
+  useEffect(() => {
+    if (compose && dialogRef.current && !dialogRef.current.open) dialogRef.current.showModal();
+  }, [compose]);
   const [image, setImage] = useState<File>();
   const [preview, setPreview] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
+  const [searchDraft, setSearchDraft] = useState("");
   const [courseId, setCourseId] = useState("");
   const [lessonId, setLessonId] = useState("");
   const [page, setPage] = useState(0);
@@ -98,6 +107,7 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
       !!input.lessonId,
   });
   const list = useQuery({
+    enabled: !popupOnly,
     queryKey: ["feedback", portal, status, search, courseId, lessonId, page],
     queryFn: async () =>
       (
@@ -116,13 +126,13 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
   const detail = useQuery({
     queryKey: ["feedback-detail", portal, selectedId],
     queryFn: async () => (await apiClient.get<Feedback>(`${base}/${selectedId}`)).data,
-    enabled: !!selectedId,
+    enabled: !popupOnly && !!selectedId,
   });
   const notices = useQuery({
     queryKey: ["feedback-notifications"],
     queryFn: async () =>
       (await apiClient.get<FeedbackNotification[]>("/feedback/notifications")).data,
-    enabled: student,
+    enabled: student && !popupOnly,
   });
   useEffect(() => {
     if (detail.data) {
@@ -158,7 +168,13 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
     setBusy(true);
     try {
       const created = await submitFeedback(input, image);
+      if (onPopupClose) {
+        onPopupClose("Gửi phản hồi thành công!");
+        await refresh();
+        return;
+      }
       reset();
+      setCompose(false);
       setPage(0);
       setSuccess("Gửi phản hồi thành công!");
       open(created.id);
@@ -173,9 +189,10 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
     event.preventDefault();
     setError("");
     setSuccess("");
+    if(nextStatus !== "IN_PROGRESS" && !note.trim()) { setError("Vui lòng nhập ghi chú xử lý chi tiết để phản hồi kết quả cho sinh viên."); return; }
     setBusy(true);
     try {
-      await apiClient.patch(`${base}/${selectedId}`, { status: nextStatus, resolutionNote: note });
+      await apiClient.patch(`${base}/${selectedId}`, { status: nextStatus, resolutionNote: note.trim(), expectedVersion: detail.data?.version });
       setSuccess("Cập nhật tiến độ xử lý phản hồi thành công!");
       await refresh();
     } catch (err) {
@@ -190,8 +207,16 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
     ...new Map(referenceOptions.map((ref) => [ref.courseId, ref.courseName])).entries(),
   ];
 
+  function closeCompose() {
+    if (busy) return;
+    reset();
+    setError("");
+    setCompose(false);
+    onPopupClose?.();
+  }
+
   return (
-    <section className="feedback-page">
+    <section className={popupOnly ? "feedback-page feedback-popup-host" : "feedback-page"}>
       <header>
         <h1>
           {student
@@ -212,6 +237,7 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
           className="feedback-error"
         >
           {error}
+          {selectedId && !student && <button onClick={() => detail.refetch()}>Tải lại phản hồi</button>}
         </div>
       )}
       {success && (
@@ -222,12 +248,17 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
           {success}
         </div>
       )}
-      {student && (
-        <form
+      {student && <button className="primary" onClick={() => setCompose(true)}>Gửi phản hồi</button>}
+      {student && compose && (
+        <dialog ref={dialogRef} className="feedback-modal" aria-labelledby={dialogTitleId}
+          onCancel={event => { event.preventDefault(); closeCompose(); }}><form
           className="feedback-card feedback-form"
           onSubmit={send}
         >
-          <h2>Gửi phản hồi mới</h2>
+          <button type="button" className="feedback-close" aria-label="Đóng phản hồi" disabled={busy} onClick={closeCompose}>×</button>
+          <h2 id={dialogTitleId} className="feedback-wide">Phản hồi cho J-Tech</h2>
+          <p className="feedback-wide feedback-intro">Gửi góp ý hoặc báo lỗi để giúp J-Tech tốt hơn.</p>
+          {error && <p className="feedback-error feedback-wide" role="alert">{error}</p>}
           <label>
             Nhóm phản hồi
             <select
@@ -393,7 +424,7 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
             <button
               type="button"
               disabled={busy}
-              onClick={reset}
+              onClick={closeCompose}
             >
               Hủy
             </button>
@@ -404,7 +435,8 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
               {busy ? "Đang gửi…" : "Gửi phản hồi"}
             </button>
           </div>
-        </form>
+          {popupOnly && <Link className="feedback-wide" to="/feedback" onClick={() => onPopupClose?.()}>Phản hồi đã gửi</Link>}
+        </form></dialog>
       )}
 
       {student && !!notices.data?.length && (
@@ -462,11 +494,9 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
               <input
                 placeholder="Tiêu đề, tên người gửi, mã nội dung…"
                 maxLength={200}
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(0);
-                }}
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.target.value)}
+                onKeyDown={(e) => { if(e.key === "Enter") { setSearch(searchDraft.trim()); setPage(0); } }}
               />
             </label>
           )}
@@ -624,7 +654,7 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
               {errorMessage(detail.error)} <button onClick={() => detail.refetch()}>Thử lại</button>
             </p>
           )}
-          {ticket && (
+          {ticket && !detail.isError && (
             <>
               <h3>{ticket.title}</h3>
               <p>
@@ -647,16 +677,11 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
               {portal === "moderator" &&
                 ticket.lessonId &&
                 (ticket.contentAvailable && ticket.courseId && ticket.chapterId ? (
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    href={`/moderator/courses/${ticket.courseId}/chapters/${ticket.chapterId}?skill=${ticket.skillType?.toLowerCase()}&lessonId=${ticket.lessonId}`}
-                  >
-                    Xem bài giảng / học liệu liên quan
-                  </a>
+                  <button onClick={async () => { try { const {data} = await apiClient.get<{url:string}>(`/moderator/feedback/${ticket.id}/content-link`); window.location.assign(data.url); } catch(e) { setError(errorMessage(e)); } }}>Xem bài giảng / học liệu liên quan</button>
                 ) : (
                   <p>Học liệu hoặc câu hỏi liên quan hiện không còn khả dụng hoặc đã bị lưu trữ.</p>
                 ))}
+              {student && ticket.lessonId && (ticket.contentAvailable ? <a href={`/courses/${ticket.courseId}/chapters/${ticket.chapterId}?lessonId=${ticket.lessonId}`}>Xem nội dung liên quan</a> : <p>Nội dung liên quan không còn khả dụng. Tham chiếu được giữ lại trong phản hồi.</p>)}
               {ticket.attachmentUrl ? (
                 <a
                   href={ticket.attachmentUrl}
@@ -705,12 +730,13 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
                     </select>
                   </label>
                   <label className="feedback-wide">
-                    Ghi chú xử lý
+                    Nội dung trả lời học viên {nextStatus === "IN_PROGRESS" ? "(không bắt buộc)" : "(bắt buộc)"}
                     <textarea
                       disabled={busy}
                       required={nextStatus !== "IN_PROGRESS"}
                       maxLength={10000}
                       rows={4}
+                      placeholder="Nhập tiến độ hoặc kết quả xử lý để học viên xem."
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
                     />
@@ -719,7 +745,7 @@ export function FeedbackPage({ portal = "student" }: { portal?: FeedbackPortal }
                     className="primary"
                     disabled={busy}
                   >
-                    {busy ? "Đang lưu…" : "Cập nhật trạng thái"}
+                    {busy ? "Đang lưu…" : "Lưu trạng thái và phản hồi"}
                   </button>
                 </form>
               )}

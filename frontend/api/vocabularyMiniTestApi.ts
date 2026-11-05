@@ -45,6 +45,27 @@ export interface MiniTestResult {
     explanation: string;
   }[];
 }
+export interface StudentVocabularyExercise
+  extends Pick<VocabularyMiniTest, "id" | "title" | "description" | "durationMinutes" | "passingScore"> {
+  questions: (Pick<MiniTestQuestion, "id" | "questionType" | "content" | "options"> & {
+    matchingPrompts: string[];
+    matchingOptions: string[];
+  })[];
+}
+
+export async function getStudentVocabularyExercise(lessonId: number, signal: AbortSignal) {
+  return (await apiClient.get<StudentVocabularyExercise>(`/lessons/${lessonId}/vocabulary-exercise`, { signal })).data;
+}
+
+export async function submitStudentVocabularyExercise(
+  exercise: StudentVocabularyExercise,
+  answers: Record<string, string>,
+) {
+  return (await apiClient.post<MiniTestResult>(`/vocabulary-exercises/${exercise.id}/submit`, {
+    questionIds: exercise.questions.map((question) => question.id),
+    answers,
+  })).data;
+}
 const base = "/moderator/vocabulary";
 export async function getMiniTests(lessonId: number, signal?: AbortSignal) {
   return (
@@ -57,14 +78,17 @@ export async function getMiniTest(id: number) {
 export async function archiveMiniTest(id: number) {
   await apiClient.delete(`${base}/mini-tests/${id}`);
 }
-export async function generateMiniTest(lessonId: number, input: Omit<MiniTestInput, "questions">) {
+export async function generateMiniTest(
+  lessonId: number,
+  input: Omit<MiniTestInput, "questions"> & { vocabularyIds: number[] },
+) {
   return (await apiClient.post<VocabularyMiniTest>(`${base}/lessons/${lessonId}/mini-tests`, input))
     .data;
 }
 export function miniTestError(error: unknown): string {
   if (isAxiosError(error)) {
     if (error.response?.status === 404)
-      return "Không tìm thấy API mini-test. Hãy khởi động lại backend bản code mới và kiểm tra địa chỉ API.";
+      return "Không tìm thấy API exercise. Hãy khởi động lại backend bản code mới và kiểm tra địa chỉ API.";
     if (typeof error.response?.data?.message === "string") return error.response.data.message;
   }
   return "Không thể tải hoặc lưu dữ liệu. Vui lòng thử lại.";

@@ -32,3 +32,9 @@ test('URL input becomes valid JSON suitable for lesson.documents and retains nam
 test('clearing the URL field produces an empty JSON list', () => {
   assert.equal(serializeDocumentUrls('  '), '[]');
 });
+
+test('rejects submission when any PDF URL line is invalid', () => {
+  for (const invalidUrl of ['not-a-url', 'javascript:alert(1)', 'ftp://example.com/lesson.pdf']) {
+    assert.throws(() => serializeDocumentUrls(`${pdfUrl}\n${invalidUrl}`), /HTTP hoặc HTTPS/);
+  }
+});

@@ -38,6 +38,7 @@ public class FeedbackService {
       h.full_name AS handlerName, l.title AS lessonTitle, l.skill_type AS skillType,
       ch.id AS chapterId, c.id AS courseId, c.name AS courseName,
       CASE WHEN l.status = 'PUBLISHED' AND ch.status = 'PUBLISHED' AND c.status = 'PUBLISHED'
+        AND (f.question_id IS NULL OR EXISTS(SELECT 1 FROM question q WHERE q.id=f.question_id AND q.status='ACTIVE'))
         THEN TRUE ELSE FALSE END AS contentAvailable
     FROM feedback f JOIN user_account u ON u.id = f.user_id
     LEFT JOIN user_account h ON h.id = f.handled_by
@@ -312,7 +313,8 @@ public class FeedbackService {
             where += " AND f.feedback_type=?";
             args.add(type);
         }
-        var rows = db.queryForList(SELECT + where, args.toArray());
+        String projection = userId == null ? SELECT.replace("SELECT f.id,", "SELECT f.version, f.id,") : SELECT;
+        var rows = db.queryForList(projection + where, args.toArray());
         if (rows.isEmpty()) throw new ResponseStatusException(
             HttpStatus.NOT_FOUND,
             "Không tìm thấy phản hồi."
@@ -341,14 +343,22 @@ public class FeedbackService {
         if (terminal && note.isEmpty()) throw new IllegalArgumentException(
             "Không được để trống ghi chú xử lý."
         );
-        db.update(
-            "UPDATE feedback SET status=?,resolution_note=?,handled_by=?,resolved_at=IF(?,CURRENT_TIMESTAMP,NULL),updated_at=CURRENT_TIMESTAMP WHERE id=?",
+        if (request.expectedVersion() == null) throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Vui lòng tải lại phản hồi trước khi cập nhật."
+        );
+        int changed = db.update(
+            "UPDATE feedback SET status=?,resolution_note=?,handled_by=?,resolved_at=IF(?,CURRENT_TIMESTAMP,NULL),updated_at=CURRENT_TIMESTAMP,version=version+1 WHERE id=? AND version=?",
             request.status().name(),
             note,
             handler.getUserId(),
             terminal,
-            id
+            id,
+            request.expectedVersion()
         );
+        if (changed != 1) throw new ResponseStatusException(HttpStatus.CONFLICT,
+            "Phản hồi đã được người khác cập nhật. Vui lòng tải lại trước khi xử lý.");
+        db.update("INSERT INTO feedback_handling_history(feedback_id,status,resolution_note,handled_by) VALUES(?,?,?,?)",
+            id, request.status().name(), note, handler.getUserId());
         var ticket = detail(id, null, type);
         String label = switch (request.status()) {
             case IN_PROGRESS -> "Đang xử lý";

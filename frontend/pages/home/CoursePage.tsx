@@ -9,13 +9,29 @@ export function CoursePage() {
   const navigate = useNavigate();
   const id = Number(courseId);
   const valid = Number.isSafeInteger(id) && id > 0;
-  const user = useAuthStore(state => state.user);
+  const user = useAuthStore((state) => state.user);
 
-  if (valid && checkIsModerator(user)) return <Navigate to={`/moderator/courses?courseId=${id}`} replace />;
+  if (valid && checkIsModerator(user))
+    return (
+      <Navigate
+        to={`/moderator/courses?courseId=${id}`}
+        replace
+      />
+    );
 
-  return <div className="student-learning-page">
-    {!valid ? <p role="alert">Mã môn học không hợp lệ.</p>
-      : <ModeratorCoursesTab readOnly initialCourseId={id}
-        onViewChapter={({ courseId: selectedCourse, chapterId }) => navigate(`/courses/${selectedCourse}/chapters/${chapterId}`)} />}
-  </div>;
+  return (
+    <div className="student-learning-page">
+      {!valid ? (
+        <p role="alert">Mã môn học không hợp lệ.</p>
+      ) : (
+        <ModeratorCoursesTab
+          readOnly
+          initialCourseId={id}
+          onViewChapter={({ courseId: selectedCourse, chapterId }) =>
+            navigate(`/courses/${selectedCourse}/chapters/${chapterId}`)
+          }
+        />
+      )}
+    </div>
+  );
 }

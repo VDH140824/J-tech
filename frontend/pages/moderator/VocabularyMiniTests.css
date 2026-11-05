@@ -163,10 +163,6 @@
   margin-top: 20px;
   flex-wrap: wrap;
 }
-.mod-chapter-flashcards audio {
-  margin-top: 20px;
-  max-width: 100%;
-}
 .mod-mini-delete {
   background: #fef2f2;
   border: 1px solid #fecaca;

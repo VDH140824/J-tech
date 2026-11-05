@@ -26,6 +26,7 @@ export interface FeedbackInput {
 }
 export interface Feedback extends FeedbackInput {
   id: number;
+  version: number;
   status: FeedbackStatus;
   attachmentUrl: string | null;
   resolutionNote: string | null;

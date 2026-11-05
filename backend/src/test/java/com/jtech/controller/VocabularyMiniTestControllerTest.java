@@ -32,11 +32,18 @@ class VocabularyMiniTestControllerTest {
             context.registerBean(VocabularyMiniTestService.class, () ->
                 mock(VocabularyMiniTestService.class)
             );
+            context.registerBean(com.jtech.service.FeedbackService.class, () ->
+                mock(com.jtech.service.FeedbackService.class)
+            );
+            context.registerBean(com.jtech.service.LearningActivityService.class, () ->
+                mock(com.jtech.service.LearningActivityService.class)
+            );
             context.registerBean(com.jtech.service.VocabularyChapterTestService.class, () ->
                 mock(com.jtech.service.VocabularyChapterTestService.class)
             );
             context.register(
                 VocabularyMiniTestController.class,
+                StudentVocabularyExerciseController.class,
                 VocabularyChapterTestController.class
             );
             context.refresh();
@@ -60,6 +67,9 @@ class VocabularyMiniTestControllerTest {
                 context
                     .getBean(VocabularyChapterTestController.class)
                     .preview(1L, java.util.Map.of())
+            );
+            context.getBean(StudentVocabularyExerciseController.class).get(
+                2L, SecurityContextHolder.getContext().getAuthentication()
             );
         } finally {
             SecurityContextHolder.clearContext();

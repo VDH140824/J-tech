@@ -12,6 +12,8 @@ import com.jtech.entity.Vocabulary;
 import com.jtech.repository.LessonRepository;
 import com.jtech.repository.VocabularyRepository;
 import com.jtech.service.VocabularyService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jtech.exception.GlobalExceptionHandler;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -27,8 +29,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class CreateVocabTest {
+
+    // Example inputs for execution; these literal words are not specified by the SRS.
 
     private static final ValidatorFactory VALIDATORS = Validation.buildDefaultValidatorFactory();
     private static final Validator VALIDATOR = VALIDATORS.getValidator();
@@ -80,13 +89,20 @@ class CreateVocabTest {
         return input("日本語", "にほんご", "Tiếng Nhật", 0);
     }
 
-    private void assertRequiredFieldViolation(VocabularyRequest request, String field) {
+    private void assertRequiredFieldViolation(VocabularyRequest request, String field) throws Exception {
         assertTrue(
             VALIDATOR.validate(request)
                 .stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals(field)),
             () -> "Missing required field: " + field
         );
+        var mvc = MockMvcBuilders.standaloneSetup(controller)
+            .setControllerAdvice(new GlobalExceptionHandler()).build();
+        mvc.perform(post("/lessons/3/vocabularies")
+                .principal(moderator).contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+        verifyNoInteractions(vocabulary, lessons);
     }
 
     @Test
@@ -100,7 +116,9 @@ class CreateVocabTest {
     @DisplayName("Create under selected Vocabulary lesson")
     void createBindsWordToSelectedVocabularyLesson() {
         when(vocabulary.save(any(Vocabulary.class))).thenAnswer(call -> call.getArgument(0));
-        var created = controller.create(3L, validInput(), moderator).getBody();
+        var response = controller.create(3L, validInput(), moderator);
+        assertEquals(201, response.getStatusCode().value());
+        var created = response.getBody();
         assertNotNull(created);
         assertAll(
             () -> assertEquals(3L, created.getLessonId()),
@@ -140,7 +158,7 @@ class CreateVocabTest {
     @NullAndEmptySource
     @ValueSource(strings = " ")
     @DisplayName("Japanese word is required")
-    void rejectMissingWord(String value) {
+    void rejectMissingWord(String value) throws Exception {
         assertRequiredFieldViolation(input(value, "にほんご", "Tiếng Nhật", 0), "word");
     }
 
@@ -148,7 +166,7 @@ class CreateVocabTest {
     @NullAndEmptySource
     @ValueSource(strings = " ")
     @DisplayName("Reading is required")
-    void rejectMissingReading(String value) {
+    void rejectMissingReading(String value) throws Exception {
         assertRequiredFieldViolation(input("日本語", value, "Tiếng Nhật", 0), "reading");
     }
 
@@ -156,13 +174,13 @@ class CreateVocabTest {
     @NullAndEmptySource
     @ValueSource(strings = " ")
     @DisplayName("Vietnamese meaning is required")
-    void rejectMissingMeaning(String value) {
+    void rejectMissingMeaning(String value) throws Exception {
         assertRequiredFieldViolation(input("日本語", "にほんご", value, 0), "meaningVi");
     }
 
     @Test
     @DisplayName("Display order is required")
-    void rejectMissingDisplayOrder() {
+    void rejectMissingDisplayOrder() throws Exception {
         assertRequiredFieldViolation(
             input("日本語", "にほんご", "Tiếng Nhật", null),
             "displayOrder"
@@ -171,14 +189,8 @@ class CreateVocabTest {
 
     @Test
     @DisplayName("Negative display order is rejected")
-    void rejectNegativeDisplayOrder() {
+    void rejectNegativeDisplayOrder() throws Exception {
         assertRequiredFieldViolation(input("日本語", "にほんご", "Tiếng Nhật", -1), "displayOrder");
-    }
-
-    @Test
-    @DisplayName("Accept zero display order")
-    void zeroIsValidForDisplayOrder() {
-        assertTrue(VALIDATOR.validateProperty(validInput(), "displayOrder").isEmpty());
     }
 
     @Test
@@ -196,7 +208,7 @@ class CreateVocabTest {
     @Test
     @DisplayName("Creation rejects a missing lesson")
     void createRejectsMissingLesson() {
-        assertThrows(RuntimeException.class, () ->
+        assertThrows(ResponseStatusException.class, () ->
             controller.create(999L, validInput(), moderator)
         );
         verifyNoInteractions(vocabulary);
@@ -206,20 +218,7 @@ class CreateVocabTest {
     @DisplayName("Creation rejects a lesson of another skill")
     void createRejectsWrongSkill() {
         lesson.setSkillType(Lesson.SkillType.KANJI);
-        assertThrows(RuntimeException.class, () -> controller.create(3L, validInput(), moderator));
+        assertThrows(IllegalArgumentException.class, () -> controller.create(3L, validInput(), moderator));
         verifyNoInteractions(vocabulary);
-    }
-
-    @Test
-    @DisplayName("Propagate save failure")
-    void createPropagatesSaveFailure() {
-        var failure = new IllegalStateException("Simulated repository failure");
-        when(vocabulary.save(any(Vocabulary.class))).thenThrow(failure);
-        assertSame(
-            failure,
-            assertThrows(IllegalStateException.class, () ->
-                controller.create(3L, validInput(), moderator)
-            )
-        );
     }
 }

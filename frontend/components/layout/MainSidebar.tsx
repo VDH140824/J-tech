@@ -58,7 +58,7 @@ function SidebarCatDecoration() {
   );
 }
 
-export function MainSidebar() {
+export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
@@ -94,16 +94,29 @@ export function MainSidebar() {
       <div className="sidebar-tagline">Luyện tiếng Nhật cùng J-Tech</div>
 
       <nav className="sidebar-nav-menu">
+        {!isAdmin && !isModerator && (
+          <>
+            <button type="button" className={`nav-link-btn ${location.pathname === "/streak" ? "active" : ""}`} onClick={() => navigate("/streak")}>
+              <span className="nav-link-icon">🔥</span><span className="nav-link-text">Chuỗi ngày học</span>
+            </button>
+            <button
+              type="button"
+              className={`nav-link-btn ${["/store", "/inventory"].includes(location.pathname) ? "active" : ""}`}
+              onClick={() => navigate("/store")}
+            >
+              <span className="nav-link-icon">🎁</span>
+              <span className="nav-link-text">Cửa hàng đổi quà</span>
+            </button>
+          </>
+        )}
         {(normalizedRole === "STUDENT" ||
           normalizedRole === "ROLE_STUDENT" ||
           (!normalizedRole && normalizedRoleId === "1")) && (
           <button
             type="button"
             className={`nav-link-btn ${location.pathname === "/feedback" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("feedback");
-              navigate("/feedback");
-            }}
+            aria-haspopup="dialog"
+            onClick={onOpenFeedback}
           >
             <span className="nav-link-icon">💬</span>
             <span className="nav-link-text">Phản hồi & Báo lỗi</span>

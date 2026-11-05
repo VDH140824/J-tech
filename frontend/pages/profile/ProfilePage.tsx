@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { UserAvatar } from "../../components/layout/UserAvatar";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
@@ -77,10 +78,6 @@ export function ProfilePage() {
     setDateOfBirth(formatDateInput(user?.dateOfBirth ?? null));
   }, [user]);
 
-  const initial = useMemo(() => {
-    const base = user?.displayName ?? user?.email ?? "U";
-    return base.charAt(0).toUpperCase();
-  }, [user]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -122,13 +119,7 @@ export function ProfilePage() {
 
       <main className="profile-shell">
         <section className="profile-card profile-summary">
-          <div className="profile-avatar">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.displayName ?? "Avatar"} className="profile-avatar-img" />
-            ) : (
-              initial
-            )}
-          </div>
+          <UserAvatar user={user} size={84} />
           <div>
             <h1>Hồ sơ người dùng</h1>
             <p>{user?.displayName ?? "Chưa có tên"}</p>
@@ -143,19 +134,16 @@ export function ProfilePage() {
               <h2>Thông tin tài khoản</h2>
               <p>Xem và chỉnh sửa thông tin trực tiếp từ tài khoản người dùng.</p>
             </div>
-            <div className="profile-avatar preview">
-              {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.displayName ?? "Avatar"} className="profile-avatar-img" />
-              ) : (
-                initial
-              )}
-            </div>
+            <UserAvatar user={user} size={64} />
           </div>
 
           {isLoading && <p>Đang tải dữ liệu...</p>}
           {isError && <p>Không thể tải thông tin tài khoản.</p>}
 
-          <form className="profile-form" onSubmit={handleSubmit}>
+          <form
+            className="profile-form"
+            onSubmit={handleSubmit}
+          >
             <div className="profile-details-grid">
               <div className="profile-detail-item">
                 <span>Ảnh đại diện</span>
@@ -203,9 +191,11 @@ export function ProfilePage() {
 
               <label>
                 Email
-                <input value={user?.email ?? ""} disabled />
+                <input
+                  value={user?.email ?? ""}
+                  disabled
+                />
               </label>
-
 
               <label>
                 Ngày sinh
@@ -218,7 +208,10 @@ export function ProfilePage() {
             </div>
 
             <div className="profile-actions">
-              <button type="submit" disabled={saving || !user?.id}>
+              <button
+                type="submit"
+                disabled={saving || !user?.id}
+              >
                 {saving ? "Đang lưu..." : "Lưu thay đổi"}
               </button>
             </div>

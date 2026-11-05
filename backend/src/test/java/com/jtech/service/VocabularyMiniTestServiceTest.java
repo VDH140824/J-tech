@@ -5,13 +5,18 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jtech.dto.request.VocabularyMiniTestGenerateRequest;
 import com.jtech.dto.request.VocabularyMiniTestRequest;
+import com.jtech.entity.Course;
+import com.jtech.entity.Vocabulary;
 import com.jtech.entity.VocabularyMiniTest;
 import com.jtech.entity.VocabularyMiniTestQuestion;
 import com.jtech.repository.*;
 import java.math.BigDecimal;
 import java.util.*;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.web.server.ResponseStatusException;
 
 class VocabularyMiniTestServiceTest {
 
@@ -23,23 +28,79 @@ class VocabularyMiniTestServiceTest {
         VocabularyMiniTestLinkRepository.class
     );
     private final ObjectMapper json = new ObjectMapper();
+    private final VocabularyRepository words = mock(VocabularyRepository.class);
     private final VocabularyMiniTestService service = new VocabularyMiniTestService(
         tests,
         questions,
         links,
         mock(VocabularyService.class),
         json,
-        mock(VocabularyRepository.class)
+        words
     );
 
     private VocabularyMiniTest test() {
         var test = new VocabularyMiniTest();
         test.setId(1L);
         test.setLessonId(2L);
+        test.setDurationMinutes(10);
         test.setPassingScore(BigDecimal.valueOf(70));
         when(tests.findById(1L)).thenReturn(Optional.of(test));
         when(tests.findForUpdate(1L)).thenReturn(Optional.of(test));
         return test;
+    }
+
+    @Test
+    void publishesOnlySelectedWordsIncludingDraftSourcesWithoutPublishingTheWords() {
+        var first = word(10L, "mèo", Course.Status.PUBLISHED);
+        var second = word(11L, "chó", Course.Status.DRAFT);
+        var draft = word(12L, "chim", Course.Status.DRAFT);
+        when(words.findByLessonIdOrderByDisplayOrderAscIdAsc(2L)).thenReturn(List.of(first, second, draft));
+        service.generate(2L, new VocabularyMiniTestGenerateRequest(
+            "Exercise", "", 10, BigDecimal.valueOf(70), VocabularyMiniTest.Status.PUBLISHED, List.of(10L, 11L)
+        ), null);
+        var saved = ArgumentCaptor.forClass(VocabularyMiniTestQuestion.class);
+        verify(questions, times(2)).saveAndFlush(saved.capture());
+        assertEquals(List.of(10L, 11L), saved.getAllValues().stream()
+            .map(question -> service.readAnswer(question).sourceVocabularyId()).toList());
+        assertEquals(Course.Status.DRAFT, second.getStatus());
+        verify(words, never()).save(any());
+    }
+
+    @Test
+    void studentReceivesOnlyPublishedQuestionsAndGetsGradedAfterSubmitting() throws Exception {
+        var exercise = test();
+        when(tests.findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
+            2L, VocabularyMiniTest.Type.MINI_TEST, VocabularyMiniTest.Skill.VOCABULARY
+        )).thenReturn(List.of(exercise));
+        assertThrows(ResponseStatusException.class, () -> service.studentExercise(2L, null));
+        assertThrows(ResponseStatusException.class, () -> service.submitExercise(1L, List.of(8L), Map.of(), null));
+        exercise.setStatus(VocabularyMiniTest.Status.PUBLISHED);
+        var question = new VocabularyMiniTestQuestion();
+        question.setId(8L);
+        question.setQuestionType(VocabularyMiniTestQuestion.Type.MCQ);
+        question.setContent("猫");
+        question.setExplanation("猫 nghĩa là mèo");
+        question.setAnswerData(json.writeValueAsString(
+            new VocabularyMiniTestService.AnswerData(List.of("mèo", "chó"), "mèo", Map.of())
+        ));
+        when(questions.findForTest(1L)).thenReturn(List.of(question));
+        var payload = json.valueToTree(service.studentExercise(2L, null)).get("questions").get(0);
+        assertEquals(2, payload.get("options").size());
+        assertFalse(payload.has("correctAnswer"));
+        assertFalse(payload.has("explanation"));
+        assertFalse(payload.has("matches"));
+        assertThrows(IllegalStateException.class, () -> service.submitExercise(1L, List.of(7L), Map.of(), null));
+        assertEquals(new BigDecimal("100.00"), service.submitExercise(1L, List.of(8L), Map.of("8", "mèo"), null).result().score());
+        assertFalse(service.submitExercise(1L, List.of(8L), Map.of("8", "chó"), null).result().questions().getFirst().correct());
+    }
+
+    private Vocabulary word(Long id, String meaning, Course.Status status) {
+        var word = new Vocabulary();
+        word.setId(id);
+        word.setWord("word " + id);
+        word.setMeaningVi(meaning);
+        word.setStatus(status);
+        return word;
     }
 
     private VocabularyMiniTestRequest.Question input(

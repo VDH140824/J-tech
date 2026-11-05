@@ -423,6 +423,27 @@ export function HomePage() {
     <div className="dekiru-content-grid">
       {/* MAIN COLUMN (LEFT SIDE OF WORKSPACE) */}
       <div className="dekiru-left-workspace">
+        {user?.role?.replace("ROLE_", "") === "STUDENT" && (
+          <button
+            type="button"
+            onClick={() => navigate("/store")}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "18px 22px",
+              marginBottom: 20,
+              border: "1px solid var(--primary-border)",
+              borderRadius: 16,
+              background: "var(--primary-light)",
+              color: "var(--primary-hover)",
+              cursor: "pointer",
+              fontWeight: 700,
+              fontSize: 16,
+            }}
+          >
+            🎁 Cửa hàng đổi quà <span style={{ float: "right" }}>Khám phá vật phẩm →</span>
+          </button>
+        )}
         {/* HERO BANNER SECTION */}
         <section className="dekiru-hero-banner">
           <HeroBannerIllustration />

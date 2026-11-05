@@ -52,6 +52,18 @@ class VocabularyMiniTestPersistenceTest {
     VocabularyChapterTestService chapterTests;
 
     @Autowired
+    LearningActivityService activities;
+
+    @Autowired
+    UserRepository users;
+
+    @Autowired
+    RoleRepository roles;
+
+    @Autowired
+    UserStreakRepository streakDays;
+
+    @Autowired
     @org.springframework.beans.factory.annotation.Qualifier("requestMappingHandlerMapping")
     org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping mappings;
 
@@ -109,6 +121,7 @@ class VocabularyMiniTestPersistenceTest {
         other.setTitle("Other words");
         other.setDisplayOrder(2);
         lessons.saveAndFlush(other);
+        List<Long> otherIds = new ArrayList<>();
         for (int index = 0; index < 2; index++) {
             var word = new Vocabulary();
             word.setLessonId(other.getId());
@@ -118,6 +131,7 @@ class VocabularyMiniTestPersistenceTest {
             word.setDisplayOrder(index);
             word.setStatus(Course.Status.PUBLISHED);
             vocabulary.saveAndFlush(word);
+            otherIds.add(word.getId());
         }
         var auth = new UsernamePasswordAuthenticationToken(
             "integration-test",
@@ -129,7 +143,8 @@ class VocabularyMiniTestPersistenceTest {
             "",
             10,
             new BigDecimal("70"),
-            VocabularyMiniTest.Status.DRAFT
+            VocabularyMiniTest.Status.DRAFT,
+            List.copyOf(sourceIds)
         );
         var created = service.generate(lesson.getId(), settings, auth);
         assertEquals(10, created.questions().size());
@@ -199,7 +214,7 @@ class VocabularyMiniTestPersistenceTest {
                 .toList()
         );
         assertEquals(12, chapterVocabulary.flashcards(chapter.getId()).size());
-        // The learning roadmap controls the count, including lessons above the former 15-question cap.
+        // Newly added words are available for selection without changing an existing selection.
         for (int index = 11; index <= 16; index++) {
             var word = new Vocabulary();
             word.setLessonId(lesson.getId());
@@ -210,9 +225,37 @@ class VocabularyMiniTestPersistenceTest {
             word.setStatus(Course.Status.PUBLISHED);
             vocabulary.saveAndFlush(word);
         }
-        assertEquals(16, service.generate(lesson.getId(), settings, auth).questionCount());
+        assertEquals(10, service.generate(lesson.getId(), settings, auth).questionCount());
         assertEquals(18, chapterVocabulary.flashcards(chapter.getId()).size());
-        assertEquals(2, service.generate(other.getId(), settings, auth).questionCount());
+        course.setStatus(Course.Status.PUBLISHED);
+        chapter.setStatus(Course.Status.PUBLISHED);
+        other.setStatus(Course.Status.PUBLISHED);
+        var publishedSettings = new com.jtech.dto.request.VocabularyMiniTestGenerateRequest(
+            "Exercise", "", 10, new BigDecimal("70"), VocabularyMiniTest.Status.PUBLISHED, otherIds
+        );
+        var published = service.generate(other.getId(), publishedSettings, auth);
+        var student = new UsernamePasswordAuthenticationToken(
+            "integration-student", "", List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
+        );
+        var exercise = service.studentExercise(other.getId(), student);
+        assertEquals(2, exercise.questions().size());
+        var questionIds = exercise.questions().stream()
+            .map(com.jtech.dto.response.StudentVocabularyExercise.Question::id).toList();
+        var answers = Map.of(questionIds.getFirst().toString(), published.questions().getFirst().correctAnswer());
+        var graded = service.submitExercise(published.id(), questionIds, answers, student);
+        var result = graded.result();
+        assertEquals(new BigDecimal("50.00"), result.score());
+        assertTrue(result.questions().getFirst().correct());
+        assertFalse(result.questions().getLast().correct());
+        var studentAccount = users.saveAndFlush(User.builder()
+            .email("exercise-test-" + UUID.randomUUID() + "@example.com")
+            .role(roles.findByRoleName("STUDENT").orElseThrow())
+            .status(UserStatus.ACTIVE)
+            .build());
+        long studentId = studentAccount.getUserId();
+        assertTrue(activities.recordExerciseCompletion(studentId, published.id(), graded.lessonId(), result, answers).learningDayAdded());
+        assertFalse(activities.recordExerciseCompletion(studentId, published.id(), graded.lessonId(), result, answers).learningDayAdded());
+        assertEquals(List.of(java.time.LocalDate.now(StreakService.LEARNING_ZONE)), streakDays.findLearningDays(studentId));
     }
 
     @Test

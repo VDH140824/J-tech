@@ -1,0 +1,38 @@
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.2)
+
+2026-10-29T22:38:15.901+07:00  INFO 34692 --- [jtech-backend] [           main] VocabularySchemaProbe                    : Starting VocabularySchemaProbe using Java 21.0.12 with PID 34692 (D:\FPTU\K9_FALL2026\SEP490\J-tech\.audit-docs\VocabularySchemaProbe.java started by MSI-LAP in D:\FPTU\K9_FALL2026\SEP490\J-tech)
+2026-10-29T22:38:15.904+07:00  INFO 34692 --- [jtech-backend] [           main] VocabularySchemaProbe                    : No active profile set, falling back to 1 default profile: "default"
+2026-10-29T22:38:16.984+07:00  INFO 34692 --- [jtech-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:38:17.076+07:00  INFO 34692 --- [jtech-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 87 ms. Found 10 JPA repository interfaces.
+2026-10-29T22:38:17.910+07:00  INFO 34692 --- [jtech-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-10-29T22:38:17.935+07:00  INFO 34692 --- [jtech-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-29T22:38:17.935+07:00  INFO 34692 --- [jtech-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.26]
+2026-10-29T22:38:18.056+07:00  INFO 34692 --- [jtech-backend] [           main] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+2026-10-29T22:38:18.057+07:00  INFO 34692 --- [jtech-backend] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2084 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-10-29T22:38:18.316+07:00  INFO 34692 --- [jtech-backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:38:18.428+07:00  INFO 34692 --- [jtech-backend] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2026-10-29T22:38:18.470+07:00  INFO 34692 --- [jtech-backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-29T22:38:18.791+07:00  INFO 34692 --- [jtech-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:38:18.841+07:00  INFO 34692 --- [jtech-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-29T22:38:19.031+07:00  INFO 34692 --- [jtech-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@24d7657b
+2026-10-29T22:38:19.033+07:00  INFO 34692 --- [jtech-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-29T22:38:19.079+07:00  WARN 34692 --- [jtech-backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-29T22:38:20.291+07:00  INFO 34692 --- [jtech-backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:38:20.339+07:00  INFO 34692 --- [jtech-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:38:20.718+07:00  INFO 34692 --- [jtech-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-29T22:38:22.883+07:00  INFO 34692 --- [jtech-backend] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 62382 (http) with context path '/api'
+2026-10-29T22:38:22.892+07:00  INFO 34692 --- [jtech-backend] [           main] VocabularySchemaProbe                    : Started VocabularySchemaProbe in 7.418 seconds (process running for 9.407)
+VOCABULARY_SCHEMA_OK records=112
+2026-10-29T22:38:23.047+07:00  INFO 34692 --- [jtech-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:38:23.050+07:00  INFO 34692 --- [jtech-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-10-29T22:38:23.059+07:00  INFO 34692 --- [jtech-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
