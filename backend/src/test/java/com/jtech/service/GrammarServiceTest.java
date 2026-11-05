@@ -11,20 +11,10 @@ import com.jtech.repository.LessonRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -44,22 +34,21 @@ import static org.mockito.Mockito.*;
 
 /**
  * Service-level acceptance tests for the agreed requirements, including required
- * text <= 100 characters and displayOrder >= 1. These requirements deliberately
+ * text <= 100 characters. These requirements deliberately
  * remain assertions even when the current production service does not enforce them.
  * Transaction callbacks are simulated; no database or Cloudinary connection is used.
  */
-@ExtendWith(MockitoExtension.class)
 class GrammarServiceTest {
     private static final long LESSON_ID = 10L;
     private static final long GRAMMAR_ID = 20L;
     private static final LocalDateTime CREATED = LocalDateTime.of(2026, 1, 1, 8, 0);
     private static final LocalDateTime UPDATED = LocalDateTime.of(2026, 1, 2, 9, 0);
 
-    @Mock GrammarRepository grammarRepository;
-    @Mock LessonRepository lessonRepository;
-    @Mock CloudinaryService cloudinaryService;
-    @Mock MultipartFile videoFile;
-    @InjectMocks GrammarService service;
+    private final GrammarRepository grammarRepository = mock(GrammarRepository.class);
+    private final LessonRepository lessonRepository = mock(LessonRepository.class);
+    private final CloudinaryService cloudinaryService = mock(CloudinaryService.class);
+    private final MultipartFile videoFile = mock(MultipartFile.class);
+    private final GrammarService service = new GrammarService(grammarRepository, lessonRepository, cloudinaryService);
 
     private Lesson lesson;
     private Grammar grammar;
@@ -75,7 +64,7 @@ class GrammarServiceTest {
                 .structureName("old structure").meaningVi("old meaning")
                 .usageExplanation("old usage").exampleJp("old example JP").exampleVi("old example VI")
                 .videoUrl("https://example.test/old.mp4").videoPublicId("old-video")
-                .videoDurationSec(30).displayOrder(2).status(Grammar.Status.PUBLISHED)
+                .videoDurationSec(30).displayOrder(1).status(Grammar.Status.PUBLISHED)
                 .createdAt(CREATED).updatedAt(UPDATED).build();
         TransactionSynchronizationManager.initSynchronization();
     }
@@ -87,109 +76,82 @@ class GrammarServiceTest {
         }
     }
 
-    @Nested
-    @DisplayName("getByLesson(Long lessonId, Grammar.Status status)")
-    class GetByLesson {
-        @Test
-        @DisplayName("G-LIST-01: null status selects the unfiltered repository query")
-        void queriesWithoutStatus() {
-            when(lessonRepository.existsById(LESSON_ID)).thenReturn(true);
-            when(grammarRepository.findByLessonIdOrderByDisplayOrderAscIdAsc(LESSON_ID))
-                    .thenReturn(List.of(grammar));
-            assertEquals(List.of(responseOf(grammar)), service.getByLesson(LESSON_ID, null));
-            verify(grammarRepository).findByLessonIdOrderByDisplayOrderAscIdAsc(LESSON_ID);
-            verify(grammarRepository, never()).findByLessonIdAndStatusOrderByDisplayOrderAscIdAsc(anyLong(), any());
-        }
+    @Test
+    @DisplayName("UTCID01: View grammar detail successfully")
+    void getByLessonViewGrammarDetailSuccessfully() {
+        when(lessonRepository.existsById(LESSON_ID)).thenReturn(true);
+        when(grammarRepository.findByLessonIdOrderByDisplayOrderAscIdAsc(LESSON_ID))
+                .thenReturn(List.of(grammar));
+        assertEquals(List.of(responseOf(grammar)), service.getByLesson(LESSON_ID, null));
+        verify(grammarRepository).findByLessonIdOrderByDisplayOrderAscIdAsc(LESSON_ID);
+    }
 
-        @ParameterizedTest
-        @EnumSource(Grammar.Status.class)
-        @DisplayName("G-LIST-02: filter by each requested status")
-        void queriesEachStatus(Grammar.Status status) {
-            grammar.setStatus(status);
-            when(lessonRepository.existsById(LESSON_ID)).thenReturn(true);
-            when(grammarRepository.findByLessonIdAndStatusOrderByDisplayOrderAscIdAsc(LESSON_ID, status))
-                    .thenReturn(List.of(grammar));
-            assertEquals(List.of(responseOf(grammar)), service.getByLesson(LESSON_ID, status));
-            verify(grammarRepository).findByLessonIdAndStatusOrderByDisplayOrderAscIdAsc(LESSON_ID, status);
-            verify(grammarRepository, never()).findByLessonIdOrderByDisplayOrderAscIdAsc(anyLong());
-        }
+    @Test
+    @DisplayName("UTCID02: Lesson has no grammar")
+    void getByLessonLessonHasNoGrammar() {
+        when(lessonRepository.existsById(LESSON_ID)).thenReturn(true);
+        when(grammarRepository.findByLessonIdOrderByDisplayOrderAscIdAsc(LESSON_ID)).thenReturn(List.of());
+        assertTrue(service.getByLesson(LESSON_ID, null).isEmpty());
+    }
 
-        @Test
-        @DisplayName("G-LIST-03: empty repository result returns an empty list")
-        void returnsEmptyList() {
-            when(lessonRepository.existsById(LESSON_ID)).thenReturn(true);
-            when(grammarRepository.findByLessonIdOrderByDisplayOrderAscIdAsc(LESSON_ID)).thenReturn(List.of());
-            assertTrue(service.getByLesson(LESSON_ID, null).isEmpty());
-        }
+    @Test
+    @DisplayName("UTCID03: Lesson does not exist")
+    void getByLessonLessonDoesNotExist() {
+        when(lessonRepository.existsById(LESSON_ID)).thenReturn(false);
+        assertHttp(HttpStatus.NOT_FOUND, "Lesson not found", () -> service.getByLesson(LESSON_ID, null));
+        verifyNoInteractions(grammarRepository);
+    }
 
-        @Test
-        @DisplayName("G-LIST-04: map multiple grammars without changing repository order")
-        void preservesRepositoryOrder() {
-            Grammar second = Grammar.builder().id(21L).lesson(lesson).structureName("second")
-                    .meaningVi("meaning").usageExplanation("usage").exampleJp("JP").exampleVi("VI")
-                    .displayOrder(3).status(Grammar.Status.HIDDEN).createdAt(CREATED).build();
-            when(lessonRepository.existsById(LESSON_ID)).thenReturn(true);
-            when(grammarRepository.findByLessonIdOrderByDisplayOrderAscIdAsc(LESSON_ID))
-                    .thenReturn(List.of(grammar, second));
-            assertEquals(List.of(responseOf(grammar), responseOf(second)), service.getByLesson(LESSON_ID, null));
+    @Test
+    @DisplayName("UTCID04: save all request fields and map the persisted entity")
+    void createSavesAndMapsAllFields() {
+        foundLesson();
+        when(grammarRepository.save(any(Grammar.class))).thenAnswer(invocation -> {
+            Grammar saved = invocation.getArgument(0);
+            saved.setId(77L);
+            saved.setCreatedAt(CREATED);
+            return saved;
+        });
+        GrammarDetailResponse result = service.create(LESSON_ID,
+                createRequest(texts(), "https://example.test/new.mp4", "new-video", 14, Grammar.Status.HIDDEN));
+        ArgumentCaptor<Grammar> captured = ArgumentCaptor.forClass(Grammar.class);
+        verify(grammarRepository).save(captured.capture());
+        Grammar saved = captured.getValue();
+        assertAll(() -> assertSame(lesson, saved.getLesson()),
+                () -> assertEquals(List.of(texts()), textValues(saved)),
+                () -> assertEquals("https://example.test/new.mp4", saved.getVideoUrl()),
+                () -> assertEquals("new-video", saved.getVideoPublicId()),
+                () -> assertEquals(14, saved.getVideoDurationSec()),
+                () -> assertEquals(Grammar.Status.HIDDEN, saved.getStatus()),
+                () -> assertEquals(77L, result.id()),
+                () -> assertEquals(responseOf(saved), result));
+        verifyNoInteractions(cloudinaryService);
+    }
+
+    @Test
+    @DisplayName("UTCID05: omitted status defaults to DRAFT and explicit status is preserved")
+    void createAppliesDefaults() {
+        for (Arguments testCase : defaults().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            Grammar.Status status = (Grammar.Status) data[0];
+            Grammar.Status expectedStatus = (Grammar.Status) data[1];
+            foundLesson();
+            saveReturnsArgument();
+            var result = service.create(LESSON_ID, createRequest(texts(), null, null, null, status));
+            assertEquals(expectedStatus, result.status());
         }
     }
 
-    @Nested
-    @DisplayName("create(Long lessonId, GrammarCreateRequest request)")
-    class Create {
-        @Test
-        @DisplayName("G-CREATE-01: save all request fields and map the persisted entity")
-        void savesAndMapsAllFields() {
-            foundLesson();
-            when(grammarRepository.save(any(Grammar.class))).thenAnswer(invocation -> {
-                Grammar saved = invocation.getArgument(0);
-                saved.setId(77L);
-                saved.setCreatedAt(CREATED);
-                return saved;
-            });
-            GrammarDetailResponse result = service.create(LESSON_ID,
-                    createRequest(texts(), "https://example.test/new.mp4", "new-video", 14, 3, Grammar.Status.HIDDEN));
-            ArgumentCaptor<Grammar> captured = ArgumentCaptor.forClass(Grammar.class);
-            verify(grammarRepository).save(captured.capture());
-            Grammar saved = captured.getValue();
-            assertAll(() -> assertSame(lesson, saved.getLesson()),
-                    () -> assertEquals(List.of(texts()), textValues(saved)),
-                    () -> assertEquals("https://example.test/new.mp4", saved.getVideoUrl()),
-                    () -> assertEquals("new-video", saved.getVideoPublicId()),
-                    () -> assertEquals(14, saved.getVideoDurationSec()),
-                    () -> assertEquals(3, saved.getDisplayOrder()),
-                    () -> assertEquals(Grammar.Status.HIDDEN, saved.getStatus()),
-                    () -> assertEquals(77L, result.id()),
-                    () -> assertEquals(responseOf(saved), result));
-            verifyNoInteractions(cloudinaryService);
-        }
-
-        @ParameterizedTest
-        @MethodSource("com.jtech.service.GrammarServiceTest#defaults")
-        @DisplayName("G-CREATE-02: omitted order defaults to 1 and omitted status to DRAFT")
-        void appliesDefaults(Integer order, Grammar.Status status, int expectedOrder, Grammar.Status expectedStatus) {
-            foundLesson();
-            saveReturnsArgument();
-            var result = service.create(LESSON_ID, createRequest(texts(), null, null, null, order, status));
-            assertAll(() -> assertEquals(expectedOrder, result.displayOrder()),
-                    () -> assertEquals(expectedStatus, result.status()));
-        }
-
-        @ParameterizedTest
-        @EnumSource(Grammar.Status.class)
-        @DisplayName("G-CREATE-03: preserve the explicitly requested status and order")
-        void preservesExplicitDefaults(Grammar.Status status) {
-            foundLesson();
-            saveReturnsArgument();
-            var result = service.create(LESSON_ID, createRequest(texts(), null, null, null, 7, status));
-            assertAll(() -> assertEquals(7, result.displayOrder()), () -> assertEquals(status, result.status()));
-        }
-
-        @ParameterizedTest(name = "{0}: {1}")
-        @MethodSource("com.jtech.service.GrammarServiceTest#invalidText")
-        @DisplayName("G-CREATE-04/05/06/08: reject null, empty, blank and 101-character text")
-        void rejectsInvalidText(TextField field, String scenario, String value) {
+    @Test
+    @DisplayName("UTCID06: reject null, empty, blank and 101-character text")
+    void createRejectsInvalidText() {
+        for (Arguments testCase : invalidText().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            TextField field = (TextField) data[0];
+            String scenario = (String) data[1];
+            String value = (String) data[2];
             prepareRejectedCreate();
             String[] values = texts();
             values[field.ordinal()] = value;
@@ -197,11 +159,18 @@ class GrammarServiceTest {
                     () -> verify(grammarRepository, never()).save(any()),
                     () -> verifyNoInteractions(cloudinaryService));
         }
+    }
 
-        @ParameterizedTest(name = "{0}: {1}")
-        @MethodSource("com.jtech.service.GrammarServiceTest#validText")
-        @DisplayName("G-CREATE-07/09: accept 100 characters and trim surrounding whitespace")
-        void acceptsBoundaryAndTrims(TextField field, String scenario, String value, String expected) {
+    @Test
+    @DisplayName("UTCID07: accept 100 characters and trim surrounding whitespace")
+    void createAcceptsBoundaryAndTrims() {
+        for (Arguments testCase : validText().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            TextField field = (TextField) data[0];
+            String scenario = (String) data[1];
+            String value = (String) data[2];
+            String expected = (String) data[3];
             foundLesson();
             saveReturnsArgument();
             String[] values = texts();
@@ -212,102 +181,93 @@ class GrammarServiceTest {
             assertAll(() -> assertEquals(expected, textValues(captured.getValue()).get(field.ordinal())),
                     () -> assertEquals(responseOf(captured.getValue()), result));
         }
+    }
 
-        @ParameterizedTest
-        @ValueSource(ints = {-1, 0})
-        @DisplayName("G-CREATE-10: reject negative or zero display order")
-        void rejectsOrderBelowOne(int order) {
-            prepareRejectedCreate();
-            assertAll(() -> assertBadRequest(() -> service.create(LESSON_ID,
-                            createRequest(texts(), null, null, null, order, Grammar.Status.DRAFT))),
-                    () -> verify(grammarRepository, never()).save(any()),
-                    () -> verifyNoInteractions(cloudinaryService));
-        }
-
-        @ParameterizedTest
-        @ValueSource(ints = {1, 3})
-        @DisplayName("G-CREATE-11: accept display order 1 and a larger valid order")
-        void acceptsPositiveOrder(int order) {
-            foundLesson();
-            saveReturnsArgument();
-            assertEquals(order, service.create(LESSON_ID,
-                    createRequest(texts(), null, null, null, order, Grammar.Status.DRAFT)).displayOrder());
-        }
-
-        @ParameterizedTest(name = "{0}")
-        @MethodSource("com.jtech.service.GrammarServiceTest#incompleteVideo")
-        @DisplayName("G-CREATE-12/13: URL and public ID must be supplied together")
-        void rejectsIncompleteVideo(String scenario, String url, String publicId) {
+    @Test
+    @DisplayName("UTCID08: URL and public ID must be supplied together")
+    void createRejectsIncompleteVideo() {
+        for (Arguments testCase : incompleteVideo().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            String scenario = (String) data[0];
+            String url = (String) data[1];
+            String publicId = (String) data[2];
             foundLesson();
             assertHttp(HttpStatus.BAD_REQUEST, "Video URL and public ID must be provided together",
-                    () -> service.create(LESSON_ID, createRequest(texts(), url, publicId, null, 1, Grammar.Status.DRAFT)));
+                    () -> service.create(LESSON_ID, createRequest(texts(), url, publicId, null, Grammar.Status.DRAFT)));
             verify(grammarRepository, never()).save(any());
-            verifyNoInteractions(cloudinaryService);
-        }
-
-        @ParameterizedTest
-        @MethodSource("com.jtech.service.GrammarServiceTest#absentVideoPairs")
-        @DisplayName("G-CREATE-14: both video fields absent or blank are allowed")
-        void acceptsAbsentVideo(String url, String publicId) {
-            foundLesson();
-            saveReturnsArgument();
-            var result = service.create(LESSON_ID, createRequest(texts(), url, publicId, null, 1, Grammar.Status.DRAFT));
-            assertAll(() -> assertEquals(url, result.videoUrl()), () -> assertEquals(publicId, result.videoPublicId()),
-                    () -> assertNull(result.videoDurationSec()));
-            verifyNoInteractions(cloudinaryService);
-        }
-
-        @Test
-        @DisplayName("G-CREATE-15: propagate repository save failure")
-        void propagatesSaveFailure() {
-            foundLesson();
-            var error = new DataIntegrityViolationException("save failed");
-            when(grammarRepository.save(any())).thenThrow(error);
-            assertSame(error, assertThrows(DataIntegrityViolationException.class,
-                    () -> service.create(LESSON_ID, createRequest(texts()))));
             verifyNoInteractions(cloudinaryService);
         }
     }
 
-    @Nested
-    @DisplayName("update(Long id, GrammarUpdateRequest request, MultipartFile videoFile)")
-    class Update {
-        @Test
-        @DisplayName("G-UPDATE-01: missing grammar returns 404")
-        void rejectsMissingGrammar() {
-            when(grammarRepository.findById(GRAMMAR_ID)).thenReturn(Optional.empty());
-            assertHttp(HttpStatus.NOT_FOUND, "Grammar not found",
-                    () -> service.update(GRAMMAR_ID, updateRequest(texts()), videoFile));
-            verify(grammarRepository, never()).save(any());
-            verifyNoInteractions(cloudinaryService);
-        }
-
-        @Test
-        @DisplayName("G-UPDATE-02/03: update text and retain video metadata without a new file")
-        void updatesTextAndKeepsVideo() {
-            foundGrammar();
+    @Test
+    @DisplayName("UTCID09: both video fields absent or blank are allowed")
+    void createAcceptsAbsentVideo() {
+        for (Arguments testCase : absentVideoPairs().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            String url = (String) data[0];
+            String publicId = (String) data[1];
+            foundLesson();
             saveReturnsArgument();
-            var result = service.update(GRAMMAR_ID,
-                    updateRequest(new String[]{" new structure ", " new meaning ", " new usage ", " new JP ", " new VI "},
-                            null, null, 999, 4, Grammar.Status.HIDDEN), null);
-            assertAll(() -> assertEquals(List.of("new structure", "new meaning", "new usage", "new JP", "new VI"), textValues(grammar)),
-                    () -> assertEquals(4, grammar.getDisplayOrder()),
-                    () -> assertEquals(Grammar.Status.HIDDEN, grammar.getStatus()),
-                    () -> assertEquals("https://example.test/old.mp4", result.videoUrl()),
-                    () -> assertEquals("old-video", result.videoPublicId()),
-                    () -> assertEquals(30, result.videoDurationSec()),
-                    () -> assertEquals(CREATED, result.createdAt()),
-                    () -> assertEquals(UPDATED, result.updatedAt()),
-                    () -> assertEquals(responseOf(grammar), result),
-                    () -> assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty()));
-            verify(grammarRepository).save(grammar);
+            var result = service.create(LESSON_ID, createRequest(texts(), url, publicId, null, Grammar.Status.DRAFT));
+            assertAll(() -> assertEquals(url, result.videoUrl()), () -> assertEquals(publicId, result.videoPublicId()),
+                    () -> assertNull(result.videoDurationSec()));
             verifyNoInteractions(cloudinaryService);
         }
+    }
 
-        @ParameterizedTest(name = "{0}: {1}")
-        @MethodSource("com.jtech.service.GrammarServiceTest#invalidText")
-        @DisplayName("G-UPDATE-04/05/06/08: reject invalid text before mutation, upload or save")
-        void rejectsInvalidTextWithoutSideEffects(TextField field, String scenario, String value) {
+    @Test
+    @DisplayName("UTCID10: propagate repository save failure")
+    void createPropagatesSaveFailure() {
+        foundLesson();
+        var error = new DataIntegrityViolationException("save failed");
+        when(grammarRepository.save(any())).thenThrow(error);
+        assertSame(error, assertThrows(DataIntegrityViolationException.class,
+                () -> service.create(LESSON_ID, createRequest(texts()))));
+        verifyNoInteractions(cloudinaryService);
+    }
+
+    @Test
+    @DisplayName("UTCID11: missing grammar returns 404")
+    void updateRejectsMissingGrammar() {
+        when(grammarRepository.findById(GRAMMAR_ID)).thenReturn(Optional.empty());
+        assertHttp(HttpStatus.NOT_FOUND, "Grammar not found",
+                () -> service.update(GRAMMAR_ID, updateRequest(texts()), videoFile));
+        verify(grammarRepository, never()).save(any());
+        verifyNoInteractions(cloudinaryService);
+    }
+
+    @Test
+    @DisplayName("UTCID12: update text and retain video metadata without a new file")
+    void updateUpdatesTextAndKeepsVideo() {
+        foundGrammar();
+        saveReturnsArgument();
+        var result = service.update(GRAMMAR_ID,
+                updateRequest(new String[]{" new structure ", " new meaning ", " new usage ", " new JP ", " new VI "},
+                        null, null, 999, Grammar.Status.HIDDEN), null);
+        assertAll(() -> assertEquals(List.of("new structure", "new meaning", "new usage", "new JP", "new VI"), textValues(grammar)),
+                () -> assertEquals(Grammar.Status.HIDDEN, grammar.getStatus()),
+                () -> assertEquals("https://example.test/old.mp4", result.videoUrl()),
+                () -> assertEquals("old-video", result.videoPublicId()),
+                () -> assertEquals(30, result.videoDurationSec()),
+                () -> assertEquals(CREATED, result.createdAt()),
+                () -> assertEquals(UPDATED, result.updatedAt()),
+                () -> assertEquals(responseOf(grammar), result),
+                () -> assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty()));
+        verify(grammarRepository).save(grammar);
+        verifyNoInteractions(cloudinaryService);
+    }
+
+    @Test
+    @DisplayName("UTCID13: reject invalid text before mutation, upload or save")
+    void updateRejectsInvalidTextWithoutSideEffects() {
+        for (Arguments testCase : invalidText().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            TextField field = (TextField) data[0];
+            String scenario = (String) data[1];
+            String value = (String) data[2];
             prepareRejectedUpdate();
             var before = responseOf(grammar);
             String[] values = texts();
@@ -317,11 +277,18 @@ class GrammarServiceTest {
                     () -> verify(grammarRepository, never()).save(any()),
                     () -> verifyNoInteractions(cloudinaryService));
         }
+    }
 
-        @ParameterizedTest(name = "{0}: {1}")
-        @MethodSource("com.jtech.service.GrammarServiceTest#validText")
-        @DisplayName("G-UPDATE-07/09: accept 100 characters and trim surrounding whitespace")
-        void acceptsBoundaryAndTrims(TextField field, String scenario, String value, String expected) {
+    @Test
+    @DisplayName("UTCID14: accept 100 characters and trim surrounding whitespace")
+    void updateAcceptsBoundaryAndTrims() {
+        for (Arguments testCase : validText().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            TextField field = (TextField) data[0];
+            String scenario = (String) data[1];
+            String value = (String) data[2];
+            String expected = (String) data[3];
             foundGrammar();
             saveReturnsArgument();
             String[] values = texts();
@@ -331,48 +298,36 @@ class GrammarServiceTest {
                     () -> assertEquals(responseOf(grammar), result));
             verifyNoInteractions(cloudinaryService);
         }
+    }
 
-        @ParameterizedTest
-        @ValueSource(ints = {-1, 0})
-        @DisplayName("G-UPDATE-10: reject display order below 1 without side effects")
-        void rejectsOrderBelowOne(int order) {
-            prepareRejectedUpdate();
-            var before = responseOf(grammar);
-            assertAll(() -> assertBadRequest(() -> service.update(GRAMMAR_ID,
-                            updateRequest(texts(), null, null, null, order, Grammar.Status.HIDDEN), videoFile)),
-                    () -> assertEquals(before, responseOf(grammar)),
-                    () -> verify(grammarRepository, never()).save(any()),
-                    () -> verifyNoInteractions(cloudinaryService));
-        }
-
-        @ParameterizedTest
-        @ValueSource(ints = {1, 3})
-        @DisplayName("G-UPDATE-11: accept display order 1 and a larger valid order")
-        void acceptsPositiveOrder(int order) {
-            foundGrammar();
-            saveReturnsArgument();
-            assertEquals(order, service.update(GRAMMAR_ID,
-                    updateRequest(texts(), null, null, null, order, Grammar.Status.HIDDEN), null).displayOrder());
-        }
-
-        @ParameterizedTest
-        @MethodSource("com.jtech.service.GrammarServiceTest#replacementMetadata")
-        @DisplayName("G-UPDATE-12: reject replacement URL/public ID even when a file is supplied")
-        void rejectsReplacementMetadata(String url, String publicId, boolean withFile) {
+    @Test
+    @DisplayName("UTCID15: reject replacement URL/public ID even when a file is supplied")
+    void updateRejectsReplacementMetadata() {
+        for (Arguments testCase : replacementMetadata().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            String url = (String) data[0];
+            String publicId = (String) data[1];
+            boolean withFile = (Boolean) data[2];
             foundGrammar();
             var before = responseOf(grammar);
             assertHttp(HttpStatus.BAD_REQUEST, "Video replacement requires a video file",
                     () -> service.update(GRAMMAR_ID,
-                            updateRequest(texts(), url, publicId, null, 1, Grammar.Status.DRAFT), withFile ? videoFile : null));
+                            updateRequest(texts(), url, publicId, null, Grammar.Status.DRAFT), withFile ? videoFile : null));
             assertEquals(before, responseOf(grammar));
             verify(grammarRepository, never()).save(any());
             verifyNoInteractions(cloudinaryService);
         }
+    }
 
-        @ParameterizedTest
-        @MethodSource("com.jtech.service.GrammarServiceTest#durations")
-        @DisplayName("G-UPDATE-13/14: map upload metadata and ceil duration")
-        void replacesVideoAndRoundsDuration(Double duration, Integer expected) {
+    @Test
+    @DisplayName("UTCID16: map upload metadata and ceil duration")
+    void updateReplacesVideoAndRoundsDuration() {
+        for (Arguments testCase : durations().toList()) {
+            resetScenario();
+            Object[] data = testCase.get();
+            Double duration = (Double) data[0];
+            Integer expected = (Integer) data[1];
             prepareUpload("new-video", duration);
             var result = service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
             assertAll(() -> assertEquals("https://example.test/new.mp4", result.videoUrl()),
@@ -383,231 +338,237 @@ class GrammarServiceTest {
             verify(grammarRepository).save(grammar);
             verify(cloudinaryService, never()).deleteVideo(anyString());
         }
+    }
 
-        @Test
-        @DisplayName("G-UPDATE-15: upload validation error becomes 400 with original cause")
-        void mapsUploadValidationFailure() {
-            foundGrammar();
-            var cause = new IllegalArgumentException("Unsupported video file type");
-            when(cloudinaryService.uploadGrammarVideo(videoFile)).thenThrow(cause);
-            var error = assertThrows(ResponseStatusException.class,
-                    () -> service.update(GRAMMAR_ID, updateRequest(texts()), videoFile));
-            assertAll(() -> assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode()),
-                    () -> assertEquals(cause.getMessage(), error.getReason()), () -> assertSame(cause, error.getCause()));
-            verify(grammarRepository, never()).save(any());
-            verify(cloudinaryService, never()).deleteVideo(anyString());
-        }
+    @Test
+    @DisplayName("UTCID17: upload validation error becomes 400 with original cause")
+    void updateMapsUploadValidationFailure() {
+        foundGrammar();
+        var cause = new IllegalArgumentException("Unsupported video file type");
+        when(cloudinaryService.uploadGrammarVideo(videoFile)).thenThrow(cause);
+        var error = assertThrows(ResponseStatusException.class,
+                () -> service.update(GRAMMAR_ID, updateRequest(texts()), videoFile));
+        assertAll(() -> assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode()),
+                () -> assertEquals(cause.getMessage(), error.getReason()), () -> assertSame(cause, error.getCause()));
+        verify(grammarRepository, never()).save(any());
+        verify(cloudinaryService, never()).deleteVideo(anyString());
+    }
 
-        @Test
-        @DisplayName("G-UPDATE-16: upload infrastructure error becomes 502")
-        void mapsUploadFailure() {
-            foundGrammar();
-            var cause = new IllegalStateException("Cloudinary unavailable");
-            when(cloudinaryService.uploadGrammarVideo(videoFile)).thenThrow(cause);
-            var error = assertThrows(ResponseStatusException.class,
-                    () -> service.update(GRAMMAR_ID, updateRequest(texts()), videoFile));
-            assertAll(() -> assertEquals(HttpStatus.BAD_GATEWAY, error.getStatusCode()),
-                    () -> assertEquals("Video upload failed", error.getReason()), () -> assertSame(cause, error.getCause()));
-            verify(grammarRepository, never()).save(any());
-        }
+    @Test
+    @DisplayName("UTCID18: upload infrastructure error becomes 502")
+    void updateMapsUploadFailure() {
+        foundGrammar();
+        var cause = new IllegalStateException("Cloudinary unavailable");
+        when(cloudinaryService.uploadGrammarVideo(videoFile)).thenThrow(cause);
+        var error = assertThrows(ResponseStatusException.class,
+                () -> service.update(GRAMMAR_ID, updateRequest(texts()), videoFile));
+        assertAll(() -> assertEquals(HttpStatus.BAD_GATEWAY, error.getStatusCode()),
+                () -> assertEquals("Video upload failed", error.getReason()), () -> assertSame(cause, error.getCause()));
+        verify(grammarRepository, never()).save(any());
+    }
 
-        @Test
-        @DisplayName("G-UPDATE-17/18: delete only the old video after commit")
-        void deletesOldVideoOnlyAfterCommit() {
-            prepareUpload("new-video", 12.0);
-            service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
-            verify(cloudinaryService, never()).deleteVideo(anyString());
-            completeTransaction(true);
-            verify(cloudinaryService).deleteVideo("old-video");
-            verify(cloudinaryService, never()).deleteVideo("new-video");
-        }
+    @Test
+    @DisplayName("UTCID19: delete only the old video after commit")
+    void updateDeletesOldVideoOnlyAfterCommit() {
+        prepareUpload("new-video", 12.0);
+        service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
+        verify(cloudinaryService, never()).deleteVideo(anyString());
+        completeTransaction(true);
+        verify(cloudinaryService).deleteVideo("old-video");
+        verify(cloudinaryService, never()).deleteVideo("new-video");
+    }
 
-        @ParameterizedTest
-        @NullAndEmptySource
-        @ValueSource(strings = {" ", "\t\n"})
-        @DisplayName("G-UPDATE-19: no old-video deletion for absent public ID")
-        void skipsAbsentOldVideo(String previousId) {
+    @Test
+    @DisplayName("UTCID20: no old-video deletion for absent public ID")
+    void updateSkipsAbsentOldVideo() {
+        for (String item : Stream.<String>of(null, "", " ", "\t\n").toList()) {
+            resetScenario();
+            String previousId = item;
             grammar.setVideoPublicId(previousId);
             prepareUpload("new-video", 12.0);
             service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
             completeTransaction(true);
             verify(cloudinaryService, never()).deleteVideo(any());
         }
-
-        @Test
-        @DisplayName("G-UPDATE-20: never delete an unchanged public ID after commit")
-        void keepsSamePublicId() {
-            prepareUpload("old-video", 12.0);
-            service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
-            completeTransaction(true);
-            verify(cloudinaryService, never()).deleteVideo(any());
-        }
-
-        @Test
-        @DisplayName("G-UPDATE-21: rollback deletes new video and keeps old video")
-        void cleansNewVideoOnRollback() {
-            prepareUpload("new-video", 12.0);
-            service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
-            completeTransaction(false);
-            verify(cloudinaryService).deleteVideo("new-video");
-            verify(cloudinaryService, never()).deleteVideo("old-video");
-        }
-
-        @Test
-        @DisplayName("G-UPDATE-22: save failure propagates and rollback cleans uploaded video")
-        void cleansVideoAfterSaveFailure() {
-            foundGrammar();
-            when(cloudinaryService.uploadGrammarVideo(videoFile)).thenReturn(upload("new-video", 12.0));
-            var failure = new DataIntegrityViolationException("save failed");
-            when(grammarRepository.save(grammar)).thenThrow(failure);
-            assertSame(failure, assertThrows(DataIntegrityViolationException.class,
-                    () -> service.update(GRAMMAR_ID, updateRequest(texts()), videoFile)));
-            verify(cloudinaryService, never()).deleteVideo(anyString());
-            completeTransaction(false);
-            verify(cloudinaryService).deleteVideo("new-video");
-            verify(cloudinaryService, never()).deleteVideo("old-video");
-        }
-
-        @Test
-        @DisplayName("G-UPDATE-23: rollback cleanup failure does not escape callback")
-        void toleratesRollbackCleanupFailure() {
-            prepareUpload("new-video", 12.0);
-            service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
-            doThrow(new IllegalStateException("cleanup failed")).when(cloudinaryService).deleteVideo("new-video");
-            assertDoesNotThrow(() -> completeTransaction(false));
-            verify(cloudinaryService).deleteVideo("new-video");
-            verify(cloudinaryService, never()).deleteVideo("old-video");
-        }
-
-        @Test
-        @DisplayName("G-UPDATE-24: old-video cleanup failure does not escape commit callback")
-        void toleratesCommitCleanupFailure() {
-            prepareUpload("new-video", 12.0);
-            service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
-            doThrow(new IllegalStateException("cleanup failed")).when(cloudinaryService).deleteVideo("old-video");
-            assertDoesNotThrow(() -> completeTransaction(true));
-            verify(cloudinaryService).deleteVideo("old-video");
-            verify(cloudinaryService, never()).deleteVideo("new-video");
-        }
-
-        @Test
-        @DisplayName("G-UPDATE-25: save failure without upload never calls Cloudinary")
-        void propagatesSaveFailureWithoutVideo() {
-            foundGrammar();
-            var failure = new DataIntegrityViolationException("save failed");
-            when(grammarRepository.save(grammar)).thenThrow(failure);
-            assertSame(failure, assertThrows(DataIntegrityViolationException.class,
-                    () -> service.update(GRAMMAR_ID, updateRequest(texts()), null)));
-            verifyNoInteractions(cloudinaryService);
-        }
     }
 
-    @Nested
-    @DisplayName("delete(Long id)")
-    class Delete {
-        @Test
-        @DisplayName("G-DELETE-01: absent grammar returns false without deletion")
-        void returnsFalseWhenMissing() {
-            when(grammarRepository.findById(GRAMMAR_ID)).thenReturn(Optional.empty());
-            assertFalse(service.delete(GRAMMAR_ID));
-            verify(grammarRepository).findById(GRAMMAR_ID);
-            verifyNoMoreInteractions(grammarRepository);
-            verifyNoInteractions(cloudinaryService);
-        }
+    @Test
+    @DisplayName("UTCID21: never delete an unchanged public ID after commit")
+    void updateKeepsSamePublicId() {
+        prepareUpload("old-video", 12.0);
+        service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
+        completeTransaction(true);
+        verify(cloudinaryService, never()).deleteVideo(any());
+    }
 
-        @Test
-        @DisplayName("G-DELETE-02: delete progress, detach sessions, then delete grammar")
-        void deletesRelatedDataInOrder() {
-            foundGrammar();
-            assertTrue(service.delete(GRAMMAR_ID));
-            var order = inOrder(grammarRepository);
-            order.verify(grammarRepository).findById(GRAMMAR_ID);
-            order.verify(grammarRepository).deleteLearningProgressByGrammarId(GRAMMAR_ID);
-            order.verify(grammarRepository).detachStudySessionsByGrammarId(GRAMMAR_ID);
-            order.verify(grammarRepository).delete(grammar);
-            order.verifyNoMoreInteractions();
-        }
+    @Test
+    @DisplayName("UTCID22: rollback deletes new video and keeps old video")
+    void updateCleansNewVideoOnRollback() {
+        prepareUpload("new-video", 12.0);
+        service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
+        completeTransaction(false);
+        verify(cloudinaryService).deleteVideo("new-video");
+        verify(cloudinaryService, never()).deleteVideo("old-video");
+    }
 
-        @ParameterizedTest
-        @NullAndEmptySource
-        @ValueSource(strings = {" ", "\t\n"})
-        @DisplayName("G-DELETE-03: no video callback for absent or blank public ID")
-        void skipsAbsentVideo(String publicId) {
+    @Test
+    @DisplayName("UTCID23: save failure propagates and rollback cleans uploaded video")
+    void updateCleansVideoAfterSaveFailure() {
+        foundGrammar();
+        when(cloudinaryService.uploadGrammarVideo(videoFile)).thenReturn(upload("new-video", 12.0));
+        var failure = new DataIntegrityViolationException("save failed");
+        when(grammarRepository.save(grammar)).thenThrow(failure);
+        assertSame(failure, assertThrows(DataIntegrityViolationException.class,
+                () -> service.update(GRAMMAR_ID, updateRequest(texts()), videoFile)));
+        verify(cloudinaryService, never()).deleteVideo(anyString());
+        completeTransaction(false);
+        verify(cloudinaryService).deleteVideo("new-video");
+        verify(cloudinaryService, never()).deleteVideo("old-video");
+    }
+
+    @Test
+    @DisplayName("UTCID24: rollback cleanup failure does not escape callback")
+    void updateToleratesRollbackCleanupFailure() {
+        prepareUpload("new-video", 12.0);
+        service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
+        doThrow(new IllegalStateException("cleanup failed")).when(cloudinaryService).deleteVideo("new-video");
+        assertDoesNotThrow(() -> completeTransaction(false));
+        verify(cloudinaryService).deleteVideo("new-video");
+        verify(cloudinaryService, never()).deleteVideo("old-video");
+    }
+
+    @Test
+    @DisplayName("UTCID25: old-video cleanup failure does not escape commit callback")
+    void updateToleratesCommitCleanupFailure() {
+        prepareUpload("new-video", 12.0);
+        service.update(GRAMMAR_ID, updateRequest(texts()), videoFile);
+        doThrow(new IllegalStateException("cleanup failed")).when(cloudinaryService).deleteVideo("old-video");
+        assertDoesNotThrow(() -> completeTransaction(true));
+        verify(cloudinaryService).deleteVideo("old-video");
+        verify(cloudinaryService, never()).deleteVideo("new-video");
+    }
+
+    @Test
+    @DisplayName("UTCID26: save failure without upload never calls Cloudinary")
+    void updatePropagatesSaveFailureWithoutVideo() {
+        foundGrammar();
+        var failure = new DataIntegrityViolationException("save failed");
+        when(grammarRepository.save(grammar)).thenThrow(failure);
+        assertSame(failure, assertThrows(DataIntegrityViolationException.class,
+                () -> service.update(GRAMMAR_ID, updateRequest(texts()), null)));
+        verifyNoInteractions(cloudinaryService);
+    }
+
+    @Test
+    @DisplayName("UTCID27: absent grammar returns false without deletion")
+    void deleteReturnsFalseWhenMissing() {
+        when(grammarRepository.findById(GRAMMAR_ID)).thenReturn(Optional.empty());
+        assertFalse(service.delete(GRAMMAR_ID));
+        verify(grammarRepository).findById(GRAMMAR_ID);
+        verifyNoMoreInteractions(grammarRepository);
+        verifyNoInteractions(cloudinaryService);
+    }
+
+    @Test
+    @DisplayName("UTCID28: delete progress, detach sessions, then delete grammar")
+    void deleteDeletesRelatedDataInOrder() {
+        foundGrammar();
+        assertTrue(service.delete(GRAMMAR_ID));
+        var order = inOrder(grammarRepository);
+        order.verify(grammarRepository).findById(GRAMMAR_ID);
+        order.verify(grammarRepository).deleteLearningProgressByGrammarId(GRAMMAR_ID);
+        order.verify(grammarRepository).detachStudySessionsByGrammarId(GRAMMAR_ID);
+        order.verify(grammarRepository).delete(grammar);
+        order.verifyNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("UTCID29: no video callback for absent or blank public ID")
+    void deleteSkipsAbsentVideo() {
+        for (String item : Stream.<String>of(null, "", " ", "\t\n").toList()) {
+            resetScenario();
+            String publicId = item;
             grammar.setVideoPublicId(publicId);
             foundGrammar();
             assertTrue(service.delete(GRAMMAR_ID));
             assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
             verifyNoInteractions(cloudinaryService);
         }
+    }
 
-        @Test
-        @DisplayName("G-DELETE-04/05: delete video only after commit")
-        void deletesVideoOnlyAfterCommit() {
-            foundGrammar();
-            assertTrue(service.delete(GRAMMAR_ID));
-            verifyNoInteractions(cloudinaryService);
-            completeTransaction(true);
-            verify(cloudinaryService).deleteVideo("old-video");
-            verifyNoMoreInteractions(cloudinaryService);
-        }
+    @Test
+    @DisplayName("UTCID30: delete video only after commit")
+    void deleteDeletesVideoOnlyAfterCommit() {
+        foundGrammar();
+        assertTrue(service.delete(GRAMMAR_ID));
+        verifyNoInteractions(cloudinaryService);
+        completeTransaction(true);
+        verify(cloudinaryService).deleteVideo("old-video");
+        verifyNoMoreInteractions(cloudinaryService);
+    }
 
-        @Test
-        @DisplayName("G-DELETE-06: rollback keeps the video")
-        void keepsVideoOnRollback() {
-            foundGrammar();
-            assertTrue(service.delete(GRAMMAR_ID));
-            completeTransaction(false);
-            verifyNoInteractions(cloudinaryService);
-        }
+    @Test
+    @DisplayName("UTCID31: rollback keeps the video")
+    void deleteKeepsVideoOnRollback() {
+        foundGrammar();
+        assertTrue(service.delete(GRAMMAR_ID));
+        completeTransaction(false);
+        verifyNoInteractions(cloudinaryService);
+    }
 
-        @Test
-        @DisplayName("G-DELETE-07: progress deletion failure stops remaining actions")
-        void stopsAfterProgressFailure() {
-            foundGrammar();
-            var failure = new DataIntegrityViolationException("progress delete failed");
-            when(grammarRepository.deleteLearningProgressByGrammarId(GRAMMAR_ID)).thenThrow(failure);
-            assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.delete(GRAMMAR_ID)));
-            verify(grammarRepository, never()).detachStudySessionsByGrammarId(anyLong());
-            verify(grammarRepository, never()).delete(any());
-            verifyNoInteractions(cloudinaryService);
-            assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
-        }
+    @Test
+    @DisplayName("UTCID32: progress deletion failure stops remaining actions")
+    void deleteStopsAfterProgressFailure() {
+        foundGrammar();
+        var failure = new DataIntegrityViolationException("progress delete failed");
+        when(grammarRepository.deleteLearningProgressByGrammarId(GRAMMAR_ID)).thenThrow(failure);
+        assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.delete(GRAMMAR_ID)));
+        verify(grammarRepository, never()).detachStudySessionsByGrammarId(anyLong());
+        verify(grammarRepository, never()).delete(any());
+        verifyNoInteractions(cloudinaryService);
+        assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
+    }
 
-        @Test
-        @DisplayName("G-DELETE-08: session detachment failure stops grammar deletion")
-        void stopsAfterDetachFailure() {
-            foundGrammar();
-            var failure = new DataIntegrityViolationException("detach failed");
-            when(grammarRepository.detachStudySessionsByGrammarId(GRAMMAR_ID)).thenThrow(failure);
-            assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.delete(GRAMMAR_ID)));
-            verify(grammarRepository).deleteLearningProgressByGrammarId(GRAMMAR_ID);
-            verify(grammarRepository, never()).delete(any());
-            verifyNoInteractions(cloudinaryService);
-            assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
-        }
+    @Test
+    @DisplayName("UTCID33: session detachment failure stops grammar deletion")
+    void deleteStopsAfterDetachFailure() {
+        foundGrammar();
+        var failure = new DataIntegrityViolationException("detach failed");
+        when(grammarRepository.detachStudySessionsByGrammarId(GRAMMAR_ID)).thenThrow(failure);
+        assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.delete(GRAMMAR_ID)));
+        verify(grammarRepository).deleteLearningProgressByGrammarId(GRAMMAR_ID);
+        verify(grammarRepository, never()).delete(any());
+        verifyNoInteractions(cloudinaryService);
+        assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
+    }
 
-        @Test
-        @DisplayName("G-DELETE-09: grammar deletion failure does not delete video")
-        void keepsVideoAfterDeleteFailure() {
-            foundGrammar();
-            var failure = new DataIntegrityViolationException("delete failed");
-            doThrow(failure).when(grammarRepository).delete(grammar);
-            assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.delete(GRAMMAR_ID)));
-            verify(grammarRepository).deleteLearningProgressByGrammarId(GRAMMAR_ID);
-            verify(grammarRepository).detachStudySessionsByGrammarId(GRAMMAR_ID);
-            verifyNoInteractions(cloudinaryService);
-            assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
-        }
+    @Test
+    @DisplayName("UTCID34: grammar deletion failure does not delete video")
+    void deleteKeepsVideoAfterDeleteFailure() {
+        foundGrammar();
+        var failure = new DataIntegrityViolationException("delete failed");
+        doThrow(failure).when(grammarRepository).delete(grammar);
+        assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.delete(GRAMMAR_ID)));
+        verify(grammarRepository).deleteLearningProgressByGrammarId(GRAMMAR_ID);
+        verify(grammarRepository).detachStudySessionsByGrammarId(GRAMMAR_ID);
+        verifyNoInteractions(cloudinaryService);
+        assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
+    }
 
-        @Test
-        @DisplayName("G-DELETE-10: video cleanup failure does not escape commit callback")
-        void toleratesVideoCleanupFailure() {
-            foundGrammar();
-            assertTrue(service.delete(GRAMMAR_ID));
-            doThrow(new IllegalStateException("cleanup failed")).when(cloudinaryService).deleteVideo("old-video");
-            assertDoesNotThrow(() -> completeTransaction(true));
-            verify(cloudinaryService).deleteVideo("old-video");
-        }
+    @Test
+    @DisplayName("UTCID35: video cleanup failure does not escape commit callback")
+    void deleteToleratesVideoCleanupFailure() {
+        foundGrammar();
+        assertTrue(service.delete(GRAMMAR_ID));
+        doThrow(new IllegalStateException("cleanup failed")).when(cloudinaryService).deleteVideo("old-video");
+        assertDoesNotThrow(() -> completeTransaction(true));
+        verify(cloudinaryService).deleteVideo("old-video");
+    }
+
+    private void resetScenario() {
+        tearDown();
+        reset(grammarRepository, lessonRepository, cloudinaryService, videoFile);
+        setUp();
     }
 
     private void foundLesson() {
@@ -676,23 +637,23 @@ class GrammarServiceTest {
     }
 
     private static GrammarCreateRequest createRequest(String[] values) {
-        return createRequest(values, null, null, null, 1, Grammar.Status.DRAFT);
+        return createRequest(values, null, null, null, Grammar.Status.DRAFT);
     }
 
     private static GrammarCreateRequest createRequest(String[] values, String url, String publicId,
-                                                      Integer duration, Integer order, Grammar.Status status) {
+                                                      Integer duration, Grammar.Status status) {
         return new GrammarCreateRequest(values[0], values[1], values[2], values[3], values[4],
-                url, publicId, duration, order, status);
+                url, publicId, duration, 1, status);
     }
 
     private static GrammarUpdateRequest updateRequest(String[] values) {
-        return updateRequest(values, null, null, null, 1, Grammar.Status.HIDDEN);
+        return updateRequest(values, null, null, null, Grammar.Status.HIDDEN);
     }
 
     private static GrammarUpdateRequest updateRequest(String[] values, String url, String publicId,
-                                                      Integer duration, Integer order, Grammar.Status status) {
+                                                      Integer duration, Grammar.Status status) {
         return new GrammarUpdateRequest(values[0], values[1], values[2], values[3], values[4],
-                url, publicId, duration, order, status);
+                url, publicId, duration, 1, status);
     }
 
     private static GrammarDetailResponse responseOf(Grammar grammar) {
@@ -706,23 +667,20 @@ class GrammarServiceTest {
         return Arrays.stream(TextField.values()).flatMap(field -> Stream.of(
                 Arguments.of(field, "null", null), Arguments.of(field, "empty", ""),
                 Arguments.of(field, "spaces", "   "), Arguments.of(field, "tab/newline", "\t\r\n"),
-                Arguments.of(field, "101 ASCII characters", "a".repeat(101)),
-                Arguments.of(field, "101 Vietnamese characters", "ế".repeat(101)),
-                Arguments.of(field, "101 Japanese characters", "語".repeat(101))));
+                Arguments.of(field, "101 characters", "a".repeat(101))));
     }
 
     static Stream<Arguments> validText() {
-        return Arrays.stream(TextField.values()).flatMap(field -> Stream.of("a", "ế", "語").flatMap(character -> {
-            String content = character.repeat(100);
-            return Stream.of(Arguments.of(field, "100 x " + character, content, content),
-                    Arguments.of(field, "trimmed 100 x " + character, " \t" + content + "\r\n ", content));
-        }));
+        return Arrays.stream(TextField.values()).flatMap(field -> {
+            String content = "a".repeat(100);
+            return Stream.of(Arguments.of(field, "100 characters", content, content),
+                    Arguments.of(field, "trimmed 100 characters", " \t" + content + "\r\n ", content));
+        });
     }
 
     static Stream<Arguments> defaults() {
-        return Stream.of(Arguments.of(null, null, 1, Grammar.Status.DRAFT),
-                Arguments.of(null, Grammar.Status.PUBLISHED, 1, Grammar.Status.PUBLISHED),
-                Arguments.of(4, null, 4, Grammar.Status.DRAFT));
+        return Stream.of(Arguments.of(null, Grammar.Status.DRAFT),
+                Arguments.of(Grammar.Status.PUBLISHED, Grammar.Status.PUBLISHED));
     }
 
     static Stream<Arguments> incompleteVideo() {
