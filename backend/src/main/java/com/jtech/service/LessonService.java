@@ -144,7 +144,9 @@ public class LessonService {
                     ? kanjiService.documents(request.documents(), file)
                     : skill == Lesson.SkillType.VOCABULARY
                       ? request.documents()
-                      : uploadDocument(file, null)
+                      : skill == Lesson.SkillType.GRAMMAR && file == null
+                        ? null
+                        : uploadDocument(file, null)
             )
             .displayOrder(request.displayOrder())
             .status(request.status() == null ? Course.Status.DRAFT : request.status())

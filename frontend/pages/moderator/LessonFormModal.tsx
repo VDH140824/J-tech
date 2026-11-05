@@ -29,6 +29,7 @@ export function LessonFormModal({
 }: LessonFormModalProps) {
   const isVocabulary =
     (skillType ?? editingLesson?.skillType) === "VOCABULARY" || skillLabel === "Từ vựng";
+  const isGrammar = (skillType ?? editingLesson?.skillType) === "GRAMMAR";
   const [formData, setFormData] = useState<LessonFormInput>({
     lessonNo: defaultLessonNo,
     title: "",
@@ -90,7 +91,7 @@ export function LessonFormModal({
         return;
       }
     }
-    if (!vietnameseOnly && !isVocabulary && !editingLesson && !formData.documentFile) {
+    if (!vietnameseOnly && !isVocabulary && !isGrammar && !editingLesson && !formData.documentFile) {
       setErrorMsg("Vui lòng chọn tài liệu đính kèm!");
       return;
     }
@@ -326,7 +327,7 @@ export function LessonFormModal({
           </div>
 
           {/* Row 4: status & documents */}
-          <div className="modal-grid-2">
+          <div className={isGrammar ? undefined : "modal-grid-2"}>
             <div className="modal-field-group">
               <label className="modal-label">
                 {vietnameseOnly ? "Trạng thái phát hành" : "Trạng thái phát hành (status)"}
@@ -352,7 +353,8 @@ export function LessonFormModal({
               </select>
             </div>
 
-            <div className="modal-field-group">
+            {!isGrammar && (
+              <div className="modal-field-group">
               <label className="modal-label">
                 {vietnameseOnly ? "Tài liệu đính kèm" : "Tài liệu đính kèm (documents) *"}
               </label>
@@ -494,7 +496,8 @@ export function LessonFormModal({
                   )}
                 </>
               )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Modal Actions */}
