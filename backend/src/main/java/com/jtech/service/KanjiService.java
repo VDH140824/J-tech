@@ -188,7 +188,7 @@ public class KanjiService {
         }
         try {
             var result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                    "folder", "kanji", "resource_type", "image", "unique_filename", true, "overwrite", false));
+                    "folder", "Jtech/Moderator/Kanji", "resource_type", "image", "unique_filename", true, "overwrite", false));
             return new MediaResult((String) result.get("secure_url"), (String) result.get("public_id"));
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image upload failed", e);

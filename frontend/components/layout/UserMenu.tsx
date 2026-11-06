@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { checkIsAdmin, checkIsModerator } from "../../utils/auth";
 import { useAuthStore } from "../../store/authStore";
 import { useLogout } from "../../hooks/useAuth";
 import { UserAvatar } from "./UserAvatar";
@@ -16,17 +17,8 @@ export function UserMenu() {
 
   const displayName = user?.fullName ?? user?.displayName ?? user?.email ?? "";
   const userName = isAuthenticated ? (displayName ? displayName : "Học viên") : "Khách";
-  const normalizedRole = user?.role?.trim().toUpperCase();
-  const normalizedRoleId = String(user?.roleId ?? "");
-  const isAdmin =
-    normalizedRoleId === "1" ||
-    normalizedRole === "ADMIN" ||
-    normalizedRole === "ROLE_ADMIN";
-
-  const isModerator =
-    normalizedRoleId === "2" ||
-    normalizedRole === "MODERATOR" ||
-    normalizedRole === "ROLE_MODERATOR";
+  const isAdmin = checkIsAdmin(user);
+  const isModerator = checkIsModerator(user);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {

@@ -37,6 +37,7 @@ export function AppRouter() {
         >
           <Route path="/home" element={<HomePage />} />
           <Route path="/courses/:courseId" element={<CoursePage />} />
+          <Route path="/courses/:courseId/chapters" element={<CoursePage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
 

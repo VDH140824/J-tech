@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getCourses, type CourseSummary } from "../../api/courseApi";
 import bannerCatImg from "../../assets/banner-cat.png";
@@ -185,10 +185,10 @@ export function HomePage() {
 
               <div className="course-cards-grid">
                 {courses.map((course, index) => (
-                  <div className={`course-card ${["pink-card", "blue-card", "green-card", "orange-card"][index % 4]}`} key={course.id} onClick={() => navigate(`/courses/${course.id}`)}>
+                  <Link className={`course-card ${["pink-card", "blue-card", "green-card", "orange-card"][index % 4]}`} key={course.id} to={`/courses/${course.id}/chapters`} aria-label={`Xem danh sách chương của ${course.name}`}>
                     <div className="card-art-box"><CourseCardArt type={((index % 4) + 1) as 1 | 2 | 3 | 4} /></div>
-                    <div className="course-card-body"><h3 className="course-title">{course.name}</h3><div className="course-level">{course.code}</div><div className="course-progress-wrapper"><div className="course-progress-info"><span className="progress-text">{course.chapterCount} chuong</span><button type="button" className="circle-arrow-btn blue-btn">?</button></div></div></div>
-                  </div>
+                    <div className="course-card-body"><h3 className="course-title">{course.name}</h3><div className="course-level">{course.code}</div><div className="course-progress-wrapper"><div className="course-progress-info"><span className="progress-text">{course.chapterCount} chương</span><span className="circle-arrow-btn blue-btn" aria-hidden="true">→</span></div></div></div>
+                  </Link>
                 ))}
               </div>
             </section>

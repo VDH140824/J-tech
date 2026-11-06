@@ -64,6 +64,7 @@ public class CourseController {
             @PathVariable Long courseId,
             @PathVariable Long chapterId
     ) {
+        if (!repository.existsById(courseId)) return ResponseEntity.notFound().build();
         return chapterRepository.findByIdAndCourseId(chapterId, courseId)
                 .map(chapter -> {
                     Course course = chapter.getCourse();

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { checkIsAdmin, checkIsModerator } from "../../utils/auth";
 import { useAuthStore } from "../../store/authStore";
 import sidebarCatImg from "../../assets/sidebar-cat.png";
 import "./MainSidebar.css";
@@ -49,17 +50,8 @@ export function MainSidebar() {
 
   const [activeTab, setActiveTab] = useState("trang-chu");
 
-  const normalizedRole = user?.role?.trim().toUpperCase();
-  const normalizedRoleId = String(user?.roleId ?? "");
-  const isAdmin =
-    normalizedRoleId === "1" ||
-    normalizedRole === "ADMIN" ||
-    normalizedRole === "ROLE_ADMIN";
-
-  const isModerator =
-    normalizedRoleId === "2" ||
-    normalizedRole === "MODERATOR" ||
-    normalizedRole === "ROLE_MODERATOR";
+  const isAdmin = checkIsAdmin(user);
+  const isModerator = checkIsModerator(user);
 
   const isHomeActive = location.pathname === "/home" || activeTab === "trang-chu";
 
