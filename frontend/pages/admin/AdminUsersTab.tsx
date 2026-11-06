@@ -11,12 +11,7 @@ import type { AdminUserStatusRequest } from "../../types/admin";
 
 type UserStatus = AdminUserStatusRequest["status"];
 
-const STATUS_OPTIONS: UserStatus[] = [
-  "PENDING",
-  "ACTIVE",
-  "LOCKED",
-  "REJECTED",
-];
+const STATUS_OPTIONS: UserStatus[] = ["PENDING", "ACTIVE", "LOCKED", "REJECTED"];
 
 const STATUS_NAME_MAP: Record<UserStatus, string> = {
   ACTIVE: "Đang hoạt động",
@@ -71,9 +66,32 @@ function formatLastLogin(dateStr?: string | null) {
   if (!dateStr) return { time: "—", date: "Chưa đăng nhập" };
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return { time: "—", date: "—" };
-  const time = d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const time = d.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
   const date = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
   return { time, date };
+}
+
+function validatePreCreateEmail(value: string): string | null {
+  const email = value.trim().toLowerCase();
+  if (!email) return "Email không được để trống.";
+  if (email.length > 255) return "Email không được vượt quá 255 ký tự.";
+  if (/\s/.test(email)) return "Email không được chứa khoảng trắng.";
+
+  const atIndex = email.indexOf("@");
+  if (atIndex === -1) return "Email phải chứa ký tự @.";
+  if (email.lastIndexOf("@") !== atIndex) return "Email không được chứa nhiều ký tự @.";
+  if (atIndex === 0) return "Email thiếu tên người dùng trước ký tự @.";
+
+  const domain = email.slice(atIndex + 1);
+  if (!domain || !domain.includes(".")) return "Email thiếu tên miền hợp lệ.";
+  if (domain.includes("..") || !/^[^@\s.]+(?:\.[^@\s.]+)+$/.test(domain)) {
+    return "Tên miền email không hợp lệ.";
+  }
+  return null;
 }
 
 interface AdminUsersTabProps {
@@ -95,6 +113,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   // Create user
   const [showPreCreate, setShowPreCreate] = useState(false);
   const [preCreateEmail, setPreCreateEmail] = useState("");
+  const [preCreateError, setPreCreateError] = useState<string | null>(null);
   const [preCreateRole, setPreCreateRole] = useState<"STUDENT" | "MODERATOR" | "ADMIN">("MODERATOR");
   const [preCreateLoading, setPreCreateLoading] = useState(false);
 
@@ -102,6 +121,8 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
   const [editRole, setEditRole] = useState<"STUDENT" | "MODERATOR" | "ADMIN">("STUDENT");
   const [editStatus, setEditStatus] = useState<UserStatus>("ACTIVE");
+  const [editStatusReason, setEditStatusReason] = useState("");
+  const [editStatusReasonError, setEditStatusReasonError] = useState<string | null>(null);
   const [editSaving, setEditSaving] = useState(false);
 
   // Delete User state
@@ -154,7 +175,12 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   const handlePreCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!preCreateEmail.trim()) return;
+    setPreCreateError(null);
+    const validationError = validatePreCreateEmail(preCreateEmail);
+    if (validationError) {
+      setPreCreateError(validationError);
+      return;
+    }
     try {
       setPreCreateLoading(true);
       await preCreateAdminUser({ email: preCreateEmail.trim(), role: preCreateRole });
@@ -165,7 +191,12 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       setPreCreateRole("MODERATOR");
       fetchUsers();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Không thể tạo tài khoản.");
+      const backendMessage = err?.response?.data?.message;
+      setPreCreateError(
+        typeof backendMessage === "string" && backendMessage.trim()
+          ? backendMessage
+          : "Không thể tạo tài khoản.",
+      );
     } finally {
       setPreCreateLoading(false);
     }
@@ -173,13 +204,22 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   const openEditModal = (user: UserResponse) => {
     setEditingUser(user);
-    const resolvedRole = user.role === "ADMIN" ? "ADMIN" : user.role === "MODERATOR" ? "MODERATOR" : "STUDENT";
+    const resolvedRole =
+      user.role === "ADMIN" ? "ADMIN" : user.role === "MODERATOR" ? "MODERATOR" : "STUDENT";
     setEditRole(resolvedRole);
     setEditStatus((user.status as UserStatus) || "ACTIVE");
+    setEditStatusReason(user.statusReason || "");
+    setEditStatusReasonError(null);
   };
 
   const handleSaveEdit = async () => {
     if (!editingUser) return;
+    const needsReason = editStatus === "LOCKED" || editStatus === "REJECTED";
+    const reason = editStatusReason.trim();
+    if (needsReason && (!reason || reason.length > 500)) {
+      setEditStatusReasonError(!reason ? "Vui lòng nhập lý do." : "Lý do không được vượt quá 500 ký tự.");
+      return;
+    }
     try {
       setEditSaving(true);
       const id = editingUser.id;
@@ -187,7 +227,9 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
         await changeAdminUserRole(id, editRole);
       }
       if (editingUser.status !== editStatus) {
-        await updateAdminUserStatus(id, { status: editStatus });
+        await updateAdminUserStatus(id, { status: editStatus, statusReason: needsReason ? reason : null });
+      } else if (needsReason && editingUser.statusReason !== reason) {
+        await updateAdminUserStatus(id, { status: editStatus, statusReason: reason });
       }
       showNotification(`Đã cập nhật thông tin tài khoản #${id}!`);
       setEditingUser(null);
@@ -232,7 +274,10 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
         <button
           type="button"
           className="admin-btn-create-user"
-          onClick={() => setShowPreCreate(true)}
+          onClick={() => {
+            setPreCreateError(null);
+            setShowPreCreate(true);
+          }}
         >
           <span className="btn-icon">⊕</span>
           <span>Thêm người dùng mới</span>
@@ -255,7 +300,10 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
       {/* 2. Filter & Search Bar Card */}
       <div className="admin-filter-card">
-        <form className="admin-filter-form" onSubmit={handleSearchSubmit}>
+        <form
+          className="admin-filter-form"
+          onSubmit={handleSearchSubmit}
+        >
           {/* Search Box */}
           <div className="admin-search-wrapper">
             <span className="search-mag-icon">🔍</span>
@@ -294,14 +342,20 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
           >
             <option value="ALL">Tất cả trạng thái</option>
             {STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
+              <option
+                key={status}
+                value={status}
+              >
                 {STATUS_NAME_MAP[status]}
               </option>
             ))}
           </select>
 
           {/* Filter Action Buttons */}
-          <button type="submit" className="admin-btn-filter">
+          <button
+            type="submit"
+            className="admin-btn-filter"
+          >
             <span className="btn-icon">🌪️</span>
             <span>Lọc dữ liệu</span>
           </button>
@@ -356,7 +410,10 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
               <tbody>
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="admin-table-empty">
+                    <td
+                      colSpan={7}
+                      className="admin-table-empty"
+                    >
                       Không tìm thấy tài khoản người dùng nào phù hợp.
                     </td>
                   </tr>
@@ -452,7 +509,8 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
         {totalPages > 1 && (
           <div className="admin-pagination-footer">
             <span className="pagination-info">
-              Hiển thị trang <strong>{page + 1}</strong> / <strong>{totalPages}</strong> ({totalElements} tài khoản)
+              Hiển thị trang <strong>{page + 1}</strong> / <strong>{totalPages}</strong> (
+              {totalElements} tài khoản)
             </span>
             <div className="pagination-buttons">
               <button
@@ -478,28 +536,53 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
       {/* 4. Modal: Thêm người dùng mới */}
       {showPreCreate && (
-        <div className="admin-modal-backdrop" onClick={() => setShowPreCreate(false)}>
-          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="admin-modal-backdrop"
+          onClick={() => setShowPreCreate(false)}
+        >
+          <div
+            className="admin-modal-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h3>Thêm người dùng mới</h3>
-              <button type="button" className="btn-modal-close" onClick={() => setShowPreCreate(false)}>
+              <button
+                type="button"
+                className="btn-modal-close"
+                onClick={() => setShowPreCreate(false)}
+              >
                 ✕
               </button>
             </div>
-            <form onSubmit={handlePreCreate} className="modal-form-body">
+            <form
+              onSubmit={handlePreCreate}
+              className="modal-form-body"
+            >
               <p className="modal-description">
-                Đăng ký trước tài khoản Google để tự động phân quyền ngay khi người dùng đăng nhập lần đầu.
+                Đăng ký trước tài khoản Google để tự động phân quyền ngay khi người dùng đăng nhập
+                lần đầu.
               </p>
               <label className="modal-field-label">
                 <span>Google Email *</span>
                 <input
-                  type="email"
-                  required
+                  type="text"
+                  inputMode="email"
+                  autoComplete="email"
                   placeholder="vi_du@fpt.edu.vn"
                   value={preCreateEmail}
-                  onChange={(e) => setPreCreateEmail(e.target.value)}
+                  onChange={(e) => {
+                    setPreCreateEmail(e.target.value);
+                    setPreCreateError(null);
+                  }}
+                  aria-invalid={!!preCreateError}
+                  aria-describedby={preCreateError ? "pre-create-email-error" : undefined}
                   className="modal-input"
                 />
+                {preCreateError && (
+                  <span id="pre-create-email-error" className="modal-field-error" role="alert">
+                    {preCreateError}
+                  </span>
+                )}
               </label>
 
               <label className="modal-field-label">
@@ -538,11 +621,21 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
       {/* 5. Modal: Chỉnh sửa người dùng */}
       {editingUser && (
-        <div className="admin-modal-backdrop" onClick={() => setEditingUser(null)}>
-          <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="admin-modal-backdrop"
+          onClick={() => setEditingUser(null)}
+        >
+          <div
+            className="admin-modal-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h3>Chỉnh sửa tài khoản #{editingUser.id}</h3>
-              <button type="button" className="btn-modal-close" onClick={() => setEditingUser(null)}>
+              <button
+                type="button"
+                className="btn-modal-close"
+                onClick={() => setEditingUser(null)}
+              >
                 ✕
               </button>
             </div>
@@ -569,16 +662,34 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                 <span>Trạng thái tài khoản (Status)</span>
                 <select
                   value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value as any)}
+                  onChange={(e) => { setEditStatus(e.target.value as UserStatus); setEditStatusReasonError(null); }}
                   className="modal-select"
                 >
                   {STATUS_OPTIONS.map((st) => (
-                    <option key={st} value={st}>
+                    <option
+                      key={st}
+                      value={st}
+                    >
                       {STATUS_NAME_MAP[st]}
                     </option>
                   ))}
                 </select>
               </label>
+
+              {(editStatus === "LOCKED" || editStatus === "REJECTED") && (
+                <label className="modal-field-label">
+                  <span>Lý do {editStatus === "LOCKED" ? "khóa" : "từ chối"} tài khoản *</span>
+                  <textarea
+                    value={editStatusReason}
+                    onChange={(e) => { setEditStatusReason(e.target.value); setEditStatusReasonError(null); }}
+                    maxLength={500}
+                    rows={3}
+                    className="modal-input"
+                    aria-invalid={!!editStatusReasonError}
+                  />
+                  {editStatusReasonError && <span className="modal-field-error" role="alert">{editStatusReasonError}</span>}
+                </label>
+              )}
 
               <div className="modal-actions-row">
                 <button
@@ -604,18 +715,28 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
       {/* 6. Modal: Xác nhận xóa người dùng */}
       {deletingUser && (
-        <div className="admin-modal-backdrop" onClick={() => setDeletingUser(null)}>
-          <div className="admin-modal-dialog modal-danger" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="admin-modal-backdrop"
+          onClick={() => setDeletingUser(null)}
+        >
+          <div
+            className="admin-modal-dialog modal-danger"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h3>Xác nhận xóa tài khoản</h3>
-              <button type="button" className="btn-modal-close" onClick={() => setDeletingUser(null)}>
+              <button
+                type="button"
+                className="btn-modal-close"
+                onClick={() => setDeletingUser(null)}
+              >
                 ✕
               </button>
             </div>
             <div className="modal-form-body">
               <p className="modal-description">
-                Bạn có chắc chắn muốn xóa tài khoản <strong>{deletingUser.email}</strong> (#{deletingUser.id}) không?
-                Hành động này không thể hoàn tác.
+                Bạn có chắc chắn muốn xóa tài khoản <strong>{deletingUser.email}</strong> (#
+                {deletingUser.id}) không? Hành động này không thể hoàn tác.
               </p>
               <div className="modal-actions-row">
                 <button

@@ -3,15 +3,13 @@ package com.jtech.service;
 import com.jtech.dto.request.RefreshTokenRequest;
 import com.jtech.dto.request.UpdateProfileRequest;
 import com.jtech.dto.response.UserResponse;
-
 import java.security.Principal;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface AuthService {
-
     UserResponse refreshToken(String refreshToken);
 
     UserResponse refreshToken(RefreshTokenRequest request);
-
 
     void logout(String refreshToken);
 
@@ -19,6 +17,7 @@ public interface AuthService {
 
     UserResponse updateProfile(Long userId, UpdateProfileRequest request);
 
+    UserResponse updateAvatar(MultipartFile file);
+
     UserResponse exchangeOAuth2Code(String code);
 }
-

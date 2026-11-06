@@ -1,10 +1,10 @@
 package com.jtech.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "lesson")
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Lesson {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", columnDefinition = "BIGINT UNSIGNED")
@@ -61,7 +62,7 @@ public class Lesson {
         VOCABULARY,
         GRAMMAR,
         LISTENING,
-        READING
+        READING,
     }
 
     @PrePersist

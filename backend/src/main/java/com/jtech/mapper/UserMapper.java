@@ -4,6 +4,7 @@ import com.jtech.dto.response.UserResponse;
 import com.jtech.entity.User;
 
 public final class UserMapper {
+
     private UserMapper() {}
 
     public static UserResponse toResponse(User user) {

@@ -3,6 +3,7 @@ package com.jtech.dto.request;
 import jakarta.validation.constraints.NotBlank;
 
 public class ChangeUserRoleRequest {
+
     @NotBlank(message = "Role không được để trống")
     private String role;
 

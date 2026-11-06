@@ -22,6 +22,7 @@ export interface LessonFormInput {
   title: string;
   description?: string;
   documents?: string;
+  documentFile?: File;
   displayOrder?: number;
   status?: "DRAFT" | "PUBLISHED" | "HIDDEN" | "ARCHIVED";
 }
@@ -30,7 +31,7 @@ export async function getLessonsByChapter(
   chapterId: number,
   skillType?: SkillType,
   status?: string,
-  courseId?: number
+  courseId?: number,
 ): Promise<LessonSummary[]> {
   const params: Record<string, string> = {};
   if (skillType) {
@@ -41,7 +42,9 @@ export async function getLessonsByChapter(
   }
 
   // Use the existing working endpoint /chapters/{chapterId}/lessons
-  const { data } = await apiClient.get<LessonSummary[]>(`/chapters/${chapterId}/lessons`, { params });
+  const { data } = await apiClient.get<LessonSummary[]>(`/chapters/${chapterId}/lessons`, {
+    params,
+  });
   return data;
 }
 
@@ -54,29 +57,36 @@ export async function createLesson(
   chapterId: number,
   payload: LessonFormInput,
   courseId?: number,
-  documentFile?: File
+  documentFile?: File,
 ): Promise<LessonSummary> {
-  const { data } = await apiClient.post<LessonSummary>(`/chapters/${chapterId}/lessons`, lessonBody(payload, documentFile));
+  const { data } = await apiClient.post<LessonSummary>(
+    `/chapters/${chapterId}/lessons`,
+    lessonFormData(payload, documentFile),
+  );
   return data;
 }
 
 export async function updateLesson(
   id: number,
   payload: LessonFormInput,
-  documentFile?: File
+  documentFile?: File,
 ): Promise<LessonSummary> {
-  const { data } = await apiClient.put<LessonSummary>(`/lessons/${id}`, lessonBody(payload, documentFile));
+  const { data } = await apiClient.put<LessonSummary>(
+    `/lessons/${id}`,
+    lessonFormData(payload, documentFile),
+  );
   return data;
-}
-
-function lessonBody(payload: LessonFormInput, file?: File): LessonFormInput | FormData {
-  if (payload.skillType !== "KANJI") return payload;
-  const form = new FormData();
-  form.append("request", new Blob([JSON.stringify(payload)], { type: "application/json" }));
-  if (file) form.append("file", file);
-  return form;
 }
 
 export async function deleteLesson(id: number): Promise<void> {
   await apiClient.delete(`/lessons/${id}`);
+}
+
+function lessonFormData(payload: LessonFormInput, file?: File): FormData {
+  const { documentFile, ...request } = payload;
+  const selectedFile = file ?? documentFile;
+  const body = new FormData();
+  body.append("request", new Blob([JSON.stringify(request)], { type: "application/json" }));
+  if (selectedFile) body.append("file", selectedFile);
+  return body;
 }

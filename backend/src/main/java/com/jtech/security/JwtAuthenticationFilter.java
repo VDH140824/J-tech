@@ -1,18 +1,17 @@
 package com.jtech.security;
 
+import com.jtech.entity.UserStatus;
+import com.jtech.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import com.jtech.entity.UserStatus;
-import com.jtech.repository.UserRepository;
+import java.io.IOException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -21,9 +20,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
 
     public JwtAuthenticationFilter(
-            JwtService jwtService,
-            CustomUserDetailsService customUserDetailsService,
-            UserRepository userRepository) {
+        JwtService jwtService,
+        CustomUserDetailsService customUserDetailsService,
+        UserRepository userRepository
+    ) {
         this.jwtService = jwtService;
         this.customUserDetailsService = customUserDetailsService;
         this.userRepository = userRepository;
@@ -31,9 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain
+    ) throws ServletException, IOException {
         String authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -44,20 +45,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authorizationHeader.substring(7);
         try {
             String email = jwtService.extractUsername(token);
-            if (email != null && !email.isBlank()
-                    && SecurityContextHolder.getContext().getAuthentication() == null
-                    && jwtService.isTokenValid(token, email)) {
+            if (
+                email != null &&
+                !email.isBlank() &&
+                SecurityContextHolder.getContext().getAuthentication() == null &&
+                jwtService.isTokenValid(token, email)
+            ) {
                 var userOptional = userRepository.findByEmail(email);
                 if (userOptional.isPresent()) {
                     var user = userOptional.get();
                     if (user.getStatus() == UserStatus.ACTIVE) {
                         UserDetails userDetails = customUserDetailsService.buildUserDetails(user);
                         UsernamePasswordAuthenticationToken authenticationToken =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails,
-                                        null,
-                                        userDetails.getAuthorities());
-                        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                            );
+                        authenticationToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                        );
                         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     }
                 }

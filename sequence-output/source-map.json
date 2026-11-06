@@ -1,0 +1,1754 @@
+[
+  {
+    "id": "11.1",
+    "title": "Select game & start session",
+    "source": "UC-24 steps 1–14; BR62, BR64",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Chọn Trò chơi"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị các game"
+      ],
+      [
+        0,
+        1,
+        "Chọn game"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị khóa học"
+      ],
+      [
+        0,
+        1,
+        "Chọn khóa học"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị phạm vi Bài / Chương"
+      ],
+      [
+        0,
+        1,
+        "Chọn phạm vi"
+      ],
+      [
+        1,
+        2,
+        "Lấy bài / chương thuộc khóa học"
+      ],
+      [
+        2,
+        1,
+        "Danh sách bài / chương"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị danh sách"
+      ],
+      [
+        0,
+        1,
+        "Chọn bài / chương"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị loại nội dung game hỗ trợ: Từ vựng / Kanji / Tất cả"
+      ],
+      [
+        0,
+        1,
+        "Chọn loại nội dung"
+      ],
+      [
+        1,
+        2,
+        "Tải nội dung đúng phạm vi và loại đã chọn"
+      ],
+      [
+        2,
+        1,
+        "Nội dung game"
+      ],
+      [
+        "frame",
+        "alt [tải thành công]"
+      ],
+      [
+        1,
+        1,
+        "Khởi tạo game"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị giao diện"
+      ],
+      [
+        0,
+        1,
+        "Bắt đầu"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lỗi tải nội dung]"
+      ],
+      [
+        1,
+        0,
+        "MSG-13; Thử lại hoặc quay về chọn game"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": ""
+  },
+  {
+    "id": "11.2",
+    "title": "Answer & complete game session",
+    "source": "UC-24 steps 15–21, A1–A2; BR40, BR66–72; NS-08",
+    "actor": "Student",
+    "steps": [
+      [
+        "frame",
+        "loop [chưa đạt điều kiện kết thúc]"
+      ],
+      [
+        0,
+        1,
+        "Tương tác / trả lời theo luật game"
+      ],
+      [
+        1,
+        1,
+        "Kiểm tra thao tác và cập nhật điểm hiện tại"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị diễn biến game"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [hoàn thành game]"
+      ],
+      [
+        1,
+        1,
+        "Tính điểm cuối cùng và số câu đúng"
+      ],
+      [
+        1,
+        1,
+        "Kiểm tra điều kiện thưởng được cấu hình"
+      ],
+      [
+        "frame",
+        "opt [đủ điều kiện thưởng]"
+      ],
+      [
+        1,
+        1,
+        "ref SD-13.2 — thưởng coin một lần theo NS-08 / BR40"
+      ],
+      [
+        "end"
+      ],
+      [
+        1,
+        2,
+        "Lưu kết quả: game, phạm vi, điểm, số câu đúng, coin, câu sai"
+      ],
+      [
+        2,
+        1,
+        "Kết quả đã lưu"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị đáp án của Student, câu sai, giải thích có sẵn, điểm và coin"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [thoát trước khi hoàn thành]"
+      ],
+      [
+        0,
+        1,
+        "Thoát game"
+      ],
+      [
+        1,
+        1,
+        "Kết thúc phiên; không thưởng hoàn thành"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": ""
+  },
+  {
+    "id": "11.3",
+    "title": "View game history",
+    "source": "UC-25; BR71, BR105",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở Trò chơi → Lịch sử chơi game"
+      ],
+      [
+        1,
+        2,
+        "Lấy các lượt game đã hoàn thành của Student"
+      ],
+      [
+        2,
+        1,
+        "Lịch sử game"
+      ],
+      [
+        "frame",
+        "alt [có lịch sử]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị game, phạm vi, điểm, số câu đúng, coin"
+      ],
+      [
+        0,
+        1,
+        "Chọn một lượt chơi"
+      ],
+      [
+        1,
+        2,
+        "Lấy chi tiết lượt chơi đã chọn"
+      ],
+      [
+        2,
+        1,
+        "Chi tiết và câu trả lời sai"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị chi tiết; nếu đúng tất cả thì báo không có câu sai"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [không có lịch sử]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo chưa có lịch sử chơi game"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "Chỉ đọc; xem lịch sử không thưởng thêm coin."
+  },
+  {
+    "id": "12.1",
+    "title": "View learning progress",
+    "source": "UC-26; BR106–107, BR110, BR114, BR117–118",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở Tiến độ học tập"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị bộ lọc Tuần / Tháng / Toàn bộ, khóa học, chương"
+      ],
+      [
+        0,
+        1,
+        "Chọn bộ lọc"
+      ],
+      [
+        1,
+        2,
+        "Lấy bản ghi học tập theo bộ lọc"
+      ],
+      [
+        2,
+        1,
+        "Bản ghi / không có dữ liệu / lỗi"
+      ],
+      [
+        "frame",
+        "alt [có dữ liệu]"
+      ],
+      [
+        1,
+        1,
+        "Tính % hoạt động bắt buộc hoàn thành; không có hoạt động bắt buộc → N/A"
+      ],
+      [
+        1,
+        1,
+        "Đếm kiến thức mới không trùng; số lượt luyện tập; nghe / đọc / hội thoại hoàn thành"
+      ],
+      [
+        1,
+        1,
+        "Xác định kết quả đầu tiên, mới nhất, cao nhất; thói quen và chuỗi ngày học"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị thống kê theo phạm vi đã chọn"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [không có dữ liệu]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo không có dữ liệu; số hoạt động = 0; kết quả luyện tập = N/A"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lỗi truy xuất]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo tải thất bại; không hiển thị như tiến độ bằng 0"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "Dữ liệu nguồn: ghi thời điểm hoàn thành đầu tiên, kiến thức mới không trùng, từng lượt luyện tập và ngày học thực tế. Thời gian học chỉ hiển thị nếu có triển khai theo BR114."
+  },
+  {
+    "id": "12.2",
+    "title": "View login streak",
+    "source": "UC-27; BR108–109",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Chọn Chuỗi đăng nhập"
+      ],
+      [
+        1,
+        2,
+        "Lấy streak hiện tại, dài nhất và các mốc thưởng cấu hình"
+      ],
+      [
+        2,
+        1,
+        "Streak và mốc thưởng"
+      ],
+      [
+        1,
+        1,
+        "Xác định mốc thưởng tiếp theo"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị streak hiện tại, dài nhất; mốc tiếp theo và coin"
+      ],
+      [
+        "frame",
+        "opt [không còn mốc tiếp theo]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo không có mốc tiếp theo"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "UC-27 gọi là login streak; BR108–109 gọi learning streak. Chỉ xem, không cập nhật streak hoặc thưởng coin."
+  },
+  {
+    "id": "12.3",
+    "title": "Update streak on qualified activity",
+    "source": "UC-26 steps 1–5; BR43, BR45, BR112; §5.2.5",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Hoàn thành hoạt động học / luyện tập, kể cả ôn tập"
+      ],
+      [
+        1,
+        1,
+        "Xác định ngày Asia/Ho_Chi_Minh"
+      ],
+      [
+        1,
+        2,
+        "Ghi hoạt động hoàn thành và đọc ngày học / streak"
+      ],
+      [
+        2,
+        1,
+        "Ngày học và streak hiện tại"
+      ],
+      [
+        "frame",
+        "alt [ngày học chưa được tính]"
+      ],
+      [
+        1,
+        1,
+        "Ghi ngày học thực tế; xác định chuỗi ngày học liên tiếp"
+      ],
+      [
+        1,
+        2,
+        "Cập nhật streak; tối đa tăng một lần trong ngày"
+      ],
+      [
+        1,
+        1,
+        "Kiểm tra mốc thưởng theo cấu hình"
+      ],
+      [
+        "frame",
+        "opt [đạt mốc chưa thưởng trong chuỗi liên tục này]"
+      ],
+      [
+        1,
+        1,
+        "ref SD-13.2 — thưởng coin theo BR45"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [ngày này đã được tính]"
+      ],
+      [
+        1,
+        1,
+        "Không tăng streak thêm"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "BR112: đăng nhập hoặc chỉ mở bài học không đủ điều kiện. NS-02 lại nhắc qualifying login; mâu thuẫn nguồn được giữ để đối chiếu, không vẽ đăng nhập làm tăng streak."
+  },
+  {
+    "id": "12.4",
+    "title": "Daily streak reset job",
+    "source": "NS-02; BR43, BR74, BR112; §5.2.5",
+    "actor": "Scheduler",
+    "steps": [
+      [
+        0,
+        1,
+        "00:00:01 hằng ngày, GMT+7"
+      ],
+      [
+        1,
+        2,
+        "Quét User_Streak"
+      ],
+      [
+        2,
+        1,
+        "Các bản ghi streak"
+      ],
+      [
+        "frame",
+        "loop [mỗi Student]"
+      ],
+      [
+        1,
+        1,
+        "Đánh giá ngày lịch trước đó theo Asia/Ho_Chi_Minh"
+      ],
+      [
+        "frame",
+        "alt [không có hoàn thành học đủ điều kiện ngày trước]"
+      ],
+      [
+        1,
+        1,
+        "Kiểm tra ngoại lệ streak-freeze được BR74 dẫn chiếu"
+      ],
+      [
+        "frame",
+        "opt [không được bảo toàn bằng streak-freeze]"
+      ],
+      [
+        1,
+        2,
+        "Đặt current_streak = 0"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [có hoàn thành đủ điều kiện ngày trước]"
+      ],
+      [
+        1,
+        1,
+        "Giữ streak"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "NS-02 nêu CurrentDate − LastLearningDate > 1 và qualifying login; BR112 loại login. BR74 dẫn BR146 cho freeze nhưng SRS không có BR146: không tự đặt cơ chế tiêu hao / kích hoạt freeze."
+  },
+  {
+    "id": "13.1",
+    "title": "View coin balance & history",
+    "source": "UC-28; §5.2.3",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở Coin Transaction History"
+      ],
+      [
+        1,
+        2,
+        "Lấy số dư và giao dịch của Student; mới nhất trước"
+      ],
+      [
+        2,
+        1,
+        "Số dư, giao dịch / lỗi"
+      ],
+      [
+        "frame",
+        "alt [tải thành công]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị số dư; ngày giờ, nguồn / mục đích, EARN / SPEND, số coin"
+      ],
+      [
+        "frame",
+        "opt [không có giao dịch]"
+      ],
+      [
+        1,
+        0,
+        "No transactions yet; vẫn hiển thị số dư"
+      ],
+      [
+        "end"
+      ],
+      [
+        0,
+        1,
+        "Yêu cầu thêm bản ghi / chọn giao dịch"
+      ],
+      [
+        1,
+        2,
+        "Lấy bản ghi; kiểm tra thuộc Student hiện tại"
+      ],
+      [
+        2,
+        1,
+        "Giao dịch / không tồn tại hoặc không thuộc Student"
+      ],
+      [
+        "frame",
+        "alt [hợp lệ]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị tham chiếu, nguồn / phần thưởng, số coin, thời điểm hoàn thành"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [không hợp lệ]"
+      ],
+      [
+        1,
+        0,
+        "Không tiết lộ dữ liệu; quay về lịch sử của Student"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lỗi tải]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo lỗi và Retry; không giả lập lịch sử rỗng"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "Bộ lọc ngày / loại giao dịch ở UC-28 A2 còn là đề xuất có điều kiện; không coi là yêu cầu bắt buộc. Nguồn đã mất vẫn giữ mô tả và tham chiếu giao dịch."
+  },
+  {
+    "id": "13.2",
+    "title": "Award coins with idempotent ledger",
+    "source": "NS-08; BR40, BR45, BR68–69; §4, Data Integrity",
+    "actor": "Completed activity",
+    "steps": [
+      [
+        0,
+        1,
+        "Hoàn thành exercise / game đủ điều kiện thưởng"
+      ],
+      [
+        1,
+        1,
+        "Áp dụng quy tắc thưởng cấu hình và khóa idempotency"
+      ],
+      [
+        1,
+        2,
+        "Bắt đầu giao dịch ACID; kiểm tra khóa thưởng đã ghi"
+      ],
+      [
+        2,
+        1,
+        "Khóa đã tồn tại / chưa tồn tại"
+      ],
+      [
+        "frame",
+        "alt [khóa đã tồn tại]"
+      ],
+      [
+        1,
+        1,
+        "Không cấp EXP / coin trùng"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [khóa chưa tồn tại]"
+      ],
+      [
+        1,
+        2,
+        "Trong cùng giao dịch: cộng EXP hồ sơ; cộng coin; ghi Coin_Transaction bất biến với khóa thưởng"
+      ],
+      [
+        "frame",
+        "alt [thành công]"
+      ],
+      [
+        1,
+        2,
+        "Commit giao dịch"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lỗi]"
+      ],
+      [
+        1,
+        2,
+        "Rollback; không cập nhật một phần"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "NS-08 quy định thưởng khi hoàn thành exercise / game. BR45: mốc learning streak chỉ thưởng một lần trong mỗi chuỗi không bị đứt. Không tự đặt giá trị coin hoặc cấu trúc khóa."
+  },
+  {
+    "id": "14.1",
+    "title": "Browse store",
+    "source": "UC-29; BR143",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở Reward Store"
+      ],
+      [
+        1,
+        2,
+        "Tải catalog đã xuất bản và số dư Student"
+      ],
+      [
+        2,
+        1,
+        "Catalog và số dư"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị tên, loại, preview / mô tả, giá coin, khả dụng"
+      ],
+      [
+        "frame",
+        "opt [không có item]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị catalog rỗng"
+      ],
+      [
+        "end"
+      ],
+      [
+        0,
+        1,
+        "Chọn item"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị quyền lợi, giá, điều kiện, sở hữu và giới hạn"
+      ],
+      [
+        "frame",
+        "alt [đã sở hữu item chỉ sở hữu một lần]"
+      ],
+      [
+        1,
+        0,
+        "Owned; điều hướng Inventory"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [không đủ coin / không đủ điều kiện]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị lý do; cho phép tiếp tục duyệt"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "opt [chọn Redeem]"
+      ],
+      [
+        1,
+        1,
+        "ref SD-14.2 — xác thực lại điều kiện hiện tại"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "UC-29 E1: lỗi catalog → thông báo và Retry. E2: nếu chỉ lỗi số dư, có thể hiện catalog kèm Balance unavailable; redemption phải kiểm tra lại. UC-29 mô tả nhiều loại reward; BR143 chỉ nêu avatar / streak-freeze, chưa thống nhất phạm vi item."
+  },
+  {
+    "id": "14.2",
+    "title": "Redeem item",
+    "source": "UC-30; BR143; §4 Data Integrity",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Chọn Redeem"
+      ],
+      [
+        1,
+        2,
+        "Đọc giá, khả dụng, giới hạn sở hữu, số dư hiện tại"
+      ],
+      [
+        2,
+        1,
+        "Điều kiện hiện tại"
+      ],
+      [
+        1,
+        1,
+        "Xác thực điều kiện"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị item, coin cần dùng và số dư sau đổi"
+      ],
+      [
+        0,
+        1,
+        "Xác nhận đổi"
+      ],
+      [
+        1,
+        2,
+        "Kiểm tra lại giá, khả dụng, số dư và sở hữu"
+      ],
+      [
+        "frame",
+        "alt [giá thay đổi]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị giá mới; yêu cầu xác nhận lại"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [thiếu coin / không đủ điều kiện / hết item / vượt giới hạn sở hữu]"
+      ],
+      [
+        1,
+        0,
+        "Từ chối; hiển thị lý do và quay về chi tiết / cửa hàng"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [hợp lệ]"
+      ],
+      [
+        1,
+        2,
+        "ACID + idempotency: trừ coin, ghi giao dịch đổi, cấp item vào kho"
+      ],
+      [
+        "frame",
+        "alt [thành công]"
+      ],
+      [
+        2,
+        1,
+        "Kết quả đổi và mã giao dịch"
+      ],
+      [
+        1,
+        0,
+        "Xác nhận item, coin đã chi, số dư, tham chiếu giao dịch"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lỗi trao đổi]"
+      ],
+      [
+        1,
+        1,
+        "Giữ nguyên số dư và sở hữu trước đổi"
+      ],
+      [
+        1,
+        0,
+        "Thông báo thất bại"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "opt [mất phản hồi sau khi hoàn tất; thử lại cùng yêu cầu]"
+      ],
+      [
+        1,
+        2,
+        "Lấy kết quả đổi đã tồn tại; không trừ / cấp trùng"
+      ],
+      [
+        2,
+        1,
+        "Kết quả cũ"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị kết quả đã hoàn tất"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "Hủy trước xác nhận: không thay đổi dữ liệu."
+  },
+  {
+    "id": "14.3",
+    "title": "View inventory",
+    "source": "UC-31",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở Reward Inventory"
+      ],
+      [
+        1,
+        2,
+        "Lấy item đã cấp và cấu hình trang bị của Student"
+      ],
+      [
+        2,
+        1,
+        "Kho, cấu hình / lỗi"
+      ],
+      [
+        "frame",
+        "alt [có dữ liệu]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị item sở hữu, loại, khả dụng, trạng thái trang bị"
+      ],
+      [
+        0,
+        1,
+        "Chọn item"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị chi tiết và thao tác hỗ trợ"
+      ],
+      [
+        "frame",
+        "alt [item có thể trang bị]"
+      ],
+      [
+        1,
+        1,
+        "ref SD-14.4 — Equip / Unequip"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [exclusive IT material theo UC-31 A4]"
+      ],
+      [
+        1,
+        1,
+        "Chỉ cho Open Material khi quyền sử dụng còn hiệu lực"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [kho rỗng]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo kho rỗng; điều hướng Store"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lỗi tải]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo lỗi và Retry; không hiện như kho rỗng"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "UC-31 nói badges / frames / themes / IT material; BR143 nói avatar / streak-freeze. Giữ cách gọi của UC, chưa suy ra loại item triển khai."
+  },
+  {
+    "id": "14.4",
+    "title": "Equip / unequip item",
+    "source": "UC-32; UC-31 A2–A3, E2",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Chọn Equip hoặc Unequip"
+      ],
+      [
+        1,
+        2,
+        "Kiểm tra sở hữu, khả dụng, loại item và trang bị hiện tại"
+      ],
+      [
+        2,
+        1,
+        "Trạng thái hiện tại"
+      ],
+      [
+        "frame",
+        "alt [không sở hữu / không sử dụng được]"
+      ],
+      [
+        1,
+        0,
+        "Từ chối thao tác"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [Equip hợp lệ; chưa được trang bị]"
+      ],
+      [
+        1,
+        2,
+        "Đổi item cùng loại / slot; tối đa một item mỗi loại"
+      ],
+      [
+        1,
+        0,
+        "Thành công; cập nhật trạng thái và giao diện"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [Unequip hợp lệ; đang trang bị]"
+      ],
+      [
+        1,
+        2,
+        "Gỡ item khỏi slot"
+      ],
+      [
+        1,
+        0,
+        "Cập nhật trạng thái và giao diện"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [đã Equip / đã Unequip]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo / làm mới trạng thái; không tạo gán trùng hay thay item khác"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lỗi cập nhật]"
+      ],
+      [
+        1,
+        1,
+        "Giữ cấu hình trang bị trước đó"
+      ],
+      [
+        1,
+        0,
+        "Thông báo lỗi"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "Thay trang bị không làm mất sở hữu item cũ. UC-32 dẫn UC-34 cho Inventory nhưng tiêu đề Inventory thực tế là UC-31."
+  },
+  {
+    "id": "16.1",
+    "title": "Submit feedback / bug report",
+    "source": "UC-34; §5.2.2, §5.2.4",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở form feedback / report"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị loại, mô tả, tham chiếu nội dung, ảnh tùy chọn"
+      ],
+      [
+        0,
+        1,
+        "Chọn Content Feedback / Technical Issue; nhập mô tả và ảnh tùy chọn"
+      ],
+      [
+        1,
+        1,
+        "Content: chọn / điền sẵn lesson, lecture hoặc question; Technical: không bắt buộc tham chiếu"
+      ],
+      [
+        0,
+        1,
+        "Submit"
+      ],
+      [
+        1,
+        1,
+        "Trim / sanitize; kiểm tra chi tiết, tham chiếu và ảnh"
+      ],
+      [
+        "frame",
+        "alt [thiếu / sai thông tin hoặc ảnh không hợp lệ]"
+      ],
+      [
+        1,
+        0,
+        "Nêu vấn đề; yêu cầu sửa / bỏ / thay ảnh"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [hợp lệ]"
+      ],
+      [
+        1,
+        2,
+        "Lưu report: trạng thái ban đầu, thời gian, submitter, tham chiếu và ảnh được chấp nhận"
+      ],
+      [
+        "frame",
+        "alt [lưu thành công]"
+      ],
+      [
+        1,
+        1,
+        "Content → hàng đợi Moderator; Technical → hàng đợi Admin"
+      ],
+      [
+        1,
+        0,
+        "Xác nhận gửi thành công"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lưu thất bại]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo lỗi; giữ thông tin đã nhập để sửa / Retry"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "Hủy trước Submit: không tạo report. Ảnh: JPG, JPEG, PNG, WEBP; tối đa 3 MB/file. SRS không đặt tên trạng thái ban đầu trong UC-34."
+  },
+  {
+    "id": "16.2",
+    "title": "View my feedback",
+    "source": "UC-35; BR144–145",
+    "actor": "Student",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở Submitted Feedback"
+      ],
+      [
+        1,
+        2,
+        "Lấy report do Student hiện tại gửi"
+      ],
+      [
+        2,
+        1,
+        "Danh sách / lỗi"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị loại, tóm tắt, thời gian gửi, trạng thái"
+      ],
+      [
+        "frame",
+        "opt [không có report]"
+      ],
+      [
+        1,
+        0,
+        "No submitted feedback"
+      ],
+      [
+        "end"
+      ],
+      [
+        0,
+        1,
+        "Chọn report"
+      ],
+      [
+        1,
+        2,
+        "Kiểm tra tồn tại và thuộc Student hiện tại"
+      ],
+      [
+        2,
+        1,
+        "Report hợp lệ / không hợp lệ"
+      ],
+      [
+        "frame",
+        "alt [hợp lệ]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị mô tả, tham chiếu, ảnh, trạng thái, ghi chú / phản hồi bên dưới"
+      ],
+      [
+        "frame",
+        "opt [không có ghi chú]"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị trạng thái và chưa có ghi chú"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "opt [nội dung liên kết không còn truy cập được]"
+      ],
+      [
+        1,
+        0,
+        "Giữ thông tin tham chiếu; không mở nội dung"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [không tồn tại / không thuộc Student]"
+      ],
+      [
+        1,
+        0,
+        "Từ chối truy cập; quay về danh sách cá nhân"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [lỗi truy xuất danh sách / chi tiết]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo lỗi và Retry"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": ""
+  },
+  {
+    "id": "17.1",
+    "title": "View content feedback list",
+    "source": "UC-48; BR113; §5.2.3",
+    "actor": "Moderator",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở Nội dung phản hồi"
+      ],
+      [
+        1,
+        2,
+        "Lấy chỉ feedback học thuật; tất cả trạng thái; ưu tiên Chờ xử lý, mới nhất trước"
+      ],
+      [
+        2,
+        1,
+        "Danh sách"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị mã, khóa học, bài, loại, tiêu đề, người gửi, ngày, trạng thái"
+      ],
+      [
+        0,
+        1,
+        "Lọc khóa học / bài / trạng thái; tìm tiêu đề / tên Student / mã nội dung"
+      ],
+      [
+        1,
+        2,
+        "Truy vấn theo bộ lọc, từ khóa và phân trang"
+      ],
+      [
+        2,
+        1,
+        "Kết quả"
+      ],
+      [
+        "frame",
+        "alt [có kết quả]"
+      ],
+      [
+        1,
+        0,
+        "Làm mới danh sách"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [không khớp]"
+      ],
+      [
+        1,
+        0,
+        "Không tìm thấy phản hồi nội dung phù hợp"
+      ],
+      [
+        "end"
+      ],
+      [
+        0,
+        1,
+        "Xem chi tiết"
+      ],
+      [
+        1,
+        1,
+        "ref SD-17.2"
+      ]
+    ],
+    "note": "Không thay đổi dữ liệu; cổng Moderator chỉ xử lý phản hồi học thuật."
+  },
+  {
+    "id": "17.2",
+    "title": "View content feedback detail",
+    "source": "UC-49; BR113",
+    "actor": "Moderator",
+    "steps": [
+      [
+        0,
+        1,
+        "Chọn Xem chi tiết feedback nội dung"
+      ],
+      [
+        1,
+        2,
+        "Lấy chi tiết feedback, ảnh, ngữ cảnh Course / Chapter / Lesson / Question"
+      ],
+      [
+        2,
+        1,
+        "Chi tiết"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị ID, Student, email, thời gian, loại, trạng thái, tiêu đề, mô tả, ảnh và liên kết"
+      ],
+      [
+        "frame",
+        "opt [không có ảnh]"
+      ],
+      [
+        1,
+        0,
+        "Không có tệp hình ảnh đính kèm"
+      ],
+      [
+        "end"
+      ],
+      [
+        0,
+        1,
+        "Chọn Xem bài giảng"
+      ],
+      [
+        1,
+        2,
+        "Kiểm tra nội dung liên quan"
+      ],
+      [
+        2,
+        1,
+        "Nội dung khả dụng / đã xóa hoặc lưu trữ"
+      ],
+      [
+        "frame",
+        "alt [khả dụng]"
+      ],
+      [
+        1,
+        0,
+        "Mở tab / điều hướng Curriculum Management để đối chiếu"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [không khả dụng]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo học liệu / câu hỏi không còn khả dụng hoặc đã lưu trữ"
+      ],
+      [
+        "end"
+      ],
+      [
+        0,
+        1,
+        "Quay về chi tiết feedback"
+      ]
+    ],
+    "note": "Không cập nhật trạng thái. UC-49 dẫn UC-95 cho danh sách nhưng tiêu đề danh sách thực tế là UC-48."
+  },
+  {
+    "id": "17.3",
+    "title": "Process content feedback",
+    "source": "UC-50; BR115; BR144–145",
+    "actor": "Moderator",
+    "steps": [
+      [
+        0,
+        1,
+        "Chọn Đang xử lý / Đã xử lý / Từ chối; nhập ghi chú; Xác nhận xử lý"
+      ],
+      [
+        1,
+        1,
+        "Kiểm tra chuyển trạng thái và ghi chú bắt buộc khi hoàn thành / từ chối"
+      ],
+      [
+        "frame",
+        "alt [ghi chú bắt buộc bị trống / chuyển trạng thái không hợp lệ]"
+      ],
+      [
+        1,
+        0,
+        "Thông báo lỗi; dừng lưu"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [dữ liệu hợp lệ]"
+      ],
+      [
+        1,
+        2,
+        "Cập nhật có kiểm tra xung đột: trạng thái, ghi chú, Moderator, thời gian hoàn thành; lưu lịch sử"
+      ],
+      [
+        "frame",
+        "alt [ticket đã bị Moderator khác cập nhật]"
+      ],
+      [
+        1,
+        0,
+        "Không ghi đè; yêu cầu tải lại trang"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [cập nhật thành công]"
+      ],
+      [
+        1,
+        2,
+        "Tạo in-app notification cho Student gửi report"
+      ],
+      [
+        1,
+        3,
+        "Gửi email tự động chứa ghi chú xử lý tới Student"
+      ],
+      [
+        1,
+        0,
+        "Cập nhật trạng thái và gửi phản hồi thành công; làm mới chi tiết / danh sách"
+      ],
+      [
+        "end"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "Ghi chú / trả lời được hiển thị trực tiếp bên dưới feedback theo BR145. SRS không mô tả xử lý lỗi email cho UC-50."
+  },
+  {
+    "id": "17.4",
+    "title": "View technical feedback list",
+    "source": "UC-63; §5.2.3",
+    "actor": "Administrator",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở Phản hồi & Báo lỗi hệ thống"
+      ],
+      [
+        1,
+        2,
+        "Lấy chỉ ticket kỹ thuật / lỗi UI / nền tảng"
+      ],
+      [
+        2,
+        1,
+        "Danh sách"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị ID, tên / email người gửi, loại, tiêu đề, ngày tạo, trạng thái"
+      ],
+      [
+        0,
+        1,
+        "Lọc Chờ xử lý / Đang xử lý / Đã giải quyết / Từ chối; tìm kiếm"
+      ],
+      [
+        1,
+        2,
+        "Lọc / tìm / phân trang ticket kỹ thuật"
+      ],
+      [
+        2,
+        1,
+        "Kết quả"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị danh sách theo điều kiện"
+      ],
+      [
+        "frame",
+        "opt [không có phản ánh chưa xử lý]"
+      ],
+      [
+        1,
+        0,
+        "MSG18 — Hiện không có phản ánh kỹ thuật nào chưa xử lý"
+      ],
+      [
+        "end"
+      ],
+      [
+        0,
+        1,
+        "Chọn một ticket"
+      ],
+      [
+        1,
+        1,
+        "ref SD-17.5"
+      ]
+    ],
+    "note": "UC-63 dẫn UC-75 nhưng chức năng giải quyết tương ứng là UC-64. Phản hồi học thuật được chuyển Moderator."
+  },
+  {
+    "id": "17.5",
+    "title": "Resolve technical feedback",
+    "source": "UC-64; BR59; BR144–145",
+    "actor": "Administrator",
+    "steps": [
+      [
+        0,
+        1,
+        "Mở ticket kỹ thuật"
+      ],
+      [
+        1,
+        2,
+        "Lấy chi tiết: mô tả, ảnh lỗi, thông tin thiết bị"
+      ],
+      [
+        2,
+        1,
+        "Chi tiết ticket"
+      ],
+      [
+        1,
+        0,
+        "Hiển thị chi tiết"
+      ],
+      [
+        0,
+        1,
+        "Chọn Đang xử lý / Đã xử lý / Từ chối; nhập ghi chú; Cập nhật trạng thái"
+      ],
+      [
+        1,
+        1,
+        "Kiểm tra ghi chú xử lý"
+      ],
+      [
+        "frame",
+        "alt [ghi chú trống khi Đã xử lý / Từ chối]"
+      ],
+      [
+        1,
+        0,
+        "MSG09; chặn lưu"
+      ],
+      [
+        "end"
+      ],
+      [
+        "frame",
+        "alt [hợp lệ]"
+      ],
+      [
+        1,
+        2,
+        "Lưu trạng thái và ghi chú; tạo in-app notification"
+      ],
+      [
+        1,
+        3,
+        "Gửi email kết quả xử lý cho Student"
+      ],
+      [
+        "frame",
+        "opt [gửi email thất bại]"
+      ],
+      [
+        1,
+        1,
+        "Ghi log ngoại lệ email; vẫn commit trạng thái xử lý"
+      ],
+      [
+        "end"
+      ],
+      [
+        1,
+        0,
+        "MSG17 — Cập nhật tiến độ xử lý phản hồi thành công"
+      ],
+      [
+        "end"
+      ]
+    ],
+    "note": "UC-64 step 5 yêu cầu ghi chú không trống; A5a / BR59 chỉ nêu bắt buộc khi Resolved / Rejected. SRS dùng cả Đã giải quyết và Đã xử lý. Không tự đặt enum hoặc quy tắc bổ sung."
+  }
+]

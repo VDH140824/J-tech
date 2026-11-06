@@ -15,14 +15,16 @@ export function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
 
   if (isLoading) {
     return (
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#0d1117",
-        color: "#e6edf3"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: "#0d1117",
+          color: "#e6edf3",
+        }}
+      >
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>⚙️</div>
           <p style={{ fontSize: "1.1rem", color: "#8b949e" }}>Đang xác thực quyền Admin...</p>
@@ -33,14 +35,29 @@ export function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
 
   const status = user?.status?.toUpperCase();
   if (status === "PENDING") {
-    return <Navigate to="/pending-approval" replace />;
+    return (
+      <Navigate
+        to="/pending-approval"
+        replace
+      />
+    );
   }
   if (status === "REJECTED" || status === "LOCKED") {
-    return <Navigate to="/account-rejected" replace />;
+    return (
+      <Navigate
+        to="/account-rejected"
+        replace
+      />
+    );
   }
 
   if (!isAuthenticated || !checkIsAdmin(user) || status !== "ACTIVE") {
-    return <Navigate to="/home" replace />;
+    return (
+      <Navigate
+        to="/home"
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

@@ -1,0 +1,1932 @@
+
+
+
+
+
+
+
+
+
+
+CAPSTONE PROJECT REPORT
+Report 3 – Software Requirement Specification
+
+
+
+
+
+
+
+
+
+– Hanoi, September  2026 –
+Table of Contents
+
+I. Record of Changes
+Date | A*M, D | In charge | Change Description
+29/09/2026 | A | HungVD | Add 3.1.1 , 3.1.2
+29/09/2026 | A | ThuNTM | Add 2.1, 2.2, 2.3, 2.4.33-2.4.40, 5.1, 5.3
+29/09/2026 | A | TuHA | Add 3.1.5
+03/10/2026 | A | AnNT | Add 2.4.17-2.4.24
+04/10/2026 | A | TuHA | Add 2.4.9-2.4.16
+04/10//2026 | A | HungVD | Add 2.4.1 -> 2.4.8
+04/10/2026 | A | LinhPM | Add 1, 2.4.25-2.4.32
+09/10/2026 | A | ThuNTM | Add 3.17, 4
+09/10/2026 | A | LinhPM | Add 3.15, 3.16
+09.10/2026 | A | TuHA | Add 3.6.7->3.6.15
+09/10/2026 | A | HungVD | Add 3.2 -> 3.6.9
+09/10/2026 | A | AnNT | Add 3.9 -> 3.14
+ |  |  | 
+ |  |  | 
+*A - Added M - Modified D - Deleted
+
+II. Software Requirement Specification
+1. Product Overview 
+The J-Tech platform (Web-Based Japanese Practice Support Application for IT Students at FPT University ) is a web-based application developed to eliminate learning barriers, enhance revision efficiency, and consolidate Japanese language competencies aligned directly with the Dekiru Nihongo curriculum. The platform delivers an interactive learning experience by integrating Artificial Intelligence (AI) for pronunciation assessment, personal study path formulation, lesson-aligned practice repositories, and learning motivation powered by gamification mechanics.
+The Context Diagram below illustrates the system boundary, along with its interactions and data flows:
+Human Actors:
+Student SE of FPTU: The central end-users of the system; they log in, complete practice exercises, participate in mock tests, and provide feedback, while receiving learning materials, test results, AI pronunciation evaluations, personalized study paths, and reminder notifications.
+Moderator: Manages and contributes curriculum content, practicing materials, and exam question banks; receives lecture content management data.
+Admin: Monitors system operational status via the dashboard statistics, approves or rejects account registration requests, and updates user account statuses.
+Guest: 
+External Integrated Systems & Services:
+OAuth (Google Authentication): Receives authentication requests and provides verified user Google account login credentials.
+AI Service: Analyzes student practice data and voice audio recordings to evaluate pronunciation and generate personalized learning paths.
+Cloudinary: Stores and optimally delivers multimedia learning resources (lecture videos, audios, and images).
+Email Service: Automatically dispatches email notifications regarding learning progress reminders.
+
+
+2. User Requirements
+2.1 Actors
+# | Actor | Description
+1 | Administrator | System manager responsible for user account management (approving, activating, or deactivating Student and Moderator accounts), monitoring system-wide performance, reviewing analytical dashboards, and overseeing system configuration and logs 
+2 | Moderator | Content curator and manager responsible for managing Dekiru Nihongo learning materials (Kanji, Vocabulary, Grammar), uploading lesson videos, designing tests and quizzes, configuring mini-game question banks, and reviewing student feedback 
+3 | Student | End-user (Software Engineering student) who accesses the platform to study Dekiru Nihongo lessons, practice four skills (Listening, Speaking, Reading, Writing), receive AI-driven pronunciation and grammar corrections, participate in practice games, and monitor learning progress
+4 | AI Service | External AI integration (Google Gemini API & Whisper STT) that receives and transcribes student audio recordings, identifies pronunciation inaccuracies (without grading), and provides real-time explanations, grammar corrections, and IT-context suggestions 
+5 | Email Service | External messaging service (e.g., SMTP / SendGrid) that automates account verification emails, password reset requests, and daily study reminders to help students sustain their learning streak 
+6 | Cloudinary | Cloud-based media management platform utilized to store, optimize, and stream lesson videos uploaded by Moderators for each lesson, as well as managing audio recordings and graphic assets 
+7 | Guest | 
+2.2 Use Cases
+2.2.1 UCs for Guest
+
+2.2.2 UCs for Student
+
+2.2.3 UCs for Admin
+
+2.2.4 UCs for Moderato
+
+2.3 Descriptions
+
+
+
+2.4 Use Case Specifications 
+2.4.1 UCs 01_Login 
+Primary Actors | Student, Moderator, Administrator | Secondary Actors | Authentication Server
+Description | Allows users (students, moderators, administrators) to authenticate via an authentication server (Google Account) and access the system based on their assigned roles and account status.
+Preconditions | - Users with a valid Google account- The web browser has accessed the J-Tech system's Login Page.
+Normal Flow | 1. The user accesses the Login Page and clicks the "Tiếp tục với Google" button.2. The system sends an authentication request to the Authentication Server (Google OAuth).3. Google displays the login interface or prompts the user to select a Google account.4. The user selects an account.5. The Authentication Server returns authentication details (Google Authentication Information/Token, Email) to the J-Tech system.6. The J-Tech system checks the account information in the database (User entity):- Verifies that the account exists in the system.- Verifies that the account status is "Active."7. The system initiates a session (issues a JWT) and records the login event (Login Log).8. The system redirects the user to the Home page.
+Alternative Flows | - A1 : At step 6, if the Google account does not yet exist in the system:+ The system automatically creates a new account record with the default role (Student) and a status of "Pending." . The system redirects the user to the Pending Page, notifying them that the account is awaiting Administrator approval.+ At Step 6 (Normal Flow), the system detects that the user's Google email already exists in the database with the role `MODERATOR` and status `ACTIVE`, but profile details (such as full name and avatar) are missing:The system automatically extracts the missing information from the Google account and updates the corresponding User record in the database. The system initializes a session (JWT) with Moderator privileges. The system grants access to Moderator functions without redirecting to the Pending Page. Proceed from Step 8 (Normal Flow).- A2 : At step 6, if the account status is "Rejected" . The system redirects the user to the Reject page, notifying them that the access request has been denied.- A3 : At step 6, if the account is locked by the Administrator:  The system denies the login, displays an error message stating that the account is locked or suspended, and prompts the user to contact the Administrator.- E1: At step 4, the user cancels the operation or closes the Google OAuth popup . The system cancels the authentication process and remains on the Login Page.- E2 : At step 5, if no response is received or the Google OAuth token is invalid/expired: The system displays At step 5, if no response is received or the Google OAuth token is invalid/expired: The system displays "Xác thực tài khoản Google không thành công. Vui lòng kiểm tra kết nối và thử lại."(MSG19) and provides a "Thử lại" option. 
+Postconditions | - Users who successfully log in can access the appropriate permissions and functional screens.- A session (Session/JWT) is established and recorded in the system logs.
+Business rule |  - BR09 : Authentication via Google OAuth: The system exclusively accepts logins using Google accounts; internal registration passwords are not used. - BR10 : New student approval: Upon first login, the account is automatically assigned the "Student" role with a "Pending" status; access to learning materials is granted only after Administrator approval.- BR11 : Permission-based navigation: Upon successful login, the system grants roles access to screens and functions in accordance with the Screen Authorization table. - BR01 : Session control and account locking: Login sessions are managed via JWT; accounts with a "Suspended" status have their sessions immediately invalidated and are blocked from logging in. - BR12 : Activating pre-created accounts: For Moderator accounts pre-created by the Admin (containing only Email, Role = Moderator, and Status = Active), the user's full name and avatar will be automatically synchronized from Google upon their first login, granting them immediate access to the system without requiring approval.
+Triggers | The user clicks the "Tiếp tục với Google" button on the login page.
+
+2.4.2 UCs 02_Sign out
+ 
+Primary Actors | Student , Moderator , Admin | Secondary Actors | None
+Description | Allows authenticated users (Students, Moderators, Administrators) to terminate their current active session, invalidate authentication tokens (revoke JWT), and securely log out of the system.
+Preconditions | The user has successfully logged into the system and holds a valid, active session (valid JWT token).
+Normal Flow | 1. The user clicks on their profile avatar or user menu located in the top-right header.2. The system expands the account dropdown menu (including View Profile, Settings, and Logout).3. The user selects "Đăng xuất".4. The system terminates the session:    - Revokes and invalidates the JWT on the server side (pushes the active token identifier to the Redis Blacklist to prevent replay attacks).- Clears all stored Access Tokens and Refresh Tokens on the client side (from Local Storage, Session Storage, or HttpOnly Cookies).5. The system redirects the user to the  Login Page.
+Alternative Flows | - E1 (Network Disconnection on Logout): At step 6, if the network connection fails and the server cannot be reached: The client-side application forcibly purges local session tokens and redirects to the Login Page to safeguard user account credentials.
+Postconditions | - The user session is terminated and the JWT is invalidated.- The user cannot access protected internal resources or use the browser's "Back" button to return to authenticated screens without logging in again. 
+Business rule | - BR-01: User sessions are managed via JWT; upon logout, active tokens are immediately invalidated to prevent unauthorized reuse.- BR-11: Once logged out, access to all role-restricted screens is revoked according to the Screen Authorization matrix, requiring fresh re-authentication.
+Triggers | The user clicks the "Đăng xuất" button/menu item in the account navigation dropdown.
+
+
+2.4.3 UCs 03_View Profile
+Primary Actors | Student, Moderator, Administrator | Secondary Actors | None
+Description | Allows users (students, operators, administrators) to view personal account details, role information, and activity or academic statistics corresponding to their role.
+Preconditions | The user has successfully logged into the system with a valid account (Status = Active).
+Normal Flow | 1. The user selects the "Xem hồ sơ" item from the navigation menu.2. The system determines the identity and role of the current user from the login session (JWT token).3a. System for querying basic personal information from a table3b. For Students: Query academic information, including Coin balance (Coin_Transaction), longest study streak (User_Streak), and currently equipped avatar (User_Avatar).4. The system displays a profile page featuring comprehensive personal information and relevant statistical data.5. Users view the information and can choose to switch to editing their profile.
+Alternative Flows | - A1 : Student statistics data is blank (New student): At step 4, the new student has no history of completed exercises or attendance.  The system displays a coin balance of 0, a study streak of 0 days, and a learning progress of 0%.- E1:  At step 3 or 4, the system fails to connect to the database to retrieve profile information: The system displays the error message: "Không tải được dữ liệu , hãy thử lại sau" (MSG20)and provides a "Thử lại" button.- E2 : At step 2, if the authentication token is invalid or the account has just been switched to "Suspended" status . The system terminates the session, displays a notification prompting the user to log in again, and redirects them to the Login Page.
+Postconditions | - Personal profile information and statistical data are visually displayed to the user without any changes to the database.
+Business rule | - BR13 : Users only have permission to view the details of their own personal profiles. - BR14 : Only the 'student' role displays information such as the streak, coin count, and avatar.- BR15 : The Profile screen operates in read-only mode. All statistical information (streaks, coins, progress) reflects the latest actual data from the database and cannot be modified on this screen.
+Triggers | Users click the avatar icon or the "Xem hồ sơ" item on the navigation bar.
+ 
+ 
+2.4.4 UCs 04_Update Profile
+Primary Actors | Student, Moderator, Administrator | Secondary Actors | Cloudinary
+Description | Allows users (Student, Moderator, Administrator) to update personal information (such as full name and birthday) and customize their profile picture (by selecting an existing avatar or uploading a new image).
+Preconditions | The user has successfully logged into the system and is currently on the personal information page(Profile page).
+Normal Flow | 1. The user clicks the "Chỉnh sửa hồ sơ" button.2. The Edit Profile form displays current information: full name, email (read-only), and current avatar...3. Users can make the following edits:- Change display name.- Edit date of birth.- Update profile picture: upload a new photo from a computer/device or select one from the list of existing avatars.4. The user clicks the "Lưu thay đổi" button.5. Input data validation system (full name cannot be left blank; valid image file format and size).6.(If a new image is uploaded) The system uploads the image file to the Cloudinary service and receives the new image URL.7. The system updates database records with new information and updates fields.8. The system displays “ Cập nhật hồ sơ thành công”(MSG21), closes the edit form, and shows the latest information on the Profile screen.
+Alternative Flows | - A1 :  At step 3 or 4, the user clicks the "Hủy" button or closes the edit form. The system discards all newly entered changes and reverts to displaying the original information on the Profile page.- E1:  In step 5, if the "Tên" field is+  Blank the system displays an error message “* là bắt buộc không được để trống“ (MSG09)The form retains the entered data, allowing the user to make corrections.+ Exceeds the specified limit, the system displays an error message “Quá số kí tự quy định vui lòng nhập lại ”(MSG23). The form retains the entered data, allowing the user to make corrections..- E2 : At step 5, the image file is in an unsupported format (not JPG, PNG, or WEBP) or exceeds the allowed size limit (e.g., < 3MB). The system displays a warning “Ảnh không thuộc định dạng cho phép JPG, PNG, or WEBP hoặc dung lượng lớn hơn 3MB , vui lòng chọn lại (MSG24)”.- E3 : At step 6, the connection or the image upload process to Cloudinary fails or is interrupted. The system displays an " Lỗi lưu ảnh "(MSG25) notification and does not save the new path to the database.- E4 : At step 7, writing data to the database fails due to a connection interruption or a system error. The system rolls back, retains the previous state, and displays “Lưu thất bại vui lòng nhập lại”(MSG26).
+Postconditions | The user's personal information and profile picture are successfully updated in the database and immediately displayed on the system interface.
+Business rule | - BR16 : The email address used for Google OAuth authentication is a fixed identifier; users are not permitted to edit or change this email on the Edit Profile page. - BR17 : Fields marked with an asterisk (*) are mandatory; the length must be between 2 and 50 characters.- BR018 : Uploaded image files must be in an allowed format (PNG, JPG, JPEG, WEBP) and must not exceed the system's maximum file size limit (<3MB).- BR19 : Users may only edit the profile of the currently logged-in account; they are not permitted to access or modify the profile of another account using this function.
+Triggers | The user clicks the "Chỉnh sửa hồ sơ" button in Profile page.
+ 
+ 
+2.4.5 UCs 05_View notifications
+Primary Actors | Student, Moderator, Administrator | Secondary Actors | None 
+Description | Allows authenticated users (Students, Moderators, Administrators) to view a list of in-app notifications (such as account approval decisions, feedback resolution updates, coin reward credits, and study reminders) and mark individual or all notifications as read. 
+Preconditions | The user has successfully logged into the system with an active account 
+Normal Flow | 1. The user clicks on the notification bell icon located in the top-right navigation header.2. The system identifies the authenticated user (User Id) from the active session and queries the Notification table for records belonging to that user, ordered by creation timestamp descending (Created At DESC).3. The system renders the notification dropdown panel/list, displaying the following details for each item:    - Notification title (Title) and summary message (Content).    - Notification category (Notification Type: Account Approval, Feedback Resolution, Coin Reward) and timestamp .    - Read status indicator (Is Read: unread notifications are visually highlighted with a dot indicator or bold text).4. The user clicks on a specific unread notification (Is Read = false).5. The system updates the notification's status to read (Is Read = true), records the read timestamp (Read At = CURRENT_TIMESTAMP) in the database, and decrements the unread notification badge counter on the bell icon6. The system displays the full notification content or redirects the user to the corresponding functional screen associated with the notification.
+Alternative Flows | - A1 (Mark All as Read): At step 3, the user clicks the "Đánh dấu tất cả đã đọc” button: The system batch-updates all unread notifications (Is Read = false) for the current user to Is Read = true, sets Read At = CURRENT_TIMESTAMP, and clears the unread badge counter on the header bell icon.- A2 (Filter Unread Notifications): At step 3, the user selects the "Chưa đọc” filter tab: The system filters and displays only notification entries where Is Read = false.- E1 (Data Retrieval / Server Error): At step 2 or step 5, if a database connection error or server exception occurs: The system displays an error banner: "Không tải được dữ liệu , hãy thử lại sau" (MSG20) and provides a "Thử lại" button.
+Postconditions | - The user's notification list is accurately displayed on the interface.- The read status (Is Read = true) and read timestamp (Read At) of selected notifications are persisted in the Notification table in the database.
+Business rule | - BR89 : Users are strictly authorized to view and mark as read only the notifications dispatched to their own account 
+Triggers | The user clicks on the notification bell icon in the top navigation bar.
+ 
+ 
+2.4.6 UCs 06_View Course Curriculum
+Primary Actors | Student | Secondary Actors | None
+Description | Allows students to view the curriculum roadmap for the *Dekiru Nihongo* course, including the list of lessons, progress status, and corresponding modules.
+Preconditions | The student has successfully logged into the system using an active Student account.
+Normal Flow | 1. The student selects a course (JPD111/JPD122/...).2. The system queries the list of active curricula (Curriculum with status = Active) and their associated lessons.3. The system cross-references student learning progress data to display the percentage of completion.4. Learning path interface display system (number of lessons per subject and completion percentage for each lesson).
+Alternative Flows | - A1 : Expand / Collapse Lesson Details: At step 4, click the arrow button (or title bar) of a Lesson (e.g., Chương 1 , Chương 2). If the section is currently collapsed, the system expands the list of practice components (kanji, grammar, etc.) for that chapter.- E1 : At step 2, the system finds no chapters or lessons with an "Active" status: The system displays a notification indicating an empty state: "Chưa có dữ liệu được tạo"(MS27)-E02 : Unable to load the full course catalog due to a network connection loss or server error . The system displays a page loading error “Không tải được dữ liệu , hãy thử lại sau”(MSG20) and a "Thử lại" button.
+Postconditions | The course roadmap and the student's lesson completion progress are visually displayed.
+Business rule | - BR022 : Learners can only view and access courses, curricula, and lessons that are set to "Active" by the Moderator. Content in "Draft" or hidden status will not be displayed.
+Triggers | The student clicks on one of the course lesson boxes.
+
+
+2.4.7 UCs 07_View Chapter List
+ 
+Primary Actors | Student | Secondary Actors | None
+Description | Allows students to view the list of chapters under a selected course (such as : Chương 1 , Chương 2 , ..) along with their corresponding completion progress
+Preconditions | - The student has successfully logged into the system with an active account .- The student has selected a specific course from the course list
+Normal Flow | 1. The student selects a specific course (e.g., JPD113, JPD123) from the  course list.2. The system receives the selected course identifier and queries the list of active chapters (Status = Active) belonging to that course.3. The system cross-references the student's study history and progress records for each chapter.4. The system calculates and displays the Chapter List interface, including:- Chapter order number and chapter title (e.g., Chapter 1: はじめまして).   - Aggregated overview statistics for each chapter (total videos, exercises, and tests).- Visual progress bar and percentage of completion (%) for each chapter.5. The student reviews the chapter roadmap and selects a specific chapter to inspect its details .
+Alternative Flows | - A1  At step 5, the student clicks on a specific chapter card (arrow button). The system navigates the student to the Chapter Details screen  to view the list of lessons and sub-module components.- A2 : At step 4 or 5, the student clicks the back button "Trở về". The system navigates back to the Course List screen . - E1 : At step 2, if no chapters exist or none are set to "PUBLISHED" status for the selected course: The system displays the empty state message: "Chưa có dữ liệu được tạo" (MSG27) along with a back navigation button.- E2 (Data Retrieval / Network Failure): At step 2 or 3, if the system fails to load chapter data due to network disconnection or server error: The system displays an error banner: "Không tải được dữ liệu , hãy thử lại sau" (MSG20) and provides a "Thử lại" (Retry) button.
+Postconditions | The chapter list and the student's learning progress are visually presented to the student without modifying any database records.
+Business rule | BR-22: Learners can only view and access courses, curricula, and chapters/lessons that are set to "Active" / "Published" by the Moderator. Content in "Draft" or hidden status will not be displayed.
+Triggers | The student clicks on a course card from the Home screen or Course List page.
+ 
+ 
+2.4.8 UCs 08_View Chapter Details
+ 
+Primary Actors | Student | Secondary Actors | None
+Description | Allows students to view the detailed learning roadmap of a selected chapter, including chapter overview statistics, the list modules (Kanji, Vocabulary, Grammar) with lecture counts , completion checkmarks, and chapter-level activities (Flashcards, Chapter Comprehensive Exam, Reading Practice, Listening Practice)
+Preconditions | - The student has successfully logged into the system with an active account (Status = Active). - The student has selected a specific chapter from the Chapter List screen . - The chapter and its constituent learning items have been published by a Moderator (Status = PUBLISHED) 
+Normal Flow | 1. The student selects a specific chapter from the Chapter List (UC-07) or the course curriculum roadmap.2. The system cross-references the student's learning history to calculate the overall chapter progress percentage and the completion status of each module.3. The system displays the Chapter Details screen ( Chapter Details), comprising:    - Chapter Summary Header Card : Chapter title (e.g., Chương 1 ), aggregate metrics (49 videos • 46 bài tập • 9 bài Test), completion percentage (55%) with a visual progress bar, and an expand/collapse toggle icon.    - Component Learning Modules: Under each expanded lesson, details for Chữ Hán (7 lectures ), Từ vựng (7 lectures ), and Ngữ pháp (8 lectures ) are shown along with a Play action icon and green checkmarks (✓) for completed modules.- Chapter-Level Practice Activities: Access links to Flashcards, Mini-test , Reading Practice, Listening Practice.4. The student clicks on a Play icon or a module title to navigate directly to the selected learning module or exercise. 
+Alternative Flows | - A1 (Expand / Collapse Chapter Container): At step 4, the student clicks the arrow icon on the top chapter banner: The system collapses or expands the entire chapter body.- A2 (Review Completed Module): At step 5, the student selects a previously completed module (marked with a green checkmark ✓): The system opens the module for review without overwriting or resetting previously saved study records.- A3 (Return to Chapter List): The student clicks the back navigation button: The system redirects back to the Chapter List view (UC-07).- E1 (No Lessons ): At step 2, if no lessons or learning materials have been configured for the chapter: The system displays the empty-state message: "Chưa có dữ liệu được tạo" (MSG27) with a return navigation button. - E2 ( Server Failure): At step 2, if loading fails due to a network or server issue: The system displays an error banner: "Không tải được dữ liệu , hãy thử lại sau" (MSG20) with a "Thử lại"  button. 
+Postconditions | The chapter structure and real-time module completion statuses are presented visually; the student is successfully redirected to the chosen module or activity
+Business rule | - BR-22: Learners can only view and access chapters, lessons, and learning materials that are set to  "Published" by the Moderator. Content in "Draft" or hidden status will not be displayed.- BR-23: As soon as a student completes a module (completing the lecture video/material and passing exercises with a qualifying score), the system immediately displays a green checkmark (✓) and updates the chapter completion percentage bar.- BR-86: Each standard lesson must comprise theoretical learning modules (Kanji, Vocabulary, Grammar), skill practices, and assessment activities.
+Triggers | The student selects a chapter card from the Chapter List screen menu item.
+ 
+ 
+2.4.9 UCs 09_View Lesson details
+ 
+Primary Actors | Student | Secondary Actors | None
+Description | Allows students to view detailed learning components and assessments within a selected lesson (including Kanji, Vocabulary, Grammar). The system displays a grid of lesson group cards with their completion statuses (Video, Exercises, Materials, estimated duration, green checkmarks , or completion percentage), as well as dedicated module cards such as Flashcards and Mini-Test
+Preconditions | - The student has successfully logged into the system with an active account (Status = Active).- The student has selected a specific lesson from the Chapter .- The lesson and its constituent modules have been published by a Moderator (Status =  Published).
+Normal Flow | 1. The student selects a specific lesson from the Chapter Details screen .2. The system retrieves and loads data for the learning components (Kanji, Vocabulary, Grammar) and the Mini-test belonging to the selected lesson. 3. The system cross-references the student's study progress records to evaluate the completion status of each learning group card.4. The system displays the Lesson Details screen in a card grid layout, comprising:    - Lesson Group Cards: Each card displays a thumbnail preview/speaker image, group titles/target characters ( 回, 因, 困), included item types (Video Exercises, Materials) .     - Completion Indicators: Visual green checkmarks  indicating completed groups or progress percentages (e.g., 0%) for uncompleted/in-progress items.    - Flashcards Module Card: Dedicated card for reviewing vocabulary/Kanji flashcards (displays word count, and completion status).    - Mini-test Card: Dedicated end-of-lesson assessment card (displays test duration, question quota, and pass status).    - Navigation Controls: Left (<) and right (>) arrow buttons at the bottom to quickly jump between previous and next lessons.5. The student clicks on a specific lesson card to open lectures or begin practice .
+Alternative Flows | - A1 (Quick Navigate Previous / Next Lesson): At step 4, the student clicks the left (<) or right (>) arrow buttons: The system loads and displays the lesson components of the preceding or succeeding lesson.- A2 (Review Completed Card): At step 5, the student clicks on a card marked with a green checkmark (✓): The system allows the student to re-watch videos, review materials, or retake exercises without negatively affecting previously recorded progress.- A3(Return to Chapter Details): The student clicks the breadcrumb or Back navigation link: The system navigates back to the Chapter Details view (UC-08).- E1 (No Lesson Content Configured): At step 2, if no group cards or tests have been configured for the lesson: The system displays the empty-state message: "Chưa có dữ liệu được tạo" (MSG27).- E2 (Network / Server Loading Error): At step 2 or 3, if data retrieval fails due to a network or server issue: The system displays an error banner: "Không tải được dữ liệu , hãy thử lại sau" (MSG20) with a "Thử lại"  button. 
+Postconditions | The list of lesson group cards and their real-time completion statuses are presented to the student; selecting a card successfully navigates the student to Material viewing , exercises , Flashcards , or the Mini-Test.
+Business rule | - BR-22: Learners can only view and access chapters, lessons, and learning materials that are set to "Published" by the Moderator. Content in "Draft" or hidden status will not be displayed.- BR-23: As soon as a student completes a module (completing the lecture video/material and passing exercises with a qualifying score), the system immediately displays a green checkmark (✓) and updates the chapter completion percentage bar.- BR-86: Each standard lesson must comprise theoretical learning modules (Kanji, Vocabulary, Grammar), skill practices, and assessment activities.
+Triggers | The student clicks on a lesson item from the chapter list.
+ 
+ 
+2.4.10 UCs 10_Study Lesson 
+ 
+Primary Actors | Student | Secondary Actors | None
+Description | Allow students to view materials (PDFs or videos) for the selected lession module.
+Preconditions | - The student has successfully logged into the system with an active account (Status = Active).- The student has selected a specific lesson and learning section (Kanji, Vocabulary, or Grammar).- The lectures within the section have been configured and published by a Moderator (Status =  Published).
+Normal Flow | 1. The student selects a lecture from the lession detail screen   2. The system loads the lecture screen with the "Bài học" (Lesson) tab active by default.   3. The system retrieves the video streaming URL (from Cloudinary CDN)(only grammar) or the corresponding PDF study guide.   4. The system renders the lecture screen, including:       - Header Navigation Tabs: Dual-tab toggle between "Bài học" (current active tab) and "Bài tập" (practice exercises).       - Video Player: Embedded player streaming the lecture video . - Theoretical Material Viewer (PDF Viewer): Embedded PDF reader displayed directly beneath the video player for reviewing grammar rules and explanations.  5. The student plays the video and reviews the accompanying PDF material.   6. When the student watches the required video duration, the system automatically records the completion status and marks the lecture as completed with a green checkmark (✓)
+Alternative Flows | - A1  (Switch to Exercises Tab): The student clicks the "Bài tập" tab: The system pauses/stops video playback and navigates the student to the lecture exercises screen .- E1 (No Lesson Content Configured): At step 2, if no group cards or tests have been configured for the lesson: The system displays the empty-state message: "Chưa có dữ liệu được tạo" (MSG27).- E2 (Network / Server Loading Error): At step 2 or 3, if data retrieval fails due to a network or server issue: The system displays an error banner: "Không tải được dữ liệu , hãy thử lại sau" (MSG20) with a "Thử lại"  button. 
+Postconditions | The student’s study record and completion status for the lecture are updated in the database and visually marked with a checkmark (✓) in the progress tracker.
+Business rule | - BR-22: Learners can only view and access chapters, lessons, and learning materials that are set to "Published" by the Moderator. Content in "Draft" or hidden status will not be displayed.- BR-23: As soon as a student completes a module (completing the lecture video/material and passing exercises with a qualifying score), the system immediately displays a green checkmark (✓) and updates the chapter completion percentage bar.- BR-34: Lecture videos and multimedia assets are stored on Cloudinary CDN and accessed via secure URLs
+Triggers | Students select a lesson module from the lesson details screen.
+
+
+2.4.11 UCs 11_Do Lesson Exercises 
+ 
+Primary Actors | Student | Secondary Actors | None
+Description | Allows students  click the "Bài tập" button within a specific lesson to complete multiple-choice quizzes that reinforce their knowledge (Kanji, Vocabulary, or Grammar), track their progress, receive feedback on answers, and update their exercise completion status.
+Preconditions | - The student has successfully logged into the system using an active Student account.- The student has selected a specific lesson from the course list.- The learner has selected and opened a specific lesson group (from the list of lesson cards).
+Normal Flow | 1. On the lesson screen, the student clicks the "Bài tập" tab.2. The system loads the list of reinforcement multiple-choice questions associated with that lesson group.3. The exercise interface display system includes:      - A progress bar (e.g., 0/8 questions).      - Question content (Kanji characters, vocabulary, or grammar points to be tested).      - A list of multiple-choice answer options (1, 2, 3, ...).4. The learner selects an answer option for the current question.5.The system records the student's answers and compares them with the correct answers stored in the system :- Mark answers as correct/incorrect on the interface and display explanations .- Update completion progress (e.g., advancing from 0/8 to 1/8).1. Students click "Tiếp  theo" to proceed to the next question.2. Repeat steps 4–6 until the last question of the exercise set.3. Upon completion of all questions, the system saves the results, marks the "Bài tập" section of the lesson card with a green checkmark, and awards bonus coins.
+Alternative Flows | - A1 : At step 3 or 4, the student clicks the "Tài liệu" tab: the system temporarily saves the progress of the current question and returns to the theory material screen. When the student clicks the "Bài tập" tab again, the system resumes displaying the unfinished question.- A2 : In Step 3, the student clicks on a different lesson group in the list (sidebar) on the right side of the screen (e.g., switching from the 汗、泣、泊 group to the 干、刊、平 group).  The system switches to display the exercises for the newly selected lesson group.- E1 : At step 2, the moderator has not yet configured the question for this section.The system displays the message "Chưa có dữ liệu được tạo" .(MSG27)
+Postconditions | Exercise progress is recorded (completion status updated with a green checkmark on the lesson card), and results are stored in the system.
+Business rule | - BR026 : An exercise is considered "Passed" (or "Completed") when the student achieves the minimum required accuracy rate (default: > 80% of the total score).- BR27 : After submitting the assignment, the system immediately displays the score, the correct and incorrect answers, and detailed explanations for each question.- BR28 : Learners are permitted to retake exercises an unlimited number of times; the system records only the highest score achieved in the progress log.
+Triggers | Students select the "Bài tập" tab on the navigation bar next to the "Tài liệu" tab.
+
+
+
+
+2.4.12 UCs 12_Study Flashcards 
+Primary Actors | Student | Secondary Actors | None
+Description | Enables learners to review and memorize vocabulary and Kanji using smart flashcards based on the Spaced Repetition System (SRS), allowing them to flip cards to view meanings, listen to pronunciations, and self-assess their retention level.
+Preconditions | - The student has successfully logged in using an active Student account.- The selected lesson contains valid Vocabulary, Kanji, or Grammar data managed by a Moderator.
+Normal Flow | 1. The learner selects the lesson's Flashcard module.2. The system loads the list of vocabulary/Kanji cards for the lesson, arranged according to the SRS algorithm (based on the learner's memorization history and review cycle).3. The flashcard interface display system consists of the Kanji or vocabulary on the front and the meaning on the back.4. Students click on the card to reveal the back or front.5.Learners select their level of recall using the "Nhớ" / "Chưa nhớ" rating buttons.6. The system calculates and updates the next repetition interval (Interval / Next review time) for the card based on the SRS algorithm and saves the state to the database.7. The system advances to display the next flashcard.8. Steps 3–7 repeat until the learner has completed all the cards in the session.9. The system displays the flashcard session summary screen (number of cards reviewed, recall accuracy rate, and reward points earned).
+Alternative Flows | - A1 : At step 3, the learner clicks on the speaker icon. The system plays the audio file for the pronunciation of that vocabulary word.- A2 : At step 3, the learner selects whether to flip the card (displaying the Vietnamese meaning on the front and guessing the Japanese word on the back) or toggle automatic audio playback upon flipping: The system updates the card display format based on the learner's selected configuration for the current study session.- E1 : - At Step 2, no vocabulary list or Kanji characters have been added to the lesson. The system displays the message: "Chưa có dữ liệu được tạo"(MSG27) along with a button to return to the learning path.
+Postconditions | The learning progress and SRS review cycle for the flashcards have been successfully updated in the student's database.
+Business rule | - BR024 :Cards marked by the user as "Not remembered" are automatically added to the priority list for repeated review during the study session.- BR25 : Each valid flashcard study session completed for the first time in a day earns bonus coins in accordance with the reward rules.
+Triggers | The student selects the "Flashcard" item from the lesson roadmap.
+ 
+ 
+2.4.13 UCs 13_Take a Lesson Test 
+Primary Actors | Student | Secondary Actors | None
+Description | Allows the Student to access a predefined learning roadmap for Kanji, Vocabulary or Grammar, study a lesson and complete its practice questions. Each question displays a term and shuffled answer choices. The system immediately displays whether the selected answer is correct or incorrect. Practice attempts are not stored in test history.  
+Preconditions | - The Student has successfully logged in to the system.- The Student account is Active. 
+Normal Flow | 1. The Student selects a course, such as JPD111.2. The system displays the chapters available in the selected course.3. The Student selects a chapter, such as “Chương 1”.4. The system displays the chapter’s learning content, including “Luyện Chữ Hán”, “Luyện Từ Vựng” and “Luyện Ngữ Pháp”.5. The Student selects a learning section.6. The system displays the predefined learning roadmap containing the lessons of the selected section.7. The Student selects a lesson.8. The system displays the lesson’s learning content: a video for Grammar or learning materials for Vocabulary and Kanji. The “Bài kiểm tra cuối bài” option is available at the same navigation level as the learning content.9. After studying the learning content, the Student selects “Bài kiểm tra cuối bài”.10. The system displays the practice questions for the selected lesson and learning section.11. The system displays a question containing a term and shuffled answer choices.12. The Student selects an answer.13. The system immediately checks the selected answer and displays whether it is correct or incorrect.14. Steps 11 to 13 are repeated for the remaining questions until the practice is completed. 
+Alternative Flows | - A1. At step 13, if the selected answer is incorrect, the system immediately indicates that it is incorrect.- A2. At step 13, if the selected answer is correct, the system immediately confirms that it is correct.- E1. If the practice content cannot be loaded because of a network or system error, the system displays an error message and allows the Student to retry. MSG-08 
+Postconditions | - The Student has completed the practice questions for the selected lesson and learning section.- The Student has received immediate correctness feedback for each answered question.- The practice attempt is not stored in test history. 
+Business rule | BR-29. Each mini-test must belong to a specific predefined learning part and only use learning content assigned to that part.BR-30. Mini-tests are used for practice and knowledge reinforcement.BR-31. Mini-test answer options must be shuffled before being displayed to the Student.BR-32. The system must immediately check and display whether the Student’s answer in a mini-test is correct or incorrect. 
+Triggers | - The Student selects “Bài kiểm tra cuối bài” from a lesson in the selected learning section. 
+
+2.4.14 UCs 14_Take a Chapter Test 
+
+
+2.4.15 UCs 15_View Test Results and Explanations 
+2.4.16 UCs 16_View Test Attempt History 
+
+2.4.17 UCs 17_Practice Reading with AI 
+
+2.4.18 UCs 18_Practice Listening 
+2.4.19 UCs 19_Practice Speaking through AI Roleplay 
+
+2.4.20 UCs 20_View Speaking History 
+
+
+2.4.21 UCs 21_View Conjugation Forms 
+
+
+2.4.22 UCs 22_Study Conjugation Materials 
+
+2.4.23 UCs 23_Practice Conjugation 
+
+2.4.24 UCs 24_Play Memory Games 
+
+2.4.25 UCs 25_View Game History 
+
+2.4.26 UCs 26_View Learning Progress 
+
+
+2.4.27 UCs 27_View Login Streak 
+
+2.4.28 UCs 28_View coin balance and history
+
+2.4.29 UCs 29_Browse store  
+
+2.4.30 UCs 30_Redeem item  
+
+2.4.31 UCs 31_View inventory  
+
+2.4.32 UCs 32_Equip / Unequip item  
+
+2.4.33 UCs 33_Configure study reminder  
+Primary Actors | Student | Secondary Actors | Email Service
+Description | Allows the student to enable or disable daily study reminder emails and select the daily delivery time.
+Preconditions | The student is signed in with an active Student account and has a registered email address.
+Normal Flow | 1. The student opens Study Reminder Settings.2. The system retrieves and displays the current reminder settings.3. The student enables daily study reminders.4. The student selects a delivery time.5. The student selects Save.6. The system validates the selected time and registered email address.7. The system saves the enabled status and delivery time and updates the daily reminder schedule.8. The system displays the saved settings and a success message.
+Alternative Flows | A1 — Disable reminders: At step 3, the student disables reminders and saves. The system saves the disabled status and stops future scheduled reminder emails.A2 — Change delivery time: At step 3, reminders are already enabled. The student changes the delivery time and continues from step 5.A3 — Leave without saving: Before step 5, the student leaves without saving. Previously saved settings remain effective.E1 — Invalid settings: At step 6, the time is missing or invalid, or the registered email address is unavailable. The system displays a validation message and requests correction.E2 — Save failure: At step 7, the settings cannot be saved. The system displays an error and does not report success.Actor note: Email Service delivers the scheduled emails; saving settings does not require an immediate email to be sent.
+Postconditions | Success: Reminder preferences are saved, and future scheduling follows the saved enabled status and delivery time.Failure: Previously saved reminder preferences remain effective.
+Triggers | The student opens Study Reminder Settings.
+2.4.34 UCs 34_Submit Feedback or Bug Report  
+Primary Actors | Student | Secondary Actors | None
+Description | Allows the student to submit content feedback linked to a lesson, lecture, or question for Moderator review, or report a technical issue for Admin review. Images may be attached.
+Preconditions | The student is signed in with an active Student account.
+Normal Flow | 1. The student opens the feedback/report form.2. The system displays report categories, the description field, content reference fields, and the optional image attachment control.3. The student selects Content Feedback or Technical Issue.4. For Content Feedback, the student selects the relevant lesson, lecture, or question; when opened from a content page, the system prefills the reference.5. The student enters the issue description and optionally attaches images.6. The student selects Submit.7. The system validates the report details, referenced content where applicable, and attachments.8. The system saves the report with its initial status, submission time, submitter, content reference where applicable, and accepted attachments.9. The system routes Content Feedback to Moderator review or Technical Issue to Admin review.10. The system displays a submission confirmation.
+Alternative Flows | A1 — Technical issue: At step 4, Technical Issue is selected. The student describes the affected function; a lesson, lecture, or question reference is not required.A2 — No attachments: At step 5, the student submits the report without images. Processing continues normally.A3 — Cancel submission: Before step 6, the student cancels. No report is created.E1 — Invalid report details: At step 7, required information is missing or the content reference is invalid. The system identifies the problem and requests correction.E2 — Invalid attachment: At step 7, an attachment violates the configured file rules. The system requests its removal or replacement.E3 — Submission failure: At step 8, the report or its attachments cannot be saved successfully. The system displays an error and preserves entered information for correction or retry.
+Postconditions | Success: A report is recorded and assigned to the appropriate review queue.Failure or cancellation: No successfully submitted report is reported to the student.
+Triggers | The student selects Send Feedback or Report a Bug.
+2.4.35 UCs 35_View Submitted Feedback  
+Primary Actors | Student | Secondary Actors | None
+Description | Allows the student to view their submitted feedback and bug reports, including processing status and handling notes.
+Preconditions | The student is signed in with an active Student account.
+Normal Flow | 1. The student opens Submitted Feedback.2. The system retrieves reports submitted by the current student.3. The system displays the reports with their category, summary, submission time, and current status.4. The student selects a report.5. The system verifies that the report belongs to the student.6. The system displays the report description, linked content where applicable, attachments, current status, and handling notes available to the student.7. The student returns to the list or leaves the page.
+Alternative Flows | A1 — No reports: At step 3, the student has submitted no reports. The system displays “No submitted feedback.”A2 — No handling notes: At step 6, no handling notes are available. The system displays the current status and indicates that no notes have been added.A3 — Linked content unavailable: At step 6, the referenced content is no longer accessible. The system displays the report and retains reference information without opening the content.E1 — Retrieval failure: At step 2 or 6, data cannot be retrieved. The system displays an error and offers Retry.E2 — Unauthorized or missing report: At step 5, the report does not exist or belongs to another student. The system denies access and returns to the student’s list.
+Postconditions | Success: The student views their reports, processing status, and available handling notes.Failure: No report data is changed or disclosed to an unauthorized student.
+Triggers | The student opens Submitted Feedback.
+2.4.36 UCs 36_Manage Courses  
+Primary Actors | Moderator | Secondary Actors | Cloudinary
+Description | Allows the Moderator to create, view, update, delete, or archive courses, including course code, name, description, cover image, display order, and status.
+Preconditions | The Moderator is signed in with an active account and has permission to manage courses.
+Normal Flow | 1. The Moderator opens Course Management.2. The system displays courses with their code, name, status, display order, and chapter count.3. The Moderator selects Create Course.4. The system displays the creation form.5. The Moderator enters a unique course code, name, description, and display order and selects a cover image.6. The Moderator selects Save.7. The system validates the entered information and cover image.8. The system uploads the cover image to Cloudinary and receives its reference.9. The system creates the course with the default status Draft and stores the cover image reference.10. The system displays a success message and refreshes the course list.
+Alternative Flows | A1 — Search or filter: At step 2, the Moderator enters search criteria or selects a status filter. The system displays matching courses or “No matching courses.”A2 — View course: At step 2, the Moderator selects a course. The system displays its details and chapter count.A3 — Update course: At step 2, the Moderator selects Edit, changes course information, optionally replaces the cover image, or changes the status to Draft, Published, or Hidden. The system validates and saves the changes; a replacement image is uploaded to Cloudinary when provided.A4 — Delete course: At step 2, the Moderator selects Delete and confirms. The system rechecks dependencies and deletes the course only when it has no chapters and no learning data requiring retention.A5 — Archive course: During A4, learning data exists. The system offers Archive; upon confirmation, it archives the course and retains related data.A6 — Chapters exist: During A4, the course has chapters. The system blocks physical deletion and explains the dependency.A7 — Cancel: The Moderator cancels creation, editing, deletion, or archiving. No requested change is saved.E1 — Validation failure: At step 7 or during A3, required data is invalid or the course code already exists. The system requests correction.E2 — Upload failure: At step 8 or during A3, Cloudinary upload fails. The system displays an error and does not save the requested image change.E3 — Save failure: At step 9 or during an update, deletion, or archive operation, persistence fails. The system displays an error without reporting success.
+Postconditions | Success: The requested course operation is completed; new courses have Draft status, and archived courses retain related data.Failure or cancellation: No requested course change is committed.
+Triggers | The Moderator opens Course Management or selects a course management action.
+2.4.37 UCs 37_Manage Chapters  
+Primary Actors | Moderator | Secondary Actors | None
+Description | Allows the Moderator to create, view, update, reorder, delete, or archive chapters within a course.
+Preconditions | The Moderator is signed in with an active account and has permission to manage chapters. A target course exists for chapter creation.
+Normal Flow | 1. The Moderator opens Chapter Management and selects a course.2. The system displays the course’s chapters in their configured order.3. The Moderator selects Create Chapter.4. The system displays a form associated with the selected course.5. The Moderator enters a chapter number unique within the course, chapter name, and description.6. The Moderator selects Save.7. The system validates the information and checks chapter-number uniqueness within the selected course.8. The system creates the chapter under the selected course.9. The system displays a success message and refreshes the ordered chapter list.
+Alternative Flows | A1 — View chapters: At step 2, the Moderator selects a chapter. The system displays its details.A2 — Update chapter: At step 2, the Moderator selects Edit and changes chapter information, order, or status. The system validates and saves the changes.A3 — Delete chapter: At step 2, the Moderator selects Delete and confirms. The system evaluates dependencies and deletes the chapter only when permitted by BR-13.A4 — Archive chapter: During A3, BR-13 requires retention. The system offers Archive; upon confirmation, it archives the chapter while preserving related data.A5 — No chapters: At step 2, the course has no chapters. The system displays an empty list and the Create Chapter action.A6 — Cancel: The Moderator cancels an operation. No requested change is saved.E1 — Validation failure: At step 7 or during A2, required information is invalid or the chapter number is duplicated within the course. The system requests correction.E2 — Invalid course or chapter: The selected course or chapter no longer exists. The system rejects the operation and refreshes the available data.E3 — Persistence failure: A create, update, delete, or archive operation fails. The system displays an error.Business rule: BR-13 governs deletion and archiving.
+Postconditions | Success: The requested chapter operation is completed while preserving chapter-number uniqueness within the course and applying BR-13.Failure or cancellation: No requested chapter change is committed.
+Triggers | The Moderator opens Chapter Management or selects a chapter management action.
+2.4.38 UCs 38_Manage Lessons  
+Primary Actors | Moderator | Secondary Actors | None
+Description | Allows the Moderator to manage lessons within a chapter. Each newly created lesson automatically contains Vocabulary, Kanji, and Grammar sections.
+Preconditions | The Moderator is signed in with an active account and has permission to manage lessons. A target chapter exists for lesson creation.
+Normal Flow | 1. The Moderator opens Lesson Management and selects a chapter.2. The system displays the chapter’s lessons, including lecture, question, and flashcard counts for each lesson.3. The Moderator selects Create Lessons.4. The system displays a form associated with the selected chapter.5. The Moderator enters a lesson number unique within the chapter and a lesson name.6. The Moderator selects Save.7. The system validates the information and checks lesson-number uniqueness within the chapter.8. The system creates the lesson and its Vocabulary, Kanji, and Grammar sections as one complete operation.9. The system displays a success message and refreshes the lesson list.
+Alternative Flows | A1 — View lesson: At step 2, the Moderator selects a lesson. The system displays its information, three sections, and lecture, question, and flashcard counts.A2 — Update lesson: At step 2, the Moderator selects Edit and changes the lesson name, order, or status. The system validates and saves the changes.A3 — Delete lesson: At step 2, the Moderator selects Delete and confirms. The system evaluates dependencies and deletes the lesson only when permitted by BR-13.A4 — Archive lesson: During A3, BR-13 requires retention. The system offers Archive; upon confirmation, it archives the lesson and preserves related data.A5 — No lessons: At step 2, the chapter has no lessons. The system displays an empty list and the Create Lesson action.A6 — Cancel: The Moderator cancels an operation. No requested change is saved.E1 — Validation failure: At step 7, required information is invalid or the lesson number is duplicated within the chapter. The system requests correction.E2 — Creation failure: At step 8, the lesson or any required section cannot be created. The system rolls back the operation.E3 — Invalid target or persistence failure: The chapter or lesson is unavailable, or a requested change cannot be saved. The system rejects the operation and displays an error.Business rule: BR-13 governs deletion and archiving.
+Postconditions | Success: The requested operation is completed. A new lesson contains all three required sections, and deletion or archiving follows BR-13.Failure or cancellation: No partial lesson creation or requested change remains.
+Triggers | The Moderator opens Lesson Management or selects a lesson management action.
+
+2.4.39 UCs 39_Manage Question Bank  
+
+2.4.40 UCs 40_Manage lesson test
+
+
+
+
+2.4.41 UC-41_Manage Chapter Final Exams 
+
+
+
+
+
+
+2.4.42 UC-42_Vocabulary Management
+
+
+2.4.43 UC-43_Kanji Management
+
+
+
+2.4.44 UC-44_Manage Reading Materials 
+
+
+2.4.45 UC-45_Manage Listening Materials 
+
+
+2.4.46 UCs 46_Manage Speaking Scenarios
+
+
+2.4.47 UCs 47_Manage Verb Conjugations 
+
+2.4.48 UCs 48_View Content Feedback List 
+
+2.4.49 UCs 49_View Content Feedback Details 
+
+
+2.4.5 UCs 50_Process Content Feedback 
+
+
+2.4.51 UCs 51_View the list of student accounts
+
+
+
+2.4.52 UCs 52_Manage Student Accounts 
+
+
+2.4.53 UCs 53_Manage Moderator Account 
+
+2.4.54 UCs 54_Configure Coin Reward Rules 
+
+2.4.55 UCs 55_Manage Streak Milestone 
+
+
+2.4.56 UCs 56_Manage Store Item 
+
+2.4.57 UCs 57_Configure Games 
+
+
+2.4.58 UCs 58_Configure AI 
+
+2.4.59 UCs 59_View AI Usage Statistics
+
+2.4.60 UCs 60_Configure System Settings
+Primary Actors | Administrator  | Secondary Actors | None 
+Description | Allows the Administrator to manage platform-wide parameters, including Cloudinary credentials, SMTP email configuration, max file upload sizes, and default system timezone. 
+Preconditions | The Administrator is authenticated with System Admin credentials. 
+Normal Flow | 1. The Administrator navigates to the "Cài đặt hệ thống" view.2. The system displays current settings: Cloudinary Cloud Name & API Key, SMTP Host/Port/User, Max upload file size limit (MB), and Timezone.3. The Administrator edits configuration parameters.4. The Administrator clicks the "Lưu cấu hình" button.5. The system encrypts secret credentials, updates database parameters, and displays: "Cấu hình hệ thống đã được cập nhật thành công!" (MSG12).
+Alternative Flows | 3a. Invalid file size or port number:• The system displays an inline validation error and prevents saving.5a. Update failure:• The system rolls back and shows: "Lưu thất bại vui lòng nhập lại" (MSG26).
+Postconditions | Global configuration parameters are updated and applied to backend application services. 
+Business Rule | BR-05 / BR-08: Third-party secrets and credentials must be AES-256 encrypted before database persistence.BR-10: System operational scheduling strictly adheres to Asia/Ho_Chi_Minh (GMT+7).
+Triggers | The Administrator selects the "Cài đặt hệ thống" navigation item. 
+
+2.4.61 UCs 61_View Dashboard
+
+2.4.62 UCs 62_View System Logs
+
+2.4.63 UCs 63_View Technical Feedback List
+2.4.64 UCs 64_Resolve Technical Feedback
+2.4.65 UCs 65_Manage Classroom Posts & Assignments 
+Primary Actors |  Teacher | Secondary Actors | Cloudinary
+Description | Allows the Teacher, upon entering a specific classroom, to create, edit, and delete announcements or discussion questions (with optional file attachments and due dates). 
+Preconditions | - Both the Teacher have successfully logged into the system with active accounts- The target classroom exists, is in an Active state, and the user is a verified member of that classroom.
+Normal Flow |  1. The Teacher accesses a specific classroom.2. The system retrieves and displays the chronological feed of existing classroom posts and questions (newest first).3. The Teacher clicks  "Tạo bài đăng " button.4. The system displays the post creation formx, including:- Post/Question Title and Detailed Content (mandatory).- Attachments (images, PDFs, links) and an optional Submission Due Date.5. The Teacher enters the content, attaches files (if any), and clicks the “Đăng” button.6. The system validates the input, uploads any attached files to Cloudinary, and persists the new post record into the database. 7. The system displays a success toast message and renders the newly created post at the top of the Classroom Stream.
+Alternative Flows | - A1 (Teacher Edits a Post): At step 2, the Teacher clicks the more options icon (:) on an existing post and selects "Chỉnh sửa". The Teacher modifies the content and clicks "Lưu"; the system updates the database record and marks the post as .- A2 (Teacher Deletes a Post): At step 2, the Teacher selects "Xóa" on a post. The system prompts a confirmation dialog (MSG01); upon confirmation, the system soft-deletes/removes the post and its associated answers from the stream.- E1 (Empty Mandatory Content): At step 6 , if the post content field is left blank: The system highlights the input field in red and displays: "Không được để trống *" (MSG09).- E2 (Invalid Attachment / Upload Error): At step 6, if an uploaded file exceeds size limits or fails to upload to Cloudinary: The system displays an upload error warning and retains the form data for retry.- E3 (Database / Network Failure): If loading the stream or saving the post fails due to a server error: The system displays  "Lưu thất bại vui lòng nhập lại" (MSG26).
+Postconditions | - New or updated classroom posts are persisted in the database and visible on the Classroom Stream.
+Business rule | - BR-87 (Classroom Access Control): Only the assigned Teacher and Students officially enrolled in the classroom are authorized to view the stream and participate in post threads.- BR-88 (Post & Answer Ownership): Only the Teacher can create official question posts, edit, or delete any post/comment within the class; Students can only submit answers and edit/delete their own responses.
+Triggers | Teacher clicks “Tạo bài đăng” buton.
+
+2.4.67 UCs 67_Manage Classroom Members 
+
+2.4.68 UCs 68_Comment (CRUD) 
+Primary Actors | Student  | Secondary Actors | Cloudinary, Email Service  
+Description | Allows students enrolled in a class managed by a Moderator/Teacher to interact beneath assigned homework exercises and lecture posts by creating, viewing, editing, and deleting comments. Comments support formatted plain text, hyperlink embeds, and file/document attachments. 
+Preconditions | 1. The student is logged in with an active account.2. The student is an approved member of the specific classroom managed by the Teacher/Moderator.3. The post or exercise thread allows comments and has not been locked/archived by the Teacher/Moderator.
+Normal Flow |  [View Comments (Read Sub-flow)]:1. The student navigates to the assigned post or exercise detail screen within their enrolled class.2. The system retrieves and displays the hierarchical comment list in chronological order (Commenter avatar, name, creation timestamp, text content, embedded links, and attached files)[Create Comment Sub-flow]:3. The student clicks on the comment input box "Viết nội dung...".4. The student types text content, and optionally:• Pastes valid URL links into the input field or uses the link button.• Clicks the "Đính kèm tệp" button to upload document or image files (PDF, DOCX, PNG, JPG;  MB).5. (If a file is attached) The system uploads the file to Cloudinary and acquires the secure file URL.6. The student clicks the "Gửi" button.7. The system validates content integrity (non-empty text, valid URL protocol, supported file extension and size).8. The system saves the new comment into the database, updates the thread comment count, and renders the comment at the bottom of the discussion list.9. The system triggers an in-app notification to the Moderator in charge of the class.10. The system displays a toast message: "Gửi thành công!" (MSG31).[Update Comment Sub-flow]:11. On an existing comment authored by the student, the student clicks the ellipsis icon [...] and selects "Chỉnh sửa".12. The system loads the existing text, link, and attachment into an inline editable input box.13. The student modifies the text, adds/removes links or replaces attachments, then clicks "Lưu thay đổi".14. The system updates the comment record, appends the label (Đã chỉnh sửa) next to the timestamp, and displays: "Cập nhật thành công!" (MSG31).[Delete Comment Sub-flow]:15. On their own comment, the student clicks [...] and selects "Xóa".16. The system displays a confirmation popup: "Bạn có chắc chắn muốn xóa bình luận này không?" (MSG01).17. The student clicks "Xác nhận".18. The system performs a soft-delete on the comment record, marks attached files for deletion/cleanup on Cloudinary, removes the comment from the screen, and displays: "Đã xóa thành công!" (MSG02).
+Alternative Flows | 4a. Blank comment content:• If the student clicks "Gửi" with no text, link, or file attached, the system displays an inline error: "Nội dung bình luận không được để trống" (MSG09) and blocks submission.  5a. Attachment upload failure / Exceeds file size limit:• If the attached file exceeds 15 MB or fails during Cloudinary upload, the system highlights the attachment box in red, displays: "Tệp đính kèm không hợp lệ hoặc vượt quá dung lượng cho phép (tối đa 15MB)" (MSG24), and does not save the comment.   7a. Invalid URL format:• If an entered link does not begin with http:// or https://, the system highlights the link field and displays: "Đường dẫn liên kết không đúng định dạng. Vui lòng nhập lại."11a. Modifying another user's comment:• If an unauthorized student attempts to edit or delete a comment authored by another user, the system denies the action with: "Bạn không có quyền thực hiện thao tác này" and logs a security warning.   17a. Cancellation of delete action:• If the student clicks "Hủy bỏ" in the confirmation dialog, the popup closes and the comment remains intact.  
+Postconditions | - New or updated classroom posts are persisted in the database and visible on the Classroom Stream.
+Business rule | • BR - 01 (Class Enrollment Requirement): Only students actively enrolled in the classroom associated with the post/assignment have permission to view and post comments.• BR - 02 (Author Ownership & Privilege): Students can only edit or delete comments authored by themselves. The class Moderator/Teacher has overriding administrative permission to delete any inappropriate comment.• BR - 03 (Attachment Constraints): Allowed file extensions include PDF, DOCX, ZIP, PNG, and JPG; maximum size is strictly limited to 15 MB per file.• BR-04 (Edit History Audit): Edited comments must permanently display an (Đã chỉnh sửa) indicator with the updated timestamp to preserve audit transparency.
+Triggers | The student opens an assignment or class post and interacts with the comment section (submits text, uploads a file, or clicks edit/delete). 
+
+2.4.69 UCs 69_View Exercise Result
+
+Primary Actors | Student | Secondary Actors | None
+Description | Show the explanation for the answer to the question.
+Preconditions | - The student has successfully logged into the system with an active account (Status = Active).- The student has completed and submitted answers for a listening exercise session. 
+Normal Flow | 1. The student submits the listening exercise or selects a completed listening exercise item.2. The system retrieves the submitted answers, checks them against the correct answer keys, and fetches the listening script and explanations from the database.3. The system renders the screen, comprising:    - Listening Script(only listening): Dedicated transcript box displaying lines with timestamp tags       - Displays the question stem, full radio choices (A, B, C, D), status tag for the correct answer ([✓ ĐÁP ÁN ĐÚNG]), and marker for the user's incorrect choice ([ĐÁP ÁN BẠN ĐÃ CHỌN - SAI]).     -  Detailed explanation box quoting evidence from the transcript to justify the correct answer.    - Action Controls: "Làm lại" (Retry) and "Hoàn thành" (Finish) buttons.4. The student reviews the script, mistakes, and explanation.5. The student clicks "Hoàn thành" .6. The system records the practice activity into the student’s learning progress and navigates back to the roadmap
+Alternative Flows | - A1 : At step 4, the student clicks "Làm lại" (Retry): The system resets the answered choices and redirects the student back to the exercise screen and retake the practice.- E1 (Network / Server Loading Error): At step 2 or 3, if data retrieval fails due to a network or server issue: The system displays an error banner: "Không tải được dữ liệu , hãy thử lại sau" (MSG20) with a "Thử lại"  button. 
+Postconditions | The student’s study record and completion status for the lecture are updated in the database and visually marked with a checkmark (✓) in the progress tracker.
+Business rule | - BR-37: Incorrectly answered listening questions and their corresponding explanations are stored for later student review
+Triggers | The student clicks “Nộp bài” button
+
+
+
+2.5 Main Business Flow
+2.5.1 Quiz Practice Workflow  
+
+2.5.2 Create Quiz Practice Workflow 
+
+2.5.3 Practice Speaking   
+  
+
+2.5.4 Practice Reading 
+  
+2.5.5 Practice with Game 
+  
+ 
+3. Functional Requirements
+3.1 System Functional Overview
+
+3.1.1 Screens Flow
+ 
+3.1.2 Screen Descriptions
+
+# | Feature | Screen | Description
+1 | Authentication  | Landing Page  | Displays the introduction of the J-Tech Japanese Learning Website and provides an entry point for users to start learning 
+2 | Authentication  | Login Page |  Allows users to sign in to the system using their Google account. 
+3 | Authentication  | Pending Page | Informs users that their account is waiting for administrator approval before they can access the learning system. 
+4 | Authentication  | Reject Page | Informs users that their account request has been rejected and access to the system is not permitted. 
+5 | Authentication | Blocked Page | Informs users that their account request has been blocked and access to the system is not permitted. 
+6 | Home  | Home  | Displays the main homepage and provides access to practicing , profile, feedback, dashboard, courses, leaderboard, and other system functions. 
+7 | Feedback  | Feedback  | Allows users to view and submit feedback about the practicing website. 
+8 | Profile  | Profile  | Displays the user's profile information and allows the user to manage their personal profile. 
+9 | Practicing | Course List  | Displays the learning roadmap and available learning activities for the selected part of the lesson. 
+10 | Practicing | Chapter List  | Displays the list of chapters belonging to a selected course along with aggregated learning statistics and completion progress. 
+11 | Practicing | AI Speaking Practice  | Allows learners to practice Japanese speaking through an AI-powered conversation and receive feedback on their speaking performance. 
+12 | Practicing | AI Speaking Result   | Displays the learner's AI speaking practice results, feedback, and performance evaluation. 
+13 | Practicing | Listening Exercise  | Provides listening practice activities for the learner. 
+14 | Practicing | Listening Exercise Result  | Displays the learner's result and answer  after completing a listening exercise. 
+15 | Practicing | List Lesson Grammar Detail  | Displays the grammar learning units, flashcard deck, mini-test, and overall completion progress for the selected lesson. 
+16 | Practicing | Material Grammar  | Displays grammar learning materials for the selected lesson. 
+17 | Practicing | Grammar Exercise  | Provides grammar exercises based on the selected lesson and learning materials. 
+18 | Practicing | Mini test Grammar  | Allows learners to take a timed grammar mini-test to reinforce grammar patterns learned in the selected lesson. 
+19 | Practicing | Mini test Grammar result  | Displays the learner's score, pass/fail status, answer comparison, and detailed grammar explanations after completing a grammar mini-test. 
+20 | Practicing | List Lesson Kanji Detail  | Displays the Kanji character groups, flashcard deck, mini-test, and overall completion progress for the selected lesson. 
+21 | Practicing | Material Kanji  | Displays Kanji learning materials for the selected lesson. 
+22 | Practicing | Kanji Exercise  | Provides Kanji exercises based on the selected lesson and Kanji materials. 
+23 | Practicing | Fashcard Kanji  | Allows learners to review and memorize Kanji characters using two-sided flashcards with pronunciation audio 
+24 | Practicing | Mini Test Kanji  | Allows learners to take a timed Kanji mini-test to evaluate their retention of Kanji characters in the selected lesson. 
+25 | Practicing | Mini Test Kanji result | Displays the learner's overall score, answer comparison, and Kanji explanations after completing a Kanji mini-test. 
+26 | Practicing | List Lesson Vocabulary Detail  | Displays the vocabulary learning groups, flashcard module, mini-test, and overall completion progress for the selected lesson.
+27 | Practicing | Material Vocabulary  | Displays vocabulary learning materials for the selected lesson. 
+28 | Practicing | Vocabulary Exercise  | Provides vocabulary exercises based on the selected lesson and vocabulary materials. 
+29 | Practicing | Flashcard Vocabulary  | Allows learners to study and review vocabulary through interactive two-sided flashcards with audio playback 
+30 | Practicing | Mini test Vocabulary  | Allows learners to take a timed vocabulary mini-test for the selected lesson. 
+31 | Practicing | Mini test Vocabulary result | Displays the learner's score, answer comparison, and detailed vocabulary explanations after completing a vocabulary mini-test .
+32 | Practicing | Reading Exercise  | Provides reading comprehension exercises for the learner. 
+33 | Practicing | Reading Exercise Result  | Displays the learner's result after completing a reading exercise. 
+34 | Practicing | Test  | Allows learners to take a timed comprehensive test (Lesson Test or Chapter Test) covering Kanji, Vocabulary, and Grammar. 
+35 | Practicing | Test result  | Displays the overall test score, pass/fail status, submitted answers, correct answers, and detailed explanations after completing a comprehensive test. 
+36 | Practicing | Conjugation List  | Displays available Japanese verb conjugation forms, verb group filters (Groups I, II, III), and conjugation rules with examples .
+37 | Practicing | Conjugation Practice  | Allows learners to practice conjugating Japanese verbs and adjectives through interactive fill-in-the-blank or multiple-choice questions .
+38 | Game | Select Game  | Allows the learner to select a game-based practice activity. 
+39 | Game | Game Practice  | Provides game-based Japanese learning activities. 
+40 | Game | Result / Answer  | Displays the result and correct answers after completing a game-based practice. 
+41 | Dashboard  | Dashboard  | Displays an overview of system management information and administrative functions. 
+42 | Account Management  | Account Approval/Reject  | Allows the administrator to review pending account requests and approve or reject user accounts. 
+43 | Account Management  | Account Management  | Allows the administrator to view, search, filter, and manage user accounts and their statuses. 
+44 | Avatar Shop  | Avatar Shop  | Allows users to browse and obtain available avatars using their available points or coins. 
+45 | Leaderboard  | Leaderboard  | Displays the ranking of users based on their learning points .
+46 | Points  | Points Exchange  | Allows users to exchange or convert their accumulated points according to the system rules. 
+47 | Points  | Transaction History  | Displays the user's history of point-related transactions and exchanges. 
+48 | Course Management  | List Course  | Displays the list of courses and provides access to course management functions. 
+49 | Course Management  | Create Course  | Allows the moderator to create a new course. 
+50 | Course Management  | Edit Course  | Allows the moderator to modify existing course information. 
+51 | Chapter Management | List Chapter  | Displays the ordered list of chapters belonging to a selected course and provides access to chapter management functions 
+52 | Chapter Management | Create Chapter  | Allows the moderator to create a new chapter within a selected course .
+53 | Chapter Management | Update Chapter  | Allows the moderator to modify existing chapter information, display order, and publication status. 
+54 | Lesson Management  | List Lesson  | Displays the lessons belonging to a selected course and provides lesson management functions. 
+55 | Lesson Management  | Create Lesson  | Allows the moderator to create a new lesson within a course. 
+56 | Lesson Management  | Edit Lesson  | Allows the moderator to modify information of an existing lesson. 
+57 | Kanji Management  | List Kanji  | Displays the list of Kanji materials belonging to a lesson. 
+58 | Kanji Management  | Create Material Kanji  | Allows the moderator to create new Kanji learning material. 
+59 | Kanji Management  | Update Material Kanji  | Allows the moderator to update existing Kanji learning material. 
+60 | Kanji Management  | List Exercise Kanji  | Displays the list of exercises associated with Kanji learning materials. 
+61 | Kanji Management  | Create Exercise Kanji  | Allows the moderator to create a new Kanji exercise. 
+62 | Kanji Management  | Update Exercise Kanji  | Allows the moderator to update an existing Kanji exercise. 
+63 | Kanji Management | Create Flashcard Kanji  | Allows the moderator to create and configure a new Kanji flashcard for a lesson .
+64 | Kanji Management | Update Flashcard Kanji  | Allows the moderator to update an existing Kanji flashcard's content, audio, and publication status.
+65 | Vocabulary Management  | List Vocabulary  | Displays the list of vocabulary materials belonging to a lesson. 
+66 | Vocabulary Management  | Create Material Vocabulary  | Allows the moderator to create new vocabulary learning material. 
+67 | Vocabulary Management  | Update Material Vocabulary  | Allows the moderator to update existing vocabulary learning material. 
+68 | Vocabulary Management  | List Vocabulary  Exercise  | Displays the list of exercises associated with vocabulary materials. 
+69 | Vocabulary Management  | Create Exercise Vocabulary  | Allows the moderator to create a new vocabulary exercise. 
+70 | Vocabulary Management  | Update Exercise Vocabulary  | Allows the moderator to update an existing vocabulary exercise. 
+71 | Vocabulary Management  | Create Flashcard Vocabulary  | Allows the moderator to create and configure a new vocabulary flashcard for a lesson. 
+72 | Vocabulary Management  | Update Flashcard Vocabulary  | Allows the moderator to update an existing vocabulary flashcard's content, audio, and publication status 
+73 | Grammar Management  | List Grammar  | Displays the list of grammar materials belonging to a lesson. 
+74 | Grammar Management  | Create Material Grammar  | Allows the moderator to create new grammar learning material. 
+75 | Grammar Management  | Update Material Grammar  | Allows the moderator to update existing grammar learning material. 
+76 | Grammar Management  | List Exercise Grammar  | Displays the list of exercises associated with grammar materials. 
+77 | Grammar Management  | Create Exercise Grammar  | Allows the moderator to create a new grammar exercise. 
+78 | Grammar Management  | Update Exercise Grammar  | Allows the moderator to update an existing grammar exercise. 
+79 | Listening Management  | List Listening Exercise  | Displays the list of listening exercises belonging to a lesson. 
+80 | Listening Management  | Create Exercise Listening  | Allows the moderator to create a new listening exercise. 
+81 | Listening Management  | Update Exercise Listening  | Allows the moderator to update an existing listening exercise. 
+82 | Account Management  | CRUD Account Moderator | Allows the administrator to create, view, update, and manage the status of moderator accounts 
+83 | Account Management  | ItemManagement  | Allows the administrator to create, view, update, and manage virtual reward items in the Avatar Shop.
+84 | Account Management  | Coin Reward Configuration  | Allows the administrator to configure coin reward rules for learning activities and consecutive login streak milestones 
+85 | Account Management  | System Log List  | Displays a filterable list of system audit logs, authentication events, errors, and AI service activities for the administrator .
+86 | Account Management  | System Log Detail  | Displays detailed information, request payloads, stack traces, and metadata of a selected system log entry .
+87 | Conjugation Management | Create Conjugation | Allows the moderator to create a new verb conjugation form and define transformation rules across verb groups 
+88 | Conjugation Management | Update Conjugation | Allows the moderator to update transformation rules, examples, and settings of an existing verb conjugation form 
+89 | Conjugation Management | Conjugation Word List  | Displays the list of verbs and conjugation practice questions associated with a selected conjugation form 
+90 | Conjugation Management | Create Conjugation Word | Allows the moderator to add a new verb and its conjugated forms to the conjugation question bank 
+91 | Conjugation Management | Update ConjugationWord | Allows the moderator to update an existing verb entry and its conjugated forms in the conjugation question bank 
+92 | Game Management | Create  question game  | Allows the moderator to create and configure new question items for game-based practice activities 
+93 | Game Management | Update question game  | Allows the moderator to modify existing question items and settings for game-based practice activities 
+94 | Practicing | List classroom | Displays the list of classrooms in which the student or teacher is enrolled or assigned 
+95 | Practicing | List post | Displays the chronological stream of teacher announcements, study topics, and assignment posts within a selected classroom 
+96 | Practicing | Post details | Displays the teacher's post content, questions, attached files, and the list of students' submitted answers and comments.
+97 | Practicing | Add comment | Allows learners to submit an answer or comment to a classroom post, including text content and attached audio or PDF files. 
+98 | Practicing | Edit comment | Allows learners to modify their submitted answer or comment and update attached files on a classroom post .
+99 | Management class | Create class | Allows the teacher to create a new classroom, enter the class name, and enroll students into the class. 
+100 | Management class | Edit class | Allows the teacher to update classroom information and manage the list of enrolled students .
+101 | Management post | Create post | Allows the teacher to create a new announcement or assignment post with attached reference files in a classroom.
+102 | Management post | Edit post | Allows the teacher to modify or delete an existing classroom post and its attached files .
+
+3.1.3 Screen Authorization
+
+Screen | Guest | Student | Moderator | Admin
+Landing Page  | X | X | X | X
+Login Page | X | X | X | X
+Pending Page | X |  |  | 
+Reject Page | X |  |  | 
+Blocked Page | X |  |  | 
+Home  | X | X | X | X
+Feedback  |  | X | X | X
+Profile  |  | X | X | X
+Course List  |  | X |  | 
+Chapter List  |  | X |  | 
+AI Speaking Practice  |  | X |  | 
+AI Speaking Result   |  | X |  | 
+Listening Exercise  |  | X |  | 
+Listening Exercise Result  |  | X |  | 
+List Lesson Grammar Detail  |  | X |  | 
+Material Grammar  |  | X |  | 
+Grammar Exercise  |  | X |  | 
+Mini test Grammar  |  | X |  | 
+Mini test Grammar result  |  | X |  | 
+List Lesson Kanji Detail  |  | X |  | 
+Material Kanji  |  | X |  | 
+Kanji Exercise  |  | X |  | 
+Fashcard Kanji  |  | X |  | 
+Mini Test Kanji  |  | X |  | 
+Mini Test Kanji result |  | X |  | 
+List Lesson Vocabulary Detail  |  | X |  | 
+Material Vocabulary  |  | X |  | 
+Vocabulary Exercise  |  | X |  | 
+Flashcard Vocabulary  |  | X |  | 
+Mini test Vocabulary  |  | X |  | 
+Mini test Vocabulary result |  | X |  | 
+Reading Exercise  |  | X |  | 
+Reading Exercise Result  |  | X |  | 
+Test  |  | X |  | 
+Test result  |  | X |  | 
+Conjugation List  |  | X |  | 
+Conjugation Practice  |  | X |  | 
+Select Game  |  | X |  | 
+Game Practice  |  | X |  | 
+Result / Answer  |  | X |  | 
+Dashboard  |  |  |  | X
+Account Approval/Reject  |  |  |  | X
+Account Management  |  |  |  | X
+Avatar Shop  |  | X |  | 
+Leaderboard  |  | X |  | 
+Points Exchange  |  | X |  | 
+Transaction History  |  | X |  | 
+List Course  |  |  | X | 
+Create Course  |  |  | X | 
+Edit Course  |  |  | X | 
+List Chapter  |  |  | X | 
+Create Chapter  |  |  | X | 
+Update Chapter  |  |  | X | 
+List Lesson  |  |  | X | 
+Create Lesson  |  |  | X | 
+Edit Lesson  |  |  | X | 
+List Kanji  |  |  | X | 
+Create Material Kanji  |  |  | X | 
+Update Material Kanji  |  |  | X | 
+List Exercise Kanji  |  |  | X | 
+Create Exercise Kanji  |  |  | X | 
+Update Exercise Kanji  |  |  | X | 
+Create Flashcard Kanji  |  |  | X | 
+Update Flashcard Kanji  |  |  | X | 
+List Vocabulary  |  |  | X | 
+Create Material Vocabulary  |  |  | X | 
+Update Material Vocabulary  |  |  | X | 
+List Vocabulary  Exercise  |  |  | X | 
+Create Exercise Vocabulary  |  |  | X | 
+Update Exercise Vocabulary  |  |  | X | 
+Create Flashcard Vocabulary  |  |  | X | 
+Update Flashcard Vocabulary  |  |  | X | 
+List Grammar  |  |  | X | 
+Create Material Grammar  |  |  | X | 
+Update Material Grammar  |  |  | X | 
+List Exercise Grammar  |  |  | X | 
+Create Exercise Grammar  |  |  | X | 
+Update Exercise Grammar  |  |  | X | 
+List Listening Exercise  |  |  | X | 
+Create Exercise Listening  |  |  | X | 
+Update Exercise Listening  |  |  | X | 
+ItemManagement  |  |  |  | X
+Coin Reward Configuration  |  |  |  | X
+System Log List  |  |  |  | X
+System Log Detail  |  |  |  | X
+Create Conjugation |  |  | X | 
+Update Conjugation |  |  | X | 
+Conjugation Word List  |  |  | X | 
+Create Conjugation Word |  |  | X | 
+Update ConjugationWord |  |  | X | 
+Create  question game  |  |  | X | 
+Update question game  |  |  | X | 
+List classroom |  |  | X | 
+List post |  |  | X | 
+Post details |  |  | X | 
+Add comment |  | X | X | 
+Edit comment |  | X | X | 
+Create class |  |  | X | 
+Edit class |  |  | X | 
+Create post |  |  | X | 
+Edit post |  |  | X | 
+
+3.1.4 Non-Screen Functions
+[Provide the descriptions for the non-screen system functions, i.e batch/cron job, service, API, etc.]
+
+
+3.1.5 Entity Relationship Diagram
+       
+Entities Description
+
+3.2 Authentication
+3.2.1 Login page
+
+
+This screen allows the User to:
+Quickly log in to the system using your Google account.
+Toggle Japanese study-aid background music on or off.
+Cancel the login process or return to the landing screen.
+
+Field Name | Description
+Tiếp tục với Google | Primary button; triggers Google OAuth authentication flow. 
+Nhạc Nhật Hủy  | Stores user account information, including personal information, assigned Secondary button; navigates back to the previous screen. 
+
+3.3 Home
+3.3.1 Home page
+
+
+This screen allows the Student  to:
+Navigate across core modules via the sidebar navigation (Leaderboard, Reward Store, Reward History, Mini-games, Settings) 
+View promotional/featured learning banners and quickly start a lesson 
+Browse Dekiru curriculum courses with visual progress bars and resume studying 
+Monitor real-time study progress overview (percentages, task completion counts) and earned achievements/badges 
+
+Field Name | Description
+Search bar | Search input; accepts keywords to search for lessons, vocabulary, and grammar rules 
+Thông báo & Avatar  | Header icons; notification bell opens recent notifications; avatar displays user profile menu. 
+Sidebar Menu Items  | Navigation links: Trang chủ (active), Bảng xếp hạng, Cửa hàng đổi thưởng, Lịch sử đổi thưởng, Game luyện tập ..
+Chọn bài học theo giáo trình Dekiru  | Course card list (JPD111, JPD123, JPD133, JPJPF326D326) displaying course code, level (Sơ cấp, Trung cấp), progress bar, completed/total lessons ratio, and a play/resume button. 
+
+3.4 Feedback
+3.4.1 Feedback
+
+This screen allows the Student  to:
+Submit feedback/reports regarding system issues, lesson content, user experience, or other suggestions 
+Attach image files as supporting evidence for feedback 
+View the list and status of previously submitted feedback (Content, Status, Submission Date) 
+Cancel the feedback submission or submit the report to the system 
+
+
+
+3.5 Profile
+3.5.1 Feedback
+
+This screen allows the User  to:
+View current account details including avatar, display name, date of birth, email, and registration date. 
+Update avatar photo. 
+Edit personal information (Display name, Date of birth). 
+Discard changes or save updated profile details to the system .
+
+
+3.6 Practicing
+3.6.1 Chapter list
+
+This screen allows the Student to:
+View the curriculum chapters along with aggregated learning statistics (total videos, exercises, and tests) and overall chapter completion progress.
+Expand or collapse individual chapters and lessons (Bài 1, Bài 2, etc.) to inspect their internal learning sections.
+View the lecture count, estimated study duration, and completion status (✓) for each learning section (Chữ Hán, Từ vựng, Ngữ pháp).
+Click the play icon next to any learning section to start or resume studying its lectures and exercises.
+
+
+3.6.2 AI Speaking Practice 
+
+
+
+This screen allows the Student  to:
+Select a conversation topic for Japanese speaking practice via a dropdown or browse button.
+View bidirectional dialogue history between the user and AI, complete with bilingual subtitles and audio playback for AI utterances.
+Provide responses via voice recording (speech-to-text) or direct text input.
+Receive real-time assessment and feedback from AI regarding grammar, vocabulary suitability, and pronunciation quality.
+Cancel the current session or finish to view the comprehensive speaking performance report.
+
+
+3.6.3 AI Speaking result
+
+
+This screen allows the Student  to:
+View an overall evaluation summary generated by the AI for the completed speaking session (Strengths, Areas for Improvement, Study Recommendations).
+Review the full dialogue transcript spoken during the practice, with audio playback capability for each recorded utterance.
+Inspect line-by-line feedback, pronunciation remarks, and contextual suggestions provided by the AI.
+Retake the speaking session or complete the activity to return to the previous screen
+
+
+
+3.6.4 Listening Exercise
+
+
+This screen allows the Student  to:
+Dialogue video to answer the multiple-choice question.
+Use video playback controls (Play/Pause, volume adjustment, seek bar, full-screen mode).
+Read the question prompt and select one choice among options A, B, C, or D.
+Navigate back to the previous question, submit the selected answer for grading, or move forward to the next question.
+
+
+
+3.6.5 Listening Exercise Result
+
+This screen allows the Student  to:
+Review the full transcript with timestamps (Listening Script) of the completed listening audio.
+Compare the selected choice against the system's correct answer.
+Read the detailed explanation justifying the correct answer based on the conversation context.
+Retake the listening practice or finish and navigate back to the previous screen.
+
+3.6.6 List Lesson Grammar Detail
+
+
+This screen allows the Student to:
+View the grammar learning units and overall completion progress of the selected lesson (Tiến độ: 80% (Đã đạt 4/5 bài)).
+Switch between different learning skill modules (Trang chủ, Từ vựng, Ngữ pháp, Luyện đọc, Luyện nghe (Script)) via the left sidebar or return to the learning roadmap.
+Access individual grammar pattern lectures (including video lectures, PDF reference materials, and practice exercises) and track their completion statuses.
+Open the grammar flashcard review deck (Flashcard Ngữ pháp) and take the grammar mini-test (Mini-test Ngữ pháp) for the selected lesson.
+
+
+
+
+3.6.7  Material Grammar
+
+This screen allows the Student  to:
+Watch the detailed video lecture explaining the grammar point.
+Use video playback controls (play/pause, seek bar, volume control, full-screen mode).
+Review grammar formulas and verb conjugation rules categorized by verb groups (Group 1, Group 2, Group 3) with example transformations.
+Read comprehensive explanations regarding usage, definitions, and contextual example sentences.
+Return to the previous screen or proceed to the next lesson.
+
+3.6.8 Grammar Exercise 
+This screen allows the Student  to:
+View current question progress over the total number of exercise questions (e.g., Question 1/5).
+Read the instruction and grammar question requiring the correct conjugated verb form to fill in the blank.
+Select one answer among multiple-choice options (A, B, C, D) to complete the sentence.
+Navigate back to the previous question or submit the selection to check the result.
+
+3.6.9 Mini test Grammar
+
+This screen allows the Student to:
+Take a timed grammar mini-test and monitor the remaining countdown time (00:29:45) as well as current question progress (Câu 25/30).
+Read the grammar sentence prompt and select one answer from four multiple-choice options.
+Navigate between questions sequentially using the previous/next buttons or jump directly to any question via the numbered question palette.
+Submit the completed mini-test for grading using the NỘP BÀI button.
+
+
+3.6.10 Mini test Grammar result
+
+This screen allows the Student to:
+View a summary of the completed grammar mini-test, including total score and percentage (25/30 (83%)), elapsed time (25:15), and pass/fail status (Đạt ).
+Select any question from the numbered palette or use the previous button (← Câu trước) to review individual questions.
+Verify the selected answer against the system's correct answer (✓ ĐÁP ÁN ĐÚNG) and read the sentence translation along with detailed grammar explanations.
+Retake the grammar mini-test (Làm lại) or complete the review to return to the lesson screen (Hoàn thành).
+
+
+3.6.11 List Lesson Kanji Detail 
+
+This screen allows the Student to:
+View the Kanji character groups and overall completion progress of the selected lesson (Tiến độ: 80% (Đã đạt 4/5 bài)).
+Select a Kanji group card to study its video lecture, PDF materials, and reinforcement exercises, as well as track completed groups .
+Open the Kanji flashcard deck (Flashcards chữ Hán) and take the Kanji mini-test (Test chữ Hán) for the lesson.
+Navigate between lessons using the bottom buttons (← Quay lại, Tiếp >), return to the learning roadmap (← Quay lại lộ trình), or switch skill modules via the left sidebar.
+
+
+3.6.12 Material Kanji 
+
+
+
+This screen allows the Student  to:
+Switch between viewing learning materials (theory) and practicing Kanji exercises via tabs.
+Learn detailed Kanji characters through an interactive flashcard display (large character display, Sino-Vietnamese reading, meaning, Onyomi, and Kunyomi).
+View a list of related vocabulary compounds along with their Hiragana readings, Romaji pronunciations, and Vietnamese meanings.
+
+
+3.6.13 Kanji Exercise 
+This screen allows the Student to:
+Practice Kanji knowledge based on the selected lesson.
+View Kanji questions and select the correct answer from multiple-choice options.
+Check the selected answer and receive immediate feedback on whether it is correct or incorrect.
+Track the current question number and total number of questions in the exercise.
+Return to the previous screen using the "Quay lại" button.
+Field Name & Description
+Field Name | Description
+Nội dung câu hỏi | Question display area; shows the Kanji character and the corresponding question that the Student needs to answer.
+Các đáp án lựa chọn | Multiple-choice options; allows the Student to select one answer from the available choices (A, B, C, D).
+Quay lại | Secondary button; navigates back to the previous screen.
+Kiểm tra | Primary button; checks the selected answer and displays immediate feedback indicating whether the answer is correct or incorrect.
+
+3.6.14 Fashcard Kanji
+
+This screen allows the Student to:
+Review and memorize Kanji characters for the selected lesson using two-sided flashcards.
+Track real-time session progress, including the number of unremembered cards (Chưa nhớ), remaining card index (Thẻ hiện tại: 1/12), and learned cards (Đã học).
+Click the flashcard to flip between the front and back faces, view the Kanji character (残), Sino-Vietnamese and kana readings (TÀN (ざん)), and related compound vocabulary examples (Ví dụ).
+Listen to pronunciation audio, bookmark favorite cards, and rate each card as ← Chưa nhớ (Not Remembered) or Đã học → (Learned).
+
+Field Name | Description
+Sidebar Menu Items  | Navigation links (Trang chủ, Chữ Hán, Từ vựng, Ngữ pháp, Luyện đọc, Luyện nghe); allow the Student to switch between learning modules. 
+Quay lại  | Navigation link in the top-right header; returns the Student to the Kanji lesson detail screen 
+Kanji Flashcard Box  | Interactive two-sided card displaying the Kanji character, Sino-Vietnamese and Hiragana reading ), and compound word examples ; clicking the card flips between its front and back faces. 
+Chưa nhớ  | Secondary action button; records that the Student has not remembered the card, increments the Chưa nhớ counter (prioritizing the card for repeat review), and advances to the next card. 
+Đã học  | Primary action button; records that the Student has remembered the card, increments the Đã học counter, updates the SRS learning state, and advances to the next card. 
+
+3.6.15 Mini Test Kanji Result 
+
+This screen allows the Student to:
+View the overall results of the completed Kanji mini-test, including score, number of correct answers, completion time, and completion status.
+Filter and review questions, compare selected answers with correct answers, and read explanations about Kanji meanings and readings.
+Retake the mini-test or finish reviewing the results and return to the learning screen.
+Field Name | Description
+Breadcrumb | Navigation path; displays the selected course, chapter, and Kanji section.
+Kết quả Mini Test Chữ Hán | Screen heading; identifies the Kanji mini-test result screen.
+Lesson Information | The subtitle displays the lesson and the Kanji group covered by the mini-test.
+Điểm số | Summary card; displays the total score earned out of 100 points, such as 90/100.
+Trả lời đúng | Summary card; displays the number of correct answers compared with the total number of questions, such as 9/10.
+Thời gian | Summary card; displays the time taken to complete the mini-test, such as 06:24.
+Đã hoàn thành | Status card indicates that the Student has completed and submitted the mini-test.
+Tất cả / Đúng / Sai | Filter tabs; display all questions, correctly answered questions, or incorrectly answered questions, together with their respective counts.
+Question Details | Review area; displays the question number, points earned, and Kanji question content.
+Answer Comparison | Read-only answer options; identify the Student’s selected answer and the correct answer using labels and status icons.
+Giải thích | Explanation panel; provides the Kanji meaning and relevant Onyomi and Kunyomi readings to clarify the correct answer.
+Danh sách câu hỏi | Numbered question panel; displays the correct or incorrect status of each question and allows the Student to select a question for review.
+Làm lại | Secondary button; starts another attempt at the Kanji mini-test.
+Hoàn thành | Primary button; finishes the result review and returns the Student to the learning screen.
+3.6.16 List Lesson Vocabulary Detail 
+ 
+This screen allows the Student to:
+View the vocabulary learning groups and overall learning progress of the selected lesson.
+Access vocabulary learning materials and exercises, review completed groups, or start an unfinished group.
+Open the vocabulary flashcard module or mini-test and navigate to adjacent lessons.
+Field Name | Description
+Breadcrumb | Navigation path; displays the selected course, chapter, and Vocabulary section.
+Bài 1: Từ vựng | Screen heading; displays the selected lesson number and learning section.
+Lesson Topic | Subtitle; describes the vocabulary topic, such as greetings and self-introduction.
+Chữ Hán / Từ vựng / Ngữ pháp | Navigation tabs; switch between the lesson’s learning sections. Từ vựng is the active tab in this mockup.
+Tiến độ học tập | Summary panel; displays the completion percentage and completed activity count, such as 60% and 3/5 activities completed.
+Nội dung bài học | Section heading; introduces the vocabulary learning groups available in the lesson.
+Vocabulary Group Cards | Display each group’s illustration, title, sample Japanese words, vocabulary count, and available learning activities.
+Tài liệu PDF · Bài tập | Activity information; indicates that the group includes vocabulary learning materials in PDF format and practice exercises.
+Group Completion Status | Displays a completion label for finished groups or a progress indicator for unfinished groups.
+Ôn lại | Button on a completed group; reopens the group’s learning content for review.
+Bắt đầu học | Primary button on an unfinished group; opens its learning content.
+Flashcard Từ vựng | Module card; displays the flashcard count, learning purpose, and completion status.
+Ôn tập | Button on the flashcard module; opens the vocabulary flashcard study screen.
+Mini Test Từ vựng | Module card displays the question count, time limit, and mini-test status.
+Làm bài | Button on the mini-test module; opens the vocabulary mini-test.
+Bài trước / Bài tiếp theo | Navigation buttons; move to the previous or next lesson.
+3.6.17 Flashcard Vocabulary 
+
+This screen allows the Student to:
+Study vocabulary through two-sided flashcards and view Japanese words, readings, Vietnamese meanings, word types, and example sentences.
+Flip cards, listen to pronunciation, and configure the front-face language and automatic pronunciation playback.
+Rate each card as remembered or not remembered, track session progress, and return to the lesson screen.
+
+Field Name | Description
+Breadcrumb | Navigation path; displays the selected course, chapter, and vocabulary flashcard module.
+Flashcard Từ vựng | Screen heading; identifies the vocabulary flashcard study screen.
+Lesson Information | Subtitle; displays the lesson number and vocabulary topic.
+Tiến độ phiên học | Progress panel; displays the current card position compared with the total card count, such as 5/24, together with a progress bar.
+Flashcard Display | Interactive two-sided card; displays the content of the current vocabulary card. Clicking the card switches between its front and back faces.
+Mặt sau · Nhấn để lật thẻ | Card-face indicator and instruction; identifies the currently displayed face and tells the Student how to flip the card.
+Vocabulary Word and Reading | Displays the Japanese vocabulary item, its Hiragana reading, and Romaji pronunciation.
+Meaning and Word Type | Displays the Vietnamese meaning and grammatical word type of the vocabulary item.
+Nghe phát âm | Audio button; plays the pronunciation of the current vocabulary item.
+Ví dụ | Example area; displays a Japanese sentence using the vocabulary item and its Vietnamese translation.
+Tùy chọn học | Settings panel; contains the flashcard display and pronunciation playback options.
+Mặt trước | Dropdown; selects whether the front of the card displays Japanese or Vietnamese content.
+Tự động phát âm | Toggle; enables or disables automatic pronunciation playback when the card is flipped.
+Trong phiên này | Session summary panel; displays the remembered, not remembered, and remaining card counts.
+Chưa nhớ | Rating button; records that the Student has not remembered the card, updates its SRS review state, and prioritizes it for further review.
+Nhớ | Rating button; records that the Student has remembered the card and updates its next review schedule according to the SRS rules.
+Quay lại bài học | Navigation link; returns the Student to the lesson screen.
+
+3.6.18 Mini Test Vocabulary 
+
+This screen allows the Student to:
+Take a vocabulary mini-test for the selected lesson and view the question count, time limit, and total available points.
+Select one answer for each question, move between questions, and track answered and unanswered questions.
+Monitor the remaining time and submit the mini-test for scoring.
+
+Field Name | Description
+Breadcrumb | Navigation path; displays the selected course, chapter, and vocabulary mini-test.
+Mini Test Từ vựng | Screen heading; identifies the vocabulary mini-test.
+Lesson Information | Subtitle; displays the lesson number and vocabulary topic.
+Test Information | Summary strip displays the number of questions, configured time limit, and total available points, such as 10 questions, 10 minutes, and 100 points.
+Thời gian còn lại | Countdown timer; displays the remaining time available to complete the mini-test.
+Question Progress and Points | Indicator; displays the current question number, total question count, and points allocated to the question, such as Câu 3/10 · 10 điểm.
+Question Content | Question area; displays the Japanese vocabulary item and the task the Student must answer.
+Answer Options | Single-choice radio options; allow the Student to select one answer from options A, B, C, and D. The selected option is visually highlighted.
+Câu trước / Câu tiếp theo | Navigation buttons; move to the previous or next question while preserving selected answers within the attempt.
+Danh sách câu hỏi | Numbered navigation panel; allows direct access to questions and distinguishes answered, current, and unanswered questions.
+Đã trả lời | Progress counter; displays the number of answered questions compared with the total question count.
+Question Status Legend | Explains the visual indicators for answered questions, the current question, and unanswered questions.
+Nộp bài | Primary button; submits the mini-test for scoring. If questions remain unanswered, the system requests confirmation as specified in the report.
+Quay lại bài học | Navigation link; returns the Student to the lesson screen.
+
+3.6.19 Mini Test Vocabulary Result 
+
+This screen allows the Student to:
+View the overall results of the completed vocabulary mini-test, including score, number of correct answers, completion time, and completion status.
+Filter and review questions, compare selected answers with correct answers, and read vocabulary explanations and examples.
+Retake the mini-test or finish reviewing the results and return to the learning screen.
+
+Field Name | Description
+Breadcrumb | Navigation path; displays the selected course, chapter, and Vocabulary section.
+Kết quả Mini Test Từ vựng | Screen heading; identifies the vocabulary mini-test result screen.
+Lesson Information | Subtitle; displays the lesson number and vocabulary topic.
+Điểm số | Summary card; displays the total score earned out of 100 points, such as 90/100.
+Trả lời đúng | Summary card; displays the number of correct answers compared with the total question count, such as 9/10.
+Thời gian | Summary card; displays the time taken to complete the mini-test, such as 05:18.
+Đã hoàn thành | Status card indicates that the vocabulary mini-test has been completed and submitted.
+Tất cả / Đúng / Sai | Filter tabs; display all questions, correctly answered questions, or incorrectly answered questions with their respective counts.
+Question Details | Review area; displays the question number, points earned, and vocabulary question content.
+Answer Comparison | Read-only answer options; identify the Student’s selected answer and the correct answer using labels and status icons.
+Giải thích | Explanation panel; provides the vocabulary reading, Vietnamese meaning, and a Japanese example sentence with its Vietnamese translation.
+Danh sách câu hỏi | Numbered question panel; displays each question’s correct or incorrect status and allows the Student to select a question for review.
+Làm lại | Secondary button; starts another attempt at the vocabulary mini-test.
+Hoàn thành | Primary button; finishes the result review and returns the Student to the learning screen.
+
+3.6.20 Comprehensive Test
+  
+This screen allows the Student to:
+Take a timed comprehensive test covering the Kanji, Vocabulary, and Grammar content of the selected lesson.
+View the current question’s category, select one answer, and navigate between questions to review selections.
+Track the remaining time and answer question count, then submit the test for scoring.
+
+Field Name | Description
+Breadcrumb | Navigation path; displays the selected course, chapter, and comprehensive test.
+Bài kiểm tra tổng hợp | Screen heading; identifies the comprehensive test.
+Chữ Hán · Từ vựng · Ngữ pháp | Scope subtitle; identifies the three learning sections covered by the test.
+Question Count | Summary card; displays the total number of questions, such as 20 questions.
+Time Limit | Summary card; displays the configured test duration, such as 30 minutes.
+Total Points | Summary card; displays the total available score of 100 points.
+Thời gian còn lại | Countdown timer; displays the remaining time available to complete the test, such as 24:36.
+Question Category | Category label; identifies whether the current question belongs to Kanji, Vocabulary, or Grammar.
+Question Progress and Points | Indicator; displays the current question number, total question count, and allocated points, such as Câu 8/20 · 5 điểm.
+Question Content | Displays the question instruction and Japanese content, such as a sentence with a blank to complete.
+Answer Options | Single-choice radio options; allow the Student to select one answer from A, B, C, and D. The selected answer is highlighted without revealing correctness before submission.
+Câu trước / Câu tiếp theo | Navigation buttons; move between questions while preserving selected answers within the test attempt.
+Danh sách câu hỏi | Numbered navigation panel; provides direct access to questions and indicates answered, current, and unanswered questions.
+Đã trả lời | Progress counter; displays the number of answered questions compared with the total question count, such as 8/20.
+Question Status Legend | Explains the visual indicators for answered questions, the current question, and unanswered questions.
+Nộp bài | Primary button; requests submission confirmation. After confirmation, the system saves the answers, calculates the score, records the completed attempt, and displays the result.
+Submission Reminder | Helper text; reminds the Student to review unanswered questions before submitting the test.
+Quay lại bài học | Navigation link; returns the Student to the lesson screen.
+
+
+3.6.21 Vocal Learning Materials
+
+
+This screen allows the Student to:
+View vocabulary learning materials in PDF format based on the selected lesson.
+Study vocabulary words, readings, meanings, word types, and example sentences provided in the PDF document.
+Navigate between pages, zoom in or out, and view the PDF in full-screen mode.
+Switch between Kanji, Vocabulary, and Grammar learning materials within the selected lesson.
+Start vocabulary exercises after reviewing the learning materials.
+Return to the lesson list.
+Field Name & Description
+Field Name | Description
+Bài 1: Từ vựng (語彙) | Header; displays the vocabulary learning material title for the selected lesson.
+Kanji / Từ vựng / Ngữ pháp | Navigation tabs; allow the Student to switch between different learning material types within the selected lesson.
+Quay lại danh sách bài học | Navigation link; returns the Student to the lesson list.
+Bắt đầu luyện tập | Primary button; navigates to the vocabulary exercise screen for the selected lesson.
+Tài liệu Vocabulary_Bai_1.pdf | PDF viewer displays the vocabulary learning materials, including Japanese words, readings, meanings, word types, and example sentences.
+Điều khiển PDF | PDF controls; allow the Student to navigate between pages, adjust the zoom level, and switch to full-screen mode.
+
+
+3.6.22 Vocab Exercise  
+
+This screen allows the Student to:
+Practice vocabulary knowledge based on the selected lesson.
+View vocabulary questions, including Japanese words, readings, and their corresponding meanings.
+Select the correct answer from multiple-choice options.
+Track the current question number and total number of questions in the exercise.
+Check the selected answer and receive immediate feedback on whether it is correct or incorrect.
+Return to the previous screen using the "Quay lại" button.
+Field Name & Description
+Field Name | Description
+Câu 1/5 | Progress indicator; displays the current question number and the total number of questions in the exercise.
+Nội dung câu hỏi | Question display area; shows the Japanese vocabulary word, its reading, and the corresponding question.
+Các đáp án lựa chọn | Multiple-choice options; allows the Student to select one answer from the available choices (A, B, C, D).
+Quay lại | Secondary button; navigates back to the previous screen.
+Kiểm tra | Primary button; checks the selected answer and displays immediate feedback indicating whether the answer is correct or incorrect.
+
+
+3.6.23 Reading Exercise
+
+
+This screen allows the Student to:
+Practice Japanese reading comprehension based on the selected lesson.
+Read Japanese passages and review supporting vocabulary to better understand the content.
+Enlarge the reading passage for easier reading.
+Answer multiple-choice questions related to the reading passage.
+Track the current question number, total number of questions, and elapsed time.
+Navigate between questions using the "Câu trước" and "Câu tiếp theo" buttons.
+Return to the lesson list.
+Field Name & Description
+Field Name | Description
+Quay lại danh sách bài học | Navigation link; returns the Student to the lesson list.
+Đoạn văn | Reading passage area; displays the Japanese text for the Student to read and answer related questions.
+Phóng to | Button enlarges the reading passage for easier reading.
+Câu hỏi (1/5) | Question panel; displays the current question number, total number of questions, and elapsed time.
+Các đáp án lựa chọn | Multiple-choice options; allow the Student to select one answer for each reading comprehension question.
+Câu trước / Câu tiếp theo | Navigation buttons; allow the Student to move between questions in the exercise.
+
+3.6.24 Reading Exercise Result
+
+
+This screen allows the Student to:
+View the overall results of the completed reading comprehension exercise, including score, completion time, and pass/fail status.
+Review each reading comprehension question along with the Student's selected answer and the correct answer.
+Identify correct and incorrect answers and view detailed explanations based on the reading passage.
+Retry the reading comprehension exercise to reinforce knowledge.
+Finish reviewing the results and return to the previous learning screen.
+Field Name & Description
+Field Name | Description
+Tổng kết kết quả | Summary panel; displays the Student's overall exercise performance, including the number of correct answers, percentage score, completion time, and pass/fail status.
+Chi tiết bài làm & Đối chiếu đáp án | Review section; displays each reading comprehension question and its corresponding answer options.
+Đối chiếu đáp án | Displays the Student's selected answer, the correct answer, and whether the response is correct or incorrect for each question.
+Giải thích | Explanation panel; provides detailed explanations based on the reading passage to help the Student understand the correct answer.
+Làm lại | Secondary button; allows the Student to restart the reading comprehension exercise.
+Hoàn thành | Primary button; finishes the result review and navigates back to the previous learning screen.
+
+3.6.25 Conjugation List
+
+This screen allows the Student to:
+View available Japanese conjugation forms and their descriptions.
+Search for conjugation forms and select a verb-group filter.
+View conjugation rules and examples for the selected form or access its practice screen.
+
+
+3.6.26 Conjugation Practice 
+
+This screen allows the Student to:
+Select a conjugation form, verb group, and practice mode.
+Enter a conjugated answer and check its correctness.
+Review the correct answer, explanation, and conjugation instructions before proceeding to the next question.
+
+
+3.6.27 Post details
+
+This screen allows the Student to:
+View the assignment prompt and instructions posted by the Teacher, along with the sample Japanese sentence and its Vietnamese translation.
+Listen to the attached reference audio file provided by the instructor for shadowing practice.
+Enter a text response, upload a recorded audio file from their local device, and submit their work in the comments section.
+View the list of submissions from other students, listen to their attached audio recordings, and interact via Like or Reply actions.
+Navigate back to the previous exercise list screen.
+
+
+
+
+3.6.28 Add comment
+
+This screen allows the Student to:
+View the assignment’s teacher, title, instructions, deadline, and acceptance status.
+View their submission status and enter a written answer.
+Attach a supporting file, review its information, or remove it from the answer.
+
+Field Name | Description
+Breadcrumb | Navigation path; displays the classroom context, selected class, and assignment detail page.
+Teacher Information | Displays the assigning teacher’s avatar, name, and role.
+Assignment Title | Heading; displays the assignment number and title, such as “Bài 1: Giới thiệu bản thân”.
+Assignment Instructions | Displays the task requirements, such as writing a Japanese self-introduction and attaching a file.
+Hạn nộp | Displays the assignment’s submission deadline, including the date and time.
+Đang nhận bài | Status label indicates that the assignment is currently accepting submissions.
+Câu trả lời của bạn | Section heading; identifies the Student’s answer area.
+Chưa nộp | The submission status label indicates that the Student has not submitted the assignment.
+Student Information | Displays the avatar and name of the Student preparing the answer.
+Nội dung câu trả lời | Multiline text input; allows the Student to enter their written answer.
+Đính kèm tệp | File selection button; allows the Student to attach a file to the answer.
+Tệp đính kèm | Attachment area; displays the selected file’s type, name, and size.
+Remove Attachment | X icon button; removes the selected file from the current answer.
+
+
+3.6.29 Edit comment 
+
+
+This screen allows the Student to:
+View the assignment information, deadline, and current acceptance status.
+Review their submission status and submission time.
+Edit the existing answer, add an attachment, or remove an attached file.
+
+Field Name | Description
+Breadcrumb | Navigation path; displays the selected class and assignment detail page.
+Teacher Information | Displays the assigning teacher’s avatar, name, and role.
+Assignment Title | Heading; displays the assignment number and title.
+Assignment Instructions | Displays the requirements the Student must complete.
+Hạn nộp | Displays the assignment’s submission deadline, including the date and time.
+Đang nhận bài | Status label indicates that the assignment is currently accepting submissions.
+Chỉnh sửa câu trả lời | Section heading; identifies the editing area for the existing answer.
+Đã nộp | The submission status label indicates that the Student has already submitted an answer.
+Student Information | Displays the submitting Student’s avatar and name.
+Submission Time | Displays the date and time of the recorded submission.
+Nội dung câu trả lời | Multiline text input; displays the existing answer and allows the Student to edit its content.
+Thêm tệp | File selection button; allows the Student to add an attachment to the answer.
+Tệp đính kèm | Attachment area; displays the attached file’s type, name, and size.
+Gỡ | Action button removes the corresponding attachment from the answer being edited.
+
+
+3.7 Game
+3.7.1 Select Game
+
+This screen allows the Student to:
+Select a curriculum, lesson, and content type for game-based Japanese practice.
+View available games based on the selected learning content.
+Explore game information, including objectives, question types, duration, and scoring rules.
+Choose a vocabulary or Kanji game to reinforce knowledge through interactive activities.
+Start the selected game using the "Chơi ngay" button.
+Earn points through gameplay that contribute to the game ranking system.
+Field Name & Description
+Field Name | Description
+Chọn giáo trình | Dropdown list; allows the Student to select the curriculum for game-based practice.
+Chọn bài học | Dropdown list; allows the Student to select the lesson containing the learning content used in the games.
+Chọn loại nội dung | Dropdown list; allows the Student to filter games by content type, such as Vocabulary or Kanji.
+Danh sách trò chơi | Game selection section; displays available games, including their names, objectives, question types, duration, and scoring rules.
+Chơi ngay | Primary button; starts the selected game using the chosen curriculum, lesson, and content type.
+
+3.7.2 Game Practice
+
+This screen allows the Student to:
+Play the selected Kanji game using learning content from the selected lesson.
+View the target meaning and catch the falling Kanji characters that match it.
+Interact with falling Kanji characters by controlling the character and basket to catch the correct answers.
+Track the remaining time, current score, combo multiplier, and question progress during gameplay.
+Earn points by catching correct Kanji characters and building consecutive correct-answer combos.
+Exit the game using the "Thoát game" button.
+Field Name & Description
+Field Name | Description
+Kanji Falling | Header displays the selected game name and the lesson and content type used for gameplay.
+Nghĩa cần bắt | Target display; shows the Vietnamese meaning that the Student must match with the correct falling Kanji character.
+Thời gian | Timer displays the remaining time for the current game session.
+Điểm số | Score indicator; displays the Student's accumulated points during gameplay.
+Combo | Combo indicator; displays the current streak of consecutive correct catches and the corresponding score multiplier.
+Câu | Progress indicator; displays the number of completed questions and the total number of questions in the game.
+Khu vực chơi game | Interactive gameplay area; displays falling Kanji characters and allows the Student to control the basket to catch the correct characters.
+Thoát game | Secondary button; allows the Student to exit the current game session.
+
+3.7.3 Game Result
+
+This screen allows the Student to:
+View the overall results of the completed game, including total score, completion time, correct answers, accuracy, and highest combo.
+View the points earned and any new high score achieved during gameplay.
+Review detailed results for each Kanji question, including its meaning, correctness, and response time.
+Review the correct Kanji characters, readings, and meanings to reinforce knowledge.
+Replay the same game or select another game to continue practicing.
+Field Name & Description
+Field Name | Description
+Kết quả chơi game | Header; displays the game result screen, including the selected game name and lesson.
+Hoàn thành! | Completion panel; displays the Student's total game score, earned points, and new high score notification when applicable.
+Thống kê kết quả | Summary panel; displays overall game performance, including completion time, number of correct answers, highest combo, and accuracy percentage.
+Chi tiết kết quả | Result table displays each Kanji character, its meaning, answer correctness, and response time during gameplay.
+Đáp án tham khảo | Reference section; displays Kanji characters, their readings, and meanings to help the Student review and reinforce knowledge.
+Chơi lại | Secondary button; restarts the same game with the selected lesson and content type.
+Chơi game khác | Primary button; navigates to the game selection screen to choose another game.
+
+
+3.8 Dashboard 
+3.8.1 Dashboard 
+
+This screen allows the Admin to:
+View an overview of system management information and key statistics.
+Monitor the total number of users, active courses, active lessons, created tests, pending account requests, and daily game plays.
+Track monthly user growth through a statistical chart.
+View recent system activities, including account approvals, course updates, and newly created learning content.
+Quickly access administrative functions such as account management, course management, lesson management, test management, and reports.
+Field Name & Description
+Field Name | Description
+Thống kê tổng quan | Summary cards; display key system statistics, including total users, active courses, active lessons, created tests, pending account requests, and daily game plays.
+Người dùng mới theo tháng | Statistical chart displays the number of new users registered each month, allowing the Admin to monitor user growth over time.
+Hoạt động gần đây | Recent activity panel; displays the latest administrative activities, including account approvals, course updates, lesson creation, game updates, and test creation.
+Truy cập nhanh | Quick access panel; allows the Admin to navigate directly to frequently used management functions, including account, course, lesson, test, and report management.
+Thanh điều hướng | Sidebar navigation; allows the Admin to access different system management modules.
+
+3.9 Account Management 
+3.9.1 Account Approval/Reject
+
+This screen allows the Admin to:
+View the list of user accounts waiting for approval.
+Monitor account approval statistics, including pending requests, approved accounts, and rejected accounts.
+Search for specific account requests using names or FPT email addresses.
+Filter account requests by user role and approval status.
+Sort account requests by registration date.
+View detailed account information before making an approval decision.
+Approve or reject individual account requests.
+Navigate between pages of pending account requests.
+Field Name & Description
+Field Name | Description
+Thống kê tài khoản | Summary cards; display the number of pending account requests, accounts approved today, and accounts rejected today.
+Tìm kiếm tài khoản | Search field; allows the Admin to search for account requests by user name or FPT email address.
+Vai trò / Trạng thái / Sắp xếp theo | Dropdown controls; allow the Admin to filter account requests by role and approval status, and sort them by registration date.
+Danh sách tài khoản chờ duyệt | Account table; displays user information, including full name, FPT email, role, registration date, and approval status.
+Xem chi tiết | Action button; displays detailed information about the selected account request.
+Phê duyệt / Từ chối | Action buttons; allow the Admin to approve or reject the selected account request.
+Chọn tài khoản | Checkboxes; allow the Admin to select individual or multiple account requests.
+Phân trang | Pagination controls; allow the Admin to navigate between pages of account requests.
+
+3.9.2 Account Management
+
+This screen allows the Administrator to:
+View the list of user accounts and their current statuses.
+Search and filter accounts to locate users.
+Manage account statuses according to the administrator's permissions.
+Field Name & Description
+Field Name | Description
+Search accounts | Text input used to locate accounts by a supported identifier, such as name or email.
+Status filter | Selection control used to display accounts with the selected status.
+Account list | Data table displaying user account information and current statuses.
+Account identifier | Read-only value used to identify the account in the list.
+Name and email | Read-only account information used to distinguish users.
+Account status | Read-only value showing the current access status of the account.
+Manage status | Action control used to change the selected account's status; the available transitions depend on the approved account rules.
+
+3.9.3 Item Management
+
+
+This screen allows the Admin to:
+Monitor shop metrics: Total Items, Active on Shop, Redemptions, and Reclaimed Coins.
+Search and filter items by category or status.
+Click + Tạo vật phẩm to add a new reward item.
+Manage items in the table: edit ([Sửa]), toggle visibility ([Ẩn]/[Hiện]), or delete ([Xóa]).
+Navigate table records via pagination.
+
+
+
+3.9.4 Coin Reward Configuration
+
+This screen allows the Admin to:
+Configure coin rewards for learning activities (exercises, tests, practice, games).
+Set bonus coins for consecutive study streak milestones.
+Add new streak targets via + Thêm mốc Streak.
+Modify coins, toggle status ([Sửa], [Ẩn], [Hiện]), and view achieved student counts.
+Save changes via Lưu quy tắc or Lưu cấu hình mốc Streak
+
+3.9.5 System Log List
+
+
+This screen allows the Admin to:
+Monitor log statistics: Total Records (30 days), Warnings, and System Errors.
+Search events; filter by Severity Level, Subsystem, and Date Range.
+Refresh table data via Làm mới or export to file via Xuất log.
+Inspect comprehensive event audit traces by clicking [Chi tiết].
+Navigate table records via pagination.
+
+3.9.6 Moderator Management
+
+This screen allows the User (Administrator) to:
+View the catalog of Moderator accounts with key details, including full name, internal Moderator ID, authenticated Google email address, assigned course modules, and account status.
+Search and filter the Moderator list by full name, email keyword, or account status (Tất cả, Đang hoạt động, Chờ đăng nhập, Đã khóa).
+Provision a new Moderator account by providing their display name, Google email for OAuth Single Sign-On (SSO), and designated course assignment permissions.
+Edit profile details and update course permissions for an existing Moderator.
+Lock (suspend) or unlock (reactivate) Moderator accounts, triggering immediate session revocation for locked users.
+Delete unactivated/redundant Moderator records from the system.
+Navigate across multiple pages of accounts using pagination controls.
+
+
+3.10 Avatar Shop 
+3.10.1 Avatar Shop 
+
+This screen allows the User to:
+Browse available avatars.
+View the point or coin cost of each avatar.
+Obtain an avatar using the available balance according to the system rules.
+Field Name & Description
+Field Name | Description
+Available balance | Read-only value showing the points or coins available to obtain avatars.
+Avatar catalog | Collection of avatar items available in the shop.
+Avatar preview | Image displaying the appearance of an avatar.
+Avatar name | Read-only label identifying the avatar.
+Avatar cost | Read-only value showing the required points or coins.
+Obtain avatar | Action button used to request an avatar; the system checks the required balance before completing the transaction.
+Ownership status | Read-only indicator showing whether the user already owns an avatar, if this distinction is included in the mockup.
+
+
+3.11 Leaderboard 
+3.11.1 Leaderboard 
+
+This screen allows the User to:
+View user rankings based on learning points.
+Compare the displayed learning-point totals.
+Identify their own position if the leaderboard includes the current user.
+Field Name & Description
+Field Name | Description
+Leaderboard list | Ranked list of users ordered by learning points according to the system rules.
+Rank | Read-only value showing the user's position.
+User avatar | Image representing the ranked user.
+Display name | Read-only label identifying the ranked user.
+Learning points | Read-only value showing the points used to calculate the ranking.
+Current user indicator | Visual marker identifying the signed-in user, if present in the mockup.
+
+3.12 Points 
+3.12.1 Points Exchange 
+
+This screen allows the User to:
+View their available point balance.
+Enter the amount of points to exchange.
+Review and submit an exchange according to the system rules.
+Field Name & Description
+Field Name | Description
+Available points | Read-only value showing the balance available for exchange.
+Exchange amount | Numeric input used to enter the amount of points to exchange.
+Exchange rule | Read-only explanation of the conversion rule applied by the system.
+Exchange preview | Read-only summary showing the expected result before submission, if included in the mockup.
+Exchange | Action button used to submit the exchange; the system validates the amount, balance, and applicable rules.
+Transaction result | Feedback message indicating whether the exchange was completed or could not be processed.
+
+3.12.2 Transaction History 
+
+This screen allows the User to:
+View their point-related transactions and exchanges.
+Review the amounts and dates recorded for each transaction.
+Check the details available in the transaction history.
+Field Name & Description
+Field Name | Description
+Transaction list | Data table displaying the user's point-related transactions and exchanges.
+Transaction reference | Read-only identifier used to distinguish transactions, if displayed.
+Date and time | Read-only value showing when the transaction was recorded.
+Transaction type | Read-only label describing the point-related activity or exchange.
+Point amount | Read-only value showing the points involved in the transaction.
+Transaction description | Read-only text explaining the transaction purpose or exchange result.
+Transaction status | Read-only value showing the processing outcome, if the system records and displays it.
+
+3.13 Course Management
+3.13.1 List Course 
+
+This screen allows the Moderator to:
+View the list of courses.
+Open the course creation screen.
+Select an existing course for editing or access its lesson list.
+Field Name & Description
+Field Name | Description
+Course list | Data table or collection displaying the courses managed in the system.
+Course name | Read-only label identifying a course.
+Course summary | Read-only description of a course, if displayed.
+Create Course | Action button used to open the Create Course screen.
+Edit Course | Action control used to open the Edit Course screen for the selected course.
+View Lessons | Navigation control used to open the lessons belonging to the selected course
+
+3.13.2 Create Course 
+
+This screen allows the Moderator to:
+Enter information for a new course.
+Submit the course information for validation and creation.
+Cancel creation and return to the course list.
+Field Name & Description
+Field Name | Description
+Course name | Text input used to enter the name of the new course.
+Course description | Multi-line input used to describe the course, if included in the mockup.
+Additional course fields | Other course inputs shown in the existing mockup; exact labels, types, and requirements must be taken from that mockup.
+Create or Save | Action button used to validate the submitted information and create the course.
+Cancel | Action button used to leave the creation screen without creating a course.
+Validation feedback | Message identifying missing or invalid information when the submitted data fails validation.
+
+3.13.3 Edit Course
+  
+This screen allows the Moderator to:
+View the current information of the selected course.
+Modify the course information.
+Save the changes or cancel editing.
+Field Name & Description
+Field Name | Description
+Selected course | Read-only context identifying the course being edited.
+Course name | Text input prefilled with the current course name and used to enter the updated value.
+Course description | Multi-line input prefilled with the current description, if included in the mockup.
+Additional course fields | Other editable course fields shown in the existing mockup.
+Save Changes | Action button used to validate and save the updated course information.
+Cancel | Action button used to leave the screen without saving the current edits.
+Validation feedback | Message identifying missing or invalid information when an update fails validation.
+
+3.14 Lesson Management
+3.14.1 List Lesson 
+
+This screen allows the Moderator to:
+View the lessons belonging to the selected course.
+Open the lesson creation screen within that course.
+Select a lesson for editing or access its learning materials.
+Field Name & Description
+Field Name | Description
+Selected course | Read-only context identifying the course whose lessons are displayed.
+Lesson list | Data table or collection displaying lessons belonging to the selected course.
+Lesson name | Read-only label identifying the lesson.
+Create Lesson | Action button used to open the Create Lesson screen within the selected course.
+Edit Lesson | Action control used to open the Edit Lesson screen for the selected lesson.
+View Kanji Materials | Navigation control used to access the selected lesson's Kanji materials, if provided on this screen.
+
+3.14.2 Create Lesson 
+
+This screen allows the Moderator to:
+Create a new lesson within the selected course.
+Enter the lesson information.
+Submit the lesson for creation or cancel and return to the lesson list.
+Field Name & Description
+Field Name | Description
+Selected course | Read-only context or preselected course field identifying the parent course.
+Lesson name | Text input used to enter the name of the new lesson.
+Lesson description | Multi-line input used to describe the lesson, if included in the mockup.
+Additional lesson fields | Other lesson inputs shown in the existing mockup; exact labels, types, and requirements must be verified.
+Create or Save | Action button used to validate the information and create the lesson within the selected course.
+Cancel | Action button used to leave the screen without creating a lesson.
+Validation feedback | Message identifying missing or invalid information when creation fails validation.
+
+3.14.3 Edit Lesson 
+
+This screen allows the Moderator to:
+View the information of the selected lesson.
+Modify the lesson information.
+Save the changes or cancel editing.
+Field Name & Description
+Field Name | Description
+Selected course and lesson | Read-only context identifying the lesson and its parent course.
+Lesson name | Text input prefilled with the current lesson name and used to enter the updated value.
+Lesson description | Multi-line input prefilled with the current lesson description, if included in the mockup.
+Additional lesson fields | Other editable lesson fields shown in the existing mockup.
+Save Changes | Action button used to validate and save the updated lesson information.
+Cancel | Action button used to leave the screen without saving the current edits.
+Validation feedback | Message identifying missing or invalid information when an update fails validation.
+
+3.15 Kanji Management
+3.15.1 List Kanji 
+
+This screen allows the Moderator to:
+View the Kanji materials belonging to the selected lesson.
+Review the Kanji information displayed in the list.
+Access the available Kanji material management functions.
+Field Name & Description
+Field Name | Description
+Selected lesson | Read-only context identifying the lesson whose Kanji materials are displayed.
+Kanji material list | Data table displaying the Kanji materials belonging to the selected lesson.
+Kanji character | Read-only value showing the Kanji character represented by the material.
+Kanji summary | Read-only learning information shown in the list; verify the displayed reading and meaning columns against the mockup.
+Create Material Kanji | Navigation control used to open the Kanji material creation screen, if available in the list mockup.
+Edit Material Kanji | Action control used to open the selected Kanji material for editing, if available.
+View Kanji Exercises | Navigation control used to access the material's associated exercise list, if available.
+
+3.15.2 Create Material Kanji 
+
+This screen allows the Moderator to:
+Create new Kanji learning materials for a lesson in the Dekiru Nihongo curriculum.
+Enter Kanji details: character, Sino-Vietnamese reading, stroke count, Vietnamese meaning, On-yomi, and Kun-yomi.
+Upload mnemonic images (Upload ảnh) to Cloudinary and enter association tips.
+Manage example compound words: add (+ Thêm từ ghép), edit, or delete.
+Set publication status (Published/Draft) before making it public.
+Confirm saving (Lưu học liệu) or cancel (Hủy) to return to the list.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.15.3 Update Material Kanji 
+
+
+Review and edit existing Kanji learning materials for a lesson in the curriculum.
+Update Kanji details: character, Sino-Vietnamese reading, stroke count, Vietnamese meaning, On-yomi, and Kun-yomi.
+Manage mnemonic images (Upload ảnh) and edit association tips.
+Manage example compound words: add (+ Thêm từ ghép), edit ([Sửa]), or delete ([Xóa]).
+Set publication status (Published/Draft) and view the last updated timestamp.
+Confirm updates (Cập nhật) or cancel (Hủy).
+
+
+3.15.4 List Exercise Kanji 
+
+This screen allows the Moderator to:
+View the list of reinforcement practice questions linked directly to specific Kanji characters within a curriculum lesson.
+Search for questions by prompt keyword or filter by question type.
+Add questions to the Kanji milestone/stage using the [+ Thêm câu hỏi] button.
+Adjust the student test order using the move up/down buttons.
+View details/edit question content ([Chi tiết]) or remove questions from the milestone practice list ([Gỡ bỏ]).
+Save the updated display order and exercise configuration to the database using [Lưu thứ tự & Cấu hình], or click [Hủy bỏ] to revert to the initial state.
+
+
+
+
+3.15.5 Create Exercise Kanji  
+
+Create a new Kanji reinforcement practice question linked to a specific lesson in the curriculum.
+Configure question attributes: question type, cognitive level, and display order.
+Enter question content with 4 answer choices and select the single correct answer.
+Optionally upload audio (.mp3) or image (.png, .jpg).
+Enter a detailed answer explanation to provide feedback to students after submission.
+Save the question or cancel the action.
+
+
+
+
+
+
+
+
+
+
+3.15.6 Update Exercise Kanji 
+
+
+Review and edit existing Kanji practice questions for a lesson in the system.
+Configure question attributes: question type, cognitive level, and display order.
+Edit the question prompt, 4 answer choices, and reassign the correct answer.
+View the current attached audio/image files and upload replacements via the "Đổi tệp" button.
+Update detailed answer explanations to provide feedback to students after submission.
+Save changes to the database or cancel to return to the Kanji exercise list.
+
+
+
+3.16 Vocabulary Management
+3.16.1 List Vocabulary
+
+View vocabulary materials for a lesson in the Dekiru Nihongo curriculum.
+Search words by keywords (Kanji, Hiragana, Vietnamese meaning) or filter by part of speech.
+Preview native pronunciation audio (.mp3) from Cloudinar.
+Review contextual example sentences with Vietnamese translations.
+Add (+ Thêm từ vựng), edit ([Sửa]), or delete ([Xóa]) vocabulary items.
+Export the vocabulary list to Excel for curriculum audit.
+
+
+
+3.16.2 Create Material Vocab  
+
+Create new vocabulary learning materials for the lesson's Vocabulary milestone in the curriculum.
+Enter vocabulary details: base word (Kanji/Kana), reading (Hiragana/Furigana), part of speech, and Vietnamese meaning.
+Upload native pronunciation audio (.mp3) to Cloudinary for listening and speaking practice.
+Draft Japanese example sentences with Vietnamese translations to provide usage context.
+Set publication status (Published/Draft), confirm saving, or cancel the operation.
+
+
+
+3.16.3 Update Material Vocabulary
+
+
+Review and edit existing vocabulary materials for a specific lesson.
+Adjust vocabulary details: base word (Kanji/Kana), reading (Hiragana/Furigana), part of speech, and Vietnamese meaning.
+Manage audio files (.mp3): preview the current audio and upload a replacement.
+Automatically call Cloudinary APIs to delete old audio files upon replacement to optimize storage.
+Update Japanese example sentences and their corresponding Vietnamese translations.
+Set publication status (Published/Draft), confirm updates, or cancel.
+
+
+
+
+3.16.4 List Exercise Vocabulary
+
+View the list of practice questions linked directly to the lesson's vocabulary.
+Search questions by content or filter by question type (Trắc nghiệm, Điền từ, Nghe chọn).
+Add questions to the milestone from the Question Bank.
+Change question order using move up/down buttons.
+View details/edit or remove questions from the practice list.
+Save the updated order and configuration to the database, or discard changes.
+
+
+
+3.16.5 Create Exercise Vocabulary
+
+Create a new practice question linked to the lesson's vocabulary.
+Configure question attributes: question type, cognitive level, and display order.
+Enter the question prompt, 4 answer choices, and select the single correct answer.
+Optionally upload an audio file (.mp3) to Cloudinary for listening questions.
+Enter a detailed answer explanation to provide feedback to students after submission.
+Save the question or cancel the action.
+
+
+
+3.16.6 Update Exercise Vocab 
+
+
+Review and edit existing vocabulary practice questions for a lesson in the system.
+Configure question attributes: question type, cognitive level, and display order.
+Edit the question prompt, 4 answer choices, and reassign the correct answer.
+Replace the attached audio file.
+Update detailed answer explanations to provide feedback to students after submission.
+Save changes to the system or cancel to return to the vocabulary exercise list.
+
+
+
+3.16.7 Create Flashcard Vocabulary
+
+
+
+This screen allows the Moderator to:
+Create a new lesson vocabulary flashcard.
+Quick-fill data from existing lesson vocabulary or input manually.
+Configure Card Front (term, reading, .mp3 audio) and Card Back (meaning, example, translation).
+Preview interactive two-sided cards as rendered for students.
+Set status (PUBLISHED/DRAFT) and commit via Lưu thẻ Flashcard or discard via Hủy.
+
+3.16.8 Update Flashcard Vocabulary 
+
+This screen allows the Moderator to:
+View and edit an existing lesson vocabulary flashcard.
+Modify the written term (Kanji/Kana), reading (Hiragana/Furigana), and replace the pronunciation audio (.mp3).
+Update Vietnamese meaning, Japanese sample sentence, and translation.
+Review the live preview of both card sides (Front / Back).
+Set status (PUBLISHED/DRAFT), then click Cập nhật thẻ Flashcard, Lưu trữ, or Hủy.
+
+
+
+3.17 Grammar Management
+3.17.1 View material
+
+This screen allows the Moderator to:
+View the list of grammar patterns belonging to a specific lesson in the Dekiru Nihongo curriculum.
+Filter and search grammar points by keywords or sentence pattern classifications.
+Quickly navigate to other skill stages (Kanji, Vocabulary, Reading, Listening) via the roadmap bar.
+Create, update, or remove individual grammar entries.
+Export all grammar data of the current lesson to an Excel file.
+
+
+
+3.17.2 Create Material Grammar
+
+This screen allows the Moderator to:
+Select the targeted course code, curriculum chapter, and specific lesson in the Dekiru Nihongo program to attach new grammar learning materials.
+Switch between the "Bài học" (Lesson Material) view and the "Bài tập" (Reinforcement Exercises) view within a unified one-screen authoring interface.
+Upload and link pre-produced, AI-generated lecture videos to Cloudinary for adaptive bitrate streaming (HLS/MP4).
+Upload theoretical documents, conjugation rules, and IT-context grammatical references in PDF format.
+Save and publish the new grammar lesson unit or discard the current draft operations.
+
+3.17.3 Update Material Grammar
+
+This screen allows the User (Moderator) to:
+Review the current configuration and learning assets of an existing grammar material unit (#NP-01) for a specific course and lesson.
+Toggle between the "Bài học" (Lesson Materials) tab and the "Bài tập" (Reinforcement Exercises) tab to manage either theoretical resources or practice items.
+Replace the existing lecture video with a newly generated AI video stream hosted on Cloudinary.
+Replace the existing grammar theory handout or verb conjugation reference PDF file.
+Permanently remove or archive the grammar learning material unit from the curriculum roadmap.
+Save the updated learning material configuration or discard all unsaved modifications.
+3.17.4 List Exercise Grammar 
+
+This screen allows the User (Moderator) to:
+Filter and view reinforcement exercise sets under the Ngữ pháp (Grammar) category by course code and curriculum chapter.
+Switch seamlessly between the theoretical "Bài học" tab and the practice "Bài tập" tab within the same learning unit.
+Review the exercise catalog with key metrics, including lesson sequence, lesson title, total question count, and configured reward coin allocations.
+Add a new set of reinforcement practice questions for an individual grammar lesson.
+Edit question items or delete/archive existing grammar exercise sets.
+Navigate across multiple pages of exercise items using pagination controls.
+
+3.17.5 Create Exercise Grammar
+
+This screen allows the User (Moderator) to:
+Bind reinforcement exercise sets to a specific course code, curriculum chapter, and lesson in the Dekiru Nihongo program.
+Add multiple questions dynamically to compose a comprehensive practice session.
+Configure different question types, including 4-option multiple-choice quizzes and text fill-in-the-blank input.
+Define question prompts with realistic IT workplace contexts (e.g., submitting bug reports, requesting code reviews).
+Mark the single correct choice for multiple-choice questions or set acceptable answer keywords (supporting both Kanji and Hiragana variations).
+Provide detailed grammatical explanations and sentence structure notes for student review after submission.
+Configure the coin reward quota granted to students upon successfully passing the exercise.
+Save and publish the exercise set or cancel pending configurations.
+
+3.17.6 Update Exercise Grammar 
+
+This screen allows the User (Moderator) to:
+Review and update an existing reinforcement exercise set linked to a specific course code, curriculum chapter, and lesson in the Dekiru Nihongo curriculum.
+Add additional questions to the existing exercise set.
+Modify question types between multiple-choice (4 choices) and text fill-in-the-blank input.
+Edit question prompts, situational IT workplace dialogues, and sentence completion contexts.
+Adjust correct answer keys for multiple-choice items or update accepted text matching variations (supporting both Kanji and Hiragana).
+Revise detailed grammatical explanations and sentence structure notes displayed to students upon completion.
+Reconfigure the coin reward quota awarded upon successful exercise completion.
+Save all updated question configurations to the database or cancel and discard modifications.
+
+
+3.19 Listening Management 
+3.17.6 List Exercise Listening
+
+This screen allows the User (Moderator) to:
+Filter listening exercises by course code and curriculum chapter.
+Access the creation flow to add new listening practice units.
+View a summarized table of listening items containing identifier code, topic name/context, attached media file, and script status.
+Navigate to edit existing listening exercises ([Sửa]) or delete/archive items ([Xóa]).
+Review informational notes detailing the student-side listening experience (variable playback speed, Furigana script toggle, dictation mode).
+ 
+3.17.6 Create Exercise Listening
+
+This screen allows the User (Moderator) to:
+Select the target course code and curriculum chapter to attach the new listening practice exercise.
+Enter the situational listening topic title (e.g., IT workplace communication scenarios).
+Upload conversational video/audio files directly to Cloudinary for CDN streaming delivery.
+Compose and edit Japanese dialogue transcripts (Speaker A, Speaker B) synchronized with playback timing.
+Discard pending inputs or save and publish the created listening exercise unit.
+
+3.17.6 Update Exercise Listening 
+
+This screen allows the User (Moderator) to:
+Review and update an existing listening practice unit (#LN-01) bound to a specific curriculum chapter in Dekiru Nihongo.
+Manage and replace the conversational lecture video asset hosted on Cloudinary.
+Edit the Japanese listening dialogue script along with its contextual Vietnamese translation (with Furigana pronunciation support enabled).
+Remove the listening practice unit from the curriculum roadmap or discard unsaved adjustments.
+Save and publish the updated video link, dialogue transcript, and translations to the system database.
+
+3.20. Conjugation Management
+3.20.1 Create Conjugation
+
+This screen allows the Moderator to:
+Create a conjugation form with its basic information, display order, publication status, and practice question count.
+Enter conjugation rules, examples, and exceptions for each verb group.
+Select a question bank, preview the content, and save or cancel the creation.
+
+
+
+3.20.2 Update Conjugation
+
+This screen allows the Moderator to:
+Review and update an existing conjugation form’s information and practice configuration.
+Edit conjugation rules, examples, and Hiragana readings for each verb group.
+Preview changes, access practice-word management, hide the form, or save the updates.
+
+
+3.20.3 Conjugation Word List 
+
+This screen allows the Moderator to:
+View the practice words associated with the selected conjugation form.
+Search, filter, and navigate the word list, or access word creation and editing.
+Preview how a practice word appears to Students before its answer is checked.
+
+
+3.20.4 Create Conjugation Word
+
+This screen allows the Moderator to:
+Add a practice word to the selected conjugation form with its reading, Vietnamese meaning, and verb group.
+Configure the correct answer, accepted answer variants, and explanation displayed after checking.
+Select the word’s status and save or cancel the creation.
+
+
+3.20.5 Update Conjugation Word 
+
+This screen allows the Moderator to:
+Review and update an existing practice word, including its original verb, reading, Vietnamese meaning, and verb group.
+Update the correct answer, accepted answer variants, explanation, and usage status.
+Hide the word from newly created practice sessions, save the changes, or cancel editing.
+
+3.21 Chapter Management 
+3.21.3 Update Chapter
+
+
+
+This screen allows the Moderator to:
+View and edit course chapter information.
+Update course name, chapter title, competency description, and display order.
+Manage status (PUBLISHED / DRAFT) and view linked lesson, reading, and test counts.
+Check audit logs: Creator, created date, and last modified details.
+Confirm updates (Cập nhật chương), archive (Lưu trữ), or cancel (Hủy).
+
+3.22 Class Management 
+3.22.1 Create Class
+
+
+This screen allows the Teacher to:
+Monitor log statistics: Total Records (30 days), Warnings, and System Errors.
+Search events; filter by Severity Level, Subsystem, and Date Range.
+Refresh table data via Làm mới or export to file via Xuất log.
+Inspect comprehensive event audit traces by clicking [Chi tiết].
+Navigate table records via pagination.
+
+
+3.22.2 Edit Class
+
+This screen allows the Teacher to:
+View and edit settings and submission rules for the assigned class.
+Change the class name (Tên lớp học *).
+View fixed fields: class code (Mã lớp học), course (Khóa học), and instructor (Giảng viên phụ trách).
+Adjust operational status (Trạng thái lớp học *: Đang mở).
+View overview metrics: class enrollment, assigned tasks, and submitted tasks.
+Quickly navigate to assign new coursework (+ Đăng bài tập mới).
+Save changes (Lưu thay đổi) or cancel the action (Hủy).
+3.23 Post Management
+3.23.1 Create Post 
+
+This screen allows the User (Teacher / Moderator) to:
+Select the specific assigned class to publish a new thread.
+Categorize the post type as either a homework assignment or a general class announcement.
+Enter the post title or assignment name.
+Provide detailed exercise guidelines, learning instructions, or IT-context task requirements.
+Attach exercise files (PDF, DOCX) uploaded via Cloudinary or embed external reference hyperlinks.
+Set submission deadlines for homework assignments.
+Toggle the interactive comment section to allow enrolled students to ask questions or submit homework via text, attachments, and URLs.
+Discard entered content or publish the post to the designated classroom stream.
+
+3.23. Edit Post  
+
+This screen allows the User (Teacher / Moderator) to:
+Review post metadata, including post ID (#POST-108), enrolled class, creation date, and author identity.
+Modify the existing post title and update the instruction text body.
+Replace or delete current exercise files hosted on Cloudinary.
+Monitor student discussions and comments (viewing student text, attached solution files, and submitted links).
+Moderate comments directly by replying, locking comments, or deleting inappropriate submissions.
+Adjust post publication status (e.g., Công khai, Tạm ẩn) and extend assignment deadlines.
+Permanently remove the post or save updated modifications back to the system.
+
+4. Non-Functional Requirements
+4.1 External Interfaces
+4.1.1 User Interfaces (UI)
+Responsive Web Layout: The web application shall provide a fully responsive layout optimized for desktop and laptop environments (primary resolution:  px; minimum supported resolution:  px).
+Japanese Script & Typography Support: The interface must use Unicode Japanese typography (e.g., Noto Sans JP, Hiragino Kaku Gothic Pro) with full cross-browser support for Ruby annotations (<ruby>, <rt>) to render Furigana pronunciation guides seamlessly above Kanji characters without layout breaking.
+Integrated Learning Layout: The core learning interface must feature a dual-tab consolidated layout ("Lesson / Lecture Material" tab and "Practice Exercises" tab) to enable instantaneous transitions between theory review and question reinforcement within a single screen.
+4.1.2 Hardware Interfaces
+Audio Input (Microphone): The system shall interface with standard built-in or external microphone peripherals (via 3.5mm jack, USB, or Bluetooth) supporting a minimum sample rate of 16 kHz for capturing student voice input during AI Speaking sessions.
+Audio Output (Speaker/Headphone): The system shall interface with standard audio playback hardware to stream high-clarity pronunciation audio, AI conversational responses, and listening exercises.
+4.1.3 Software Interfaces 
+Google OAuth 2.0 (Google Identity Services): Interfaced via HTTPS to provide Single Sign-On (SSO) authentication and verify institutional/registered Google user identities.
+Cloudinary Media Management Service: Interfaced via secure REST APIs/SDK to store, transform, and deliver multimedia assets. Cloudinary specifically hosts pre-produced, AI-generated lecture videos uploaded by Moderators and delivers them via Adaptive Bitrate Streaming (HLS) and global CDN caching.
+Generative AI Service (Google Gemini API): Interfaced via secure HTTPS REST API endpoints to:
+Analyze spoken Japanese transcripts for grammar errors and contextual IT communication improvements.
+Ingest Moderator-provided technical IT scenarios and automatically generate reading comprehension quizzes (including distractors, correct answers, and bilingual explanations).
+Speech-to-Text Engine (OpenAI Whisper API): Interfaced via async HTTPS endpoints to transcribe student voice audio streams into Japanese text with high phonetic accuracy.
+AI Voice / Speech Synthesis (Text-to-Speech Engine): Interfaced to generate natural-sounding native Japanese AI voices for spoken prompts, interactive dialogues, and pronunciation benchmarks.
+Email Service (SMTP / SendGrid API): Interfaced over TLS (port 587) to automate transactional dispatch of daily study reminders and account status notifications.
+4.2 Quality Attributes
+4.2.1 Usability 
+User Onboarding: A new student shall be able to log in via Google SSO, navigate the curriculum roadmap, and start their first practice session within 3 minutes without external training.
+Error Handling & Feedback: All user input validations and runtime exceptions must present clear, polite, and actionable bilingual notifications (referenced via standardized application message codes MSG-xx).
+Visual Accessibility: The user interface must adhere to WCAG 2.1 Level AA standards, ensuring high contrast ratios ( for normal text) and accessible UI controls.
+4.2.2 Reliability 
+System Availability: The platform shall maintain a minimum uptime of 99.5% during operating hours (06:00 to 24:00 GMT+7 daily), excluding scheduled maintenance windows announced at least 24 hours in advance.
+Fault Tolerance & Graceful Degradation:
+AI Service Unavailability: If third-party AI APIs (Gemini/Whisper) fail or reach quota caps, the system must display an informative banner while allowing uninterrupted access to other core modules (Flashcards, Theory Videos, Mini-tests, Dictation).
+Email Service Failure: Notification dispatch failures must be logged and retried automatically up to 3 times via an asynchronous queue without blocking user flows.
+Data Integrity & Consistency:
+Zero percent ($0\%$) tolerance for data loss regarding test scores, study progress, and digital coin balances.
+All reward credits, coin debits, and inventory updates must adhere to strict ACID database transactions with idempotency protection.
+Mean Time to Repair (MTTR): In the event of an unplanned system outage, the recovery time shall not exceed 120 minutes.
+Database Backup: Automated full database snapshots must be executed daily at 03:00:00 (GMT+7) and retained securely for at least 30 days.
+4.2.3 Performance
+Page Load & Response Times:
+Initial page load (First Contentful Paint - FCP):  seconds on standard broadband connections ( Mbps).
+Standard transactional API response time (flashcard flips, quiz submissions, navigation):  milliseconds.
+AI Speaking end-to-end latency (Whisper STT processing + Gemini linguistic analysis + AI Voice response):  seconds for an audio input segment up to 15 seconds.
+Video Playback Performance: AI-generated lecture videos streamed via Cloudinary CDN must achieve a Time-to-First-Frame (TTFF) of  seconds under normal network conditions.
+Concurrency & Throughput: The backend architecture must comfortably support at least 500 concurrent active users without degrading transaction response times by more than $15\%$.
+Analytical Dashboard: Administrator dashboard KPIs and charts must render within  seconds using aggregated cache layers (Redis).
+4.2.4 Security & Data Privacy 
+Role-Based Access Control (RBAC): Strict authorization separation across three user roles: Student, Moderator, and Administrator.
+Authentication & Token Lifecycle: User sessions must be managed via cryptographically signed JWT tokens (HMAC-SHA256 or RS256). Access Tokens shall expire in 2 hours; Refresh Tokens shall expire in 7 days. Suspended accounts must have their session tokens instantly invalidated via a Redis token blacklist.
+Secrets & Credential Encryption: In accordance with BR-05, all third-party credentials, API keys (Gemini, Cloudinary), and sensitive configuration parameters must be encrypted at rest using AES-256 before database persistence.
+Student Voice Privacy: In accordance with BR-42, raw voice audio recordings submitted by students during AI Kaiwa sessions are processed solely within the active session buffer and must be immediately purged thereafter rather than stored indefinitely.
+Audit Trail Immutability: In accordance with BR-07, all administrative interventions, account provisioning logs, and critical security events must be recorded into read-only audit log journals (System_Logs) that cannot be modified or deleted via the UI.
+5. Requirement Appendix
+5.1 Business Rules
+
+5.2 Common Requirements
+1. Authentication & Session Management:
+All protected routes and API endpoints require a valid JWT Access Token transmitted via the Authorization: Bearer <token> header or HttpOnly cookie.
+Access Tokens expire after 2 hours and Refresh Tokens expire after 7 days. If a user's status is changed to LOCKED or REJECTED, the Token_Refresh_And_Revocation filter immediately revokes the session via Redis Blacklist and redirects the user to the Login/Blocked page.
+2. Input Validation & Data Sanitization:
+All form inputs must be validated on both the client side (React UI) and server side (Spring Boot REST API) before database persistence.
+Leading and trailing whitespaces in text inputs (names, titles, search keywords, answers) are automatically trimmed.
+All user-generated text (feedback descriptions, classroom posts, comments) must be sanitized to prevent Cross-Site Scripting (XSS) and SQL Injection attacks.
+3. Pagination, Search, and Filtering Standards:
+All management and history data tables (Student Accounts, Moderator Accounts, Courses, Chapters, Lessons, Question Bank, Feedbacks, Coin Transactions, Audit Logs) support pagination (default 10 or 20 records per page), keyword search, and status filtering.
+When a search or filter returns zero records, the system must display a clear empty-state message rather than a blank screen or error page.
+4. Multimedia Upload & Streaming Constraints (Cloudinary):
+Images (Avatars, Kanji mnemonics, Store items, Feedback screenshots): Allowed formats: JPG, JPEG, PNG, WEBP; maximum size: 3 MB per file.
+Classroom Post & Comment Attachments: Allowed formats: PDF, DOCX, ZIP, PNG, JPG, MP3; maximum size: 15 MB per file.
+Lecture & Listening Videos / Audio: Stored on Cloudinary and delivered via HTTPS/HLS adaptive streaming URLs (video_url, audio_url) along with public_id for lifecycle management.
+5. Date, Time, and Localization Standards:
+The user interface is presented in Vietnamese combined with Japanese learning content (Kanji, Hiragana, Katakana, Furigana Ruby tags <ruby><rt>).
+All timestamps, daily study reminder schedules, and login/study streak evaluations operate on the Asia/Ho_Chi_Minh (GMT+7) timezone and are formatted as DD/MM/YYYY or DD/MM/YYYY HH:mm on the UI.
+6. Soft Deletion & Historical Data Integrity:
+Any master record (course, chapter, lesson, grammar, vocabulary, kanji, conjugation_form, question, test, store_item, user_account) that is referenced by student learning progress, test attempts, or coin transactions must never be physically deleted (HARD DELETE); the system must transition its status to ARCHIVED, INACTIVE, or HIDDEN.
+
+5.3 Application Messages List
+
+5.4 Other Requirements…

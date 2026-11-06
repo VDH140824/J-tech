@@ -1,8 +1,8 @@
 package com.jtech.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 import java.util.*;
+import lombok.*;
 
 @Entity
 @Table(name = "course")
@@ -11,6 +11,7 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 public class Course {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -45,6 +46,6 @@ public class Course {
         DRAFT,
         PUBLISHED,
         HIDDEN,
-        ARCHIVED
+        ARCHIVED,
     }
 }

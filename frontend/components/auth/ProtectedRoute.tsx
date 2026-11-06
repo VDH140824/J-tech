@@ -16,15 +16,31 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={{ from: location }}
+        replace
+      />
+    );
   }
 
   const status = user?.status?.toUpperCase();
   if (status === "PENDING") {
-    return <Navigate to="/pending-approval" replace />;
+    return (
+      <Navigate
+        to="/pending-approval"
+        replace
+      />
+    );
   }
   if (status === "REJECTED" || status === "LOCKED") {
-    return <Navigate to="/account-rejected" replace />;
+    return (
+      <Navigate
+        to="/account-rejected"
+        replace
+      />
+    );
   }
 
   return <>{children ?? <Outlet />}</>;

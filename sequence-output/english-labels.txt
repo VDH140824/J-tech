@@ -1,0 +1,631 @@
+0|«boundary»\nSelect and start game\nReact UI
+1|«module»\nAPI communication\nReact client
+2|«control»\nRequest handling\nSpring Boot API
+3|«control»\nGame session preparation\nBusiness responsibility
+4|Preconditions: valid session, required role, active Student account. Section 5.2.1 requires JWT authentication for protected requests.
+5|Select Games from Home
+6|Request available games
+7|Forward the request with the current authenticated session
+8|Retrieve available games and supported content types
+9|Available games and supported content types
+10|Available games
+11|Display available games
+12|Select a game
+13|Request available courses
+14|Retrieve available courses
+15|Available courses
+16|Display courses
+17|Select a course
+18|Display Lesson / Chapter scope options
+19|Select a scope
+20|Request lessons or chapters within the selected course
+21|Retrieve lessons / chapters by course and scope
+22|Lessons / chapters within the selected scope
+23|Lesson / chapter list
+24|Display available lessons / chapters
+25|Select a lesson / chapter
+26|Display Vocabulary / Kanji / All as supported by the selected game
+27|Select a content type
+28|Load game content for the selected course, scope and content type
+29|Use only content types supported by the game — BR64
+30|Retrieve content matching the selected lesson / chapter and type — BR62
+31|[content loaded successfully]
+32|Vocabulary / Kanji within the selected scope
+33|Initialize the game using the loaded content
+34|Game initialization data
+35|Prepare the game interface
+36|Display the game interface
+37|Click Start
+38|[network / system error while loading content — UC-24 E1]
+39|Content loading failed
+40|MSG-13: display an error; offer Retry or return to game selection
+41|«boundary»\nGame play and results\nReact UI
+42|«control»\nGame evaluation and completion\nBusiness responsibility
+43|«entity»\ngame / reward rules
+44|Game rules, scoring formula, completion conditions and coin amounts remain those referenced by UC-24 / BR66 / BR68–69; no additional values are specified here.
+45|Precondition: the game was initialized in SD-11.1. The SRS does not specify whether every game action requires a server request; these interactions represent logical responsibilities.
+46|[the game completion condition has not been reached — UC-24 NF15–17]
+47|Answer / interact according to the game rules
+48|Provide the action for checking against the game rules
+49|Check the Student's action
+50|Update the current score
+51|Action result and current score
+52|Display the current game state
+53|[Student exits before game completion — A2 / BR66]
+54|Exit the game
+55|End the current game session
+56|Do not grant a completed-game reward
+57|Session ended
+58|Leave the game interface
+59|Complete the game when its completion condition is reached
+60|Forward the session completion request
+61|Process the completed game
+62|Calculate the final score and correct answer count — BR66
+63|Read the configured reward conditions and amounts
+64|Configured reward conditions and coin amount
+65|Evaluate the reward conditions — BR68–69
+66|[reward conditions are satisfied]
+67|Award the eligible completed activity once
+68|SD-13.2 — Award coins: ACID, idempotency key, BR40
+69|Coins awarded according to the ledger outcome
+70|[reward conditions are not satisfied — UC-24 A1]
+71|Grant no coins; continue storing and displaying the result
+72|Store game, scope, score, correct count, coins earned and incorrectly answered questions
+73|Game result stored — BR71
+74|Completed-game result and review data
+75|Display Student answers, incorrect answers and available explanations — BR72
+76|Display the final score, correct answer count and coins earned
+77|«boundary»\nGame history\nReact UI
+78|«control»\nGame history retrieval\nBusiness responsibility
+79|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. Read-only: viewing history neither changes results nor awards additional coins.
+80|Open Games → Game History
+81|Retrieve the current Student's completed game attempts
+82|Query only completed attempts belonging to the Student — BR105
+83|Game attempt list
+84|[no completed game attempts exist — A1]
+85|No game history
+86|Display a message that no game history is available
+87|[completed game attempts exist]
+88|Completed game attempts
+89|Display game, scope, score, correct answer count and coins earned
+90|Select a game attempt
+91|Retrieve the selected attempt from personal game history
+92|Retrieve the selected completed attempt belonging to the current Student — BR105
+93|Game, scope, score, correct count, coins and incorrect answers
+94|Game attempt details
+95|[incorrect answers exist]
+96|Display the attempt's incorrectly answered questions
+97|[all answers are correct — A2]
+98|Indicate that there are no incorrectly answered questions
+99|«boundary»\nLearning progress\nReact UI
+100|«control»\nLearning statistics aggregation\nBusiness responsibility
+101|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. Viewing progress does not modify completion records or practice results.
+102|Source records under NF1–5: first completions, non-duplicated new knowledge, individual practice attempts and actual learning days. Activity recording is detailed in SD-12.3.
+103|Select Learning Progress
+104|Display Week / Month / All Time, course and chapter filters
+105|[Student selects / changes the statistics scope — NF8–13]
+106|Select the time period, course and chapter
+107|Retrieve statistics matching the selected filters
+108|Retrieve completion records, new knowledge and required activities within the scope
+109|[learning records cannot be loaded — E1 / BR118]
+110|Retrieval error
+111|Display a loading failure; do not represent missing data as 0% progress
+112|Records matching the selected filters
+113|[no learning records match the selected filters — A1]
+114|Activity counts = 0; practice results = unavailable
+115|No-data state
+116|Clearly indicate no data; do not substitute zero practice scores
+117|[learning data is available]
+118|Count newly learned Vocabulary / Kanji / Grammar without counting previously learned items again
+119|[required activities are defined for the selected scope]
+120|[no required activities are defined — A2]
+121|Retrieve individual practice attempts and completed listening / reading / conversation activity counts
+122|Activity, completion time, score or correct answer count / total
+123|Count attempts; identify first, most recent and highest results — BR107
+124|Retrieve actual learning days, learning-day streak and learning habits within the scope
+125|Learning-day and streak statistics
+126|[active study time tracking is implemented — A3 / BR114]
+127|Use active learning time; do not use login duration as study time
+128|Completion, new knowledge, practice attempts, skill activity and learning-habit statistics
+129|Display statistics matching the selected filters, including learning-day streak information
+130|«boundary»\nLogin streak\nReact UI
+131|«control»\nStreak information retrieval\nBusiness responsibility
+132|«entity»\nReward milestone configuration
+133|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. BR109: viewing neither updates the streak nor grants coins. UC-27 uses 'login streak'; BR108 uses 'learning streak'.
+134|Select Login Streak
+135|Retrieve the Student's streak information
+136|Retrieve the current and longest streaks
+137|Retrieve configured streak reward milestones
+138|Target day counts and corresponding coin rewards
+139|Identify the next reward milestone from the current streak
+140|[a next reward milestone is available]
+141|Display current streak, longest streak, next milestone and its coin reward
+142|[no next reward milestone is available — A1]
+143|Current / longest streak; no next milestone
+144|Display current and longest streaks; indicate that no next milestone is available
+145|Learning activity completion
+146|«boundary»\nLearning / practice activity\nReact UI
+147|«control»\nLearning activity and streak recording\nBusiness responsibility
+148|«entity»\nReward milestone configuration / coin ledger
+149|BR112 excludes login and merely opening a lesson. NS-02 mentions qualifying login, which conflicts with BR112; this diagram shows BR112's learning-day rule. No unspecified streak initialization or freeze mechanism is added.
+150|Complete a learning / practice activity, including review
+151|Record the Student's completed activity
+152|Determine the calendar day in Asia/Ho_Chi_Minh — BR112
+153|[learning content is completed — UC-26 NF1–2]
+154|Check whether completion of this content has already been recorded
+155|Existing completion information
+156|[content / knowledge is completed for the first time]
+157|Record the content and first completion time
+158|First completion record
+159|[content was completed previously — BR106]
+160|Do not count it again as new knowledge or newly completed content
+161|[a practice attempt is completed — NF3–4 / BR107]
+162|Store each attempt: activity, completion time, score or correct answer count / total
+163|New attempt retained
+164|Retain attempts to identify first, most recent and highest results
+165|Record the actual learning day; retrieve recorded learning days and current streak
+166|Actual learning days and current streak
+167|[the current day has not yet counted toward the learning streak]
+168|Determine consecutive learning days from qualifying recorded completions
+169|Update the learning streak at most once per calendar day
+170|Updated learning streak
+171|Read milestones and identify a milestone not yet rewarded within this unbroken streak
+172|Milestone reward conditions under BR45
+173|[a milestone not yet rewarded in this streak is reached]
+174|SD-13.2 — Award the configured milestone coins once per unbroken learning streak
+175|[the current day has already been counted — BR112]
+176|Do not increase the streak again; completed review still qualifies as learning activity
+177|Activity recording and learning streak result
+178|Completed activity recorded
+179|«entity»\nRecorded learning days
+180|Unresolved source conflict: NS-02 accepts qualifying login or completed study and states CurrentDate − LastLearningDate > 1; BR112 excludes login. Eligibility here follows BR74 / BR112; execution time follows NS-02.
+181|Trigger daily at 00:00:01 GMT+7 — NS-02
+182|Use calendar dates in Asia/Ho_Chi_Minh — BR74
+183|Scan User_Streak records
+184|Streak records
+185|[for each Student in User_Streak]
+186|Check for qualifying learning completion on the preceding calendar day
+187|Preceding-day activity information
+188|[the preceding day has a qualifying completion — BR112]
+189|Preserve the streak; do not reset
+190|[the preceding day has no qualifying completion — BR74]
+191|[the streak is not preserved by a streak-freeze item]
+192|Set current_streak = 0
+193|Streak reset
+194|[the streak is preserved under the streak-freeze exception in BR74]
+195|Do not reset under the exception stated in BR74
+196|BR74 refers to BR146, which is absent from the supplied SRS. Freeze activation, expiry and consumption are therefore not specified here.
+197|«boundary»\nCoin balance and history\nReact UI
+198|«control»\nCoin wallet retrieval\nBusiness responsibility
+199|«entity»\ncoin_transaction / coin balance
+200|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. E1 applies to both initial loading and retrieval of additional entries.
+201|Open Coin Transaction History
+202|Retrieve the Student's current balance and transaction history
+203|Retrieve the balance and the Student's transactions in reverse chronological order
+204|[records cannot be loaded — E1]
+205|Data loading error
+206|Display a retrieval error and offer Retry; do not show a falsely empty history
+207|Balance and transaction list
+208|[no transactions exist — A1]
+209|Available balance and empty transaction list
+210|Display No transactions yet and the available balance
+211|[transactions exist]
+212|Balance and transactions, newest first
+213|Display date/time, source / purpose, credit / debit direction and coin amount
+214|[additional entries are available and requested — NF3]
+215|Request additional entries
+216|Retrieve additional transactions belonging to the Student
+217|Retrieve the next page of entries under Section 5.2.3
+218|Additional transactions
+219|Display additional transactions
+220|[the proposed UC-28 A2 filter is retained]
+221|Filter by date / credit-debit type, or clear the filter
+222|Apply the selected filters or restore the list
+223|Retrieve the Student's transactions matching the conditions
+224|Matching entries / no matching entries
+225|Filter results
+226|Display matching entries or No matching transactions
+227|Select a transaction
+228|Retrieve the selected transaction's details
+229|Retrieve the transaction and verify that it belongs to the current Student
+230|Transaction / not found / belongs to another Student
+231|[transaction not found or not owned by the Student — E2]
+232|Do not disclose the entry; return to the Student's history
+233|[the requested transaction is valid]
+234|Reference, source activity / reward, coin amount and completion time
+235|[the source activity is accessible]
+236|Display transaction details and source information
+237|[the source activity is no longer accessible — A3]
+238|Retain the reference, recorded description, amount and time
+239|Reward-eligible activity
+240|«entity»\nuser / coin balance
+241|BR45 specifies streak milestone rewards; NS-08 describes exercise / game completion. No unspecified key algorithm, EXP amount, SQL, endpoint or coin amount is introduced.
+242|Request a reward after exercise / game completion — NS-08
+243|The calling flow applies configured reward conditions and amounts. BR40: first successful completion; BR45: each milestone once per unbroken learning streak.
+244|Use an idempotency award key; its format is not specified by the SRS
+245|[ACID transaction with idempotency protection — NS-08 / Section 4]
+246|Check whether the award key has already been recorded in the ledger
+247|Award key exists / does not exist
+248|[the award key already exists]
+249|Do not allocate additional coins / EXP or create another ledger entry
+250|Do not grant a duplicate reward for the same key
+251|[the award key does not exist]
+252|Credit profile EXP and coin balance within the transaction
+253|Profile / balance update result
+254|Record an immutable entry: EARN, amount, post-transaction balance, source activity and idempotency key
+255|[all updates succeed]
+256|Ledger entry recorded
+257|Commit the ACID transaction
+258|Committed reward allocation result
+259|[the transaction cannot be completed]
+260|Transaction failed
+261|Roll back the changes; do not allocate coins / EXP partially
+262|Reward allocation failed; preserve pre-transaction data
+263|«control»\nCatalog and item eligibility retrieval\nBusiness responsibility
+264|«entity»\nCoin balance / user_inventory
+265|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. UC-29 lists badges / frames / themes / IT materials; BR143 specifies avatars / streak-freeze items. The item scope remains inconsistent in the SRS.
+266|Open Reward Store
+267|Load the published reward catalog and current balance
+268|Retrieve published rewards
+269|[the catalog cannot be loaded — E1]
+270|Catalog loading error
+271|Display an error and offer Retry
+272|Published catalog
+273|[no published rewards are available — A1]
+274|Empty catalog
+275|Display an empty catalog message and end browsing
+276|Retrieve the Student's coin balance
+277|[the balance is retrieved successfully]
+278|Current balance
+279|[balance retrieval fails while the catalog is available — E2]
+280|Balance unavailable
+281|The catalog may be returned with Balance unavailable
+282|Catalog and balance availability
+283|Display name, category, preview / description, coin price and availability
+284|Select a reward to view its details
+285|Retrieve reward details and conditions
+286|Retrieve benefits, price, eligibility conditions and availability limits
+287|Reward details
+288|Retrieve ownership status and the relevant balance
+289|Reward details and eligibility information
+290|[a single-ownership reward is already owned — A3]
+291|Display Owned; offer Inventory navigation instead of another redemption
+292|View the owned reward
+293|[insufficient coins or a known eligibility condition is not met — A2]
+294|Show the reason and allow continued browsing
+295|[redemption may be selected]
+296|Display the reward and Redeem option
+297|[Student selects Redeem]
+298|Select Redeem
+299|SD-14.2 — Revalidate current conditions before confirmation
+300|«boundary»\nReward redemption confirmation\nReact UI
+301|«control»\nCoin redemption processing\nBusiness responsibility
+302|«entity»\nCoin balance / coin_transaction
+303|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. No HTTP method, request-key format or database locking mechanism is specified here. Rechecking and exchange must satisfy NF4–5 and ACID integrity.
+304|Select Redeem for a reward
+305|Retrieve current reward redemption conditions
+306|Retrieve the current price, availability and ownership restrictions
+307|Reward price and conditions
+308|Retrieve the Student's current coin balance
+309|Coin balance
+310|Retrieve the Student's current ownership of the item
+311|Validate eligibility and balance
+312|[insufficient balance or ineligible Student — A2]
+313|Show the reason; return to reward details without completing redemption
+314|Reward, required coins and balance after redemption
+315|Display redemption confirmation details
+316|[Student cancels — A1]
+317|Cancel redemption
+318|End without changing data
+319|[Student confirms]
+320|Confirm redemption at the displayed price
+321|Process the confirmed redemption request
+322|[retry of the same completed request after a lost response — E2]
+323|Retrieve the existing redemption outcome for the same request
+324|Previously completed outcome
+325|Existing reward, debit, balance and transaction reference
+326|Display the existing outcome; do not create another debit or grant
+327|Recheck the price and availability at confirmation
+328|Current price and availability
+329|Recheck the current balance
+330|Current balance
+331|Recheck ownership restrictions and eligibility
+332|Current ownership conditions
+333|[the price has changed — A3]
+334|New price and revised balance after redemption
+335|Display the new price and return to validation / confirmation
+336|The previous confirmation does not authorize the new price.
+337|[insufficient coins, ineligible Student, unavailable item or ownership limit exceeded — A2, A4]
+338|Reject the request; show the reason and return to reward details / Store
+339|[one exchange; ACID and idempotency — Section 4 / UC-30 NF5]
+340|Deduct coins and record the redemption transaction
+341|Grant the reward to the Student's inventory
+342|[the entire exchange succeeds]
+343|Reward granted
+344|Commit one exchange
+345|Display confirmation; offer Inventory or Coin History navigation
+346|[the exchange cannot be completed — E1]
+347|Roll back; preserve the pre-redemption balance and ownership
+348|Report redemption failure
+349|«control»\nOwned item retrieval\nBusiness responsibility
+350|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. UC-31 proposes IT materials; BR143 specifies avatars / streak-freeze items. No entitlement expiry rule is added.
+351|Open Reward Inventory
+352|Retrieve granted rewards and the current equipment configuration
+353|Retrieve the Student's owned items and equipped status
+354|[inventory cannot be loaded — E1]
+355|Inventory loading error
+356|Display an error and offer Retry; do not represent a loading failure as an empty inventory
+357|Granted rewards and equipment configuration
+358|[inventory is empty — A1]
+359|Empty inventory
+360|Display an empty state with navigation to Store
+361|[owned rewards exist]
+362|Retrieve reward categories, availability and descriptions
+363|Reward information
+364|Display owned rewards and equipped status
+365|Select an item
+366|Display item details and supported action
+367|[the item is equipable]
+368|Display Equip / current equipment status
+369|[Student selects Equip]
+370|Select Equip
+371|SD-14.4 — Check ownership, usability and slot compatibility; update equipment
+372|Display Open Material instead of Equip
+373|[Student selects Open Material]
+374|Check whether the entitlement remains usable
+375|Verify the Student's entitlement
+376|Usable / no longer usable
+377|[the entitlement is usable]
+378|Permit material access
+379|Open the material
+380|[the entitlement is no longer usable]
+381|Do not permit material access
+382|«boundary»\nInventory equipment actions\nReact UI
+383|«control»\nEquipment validation and update\nBusiness responsibility
+384|«entity»\nstore_item / type and availability
+385|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. UC-32 refers to UC-34 as Inventory, whereas the Inventory title is UC-31. No API or item enum is inferred from that incorrect cross-reference.
+386|Select Equip or Unequip for an item
+387|Request an equipment change
+388|Verify the Student's current ownership
+389|Ownership information
+390|[the item does not belong to the Student — UC-32 E1]
+391|Reject the equipment action
+392|Determine item type, usability and slot compatibility — UC-31 NF5
+393|Item type and usability
+394|[the item is no longer usable — UC-31 E2]
+395|Explain the failure; preserve prior equipment and refresh item status
+396|Retrieve the equipped item of the same type / exclusive slot
+397|Current equipped item, if any
+398|[the selected item is already equipped — A2]
+399|Already equipped; do not create a duplicate equipment assignment
+400|Inform the Student that the item is already equipped
+401|[the selected item is not equipped]
+402|Replace the previously equipped item of the same type; both items remain owned
+403|Update equipment with at most one equipped item per type
+404|[the update succeeds]
+405|Equipment updated
+406|Updated equipment status
+407|Display success; refresh equipped status and applicable appearance
+408|[the update fails — E2]
+409|Update error
+410|Preserve the previous equipment settings
+411|Display an error and refresh item status
+412|[the item is already unequipped — A3]
+413|Already unequipped; do not change another item's equipment setting
+414|Refresh the displayed status
+415|[the item is equipped]
+416|Remove the item from its equipment slot
+417|Item removed from its slot
+418|Unequipped status
+419|Refresh equipped status and applicable appearance
+420|Display an error
+421|«control»\nReport validation, storage and routing\nBusiness responsibility
+422|«entity»\nfeedback / image attachments
+423|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. Reports without images proceed normally (A2). UC-34 specifies neither an exact initial status value nor an image upload API.
+424|Open Send Feedback / Report a Bug
+425|Display categories, description, content reference fields and optional image attachments
+426|Select Content Feedback or Technical Issue
+427|Allow lesson / lecture / question selection; prefill the reference when opened from a content page
+428|Select / review the referenced content
+429|Allow an affected-function description; no content reference is required
+430|Enter the description and optionally attach images
+431|[Student cancels before Submit — A3]
+432|Cancel submission
+433|Leave the form without creating a report
+434|[Student selects Submit]
+435|Trim input; validate required information and attachments under the common requirements
+436|[client-side validation detects invalid details / attachments — Section 5.2.2]
+437|Identify the problem; request corrected information or attachment removal / replacement
+438|Send category, description, reference where applicable and optional images
+439|Forward the report submission with the authenticated session
+440|Validate input on the server; trim / sanitize user-generated text
+441|Validate report details and attachments
+442|Validate the selected content reference
+443|Valid / invalid content reference
+444|Validate JPG / JPEG / PNG / WEBP images; maximum 3 MB per file
+445|[required information is missing or the content reference is invalid — E1]
+446|Identify the problem and request report correction
+447|[an attachment violates the file rules — E2]
+448|Request attachment removal or replacement
+449|Store initial status, submission time, submitter, category, description, reference and accepted attachments
+450|[the report and attachments are saved successfully]
+451|Report saved
+452|Route the report to the Moderator review queue
+453|Route the report to the Administrator review queue
+454|Report submission succeeded
+455|Display submission confirmation
+456|[the report or attachments cannot be saved — E3]
+457|Report / attachment saving error
+458|Report submission failed
+459|Preserve entered information for correction or Retry
+460|Display an error; do not report successful submission
+461|«control»\nPersonal feedback retrieval\nBusiness responsibility
+462|Preconditions: valid session, required role, active Student account; JWT authentication under Section 5.2.1. Read-only; do not disclose another Student's reports.
+463|Open Submitted Feedback
+464|Retrieve reports submitted by the current Student
+465|Query reports by the current submitter
+466|[report list retrieval fails — E1]
+467|Report list
+468|[no reports exist — A1]
+469|Empty report list
+470|Display No submitted feedback
+471|[reports exist]
+472|Display reports and their current processing status
+473|Select a report
+474|Request report details
+475|Retrieve the report and verify that it belongs to the current Student
+476|Report / not found / different submitter
+477|[report missing or belonging to another Student — E2]
+478|Deny access and return to the Student's list
+479|Retrieve the description, attachments, status and handling notes available to the Student
+480|[report detail retrieval fails — E1]
+481|Detail retrieval error
+482|Report details and handling notes
+483|[the report has a content reference]
+484|Check whether the referenced content remains accessible
+485|[linked content is no longer accessible — A3]
+486|Retain the reference information without opening the content
+487|Report details, images, status, notes and reference information
+488|[handling notes / a reply are available]
+489|Display handling notes / reply directly below the feedback — BR145
+490|[no handling notes are available — A2]
+491|Display the current status and indicate that no notes have been added
+492|Display the Student's report and processing status — BR144
+493|Return to the list or leave the page
+494|«boundary»\nContent feedback list\nReact UI
+495|«control»\nAcademic feedback retrieval\nBusiness responsibility
+496|Precondition: authenticated Moderator with the required privileges. Read-only. UC-48 status filters: Pending / In Progress / Resolved / Rejected.
+497|Select Content Feedback
+498|Retrieve the content feedback list
+499|Restrict results to academic content: lectures / questions / pedagogical materials
+500|Retrieve all content tickets, prioritizing Pending items and newest submissions first
+501|Content feedback list
+502|Retrieve course / lesson context for the list and filters
+503|Related course / lesson information
+504|Content feedback list and filter options
+505|Display ID, course, lesson, content type, title, submitter, submission date and status
+506|[Moderator changes search / filter criteria]
+507|Filter by course / lesson / status, or enter keywords and press Enter
+508|Trim search keywords under Section 5.2.2
+509|Search using filters, keywords and pagination
+510|Search academic feedback only; match title / Student name / content code
+511|Query tickets matching the selected criteria
+512|Matching feedback tickets
+513|[matching results exist]
+514|Filtered feedback list
+515|Refresh the data table
+516|[no matching records are found — A5a]
+517|No matching results
+518|Display that no content feedback matches the search criteria
+519|Select View Details on a feedback ticket
+520|«boundary»\nContent feedback details\nReact UI
+521|«control»\nContent feedback retrieval and verification\nBusiness responsibility
+522|Preconditions: authenticated Moderator; a content feedback ticket is selected. Read-only: do not change ticket status. UC-49 refers to UC-95 for the list, whose actual title is UC-48.
+523|Select View Details on a content feedback ticket
+524|Retrieve the selected content feedback details
+525|Retrieve Student information, email, submission time, category, status, title, description and attachments
+526|Feedback detail data
+527|Retrieve the reported Course / Chapter / Lesson / Question context
+528|Content context and links
+529|General information, description, images and learning-material context
+530|Display ID, Student name / email, submission time, error category and current status
+531|Display the title and detailed description
+532|[image attachments exist]
+533|Display image / screenshot previews
+534|[no images are attached — A2a]
+535|Display No image attachments
+536|Display complete feedback information and learning-material links
+537|Select View Lecture
+538|Open the linked learning material / question for verification
+539|Check whether the material / question is available or deleted / hidden / archived
+540|Related learning material availability
+541|[the learning material is available]
+542|Content link in Curriculum Management
+543|Open a new tab or navigate directly to the target lesson / question
+544|Moderator verifies the academic content
+545|Return to the feedback details after verification
+546|[the learning material is deleted / hidden / archived — A3a]
+547|Related content is no longer available
+548|Display an alert that the material / question is unavailable or archived
+549|«boundary»\nContent feedback processing\nReact UI
+550|«control»\nFeedback validation and update\nBusiness responsibility
+551|Preconditions: authenticated Moderator; ticket status is Pending / In Progress. UC-50 does not specify an email failure path; UC-64's email failure handling is not applied here.
+552|Review the issue and select In Progress / Resolved / Rejected
+553|Enter Resolution Notes and click Confirm Processing
+554|Trim and validate client-side input — Section 5.2.2
+555|[Resolved / Rejected is selected with blank notes — A3a]
+556|Highlight the notes field; require detailed resolution notes and stop saving
+557|Submit the new status and resolution notes
+558|Forward the request with the Moderator session
+559|Validate / sanitize server-side input — Section 5.2.2
+560|Process the content feedback update
+561|Validate the status transition and mandatory notes for completion / rejection
+562|[validation constraints are violated — NF5 / A3a]
+563|Request correction without saving
+564|Update with optimistic locking: status, notes, resolver Moderator ID, completion timestamp; retain processing history
+565|[another Moderator has just updated the ticket — A4a]
+566|Prevent overwriting; notify that another Moderator updated the ticket and request a reload
+567|Status, notes, resolver, timestamp and history stored
+568|Create an in-app notification for the reporting Student
+569|Notification created
+570|Send an automated email containing the resolution notes to the Student
+571|Email outcome in UC-50's successful flow
+572|Status updated and feedback sent successfully
+573|Refresh the detail / list view; display the reply below the feedback under BR145
+574|Display update confirmation
+575|«boundary»\nTechnical Feedback and Bug Reports\nReact UI
+576|«control»\nTechnical ticket retrieval\nBusiness responsibility
+577|Precondition: authenticated Administrator. UC-63 and UC-64 use different Vietnamese labels for the resolved status. UC-63 refers to UC-75; the corresponding resolution function is UC-64.
+578|Open Technical Feedback and System Bug Reports
+579|Retrieve the technical feedback list
+580|Include technical / UI / platform issues only; route academic feedback to Moderators
+581|Retrieve technical tickets for Administrator review
+582|Technical ticket list
+583|Display the technical feedback list
+584|[no pending technical submissions exist — A2a]
+585|Display the MSG18 inline placeholder
+586|No unprocessed technical feedback is currently available
+587|[Administrator searches / changes filters]
+588|Filter by status, search keywords or select a page under the common requirements
+589|Retrieve technical feedback matching the conditions
+590|Search / filter / paginate technical tickets only
+591|Matching ticket list
+592|Search results
+593|[matching records exist]
+594|Display the filtered list
+595|[no matching records exist — Section 5.2.3]
+596|Display a clear empty state
+597|Select a ticket to view details and proceed to resolution
+598|«boundary»\nTechnical feedback details / resolution\nReact UI
+599|«control»\nResolution update and notification\nBusiness responsibility
+600|UC-64 NF5 requires nonblank notes; A5a / BR59 explicitly require them for Resolved / Rejected. The SRS is unclear about blank notes for In Progress. UC-64 refers to UC-74; the corresponding list is UC-63.
+601|Open the selected technical ticket
+602|Retrieve technical ticket details
+603|Retrieve the description, attached error screenshots and device information
+604|Technical feedback details
+605|Report information for resolution
+606|Display ticket details
+607|Select In Progress / Resolved / Rejected
+608|Enter resolution notes and click Update Status
+609|Trim and validate client-side notes — Section 5.2.2
+610|[Resolved / Rejected has blank notes — A5a / BR59]
+611|Display MSG09 in red and prevent saving
+612|Submit the status and resolution notes
+613|Forward the request with the Administrator session
+614|Validate / sanitize server-side user input — Section 5.2.2
+615|Process the technical ticket resolution update
+616|Validate the notes under UC-64 NF5
+617|[the required-note check fails]
+618|Require resolution notes without saving
+619|Persist the resolution status and notes
+620|Resolution data stored
+621|Create an in-app notification for the reporting Student
+622|Send the resolution outcome email to the Student
+623|[email delivery succeeds]
+624|Email delivered
+625|Email delivery exception
+626|Log the email delivery exception
+627|Email exception logged
+628|Commit the resolution status to the database despite email failure
+629|MSG17 — Feedback processing status updated successfully
+630|Display the updated status and the reply below the feedback — BR144–145

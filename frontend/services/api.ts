@@ -1,8 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api";
+const baseURL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api";
 
 export const apiClient = axios.create({
   baseURL,
@@ -77,11 +76,7 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await axios.post(
-        `${baseURL}/auth/refresh`,
-        {},
-        { withCredentials: true },
-      );
+      const { data } = await axios.post(`${baseURL}/auth/refresh`, {}, { withCredentials: true });
 
       const newAccessToken: string = data.accessToken ?? data.token;
 
@@ -103,9 +98,7 @@ apiClient.interceptors.response.use(
 export const googleOAuthConfig = {
   clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "",
   redirectUri:
-    import.meta.env.VITE_GOOGLE_REDIRECT_URI ??
-    "http://localhost:5173/login/oauth2/code/google",
+    import.meta.env.VITE_GOOGLE_REDIRECT_URI ?? "http://localhost:5173/login/oauth2/code/google",
   scope: "email profile",
-  backendAuthUrl:
-    import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api",
+  backendAuthUrl: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api",
 };

@@ -18,7 +18,10 @@ export function ModeratorTopbar({ title, breadcrumb }: ModeratorTopbarProps) {
     <header className="admin-dekiru-topbar">
       {/* Left side: Accent bar + Title + Breadcrumbs */}
       <div className="admin-topbar-left">
-        <span className="admin-topbar-accent-bar" style={{ backgroundColor: "#0d9488" }} />
+        <span
+          className="admin-topbar-accent-bar"
+          style={{ backgroundColor: "#0d9488" }}
+        />
         <div className="admin-topbar-heading-group">
           <h1 className="admin-topbar-title">{resolvedTitle}</h1>
           <span className="admin-topbar-breadcrumb">{resolvedBreadcrumb}</span>

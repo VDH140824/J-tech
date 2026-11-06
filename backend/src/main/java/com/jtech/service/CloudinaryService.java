@@ -4,29 +4,48 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.jtech.dto.response.CloudinaryUploadResponse;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class CloudinaryService {
 
     private static final String TARGET_ASSET_FOLDER = "Video/jtech/customer_upload/video";
     private static final String GRAMMAR_VIDEO_FOLDER = "Jtech/Moderator/Grammar/video";
+    private static final String AVATAR_FOLDER = "Jtech/Users/Avatar";
     private static final Set<String> ALLOWED_VIDEO_CONTENT_TYPES = Set.of(
-            "video/mp4",
-            "video/webm",
-            "video/ogg",
-            "video/quicktime",
-            "video/x-msvideo",
-            "video/x-matroska"
+        "video/mp4",
+        "video/webm",
+        "video/ogg",
+        "video/quicktime",
+        "video/x-msvideo",
+        "video/x-matroska"
     );
 
+
+    public Map<String, String> uploadDocument(MultipartFile file) {
+        if (file == null || file.isEmpty()) throw new IllegalArgumentException("Vui lòng chọn tài liệu đính kèm");
+        String name = file.getOriginalFilename();
+        String ext = name == null || !name.contains(".") ? "" : name.substring(name.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT);
+        Map<String, String> types = Map.of("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "ppt", "application/vnd.ms-powerpoint", "pdf", "application/pdf", "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        String mime = file.getContentType();
+        if (!types.containsKey(ext) || (mime != null && !mime.isBlank() && !"application/octet-stream".equalsIgnoreCase(mime) && !types.get(ext).equalsIgnoreCase(mime))) throw new IllegalArgumentException("Chỉ chấp nhận tệp DOCX, PPTX, PPT, PDF, XLSX");
+        try {
+            Map result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "raw", "folder", "Jtech/Lessons/Documents", "public_id", java.util.UUID.randomUUID() + "." + ext, "overwrite", false));
+            if (!(result.get("secure_url") instanceof String url) || url.isBlank() || !(result.get("public_id") instanceof String id) || id.isBlank()) throw new IllegalStateException("Cloudinary không trả về thông tin tài liệu");
+            return Map.of("name", name, "url", url, "publicId", id);
+        } catch (IOException exception) { throw new IllegalStateException("Không thể tải tài liệu lên Cloudinary", exception); }
+    }
+    public void deleteDocument(String id) {
+        if (id == null || !id.startsWith("Jtech/Lessons/Documents/")) return;
+        try { cloudinary.uploader().destroy(id, ObjectUtils.asMap("resource_type", "raw")); }
+        catch (IOException exception) { throw new IllegalStateException("Không thể xóa tài liệu Cloudinary", exception); }
+    }
     private final Cloudinary cloudinary;
 
     public CloudinaryService(Cloudinary cloudinary) {
@@ -41,11 +60,28 @@ public class CloudinaryService {
         return uploadVideo(file, GRAMMAR_VIDEO_FOLDER, true);
     }
 
+    public Map<String, String> uploadAvatar(MultipartFile file) {
+        if (file == null || file.isEmpty() || file.getSize() > 5 * 1024 * 1024
+                || file.getContentType() == null
+                || !Set.of("image/jpeg", "image/png", "image/webp").contains(file.getContentType())) {
+            throw new IllegalArgumentException("Ảnh phải là JPG, PNG hoặc WebP và không quá 5 MB");
+        }
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = (Map<String, Object>) cloudinary.uploader().upload(
+                    file.getBytes(), ObjectUtils.asMap("resource_type", "image", "folder", AVATAR_FOLDER));
+            return Map.of("url", String.valueOf(result.get("secure_url")),
+                    "publicId", String.valueOf(result.get("public_id")));
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể tải ảnh đại diện lên", exception);
+        }
+    }
+
     private CloudinaryUploadResponse uploadVideo(MultipartFile file, String folder, boolean uniqueFilename) {
         System.out.println("========== CLOUDINARY UPLOAD START ==========");
-    System.out.println("File: " + (file != null ? file.getOriginalFilename() : "NULL"));
-    System.out.println("Size: " + (file != null ? file.getSize() : -1));
-    System.out.println("Content type: " + (file != null ? file.getContentType() : "NULL"));
+        System.out.println("File: " + (file != null ? file.getOriginalFilename() : "NULL"));
+        System.out.println("Size: " + (file != null ? file.getSize() : -1));
+        System.out.println("Content type: " + (file != null ? file.getContentType() : "NULL"));
         validateVideoFile(file);
         System.out.println("Cloudinary validation passed");
 
@@ -55,50 +91,48 @@ public class CloudinaryService {
             tempFile = Files.createTempFile("video-upload-", suffix);
             file.transferTo(tempFile);
             System.out.println("Temporary file created: " + tempFile);
-System.out.println("Temporary file size: " + Files.size(tempFile));
-System.out.println("Calling Cloudinary uploadLarge...");
+            System.out.println("Temporary file size: " + Files.size(tempFile));
+            System.out.println("Calling Cloudinary uploadLarge...");
 
             @SuppressWarnings("unchecked")
-            Map<String, Object> uploadResult = (Map<String, Object>) cloudinary.uploader().uploadLarge(
+            Map<String, Object> uploadResult = (Map<String, Object>) cloudinary
+                .uploader()
+                .uploadLarge(
                     tempFile.toFile(),
                     ObjectUtils.asMap(
-                            "resource_type", "video",
-                            "folder", folder,
-                            "use_filename", true,
-                            "unique_filename", uniqueFilename,
-                            "overwrite", false
+                        "resource_type", "video",
+                        "folder", folder,
+                        "use_filename", true,
+                        "unique_filename", uniqueFilename,
+                        "overwrite", false
                     )
-            );
+                );
             System.out.println("========== CLOUDINARY UPLOAD SUCCESS ==========");
-System.out.println("Secure URL: " + uploadResult.get("secure_url"));
-System.out.println("Public ID: " + uploadResult.get("public_id"));
-System.out.println("Resource type: " + uploadResult.get("resource_type"));
-System.out.println("Format: " + uploadResult.get("format"));
+            System.out.println("Secure URL: " + uploadResult.get("secure_url"));
+            System.out.println("Public ID: " + uploadResult.get("public_id"));
+            System.out.println("Resource type: " + uploadResult.get("resource_type"));
+            System.out.println("Format: " + uploadResult.get("format"));
 
             return new CloudinaryUploadResponse(
-                    asString(uploadResult.get("secure_url")),
-                    asString(uploadResult.get("public_id")),
-                    asString(uploadResult.get("resource_type")),
-                    asString(uploadResult.get("format")),
-                    asDouble(uploadResult.get("duration")),
-                    asInteger(uploadResult.get("width")),
-                    asInteger(uploadResult.get("height")),
-                    buildThumbnailUrl(uploadResult)
+                asString(uploadResult.get("secure_url")),
+                asString(uploadResult.get("public_id")),
+                asString(uploadResult.get("resource_type")),
+                asString(uploadResult.get("format")),
+                asDouble(uploadResult.get("duration")),
+                asInteger(uploadResult.get("width")),
+                asInteger(uploadResult.get("height")),
+                buildThumbnailUrl(uploadResult)
             );
         } catch (Exception e) {
             System.out.println("========== CLOUDINARY UPLOAD FAILED ==========");
-    e.printStackTrace();
+            e.printStackTrace();
 
-    throw new IllegalStateException(
-        "Failed to upload video to Cloudinary",
-        e
-    );
+            throw new IllegalStateException("Failed to upload video to Cloudinary", e);
         } finally {
             if (tempFile != null) {
                 try {
                     Files.deleteIfExists(tempFile);
-                } catch (IOException ignored) {
-                }
+                } catch (IOException ignored) {}
             }
         }
     }
@@ -115,17 +149,26 @@ System.out.println("Format: " + uploadResult.get("format"));
         }
     }
 
+    public void deleteGrammarVideo(String publicId) {
+        String grammarVideoPrefix = GRAMMAR_VIDEO_FOLDER + "/";
+        if (publicId == null || !publicId.startsWith(grammarVideoPrefix)) {
+            throw new IllegalArgumentException("Video không thuộc thư mục ngữ pháp của moderator");
+        }
+        deleteVideo(publicId);
+    }
+
     public String buildSecureVideoUrl(String publicId, String format) {
         if (publicId == null || publicId.isBlank()) {
             return null;
         }
 
-        String normalizedFormat = (format == null || format.isBlank()) ? "mp4" : format;
-        return cloudinary.url()
-                .secure(true)
-                .resourceType("video")
-                .format(normalizedFormat)
-                .generate(publicId);
+        String normalizedFormat = format == null || format.isBlank() ? "mp4" : format;
+        return cloudinary
+            .url()
+            .secure(true)
+            .resourceType("video")
+            .format(normalizedFormat)
+            .generate(publicId);
     }
 
     public String buildSecureVideoUrl(String publicId) {
@@ -138,7 +181,11 @@ System.out.println("Format: " + uploadResult.get("format"));
         }
 
         String contentType = file.getContentType();
-        if (contentType == null || !contentType.toLowerCase().startsWith("video/") || !ALLOWED_VIDEO_CONTENT_TYPES.contains(contentType.toLowerCase())) {
+        if (
+            contentType == null ||
+            !contentType.toLowerCase().startsWith("video/") ||
+            !ALLOWED_VIDEO_CONTENT_TYPES.contains(contentType.toLowerCase())
+        ) {
             throw new IllegalArgumentException("Unsupported video file type");
         }
     }
@@ -176,12 +223,13 @@ System.out.println("Format: " + uploadResult.get("format"));
             return null;
         }
 
-        return cloudinary.url()
-                .secure(true)
-                .resourceType("video")
-                .transformation(new Transformation().crop("fill").width(640).height(360))
-                .format("jpg")
-                .generate(publicId);
+        return cloudinary
+            .url()
+            .secure(true)
+            .resourceType("video")
+            .transformation(new Transformation().crop("fill").width(640).height(360))
+            .format("jpg")
+            .generate(publicId);
     }
 
     private String asString(Object value) {

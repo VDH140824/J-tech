@@ -2,6 +2,8 @@ package com.jtech.security;
 
 import com.jtech.entity.User;
 import com.jtech.repository.UserRepository;
+import java.util.Collection;
+import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,11 +11,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+
     private final UserRepository userRepository;
 
     public CustomUserDetailsService(UserRepository userRepository) {
@@ -23,13 +23,18 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        User user = userRepository
+            .findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
         return buildUserDetails(user);
     }
 
     public UserDetails buildUserDetails(User user) {
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), "", getAuthorities(user));
+        return new org.springframework.security.core.userdetails.User(
+            user.getEmail(),
+            "",
+            getAuthorities(user)
+        );
     }
 
     private Collection<? extends GrantedAuthority> getAuthorities(User user) {
