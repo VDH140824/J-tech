@@ -17,8 +17,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.52.2",
-    "react-router-dom": "^6.26.1",
-    "zod": "^3.23.8",
+    "react-router-dom": "^7.18.5",
+    "zod": "^4.6.7",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
@@ -29,6 +29,6 @@
     "prettier": "3.9.10",
     "prettier-plugin-java": "2.11.0",
     "typescript": "^5.5.3",
-    "vite": "^5.4.1"
+    "vite": "^8.3.6"
   }
 }

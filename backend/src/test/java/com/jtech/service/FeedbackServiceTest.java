@@ -196,11 +196,12 @@ class FeedbackServiceTest {
         when(db.queryForList(contains("LEFT JOIN lesson"), any(Object[].class))).thenReturn(
             List.of(Map.of("submitterEmail", "student@example.com", "title", "Lỗi bài học"))
         );
+        when(db.update(contains("UPDATE feedback SET"), any(Object[].class))).thenReturn(1);
         service.resolve(
             8L,
             "CONTENT",
             student,
-            new FeedbackResolutionRequest(FeedbackResolutionRequest.Status.RESOLVED, "Đã sửa")
+            new FeedbackResolutionRequest(FeedbackResolutionRequest.Status.RESOLVED, "Đã sửa", 0L)
         );
         verify(db).update(
             contains("UPDATE feedback"),
@@ -208,7 +209,8 @@ class FeedbackServiceTest {
             eq("Đã sửa"),
             eq(4L),
             eq(true),
-            eq(8L)
+            eq(8L),
+            eq(0L)
         );
         verify(db).update(
             contains("INSERT INTO notification"),

@@ -74,7 +74,11 @@ export function AppRouter() {
           />
           <Route
             path="/feedback"
-            element={<StudentProtectedRoute><FeedbackPage /></StudentProtectedRoute>}
+            element={
+              <StudentProtectedRoute>
+                <FeedbackPage />
+              </StudentProtectedRoute>
+            }
           />
         </Route>
 
@@ -87,15 +91,51 @@ export function AppRouter() {
         >
           <Route
             path="/store"
-            element={<StudentProtectedRoute><RewardStorePage /></StudentProtectedRoute>}
+            element={
+              <StudentProtectedRoute>
+                <RewardStorePage />
+              </StudentProtectedRoute>
+            }
           />
           <Route
             path="/inventory"
-            element={<StudentProtectedRoute><RewardStorePage /></StudentProtectedRoute>}
+            element={
+              <StudentProtectedRoute>
+                <RewardStorePage />
+              </StudentProtectedRoute>
+            }
           />
         </Route>
-        <Route path="/coins" element={<ProtectedRoute><StudentProtectedRoute><MainLayout /></StudentProtectedRoute></ProtectedRoute>}><Route index element={<CoinHistoryPage />} /></Route>
-        <Route path="/streak" element={<ProtectedRoute><StudentProtectedRoute><MainLayout /></StudentProtectedRoute></ProtectedRoute>}><Route index element={<StudentStreakPage />} /></Route>
+        <Route
+          path="/coins"
+          element={
+            <ProtectedRoute>
+              <StudentProtectedRoute>
+                <MainLayout />
+              </StudentProtectedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            index
+            element={<CoinHistoryPage />}
+          />
+        </Route>
+        <Route
+          path="/streak"
+          element={
+            <ProtectedRoute>
+              <StudentProtectedRoute>
+                <MainLayout />
+              </StudentProtectedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            index
+            element={<StudentStreakPage />}
+          />
+        </Route>
         {/* Admin routes (Admin has its own dedicated portal layout) */}
         <Route
           path="/admin"

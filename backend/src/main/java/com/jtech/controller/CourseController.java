@@ -4,7 +4,6 @@ import com.jtech.dto.response.ChapterDetailResponse;
 import com.jtech.dto.response.ChapterSummary;
 import com.jtech.dto.response.CourseDetail;
 import com.jtech.dto.response.CourseSummary;
-import com.jtech.entity.Chapter;
 import com.jtech.entity.Course;
 import com.jtech.repository.ChapterRepository;
 import com.jtech.repository.CourseRepository;
@@ -85,6 +84,7 @@ public class CourseController {
         @PathVariable Long courseId,
         @PathVariable Long chapterId
     ) {
+        if (!repository.existsById(courseId)) return ResponseEntity.notFound().build();
         return chapterRepository
             .findByIdAndCourseId(chapterId, courseId)
             .map(chapter -> {

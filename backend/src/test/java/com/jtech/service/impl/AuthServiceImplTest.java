@@ -467,6 +467,7 @@ class AuthServiceImplTest {
     }
 
     @Test void updateProfile_saveFailed() {
+        authenticatedUser();
         when(users.findById(USER_ID)).thenReturn(Optional.of(user));
         var failure = new DataIntegrityViolationException("save failed");
         when(users.save(user)).thenThrow(failure);
@@ -865,6 +866,7 @@ class AuthServiceImplTest {
     }
 
     private void profileUser() {
+        authenticatedUser();
         when(users.findById(USER_ID)).thenReturn(Optional.of(user));
         saveReturnsUser();
     }

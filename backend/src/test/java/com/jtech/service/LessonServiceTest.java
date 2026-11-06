@@ -494,17 +494,17 @@ class LessonServiceTest {
             multipart(org.springframework.http.HttpMethod.PUT, "/lessons/20").file(json)
         ).andExpect(status().isOk());
         mvc.perform(multipart("/chapters/10/lessons").file(json)).andExpect(
-            status().isBadRequest()
+            status().isCreated()
         );
     }
 
     @Test
-    void createLesson_missingFile() {
+    void createLesson_grammarWithoutFile() {
         prepareSave(false);
-        assertThrows(IllegalArgumentException.class, () ->
-            service.createLesson(null, 10L, request(-1, null), null)
-        );
-        verify(lessons, never()).save(any());
+        var result = service.createLesson(null, 10L, request(-1, null), null);
+        assertNull(result.documents());
+        verify(lessons).save(any(Lesson.class));
+        verifyNoInteractions(cloudinary);
     }
 
     @Test
