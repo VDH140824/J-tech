@@ -99,7 +99,7 @@ export function CreatePostModal({ classroom, onClose, onCreated }: CreatePostMod
           <h2 id="create-post-title">Tạo bài đăng mới</h2>
           <button type="button" aria-label="Đóng hộp thoại" disabled={busy} onClick={onClose}>×</button>
         </div>
-        <label htmlFor="create-post-class">Chọn lớp học phụ trách *</label>
+        <label htmlFor="create-post-class">Lớp học</label>
         <input id="create-post-class" value={classroom.code} readOnly />
 
         <fieldset>

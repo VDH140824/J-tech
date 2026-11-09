@@ -109,7 +109,7 @@ export function EditPostModal({ classroom, post, onClose, onUpdated }: EditPostM
           <h2 id="edit-post-title">Chỉnh sửa bài đăng</h2>
           <button type="button" aria-label="Đóng hộp thoại" disabled={busy} onClick={onClose}>×</button>
         </div>
-        <label htmlFor="edit-post-class">Chọn lớp học phụ trách *</label>
+        <label htmlFor="edit-post-class">Lớp học </label>
         <input id="edit-post-class" value={classroom.code} readOnly />
 
         <fieldset>
