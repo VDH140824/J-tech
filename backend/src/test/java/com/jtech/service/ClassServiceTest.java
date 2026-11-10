@@ -5,6 +5,7 @@ import com.jtech.dto.request.ClassRequest;
 import com.jtech.entity.Classroom;
 import com.jtech.entity.ClassroomStatus;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -12,7 +13,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import com.jtech.entity.User;
 import com.jtech.entity.UserStatus;
 import com.jtech.repository.ClassRepository;
+import com.jtech.repository.ClassMemberRepository;
 import com.jtech.repository.UserRepository;
+import com.jtech.dto.response.StudentResponse;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +39,7 @@ import static org.mockito.Mockito.*;
 class ClassServiceTest {
     @Mock EntityManager entityManager;
     @Mock ClassRepository classRepository;
+    @Mock ClassMemberRepository classMemberRepository;
     @Mock UserRepository userRepository;
     @InjectMocks ClassService service;
     private User moderator;
@@ -339,5 +345,215 @@ class ClassServiceTest {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         assertThrows(AccessDeniedException.class, service::getClassesByCurrentModerator);
         verifyNoInteractions(classRepository);
+    }
+
+    /*==Test Student==*/
+
+    @Test
+    void getClassStudents_returnsMembersWithFiltersAndPage() {
+        prepareUpdate();
+        var joinedAt = LocalDateTime.of(2026, 11, 10, 9, 0);
+        var student = new StudentResponse(21L, "Nguyen An", "an@example.com", null,
+                UserStatus.ACTIVE, joinedAt);
+        var pageable = PageRequest.of(0, 10);
+        when(classMemberRepository.findStudentsByClassId(10L, "an", UserStatus.ACTIVE, pageable))
+                .thenReturn(new PageImpl<>(List.of(student), pageable, 1));
+
+        var result = service.getClassStudents(10L, " an ", "active", 0, 10);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("an@example.com", result.getContent().get(0).email());
+    }
+
+    @Test
+    void getClassStudents_deniesOtherModeratorsClassBeforeQueryingMembers() {
+        var classroom = prepareUpdate();
+        classroom.setModeratorId(99L);
+
+        assertThrows(AccessDeniedException.class,
+                () -> service.getClassStudents(10L, "", "", 0, 10));
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    void getClassStudents_rejectsInvalidPaginationBeforeQueryingMembers() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.getClassStudents(10L, "", "", -1, 10));
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    private Classroom prepareStudentAdd() {
+        var classroom = new Classroom();
+        classroom.setId(10L);
+        classroom.setModeratorId(12L);
+        when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
+        when(classRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(classroom));
+        return classroom;
+    }
+
+    private User student(Long id, String email, UserStatus status, String roleName) {
+        var role = new Role();
+        role.setRoleName(roleName);
+        var user = new User();
+        user.setUserId(id);
+        user.setEmail(email);
+        user.setStatus(status);
+        user.setRole(role);
+        return user;
+    }
+
+    @Test
+    void addStudents_addsOnlyNewActiveStudentsAndReportsSkippedEmails() {
+        var classroom = prepareStudentAdd();
+        var newStudent = student(21L, "new@example.com", UserStatus.ACTIVE, "STUDENT");
+        var existingStudent = student(22L, "existing@example.com", UserStatus.ACTIVE, "STUDENT");
+        var pendingStudent = student(23L, "pending@example.com", UserStatus.PENDING, "STUDENT");
+        var otherRole = student(24L, "mod2@example.com", UserStatus.ACTIVE, "MODERATOR");
+        when(userRepository.findByNormalizedEmails(List.of("new@example.com", "bad-email", "existing@example.com",
+                "missing@example.com", "pending@example.com", "mod2@example.com")))
+                .thenReturn(List.of(newStudent, existingStudent, pendingStudent, otherRole));
+        when(classMemberRepository.findExistingStudentIds(10L, java.util.Set.of(21L, 22L)))
+                .thenReturn(java.util.Set.of(22L));
+
+        var result = service.addStudents(10L, List.of(" NEW@example.com ", "new@example.com",
+                "bad-email", "existing@example.com", "missing@example.com", "pending@example.com",
+                "mod2@example.com"));
+
+        assertEquals(1, result.addedCount());
+        assertEquals(6, result.skippedCount());
+        assertEquals(java.util.Set.of("DUPLICATE_EMAIL", "ALREADY_IN_CLASSROOM",
+                "ACCOUNT_NOT_FOUND", "INVALID_STUDENT_ACCOUNT"),
+                result.skippedEmails().stream().map(item -> item.reason()).collect(java.util.stream.Collectors.toSet()));
+        var members = org.mockito.ArgumentCaptor.forClass(java.util.List.class);
+        verify(classMemberRepository).saveAllAndFlush(members.capture());
+        assertEquals(1, members.getValue().size());
+        var member = (com.jtech.entity.ClassroomMember) members.getValue().get(0);
+        assertSame(classroom, member.getClassroom());
+        assertSame(newStudent, member.getStudent());
+    }
+
+    @Test
+    void addStudents_withOnlyBlankEntriesDoesNotQueryAccountsOrSave() {
+        prepareStudentAdd();
+
+        var result = service.addStudents(10L, List.of(" ", ""));
+
+        assertEquals(0, result.addedCount());
+        assertEquals(2, result.skippedCount());
+        verify(userRepository, never()).findByNormalizedEmails(anyList());
+        verify(classMemberRepository, never()).saveAllAndFlush(anyList());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"a@b..com", "a@.com", "a@-example.com", "a@b.c",
+            "a..b@example.com", "a@example.com.", "a b@example.com", "a@@example.com"})
+    void addStudents_reportsUnmatchedEmailAsAccountNotFound(String email) {
+        prepareStudentAdd();
+        when(userRepository.findByNormalizedEmails(List.of(email.toLowerCase(java.util.Locale.ROOT))))
+                .thenReturn(List.of());
+
+        var result = service.addStudents(10L, List.of(email));
+
+        assertEquals(0, result.addedCount());
+        assertEquals("ACCOUNT_NOT_FOUND", result.skippedEmails().get(0).reason());
+        verify(userRepository).findByNormalizedEmails(List.of(email.toLowerCase(java.util.Locale.ROOT)));
+    }
+
+    @Test
+    void addStudents_deniesOtherModeratorsClassBeforeReadingAccounts() {
+        var classroom = prepareStudentAdd();
+        classroom.setModeratorId(99L);
+
+        assertThrows(AccessDeniedException.class,
+                () -> service.addStudents(10L, List.of("new@example.com")));
+        verify(userRepository, never()).findByNormalizedEmails(anyList());
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    void addStudents_rejectsEmptyInput() {
+        prepareStudentAdd();
+
+        assertThrows(IllegalArgumentException.class, () -> service.addStudents(10L, List.of()));
+        verify(userRepository, never()).findByNormalizedEmails(anyList());
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    void addStudents_propagatesSaveFailure() {
+        prepareStudentAdd();
+        var newStudent = student(21L, "new@example.com", UserStatus.ACTIVE, "STUDENT");
+        when(userRepository.findByNormalizedEmails(List.of("new@example.com")))
+                .thenReturn(List.of(newStudent));
+        when(classMemberRepository.findExistingStudentIds(10L, java.util.Set.of(21L)))
+                .thenReturn(java.util.Set.of());
+        when(classMemberRepository.saveAllAndFlush(anyList()))
+                .thenThrow(new DataIntegrityViolationException("Database error"));
+
+        assertThrows(DataIntegrityViolationException.class,
+                () -> service.addStudents(10L, List.of("new@example.com")));
+    }
+
+    @Test
+    void removeStudent_deletesOnlyClassMembership() {
+        var classroom = prepareUpdate();
+        var member = new com.jtech.entity.ClassroomMember(classroom,
+                student(21L, "student@example.com", UserStatus.ACTIVE, "STUDENT"));
+        when(classMemberRepository.findByClassroom_IdAndStudent_UserId(10L, 21L))
+                .thenReturn(Optional.of(member));
+
+        service.removeStudent(10L, 21L);
+
+        verify(classMemberRepository).delete(member);
+        verify(classMemberRepository).flush();
+        verify(userRepository, never()).delete(any());
+    }
+
+    @Test
+    void removeStudent_deniesOtherModeratorsClassBeforeFindingMembership() {
+        var classroom = prepareUpdate();
+        classroom.setModeratorId(99L);
+
+        assertThrows(AccessDeniedException.class, () -> service.removeStudent(10L, 21L));
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    void removeStudent_reportsMissingClass() {
+        when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
+        when(classRepository.findById(10L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> service.removeStudent(10L, 21L));
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    void removeStudent_reportsStudentNotInClass() {
+        prepareUpdate();
+        when(classMemberRepository.findByClassroom_IdAndStudent_UserId(10L, 21L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> service.removeStudent(10L, 21L));
+        verify(classMemberRepository, never()).delete(any());
+    }
+
+    @Test
+    void removeStudent_rejectsInvalidIds() {
+        assertThrows(IllegalArgumentException.class, () -> service.removeStudent(0L, 21L));
+        assertThrows(IllegalArgumentException.class, () -> service.removeStudent(10L, -1L));
+        verifyNoInteractions(classRepository, classMemberRepository);
+    }
+
+    @Test
+    void removeStudent_propagatesDeleteFailure() {
+        var classroom = prepareUpdate();
+        var member = new com.jtech.entity.ClassroomMember(classroom,
+                student(21L, "student@example.com", UserStatus.ACTIVE, "STUDENT"));
+        when(classMemberRepository.findByClassroom_IdAndStudent_UserId(10L, 21L))
+                .thenReturn(Optional.of(member));
+        doThrow(new DataIntegrityViolationException("Database error"))
+                .when(classMemberRepository).flush();
+
+        assertThrows(DataIntegrityViolationException.class, () -> service.removeStudent(10L, 21L));
     }
 }

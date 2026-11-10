@@ -107,7 +107,8 @@ export function PostListPage({ classId }: PostListPageProps) {
         <div className="post-list-header-actions">
           {!isArchived && <button type="button" className="post-list-create" disabled={!classroom || !!error || loading}
             onClick={() => { setSuccess(""); setShowCreate(true); }}>+ Tạo bài đăng</button>}
-          <button type="button" onClick={() => navigate("/moderator/classes")}>Danh sách lớp</button>
+          <button type="button" disabled={!classroom || !!error || loading}
+            onClick={() => navigate(`/moderator/classes/${classId}/students`)}>Danh sách lớp</button>
         </div>
       </header>
 
