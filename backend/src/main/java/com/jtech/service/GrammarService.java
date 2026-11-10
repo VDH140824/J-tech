@@ -35,13 +35,6 @@ public class GrammarService {
     }
 
     @Transactional(readOnly = true)
-    public GrammarDetailResponse getById(Long id) {
-        Grammar grammar = grammarRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grammar not found"));
-        return toResponse(grammar);
-    }
-
-    @Transactional(readOnly = true)
     public List<GrammarDetailResponse> getByLesson(Long lessonId, Grammar.Status status) {
         if (!lessonRepository.existsById(lessonId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lesson not found");

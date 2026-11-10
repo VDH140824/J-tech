@@ -43,11 +43,6 @@ export async function getGrammarsByLesson(lessonId: number, status?: string): Pr
   return data;
 }
 
-export async function getGrammarById(id: number): Promise<GrammarItem> {
-  const { data } = await apiClient.get<GrammarItem>(`/grammars/${id}`);
-  return data;
-}
-
 export async function createGrammar(lessonId: number, payload: GrammarFormInput): Promise<GrammarItem> {
   const { data } = await apiClient.post<GrammarItem>(`/lessons/${lessonId}/grammars`, payload);
   return data;

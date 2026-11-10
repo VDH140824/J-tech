@@ -69,7 +69,7 @@ application-local.yaml
 *.swp
 *.swo
 *~
-
 .fake
+*.spec.*
 # 7. AUDIT DOCUMENTS
 .audit-docs/

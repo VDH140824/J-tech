@@ -50,8 +50,9 @@ class ClassServiceTest {
         return classroom;
     }
 
+    //deleteClass_success
     @Test
-    void deleteClass_success() {
+    void UTCID01() {
         var classroom = prepareUpdate();
 
         service.deleteClass(10L);
@@ -62,8 +63,9 @@ class ClassServiceTest {
         verify(classRepository).flush();
     }
 
+    //deleteClass_hasMembers
     @Test
-    void deleteClass_hasMembers() {
+    void UTCID02() {
         prepareUpdate();
         when(classRepository.countStudents(10L)).thenReturn(1L);
 
@@ -74,8 +76,9 @@ class ClassServiceTest {
         verify(classRepository, never()).delete(any());
     }
 
+    //deleteClass_hasPosts
     @Test
-    void deleteClass_hasPosts() {
+    void UTCID03() {
         prepareUpdate();
         when(classRepository.countPosts(10L)).thenReturn(1L);
 
@@ -85,8 +88,9 @@ class ClassServiceTest {
         verify(classRepository, never()).delete(any());
     }
 
+    //deleteClass_deleteFailed
     @Test
-    void deleteClass_deleteFailed() {
+    void UTCID04() {
         var classroom = prepareUpdate();
         doThrow(new DataIntegrityViolationException("Storage error"))
                 .when(classRepository).flush();
@@ -95,8 +99,9 @@ class ClassServiceTest {
         verify(classRepository).delete(classroom);
     }
 
+    //updateClass_success
     @Test
-    void updateClass_success() {
+    void UTCID05() {
         var classroom = prepareUpdate();
         when(classRepository.countStudents(10L)).thenReturn(32L);
         var result = service.updateClass(10L, new ClassRequest(" NEW_CODE ", " Mô tả ", "CLOSED"));
@@ -110,16 +115,18 @@ class ClassServiceTest {
         verify(classRepository).saveAndFlush(classroom);
     }
 
+    //updateClass_sameCode
     @Test
-    void updateClass_sameCode() {
+    void UTCID06() {
         var classroom = prepareUpdate();
         service.updateClass(10L, new ClassRequest("OLD_CODE", null, "ACTIVE"));
         verify(classRepository).existsByCodeAndIdNot("OLD_CODE", 10L);
         verify(classRepository).saveAndFlush(classroom);
     }
 
+    //updateClass_duplicateCode
     @Test
-    void updateClass_duplicateCode() {
+    void UTCID07() {
         var classroom = prepareUpdate();
         when(classRepository.existsByCodeAndIdNot("OTHER", 10L)).thenReturn(true);
         assertThrows(IllegalStateException.class,
@@ -128,26 +135,29 @@ class ClassServiceTest {
         verify(classRepository, never()).saveAndFlush(any());
     }
 
+    //updateClass_invalidCode
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" ", "JP N5", "JP@N5", "A234567890123456789012345678901"})
-    void updateClass_invalidCode(String code) {
+    void UTCID08(String code) {
         prepareUpdate();
         assertThrows(IllegalArgumentException.class,
                 () -> service.updateClass(10L, new ClassRequest(code, null, "ACTIVE")));
         verify(classRepository, never()).saveAndFlush(any());
     }
 
+    //updateClass_descriptionTooLong
     @Test
-    void updateClass_descriptionTooLong() {
+    void UTCID09() {
         prepareUpdate();
         assertThrows(IllegalArgumentException.class,
                 () -> service.updateClass(10L, new ClassRequest("OLD_CODE", "a".repeat(101), "ACTIVE")));
         verify(classRepository, never()).saveAndFlush(any());
     }
 
+    //updateClass_descriptionMaxLength
     @Test
-    void updateClass_descriptionMaxLength() {
+    void UTCID10() {
         var classroom = prepareUpdate();
         var description = "a".repeat(100);
 
@@ -157,24 +167,27 @@ class ClassServiceTest {
         verify(classRepository).saveAndFlush(classroom);
     }
 
+    //updateClass_emptyDescription
     @Test
-    void updateClass_emptyDescription() {
+    void UTCID11() {
         prepareUpdate();
         assertNull(service.updateClass(10L, new ClassRequest("OLD_CODE", "   ", "ACTIVE")).description());
     }
 
+    //updateClass_invalidStatus
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"INVALID", "active"})
-    void updateClass_invalidStatus(String status) {
+    void UTCID12(String status) {
         prepareUpdate();
         assertThrows(IllegalArgumentException.class,
                 () -> service.updateClass(10L, new ClassRequest("OLD_CODE", null, status)));
         verify(classRepository, never()).saveAndFlush(any());
     }
 
+    //updateClass_saveFailed
     @Test
-    void updateClass_saveFailed() {
+    void UTCID13() {
         prepareUpdate();
         when(classRepository.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("Storage error"));
         assertThrows(DataIntegrityViolationException.class,
@@ -182,8 +195,9 @@ class ClassServiceTest {
         verify(classRepository, never()).countStudents(any());
     }
 
+    //createClass_success
     @Test
-    void createClass_success() {
+    void UTCID14() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         var result = service.createClass(new ClassRequest(" JP_N5-01 ", " Mô tả ", "ARCHIVED"));
         var saved = org.mockito.ArgumentCaptor.forClass(Classroom.class);
@@ -196,63 +210,71 @@ class ClassServiceTest {
         verify(entityManager).refresh(saved.getValue());
     }
 
+    //createClass_invalidCode
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"   ", "JP N5", "JP/N5", "JP@N5", "Lớp", "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345"})
-    void createClass_invalidCode(String code) {
+    void UTCID15(String code) {
         assertThrows(IllegalArgumentException.class, () -> service.createClass(new ClassRequest(code, null, "ACTIVE")));
         verifyNoInteractions(classRepository);
     }
 
+    //createClass_descriptionTooLong
     @Test
-    void createClass_descriptionTooLong() {
+    void UTCID16() {
         assertThrows(IllegalArgumentException.class,
                 () -> service.createClass(new ClassRequest("JP_N5", "a".repeat(101), "ACTIVE")));
         verifyNoInteractions(classRepository);
     }
 
+    //createClass_maxLength
     @Test
-    void createClass_maxLength() {
+    void UTCID17() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         var result = service.createClass(new ClassRequest("A".repeat(30), "a".repeat(100), "ACTIVE"));
         assertEquals(30, result.code().length());
         assertEquals(100, result.description().length());
     }
 
+    //createClass_emptyDescription
     @Test
-    void createClass_emptyDescription() {
+    void UTCID18() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         assertNull(service.createClass(new ClassRequest("JP_N5", "   ", "ACTIVE")).description());
     }
 
+    //createClass_duplicateCode
     @Test
-    void createClass_duplicateCode() {
+    void UTCID19() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         when(classRepository.existsByCode("JP_N5")).thenReturn(true);
         assertThrows(IllegalStateException.class, () -> service.createClass(new ClassRequest("JP_N5", null, "ACTIVE")));
         verify(classRepository, never()).saveAndFlush(any());
     }
 
+    //createClass_duplicateOnSave
     @Test
-    void createClass_duplicateOnSave() {
+    void UTCID20() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         when(classRepository.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("Duplicate key uq_classroom_code"));
         assertThrows(IllegalStateException.class, () -> service.createClass(new ClassRequest("JP_N5", null, "ACTIVE")));
         verifyNoInteractions(entityManager);
     }
 
+    //createClass_saveFailed
     @Test
-    void createClass_saveFailed() {
+    void UTCID21() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         when(classRepository.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("Storage error"));
         assertThrows(DataIntegrityViolationException.class, () -> service.createClass(new ClassRequest("JP_N5", null, "ACTIVE")));
         verifyNoInteractions(entityManager);
     }
 
+    //createClass_invalidStatus
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"INVALID", "active", " "})
-    void createClass_invalidStatus(String status) {
+    void UTCID22(String status) {
         assertThrows(IllegalArgumentException.class,
                 () -> service.createClass(new ClassRequest("JP_N5", null, status)));
         verifyNoInteractions(classRepository);
@@ -273,8 +295,9 @@ class ClassServiceTest {
     @AfterEach
     void clearContext() { SecurityContextHolder.clearContext(); }
 
+    //getClassesByCurrentModerator_success
     @Test
-    void getClassesByCurrentModerator_success() {
+    void UTCID23() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         var createdAt = Timestamp.valueOf(LocalDateTime.of(2026, 11, 2, 9, 0));
         Object[] emptyClass = {1L, "EMPTY", 12L, null, "ACTIVE", createdAt, 0L};
@@ -292,23 +315,26 @@ class ClassServiceTest {
         verifyNoMoreInteractions(classRepository);
     }
 
+    //getClassesByCurrentModerator_empty
     @Test
-    void getClassesByCurrentModerator_empty() {
+    void UTCID24() {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         when(classRepository.findByModeratorId(12L)).thenReturn(List.of());
         assertTrue(service.getClassesByCurrentModerator().isEmpty());
     }
 
+    //getClassesByCurrentModerator_inactiveUser
     @Test
-    void getClassesByCurrentModerator_inactiveUser() {
+    void UTCID25() {
         moderator.setStatus(UserStatus.LOCKED);
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         assertThrows(AccessDeniedException.class, service::getClassesByCurrentModerator);
         verifyNoInteractions(classRepository);
     }
 
+    //getClassesByCurrentModerator_notModerator
     @Test
-    void getClassesByCurrentModerator_notModerator() {
+    void UTCID26() {
         moderator.getRole().setRoleName("STUDENT");
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         assertThrows(AccessDeniedException.class, service::getClassesByCurrentModerator);

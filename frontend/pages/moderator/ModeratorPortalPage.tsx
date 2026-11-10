@@ -5,13 +5,15 @@ import { ClassListPage } from "./ClassListPage";
 import { ModeratorChapterDetailPage } from "./ModeratorChapterDetailPage";
 import { ModeratorLayout } from "../../layouts/ModeratorLayout";
 import { ModeratorKanjiManagementPage } from "./kanji/ModeratorKanjiManagementPage";
+import { ModeratorConjugationTab } from "./ModeratorConjugationTab";
 import { FeedbackPage } from "../feedback/FeedbackPage";
 import { SECTIONS } from "./sectionConfig";
 import type { ChapterDetail } from "../../api/courseApi";
 import "../admin/AdminPortalPage.css";
 import "./ModeratorPortalPage.css";
 
-export type ModeratorTab = "courses" | "chapter-detail" | "kanji" | "classes" | "feedback";
+export type ModeratorTab =
+  "courses" | "chapter-detail" | "kanji" | "classes" | "feedback" | "conjugations";
 
 export interface ModeratorNavState {
   courseId: number;
@@ -29,6 +31,7 @@ export function ModeratorPortalPage() {
   // Match clean URL pattern: /moderator/courses/:courseId/chapters/:chapterId
   const matchChapter = useMatch("/moderator/courses/:courseId/chapters/:chapterId");
   const matchClasses = useMatch("/moderator/classes");
+  const matchConjugations = useMatch("/moderator/conjugation-forms");
 
   const [chapterInfo, setChapterInfo] = useState<ChapterDetail | null>(null);
 
@@ -54,7 +57,9 @@ export function ModeratorPortalPage() {
           ? "feedback"
           : matchChapter
             ? "chapter-detail"
-            : "courses";
+            : matchConjugations
+              ? "conjugations"
+              : "courses";
 
   const handleSelectTab = (tab: string) => {
     if (tab === "kanji") {
@@ -65,6 +70,11 @@ export function ModeratorPortalPage() {
     if (tab === "classes") {
       setChapterInfo(null);
       navigate("/moderator/classes");
+      return;
+    }
+    if (tab === "conjugations") {
+      setChapterInfo(null);
+      navigate("/moderator/conjugation-forms");
       return;
     }
     if (tab === "feedback") navigate("/moderator/feedback");
@@ -102,6 +112,7 @@ export function ModeratorPortalPage() {
 
   const courseId = matchChapter?.params.courseId ? Number(matchChapter.params.courseId) : null;
   if (activeTab === "kanji") breadcrumb = "Trang chủ / Quản lý Kanji";
+  if (activeTab === "conjugations") breadcrumb = "Trang chủ / Quản lý thể chia";
   const chapterId = matchChapter?.params.chapterId ? Number(matchChapter.params.chapterId) : null;
 
   return (
@@ -113,6 +124,7 @@ export function ModeratorPortalPage() {
     >
       {activeTab === "kanji" && <ModeratorKanjiManagementPage />}
       {activeTab === "classes" && <ClassListPage />}
+      {activeTab === "conjugations" && <ModeratorConjugationTab />}
       {activeTab === "feedback" && <FeedbackPage portal="moderator" />}
       {activeTab === "courses" && (
         <ModeratorCoursesTab

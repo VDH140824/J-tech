@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { checkIsAdmin, checkIsModerator } from "../../utils/auth";
 import { useAuthStore } from "../../store/authStore";
 import sidebarCatImg from "../../assets/sidebar-cat.png";
 import "./MainSidebar.css";
@@ -67,15 +68,8 @@ export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) 
 
   const normalizedRole = user?.role?.trim().toUpperCase();
   const normalizedRoleId = String(user?.roleId ?? "");
-  const isAdmin =
-    (!normalizedRole && normalizedRoleId === "3") ||
-    normalizedRole === "ADMIN" ||
-    normalizedRole === "ROLE_ADMIN";
-
-  const isModerator =
-    normalizedRoleId === "2" ||
-    normalizedRole === "MODERATOR" ||
-    normalizedRole === "ROLE_MODERATOR";
+  const isAdmin = checkIsAdmin(user);
+  const isModerator = checkIsModerator(user);
 
   const isHomeActive = location.pathname === "/home";
 
@@ -96,8 +90,13 @@ export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) 
       <nav className="sidebar-nav-menu">
         {!isAdmin && !isModerator && (
           <>
-            <button type="button" className={`nav-link-btn ${location.pathname === "/streak" ? "active" : ""}`} onClick={() => navigate("/streak")}>
-              <span className="nav-link-icon">🔥</span><span className="nav-link-text">Chuỗi ngày học</span>
+            <button
+              type="button"
+              className={`nav-link-btn ${location.pathname === "/streak" ? "active" : ""}`}
+              onClick={() => navigate("/streak")}
+            >
+              <span className="nav-link-icon">🔥</span>
+              <span className="nav-link-text">Chuỗi ngày học</span>
             </button>
             <button
               type="button"

@@ -149,6 +149,10 @@ public class AuthServiceImpl implements AuthService {
                       .orElseThrow(() -> new IllegalArgumentException("User not found"))
                 : getAuthenticatedUser();
 
+        User authenticatedUser = getAuthenticatedUser();
+        if (!java.util.Objects.equals(user.getUserId(), authenticatedUser.getUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException("Cannot update another user profile");
+        }
         user.setFullName(name);
         if (dateOfBirth != null) {
             user.setDateOfBirth(dateOfBirth);
@@ -205,7 +209,8 @@ public class AuthServiceImpl implements AuthService {
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (
-            authentication == null || !authentication.isAuthenticated()
+            authentication == null || !authentication.isAuthenticated() ||
+            authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken
         ) throw new AuthenticationCredentialsNotFoundException("Authenticated user is required");
         Object principal = authentication.getPrincipal();
         String email =

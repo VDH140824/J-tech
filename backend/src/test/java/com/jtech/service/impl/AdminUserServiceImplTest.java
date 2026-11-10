@@ -60,8 +60,9 @@ class AdminUserServiceImplTest {
         user.setStatus(UserStatus.ACTIVE);
     }
 
+    // UTCID01: Lọc người dùng theo email, vai trò và trạng thái ACTIVE.
     @Test
-void getUsers_success() {
+void UTCID01() {
     // Arrange: Chuẩn bị dữ liệu giả
     Pageable pageable = PageRequest.of(0, 10);
 
@@ -84,8 +85,9 @@ void getUsers_success() {
     verify(userRepository).findAdminUsers(
             "student@gmail.com", 2L, UserStatus.ACTIVE, pageable);
 }
+    // UTCID02: Lấy danh sách người dùng khi không lọc theo trạng thái.
     @Test
-void getUsers_allStatus() {
+void UTCID02() {
     // Arrange: Admin chọn All Status (không lọc trạng thái)
     Pageable pageable = PageRequest.of(0, 10);
 
@@ -106,8 +108,9 @@ void getUsers_allStatus() {
     verify(userRepository).findAdminUsers(
             null, null, null, pageable);
 }
+// UTCID03: Trả về trang rỗng khi không tìm thấy người dùng phù hợp.
 @Test
-void getUsers_empty() {
+void UTCID03() {
     // Arrange
     Pageable pageable = PageRequest.of(0, 10);
 
@@ -124,8 +127,9 @@ void getUsers_empty() {
     assertTrue(result.getContent().isEmpty());
 }
 
+    // UTCID04: Chỉ lấy người dùng đang chờ duyệt.
     @Test
-    void getPendingUsers_success() {
+    void UTCID04() {
         // Arrange
         user.setStatus(UserStatus.PENDING);
         Pageable pageable = PageRequest.of(0, 10);
@@ -142,8 +146,9 @@ void getUsers_empty() {
         verify(userRepository).findAdminUsers(null, null, UserStatus.PENDING, pageable);
     }
 
+    // UTCID05: Trả về trang rỗng khi không có người dùng chờ duyệt.
     @Test
-    void getPendingUsers_empty() {
+    void UTCID05() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
         when(userRepository.findAdminUsers(null, null, UserStatus.PENDING, pageable))
@@ -158,8 +163,9 @@ void getUsers_empty() {
         verify(userRepository).findAdminUsers(null, null, UserStatus.PENDING, pageable);
     }
 
+    // UTCID06: Duyệt người dùng và xóa lý do trạng thái cũ.
     @Test
-    void approveUser_success() {
+    void UTCID06() {
         // Arrange
         user.setStatus(UserStatus.PENDING);
         user.setStatusReason("Awaiting review");
@@ -178,8 +184,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID07: Báo lỗi khi duyệt người dùng không tồn tại.
     @Test
-    void approveUser_notFound() {
+    void UTCID07() {
         // Arrange
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -192,8 +199,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID08: Từ chối người dùng với lý do và thời điểm xét duyệt.
     @Test
-    void rejectUser_success() {
+    void UTCID08() {
         // Arrange
         user.setStatus(UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -213,8 +221,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID09: Báo lỗi khi từ chối người dùng không tồn tại.
     @Test
-    void rejectUser_notFound() {
+    void UTCID09() {
         // Arrange
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -229,8 +238,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID10: Không cho từ chối khi lý do chỉ chứa khoảng trắng.
     @Test
-    void rejectUser_requiresReason() {
+    void UTCID10() {
         user.setStatus(UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         RejectUserRequest request = new RejectUserRequest();
@@ -241,8 +251,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID11: Chấp nhận lý do từ chối dài đúng 100 ký tự.
     @Test
-    void rejectUser_reasonMaxLength() {
+    void UTCID11() {
         user.setStatus(UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
@@ -257,8 +268,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID12: Từ chối lý do dài hơn 100 ký tự và không lưu thay đổi.
     @Test
-    void rejectUser_reasonTooLong() {
+    void UTCID12() {
         user.setStatus(UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         RejectUserRequest request = new RejectUserRequest();
@@ -272,8 +284,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID13: Khóa người dùng, cắt khoảng trắng ở lý do và ghi thời điểm xét duyệt.
     @Test
-    void updateUserStatus_success() {
+    void UTCID13() {
         // Arrange
         AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
         request.setStatusReason("  Vi phạm quy định  ");
@@ -292,8 +305,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID14: Mở lại tài khoản và xóa lý do khóa cũ.
     @Test
-    void updateUserStatus_active() {
+    void UTCID14() {
         // Arrange
         user.setStatus(UserStatus.LOCKED);
         user.setStatusReason("Old reason");
@@ -310,8 +324,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID15: Không cho khóa người dùng khi thiếu lý do.
     @Test
-    void updateUserStatus_lockedRequiresReason() {
+    void UTCID15() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
 
@@ -320,8 +335,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID16: Chấp nhận lý do khóa dài đúng 100 ký tự.
     @Test
-    void updateUserStatus_lockedReasonMaxLength() {
+    void UTCID16() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         String reason = "a".repeat(100);
@@ -335,8 +351,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID17: Từ chối lý do khóa dài hơn 100 ký tự.
     @Test
-    void updateUserStatus_lockedReasonTooLong() {
+    void UTCID17() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
         request.setStatusReason("a".repeat(101));
@@ -349,8 +366,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID18: Chấp nhận lý do đổi sang REJECTED dài đúng 100 ký tự.
     @Test
-    void updateUserStatus_rejectedReasonMaxLength() {
+    void UTCID18() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         String reason = "a".repeat(100);
@@ -364,8 +382,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID19: Từ chối lý do đổi sang REJECTED dài hơn 100 ký tự.
     @Test
-    void updateUserStatus_rejectedReasonTooLong() {
+    void UTCID19() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         AdminUserStatusRequest request = new AdminUserStatusRequest("REJECTED");
         request.setStatusReason("a".repeat(101));
@@ -378,8 +397,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID20: Đổi vai trò người dùng sang MODERATOR.
     @Test
-    void changeUserRole_success() {
+    void UTCID20() {
         // Arrange
         Role moderator = role("MODERATOR");
         ChangeUserRoleRequest request = roleRequest("MODERATOR");
@@ -396,8 +416,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID21: Đổi vai trò người dùng sang ADMIN.
     @Test
-    void changeUserRole_admin() {
+    void UTCID21() {
         // Arrange
         Role admin = role("ADMIN");
         ChangeUserRoleRequest request = roleRequest("ADMIN");
@@ -414,8 +435,9 @@ void getUsers_empty() {
         verify(userRepository).save(user);
     }
 
+    // UTCID22: Ngăn admin tự đổi vai trò của chính mình.
     @Test
-    void changeUserRole_selfChange() {
+    void UTCID22() {
         // Arrange
         ChangeUserRoleRequest request = roleRequest("ADMIN");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -430,8 +452,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID23: Xóa người dùng khi ID tồn tại.
     @Test
-    void deleteUser_success() {
+    void UTCID23() {
         // Arrange
         when(userRepository.existsById(1L)).thenReturn(true);
 
@@ -443,8 +466,9 @@ void getUsers_empty() {
         verify(userRepository).deleteById(1L);
     }
 
+    // UTCID24: Báo lỗi và không xóa khi ID người dùng không tồn tại.
     @Test
-    void deleteUser_notFound() {
+    void UTCID24() {
         // Arrange
         when(userRepository.existsById(99L)).thenReturn(false);
 
@@ -457,8 +481,9 @@ void getUsers_empty() {
         verify(userRepository, never()).deleteById(anyLong());
     }
 
+    // UTCID25: Tạo trước tài khoản MODERATOR với trạng thái ACTIVE và số xu bằng 0.
     @Test
-    void preCreateUser_success() {
+    void UTCID25() {
         // Arrange
         PreCreateUserRequest request = preCreateRequest("moderator@example.com", "MODERATOR");
         Role moderator = role("MODERATOR");
@@ -479,8 +504,9 @@ void getUsers_empty() {
     }
 
 
+    // UTCID26: Chuẩn hóa email bằng cách bỏ khoảng trắng ngoài và chuyển thành chữ thường.
     @Test
-    void preCreateUser_normalizeEmail() {
+    void UTCID26() {
         // Arrange
         PreCreateUserRequest request = preCreateRequest("  NEW@EXAMPLE.COM  ", "MODERATOR");
         when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
@@ -500,8 +526,9 @@ void getUsers_empty() {
         assertEquals("new@example.com", savedUser.getValue().getEmail());
     }
 
+    // UTCID27: Từ chối tạo tài khoản khi email đã tồn tại.
     @Test
-    void preCreateUser_duplicateEmail() {
+    void UTCID27() {
         // Arrange
         PreCreateUserRequest request = preCreateRequest("moderator@example.com", "MODERATOR");
         user.setEmail("moderator@example.com");
@@ -517,8 +544,9 @@ void getUsers_empty() {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // UTCID28: Cắt tên tạo từ email xuống tối đa 50 ký tự.
     @Test
-    void preCreateUser_longName() {
+    void UTCID28() {
         // Arrange
         String localPart = "a".repeat(51);
         String email = localPart + "@example.com";
@@ -538,8 +566,9 @@ void getUsers_empty() {
         verify(userRepository).save(any(User.class));
     }
 
+    // UTCID29: Chấp nhận email dài đúng 255 ký tự.
     @Test
-    void preCreateUser_emailMaxLength() {
+    void UTCID29() {
         String suffix = "@example.com";
         String email = "a".repeat(255 - suffix.length()) + suffix;
         PreCreateUserRequest request = preCreateRequest(email, "MODERATOR");
@@ -557,8 +586,9 @@ void getUsers_empty() {
         verify(userRepository).save(any(User.class));
     }
 
+    // UTCID30: Từ chối email dài hơn 255 ký tự.
     @Test
-    void preCreateUser_emailTooLong() {
+    void UTCID30() {
         String suffix = "@example.com";
         String email = "a".repeat(256 - suffix.length()) + suffix;
         PreCreateUserRequest request = preCreateRequest(email, "MODERATOR");
@@ -571,8 +601,9 @@ void getUsers_empty() {
         verifyNoInteractions(userRepository, roleRepository);
     }
 
+    // UTCID31: Từ chối email thiếu ký tự @.
     @Test
-    void preCreateUser_missingAtSign() {
+    void UTCID31() {
         // Arrange
         PreCreateUserRequest request = preCreateRequest("usergmail.com", "MODERATOR");
 
@@ -583,8 +614,9 @@ void getUsers_empty() {
         verifyNoInteractions(userRepository, roleRepository);
     }
 
+    // UTCID32: Từ chối email thiếu phần tên trước @.
     @Test
-    void preCreateUser_missingLocalPart() {
+    void UTCID32() {
         // Arrange
         PreCreateUserRequest request = preCreateRequest("@gmail.com", "MODERATOR");
 
@@ -595,8 +627,9 @@ void getUsers_empty() {
         verifyNoInteractions(userRepository, roleRepository);
     }
 
+    // UTCID33: Từ chối email thiếu tên miền hoặc phần mở rộng tên miền.
     @Test
-    void preCreateUser_missingDomain() {
+    void UTCID33() {
         // Arrange
         PreCreateUserRequest noDomain = preCreateRequest("user@", "MODERATOR");
         PreCreateUserRequest noDomainSuffix = preCreateRequest("user@gmail", "MODERATOR");
@@ -609,8 +642,9 @@ void getUsers_empty() {
         verifyNoInteractions(userRepository, roleRepository);
     }
 
+    // UTCID34: Từ chối email chứa nhiều ký tự @.
     @Test
-    void preCreateUser_multipleAtSigns() {
+    void UTCID34() {
         // Arrange
         PreCreateUserRequest request = preCreateRequest("user@@gmail.com", "MODERATOR");
 
@@ -621,8 +655,9 @@ void getUsers_empty() {
         verifyNoInteractions(userRepository, roleRepository);
     }
 
+    // UTCID35: Từ chối email chứa khoảng trắng bên trong.
     @Test
-    void preCreateUser_emailWithSpaces() {
+    void UTCID35() {
         // Arrange
         PreCreateUserRequest request = preCreateRequest("user name@gmail.com", "MODERATOR");
 
@@ -633,8 +668,9 @@ void getUsers_empty() {
         verifyNoInteractions(userRepository, roleRepository);
     }
 
+    // UTCID36: Từ chối email có tên miền chứa hai dấu chấm liên tiếp.
     @Test
-    void preCreateUser_invalidDomain() {
+    void UTCID36() {
         // Arrange
         PreCreateUserRequest request = preCreateRequest("user@gmail..com", "MODERATOR");
 

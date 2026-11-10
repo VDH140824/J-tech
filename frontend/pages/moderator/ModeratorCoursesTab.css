@@ -1,0 +1,57 @@
+﻿.course-list { max-width:1200px; margin:0 auto; gap:20px; }
+.course-list-header { display:flex; justify-content:space-between; align-items:center; gap:20px; }
+.course-list-heading { display:flex; align-items:flex-start; gap:14px; }
+.course-list-heading > svg { width:30px; height:30px; margin-top:3px; color:#64748b; }
+.course-list-heading h2 { margin:0 0 5px; color:#17202a; font-size:25px; letter-spacing:-.6px; }
+.course-list-heading p { margin:0; color:#64748b; font-size:14px; }
+.course-create-button { display:flex; align-items:center; justify-content:center; gap:8px; padding:11px 18px; border:0; border-radius:8px; background:#111827; color:white; font:inherit; font-size:13px; font-weight:600; white-space:nowrap; cursor:pointer; }
+.course-create-button:hover { background:#334155; }
+.course-list-filters { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.course-search { flex:1; min-width:230px; display:flex; align-items:center; gap:9px; padding:0 12px; border:1px solid #cbd5e1; border-radius:7px; background:white; color:#94a3b8; }
+.course-search input { border:0; background:transparent; width:100%; padding:11px 0; outline:none; font:inherit; font-size:13px; color:#334155; }
+.course-search:focus-within { outline:2px solid #64748b; outline-offset:2px; }
+.course-list-filters > select { min-width:170px; padding:10px 12px; border:1px solid #cbd5e1; border-radius:7px; background:white; color:#475569; font:inherit; font-size:13px; }
+.course-reset { border:0; background:transparent; color:#64748b; font:inherit; font-size:13px; cursor:pointer; }
+.course-table-container { border:1px solid #cbd5e1; border-radius:9px; background:white; overflow:hidden; }
+.course-list-table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+.course-list-table th { padding:12px 14px; color:#475569; font-size:12px; font-weight:650; background:#f8fafc; white-space:nowrap; border-bottom:1px solid #cbd5e1; }
+.course-list-table td { padding:12px 14px; vertical-align:middle; border-bottom:1px solid #e2e8f0; color:#475569; }
+.course-list-table tr:last-child td { border-bottom:0; }
+.course-list-table tbody tr:hover { background:#fafcfd; }
+.course-list-table th:first-child, .course-list-table td:first-child { width:34px; text-align:center; }
+.course-thumbnail { display:block; width:72px; height:58px; border:1px solid #d1d5db; border-radius:6px; object-fit:cover; }
+.course-thumbnail-fallback { display:grid; place-items:center; font-size:32px; color:#52525b; background:#f8fafc; }
+.course-title-cell { width:40%; min-width:200px; }
+.course-title-cell h3 { font-size:14px; margin:0 0 4px; color:#1e293b; font-weight:650; }
+.course-code { font-size:10px; font-weight:600; color:#64748b; letter-spacing:.5px; }
+.course-title-cell p { margin:4px 0 0; max-width:390px; color:#64748b; font-size:12px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
+.course-count-cell { text-align:center; }
+.course-status { display:inline-block; padding:4px 8px; border:1px solid #d1d5db; border-radius:6px; background:white; color:#64748b; font-size:11px; font-weight:600; white-space:nowrap; }
+.course-status-published { background:#111827; color:white; border-color:#111827; }
+.course-status-hidden { background:#f1f5f9; }
+.course-status-archived { background:#f1f5f9; color:#94a3b8; }
+.course-row-actions { display:flex; gap:5px; align-items:center; }
+.course-icon-button { display:grid; place-items:center; width:30px; height:30px; border:0; border-radius:5px; background:transparent; color:#7c8798; cursor:pointer; }
+.course-icon-button:hover { color:#111827; background:#e2e8f0; }
+.course-delete-button:hover { color:#dc2626; background:#fef2f2; }
+.course-list button:disabled { opacity:.4; cursor:not-allowed; }
+.course-list button:focus-visible, .course-list select:focus-visible { outline:2px solid #64748b; outline-offset:3px; }
+.course-list-footer { display:flex; justify-content:space-between; align-items:center; gap:16px; color:#94a3b8; font-size:12px; }
+.course-list-pagination { display:flex; justify-content:center; align-items:center; gap:7px; }
+.course-list-pagination button { min-width:30px; height:30px; padding:0 7px; border:1px solid #d1d5db; border-radius:6px; background:white; color:#475569; font:inherit; font-weight:600; cursor:pointer; }
+.course-list-pagination button[aria-current=page] { background:#111827; border-color:#111827; color:white; }
+.course-list-error { padding:12px 16px; border:1px solid #fecaca; border-radius:8px; background:#fef2f2; color:#b91c1c; font-size:13px; }
+.course-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.course-form-dialog { width:min(560px, calc(100% - 32px)); max-height:90vh; overflow:auto; border:1px solid #e2e8f0; border-radius:18px; padding:24px; box-shadow:0 24px 70px #0f172a40; }
+.course-form-dialog::backdrop { background:#0f172a88; }
+.chapter-manager-header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:12px; }
+.chapter-manager-header h3 { margin:0; }
+.chapter-manager-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.chapter-manager .mod-chapter-info small { color:#64748b; }
+.chapter-manager .chapter-delete { color:#b91c1c; }
+.course-form-dialog fieldset { border:0; padding:0; display:grid; gap:14px; }
+.course-form-dialog label { display:grid; gap:6px; color:#334155; }
+.course-form-dialog input, .course-form-dialog textarea, .course-form-dialog select { width:100%; box-sizing:border-box; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font:inherit; }
+.course-form-dialog [role=alert] { color:#b91c1c; }
+.course-form-dialog .course-list-pagination { padding-top:20px; justify-content:flex-end; }
+@media(max-width:700px) { .course-list-header { align-items:flex-start; flex-direction:column; } .course-list-heading h2 { font-size:22px; } .course-list-filters > select { flex:1; min-width:140px; } .course-list-footer { flex-wrap:wrap; justify-content:center; } .course-list-pagination { order:2; width:100%; } .course-list-table { min-width:760px; } }

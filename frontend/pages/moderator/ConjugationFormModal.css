@@ -1,0 +1,159 @@
+/* Bổ sung cho các class modal-* dùng chung trong ModeratorPortalPage.css. */
+
+.cf-modal-card {
+  max-width: 880px;
+}
+
+.cf-modal-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.cf-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 24px 0;
+  padding: 10px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.86rem;
+}
+
+.cf-required {
+  color: #ef4444;
+}
+
+.cf-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cf-hint,
+.cf-group-hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.cf-field-error {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+/* UC-47 E1: tô đỏ ô thiếu dữ liệu. */
+.cf-invalid .modal-input,
+.cf-invalid .modal-textarea {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.cf-jp {
+  font-family: "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+}
+
+.cf-groups {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.cf-groups > legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.cf-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* Mỗi nhóm động từ một màu viền trên để dễ phân biệt khi soạn. */
+.cf-group {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid var(--cf-group-color);
+  border-radius: 12px;
+  background-color: #f8fafc;
+}
+
+.cf-group--1 { --cf-group-color: #0d9488; }
+.cf-group--2 { --cf-group-color: #2563eb; }
+.cf-group--3 { --cf-group-color: #7c3aed; }
+
+.cf-group-label {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--cf-group-color);
+}
+
+@media (max-width: 760px) {
+  .cf-grid-3,
+  .cf-groups-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Các class dùng ở màn Quản lý thể chia (ModeratorConjugationTab) ===== */
+
+/* Quản lý thể chia: lỗi truy vấn (MSG20) kèm nút Thử lại */
+.mod-error-banner {
+  justify-content: space-between;
+  text-align: left;
+}
+
+.mod-btn-retry {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #fecdd3;
+  background-color: #ffffff;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mod-btn-retry:hover {
+  background-color: #fee2e2;
+}
+
+/* Nút thao tác dạng chữ (Sửa / Xóa) — màn Quản lý thể chia */
+.mod-text-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mod-btn-text-action {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.mod-btn-text-action.edit {
+  color: #0d9488;
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.mod-btn-text-action.edit:hover { background: #ccfbf1; }
+
+.mod-btn-text-action.delete {
+  color: #dc2626;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.mod-btn-text-action.delete:hover { background: #fee2e2; }
