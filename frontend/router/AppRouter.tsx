@@ -20,6 +20,8 @@ import { AdminPortalPage } from "../pages/admin/AdminPortalPage";
 import { ModeratorPortalPage } from "../pages/moderator/ModeratorPortalPage";
 import { MainLayout } from "../layouts/MainLayout";
 import { FeedbackPage } from "../pages/feedback/FeedbackPage";
+import { GamesPage } from "../pages/games/GamesPage";
+import { VocabularyRainPage } from "../pages/games/VocabularyRainPage";
 
 export function AppRouter() {
   return (
@@ -71,6 +73,22 @@ export function AppRouter() {
           <Route
             path="/profile"
             element={<ProfilePage />}
+          />
+          <Route
+            path="/games"
+            element={
+              <StudentProtectedRoute>
+                <GamesPage />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/games/vocabulary-rain"
+            element={
+              <StudentProtectedRoute>
+                <VocabularyRainPage />
+              </StudentProtectedRoute>
+            }
           />
           <Route
             path="/feedback"

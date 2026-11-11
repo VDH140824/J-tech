@@ -1,0 +1,87 @@
+.jtech-games {
+  width: min(100%, 1080px);
+  margin-inline: auto;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  color: #242638;
+}
+
+.jtech-games h1 { margin: .6rem 0; font-size: clamp(1.7rem, 4vw, 2.4rem); }
+.jtech-games h2 { margin: 0 0 .65rem; font-size: 1.25rem; }
+.jtech-games p { line-height: 1.55; }
+.jtech-games-back { color: #8f284a; font-weight: 650; }
+
+.jtech-games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 340px));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.jtech-games-card, .jtech-games-picker {
+  overflow: hidden;
+  border: 1px solid #e7dce3;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 6px 18px #3620320a;
+}
+
+.jtech-games-card-body, .jtech-games-picker { padding: clamp(1rem, 3vw, 1.5rem); }
+.jtech-games-picker { margin-top: 1.25rem; }
+
+.jtech-games-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .9rem;
+  min-height: 155px;
+  background: repeating-linear-gradient(115deg, transparent 0 28px, #a2e4ff14 29px 30px),
+    radial-gradient(ellipse at bottom, #217696, #102840 72%);
+}
+
+.jtech-games-cover span {
+  padding: .25em .42em;
+  border: 1px solid #81dafa;
+  border-radius: .6rem;
+  background: #103953;
+  color: #dcf8ff;
+  font-size: 2rem;
+  transform: translateY(-.65rem) rotate(-9deg);
+}
+
+.jtech-games-cover span:nth-child(2) { transform: translateY(.6rem) rotate(8deg); }
+.jtech-games-cover span:nth-child(3) { transform: translateY(-.25rem) rotate(-4deg); }
+
+.jtech-games-action {
+  display: inline-block;
+  padding: .68rem 1.05rem;
+  border: 0;
+  border-radius: .65rem;
+  background: #a52e56;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.jtech-games-action:hover { background: #852344; color: #fff; }
+.jtech-games-action:disabled { background: #eee7eb; color: #655761; cursor: default; }
+.jtech-games-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.jtech-games-fields label { display: grid; min-width: 0; gap: .4rem; font-weight: 650; }
+.jtech-games-fields select {
+  width: 100%;
+  padding: .65rem;
+  border: 1px solid #d9ccd5;
+  border-radius: .55rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+
+.jtech-games-fields select:disabled { background: #f6f3f5; color: #655761; }

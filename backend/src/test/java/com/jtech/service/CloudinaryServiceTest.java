@@ -77,4 +77,24 @@ class CloudinaryServiceTest {
         service.deleteDocument("other-folder/file.pdf");
         verifyNoInteractions(cloudinary);
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ok", "not found"})
+    void deleteVocabularyPdf_acceptsDeletedOrAbsentAsset(String result) throws Exception {
+        String publicId = "Jtech/Lessons/Documents/file.pdf";
+        when(cloudinary.uploader().destroy(eq(publicId), anyMap())).thenReturn(Map.of("result", result));
+
+        service.deleteVocabularyPdf(publicId);
+
+        verify(cloudinary.uploader()).destroy(eq(publicId), argThat(options ->
+                "raw".equals(options.get("resource_type")) && Boolean.TRUE.equals(options.get("invalidate"))));
+    }
+
+    @Test
+    void deleteVocabularyPdf_rejectsUnconfirmedDeletion() throws Exception {
+        String publicId = "Jtech/Lessons/Documents/file.pdf";
+        when(cloudinary.uploader().destroy(eq(publicId), anyMap())).thenReturn(Map.of("result", "error"));
+
+        assertThrows(IllegalStateException.class, () -> service.deleteVocabularyPdf(publicId));
+    }
 }

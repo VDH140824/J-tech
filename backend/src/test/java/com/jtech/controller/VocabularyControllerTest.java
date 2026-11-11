@@ -13,6 +13,7 @@ import com.jtech.repository.VocabularyRepository;
 import com.jtech.service.VocabularyService;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -22,6 +23,12 @@ class VocabularyControllerTest {
     private final VocabularyRepository repository = mock(VocabularyRepository.class);
     private final VocabularyService service = mock(VocabularyService.class);
     private final VocabularyController controller = new VocabularyController(repository, service);
+
+    @BeforeEach
+    void useRealCreateAndUpdate() {
+        doCallRealMethod().when(service).create(eq(repository), anyLong(), any(), any());
+        doCallRealMethod().when(service).update(eq(repository), anyLong(), any());
+    }
 
     private static final String VALID_INPUT = """
     {"word":" 日本語 ","reading":" にほんご ","meaningVi":" Tiếng Nhật ",
@@ -77,6 +84,7 @@ class VocabularyControllerTest {
             .andExpect(jsonPath("$.reading").value("にほんご"))
             .andExpect(jsonPath("$.displayOrder").value(2));
         order = inOrder(service, repository);
+        order.verify(service).update(eq(repository), eq(5L), any(VocabularyRequest.class));
         order.verify(service).require(repository, 5L);
         order.verify(repository).existsByLessonIdAndWordIgnoreCaseAndIdNot(12L, "日本語", 5L);
         order.verify(repository).save(existing);

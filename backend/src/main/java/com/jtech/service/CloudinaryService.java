@@ -46,6 +46,25 @@ public class CloudinaryService {
         try { cloudinary.uploader().destroy(id, ObjectUtils.asMap("resource_type", "raw")); }
         catch (IOException exception) { throw new IllegalStateException("Không thể xóa tài liệu Cloudinary", exception); }
     }
+
+    public void deleteVocabularyPdf(String publicId) {
+        if (publicId == null || !publicId.startsWith("Jtech/Lessons/Documents/")
+                || !publicId.endsWith(".pdf")) {
+            return;
+        }
+        try {
+            var response = cloudinary.uploader().destroy(
+                publicId, ObjectUtils.asMap("resource_type", "raw", "invalidate", true)
+            );
+            Object result = response.get("result");
+            if (!"ok".equals(result) && !"not found".equals(result)) {
+                throw new IllegalStateException("Cloudinary không xác nhận đã xóa PDF");
+            }
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể xóa PDF trên Cloudinary", exception);
+        }
+    }
+
     private final Cloudinary cloudinary;
 
     public CloudinaryService(Cloudinary cloudinary) {

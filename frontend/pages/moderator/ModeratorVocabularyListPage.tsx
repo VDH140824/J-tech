@@ -5,6 +5,8 @@ import {
   archiveVocabulary,
   getVocabularies,
   saveVocabulary,
+  updateVocabularyStatuses,
+  type BulkVocabularyStatus,
   type VocabularyInput,
   type VocabularyStatus,
   type VocabularyItem,
@@ -31,6 +33,7 @@ const STATUS_LABELS: Record<VocabularyStatus, string> = {
   HIDDEN: "Đã ẩn",
   ARCHIVED: "Đã lưu trữ",
 };
+const BULK_STATUSES: BulkVocabularyStatus[] = ["PUBLISHED", "DRAFT", "HIDDEN"];
 function errorMessage(error: unknown) {
   if (isAxiosError(error)) {
     const data = error.response?.data;
@@ -69,6 +72,10 @@ export function ModeratorVocabularyListPage({
   const [form, setForm] = useState<VocabularyInput>({ displayOrder: 0, status: "DRAFT" });
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [bulkLessonId, setBulkLessonId] = useState<number | null>(null);
+  const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState<BulkVocabularyStatus>("PUBLISHED");
+  const [bulkError, setBulkError] = useState("");
   const dialog = useRef<HTMLDivElement>(null);
   const locked = useRef(false);
 
@@ -219,6 +226,35 @@ export function ModeratorVocabularyListPage({
           .includes(query),
       ),
   );
+  const bulkMode = !readOnly && bulkLessonId === parentId;
+  const selectable = filtered.filter((item) => item.status !== "ARCHIVED");
+  const selectedIds = selectable.filter((item) => checkedIds.has(item.id)).map((item) => item.id);
+  const allSelected = selectable.length > 0 && selectedIds.length === selectable.length;
+
+  const resetSelection = () => {
+    setCheckedIds(new Set());
+    setBulkError("");
+  };
+
+  const applyBulkStatus = async () => {
+    if (!bulkMode || !selectedIds.length || loading || loadError || locked.current) return;
+    locked.current = true;
+    setBusy(true);
+    setBulkError("");
+    try {
+      const count = await updateVocabularyStatuses(parentId, selectedIds, bulkStatus);
+      setBulkLessonId(null);
+      resetSelection();
+      setNotice(count ? `Đã cập nhật trạng thái ${count} từ vựng.` : "Các từ đã chọn đã có trạng thái này.");
+      setReload((value) => value + 1);
+    } catch (error) {
+      setBulkError(errorMessage(error));
+    } finally {
+      locked.current = false;
+      setBusy(false);
+    }
+  };
+
   const close = () => {
     if (!locked.current) {
       setModal(null);
@@ -295,7 +331,10 @@ export function ModeratorVocabularyListPage({
               aria-label="Tìm từ vựng"
               placeholder="Tìm từ vựng, cách đọc, ý nghĩa..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                resetSelection();
+              }}
             />
           </div>
           {!readOnly && (
@@ -303,7 +342,10 @@ export function ModeratorVocabularyListPage({
               className="mod-toolbar-select"
               aria-label="Lọc trạng thái"
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                resetSelection();
+              }}
             >
               <option value="DEFAULT">Từ vựng chưa lưu trữ</option>
               <option value="ALL">Tất cả trạng thái</option>
@@ -320,6 +362,39 @@ export function ModeratorVocabularyListPage({
         </div>
         <span>{filtered.length} từ vựng</span>
       </div>
+      {bulkMode && (
+        <div className="mod-section-toolbar">
+          <div className="mod-toolbar-left">
+            <label htmlFor="bulk-vocabulary-status">Trạng thái mới</label>
+            <select
+              id="bulk-vocabulary-status"
+              className="mod-toolbar-select"
+              value={bulkStatus}
+              disabled={busy}
+              onChange={(event) => setBulkStatus(event.target.value as BulkVocabularyStatus)}
+            >
+              {BULK_STATUSES.map((value) => (
+                <option key={value} value={value}>{STATUS_LABELS[value]}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="mod-btn-add"
+              disabled={busy || loading || !!loadError || !selectedIds.length}
+              onClick={() => void applyBulkStatus()}
+            >
+              Áp dụng cho {selectedIds.length} từ
+            </button>
+            <button type="button" className="mod-btn-back" disabled={busy} onClick={() => {
+              setBulkLessonId(null);
+              resetSelection();
+            }}>
+              Hủy chọn
+            </button>
+          </div>
+          {bulkError && <p role="alert">{bulkError}</p>}
+        </div>
+      )}
       <div className="admin-table-card">
         {loading ? (
           <div
@@ -374,16 +449,64 @@ export function ModeratorVocabularyListPage({
             <table className="admin-users-table">
               <thead>
                 <tr>
+                  {bulkMode && (
+                    <th>
+                      <input
+                        type="checkbox"
+                        aria-label="Chọn tất cả từ có thể đổi trạng thái đang hiển thị"
+                        checked={allSelected}
+                        ref={(input) => {
+                          if (input) input.indeterminate = selectedIds.length > 0 && !allSelected;
+                        }}
+                        disabled={busy || !selectable.length}
+                        onChange={(event) => setCheckedIds(new Set(event.target.checked ? selectable.map((item) => item.id) : []))}
+                      />
+                    </th>
+                  )}
                   <th>Thứ tự</th>
                   <th>Từ vựng</th>
                   <th>Ý nghĩa</th>
-                  <th>Trạng thái</th>
+                  <th>
+                    {readOnly || bulkMode ? "Trạng thái" : (
+                      <button
+                        type="button"
+                        className="mod-btn-back"
+                        disabled={busy || !selectable.length}
+                        onClick={() => {
+                          resetSelection();
+                          setBulkStatus("PUBLISHED");
+                          setBulkLessonId(parentId);
+                        }}
+                      >
+                        Đổi trạng thái
+                      </button>
+                    )}
+                  </th>
                   {!readOnly && <th>Thao tác</th>}
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((item) => (
                   <tr key={item.id}>
+                    {bulkMode && (
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`Chọn ${item.word}`}
+                          checked={checkedIds.has(item.id)}
+                          disabled={busy || item.status === "ARCHIVED"}
+                          onChange={(event) => {
+                            const checked = event.target.checked;
+                            setCheckedIds((current) => {
+                              const next = new Set(current);
+                              if (checked) next.add(item.id);
+                              else next.delete(item.id);
+                              return next;
+                            });
+                          }}
+                        />
+                      </td>
+                    )}
                     <td>
                       <span className="lesson-order-pill">{item.displayOrder}</span>
                     </td>

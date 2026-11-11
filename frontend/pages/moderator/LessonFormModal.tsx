@@ -137,7 +137,7 @@ export function LessonFormModal({
     try {
       setSubmitting(true);
       setErrorMsg(null);
-      await onSubmit(cleanPayload, vietnameseOnly ? documentFile : undefined);
+      await onSubmit(cleanPayload, vietnameseOnly || isVocabulary ? documentFile : undefined);
       onClose();
     } catch (err: unknown) {
       console.error("Lỗi khi lưu bài học:", err);
@@ -465,6 +465,27 @@ export function LessonFormModal({
                   <span className="mod-content-form-hint">
                     Dán URL PDF trên Cloudinary. Mỗi dòng một tài liệu.
                   </span>
+                  {!editingLesson && (
+                    <label className="mod-content-form-hint">
+                      Chọn PDF từ máy
+                      <input
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        disabled={submitting}
+                        onChange={(e) => {
+                          const file = e.currentTarget.files?.[0];
+                          if (file && (!/\.pdf$/i.test(file.name) || file.size === 0)) {
+                            e.currentTarget.value = "";
+                            setDocumentFile(undefined);
+                            setErrorMsg("Vui lòng chọn tệp PDF có dữ liệu.");
+                            return;
+                          }
+                          setDocumentFile(file);
+                          setErrorMsg(null);
+                        }}
+                      />
+                    </label>
+                  )}
                 </>
               ) : (
                 <>

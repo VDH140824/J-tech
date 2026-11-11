@@ -585,8 +585,74 @@ class LessonServiceTest {
     }
 
     @Test
+    void createVocabularyLesson_uploadsPdfAlongsidePastedLink() throws Exception {
+        prepareSave(false);
+        String links = """
+            [{"name":"Tài liệu tham khảo","url":"https://example.test/link.pdf","publicId":"untrusted"}]
+            """;
+        var pdf = new org.springframework.mock.web.MockMultipartFile(
+            "file", "file.pdf", "application/pdf", new byte[] {1}
+        );
+        var result = service.createLesson(null, 10L, vocabularyRequest(links), pdf);
+
+        verify(cloudinary).uploadDocument(pdf);
+        var documents = new ObjectMapper().readTree(result.documents());
+        assertEquals(2, documents.size());
+        assertEquals("https://example.test/link.pdf", documents.get(0).path("url").asText());
+        assertFalse(documents.get(0).has("publicId"));
+        assertEquals("Jtech/Lessons/Documents/new.pdf", documents.get(1).path("publicId").asText());
+        assertEquals("https://example.test/file.pdf", documents.get(1).path("url").asText());
+    }
+
+    @Test
+    void createVocabularyLesson_removesUploadedPdfOnRollback() {
+        prepareSave(false);
+        when(lessons.save(any())).thenThrow(new IllegalStateException("DB failed"));
+        var pdf = new org.springframework.mock.web.MockMultipartFile(
+            "file", "file.pdf", "application/pdf", new byte[] {1}
+        );
+        assertThrows(IllegalStateException.class, () ->
+            service.createLesson(null, 10L, vocabularyRequest("[]"), pdf)
+        );
+        org.springframework.transaction.support.TransactionSynchronizationManager.getSynchronizations()
+            .forEach(sync -> sync.afterCompletion(
+                org.springframework.transaction.support.TransactionSynchronization.STATUS_ROLLED_BACK
+            ));
+        verify(cloudinary).deleteVocabularyPdf("Jtech/Lessons/Documents/new.pdf");
+    }
+
+    @Test
+    void updateVocabularyLesson_preservesStoredPdfId() throws Exception {
+        prepareSave(true);
+        lesson.setSkillType(Lesson.SkillType.VOCABULARY);
+        lesson.setDocuments("""
+            [{"url":"https://example.test/file.pdf","publicId":"Jtech/Lessons/Documents/new.pdf"}]
+            """);
+        var result = service.updateLesson(20L, vocabularyRequest("""
+            [{"url":"https://example.test/file.pdf"}]
+            """), null);
+        var document = new ObjectMapper().readTree(result.documents()).get(0);
+        assertEquals("Jtech/Lessons/Documents/new.pdf", document.path("publicId").asText());
+        verifyNoInteractions(cloudinary);
+    }
+
+    @Test
+    void deleteVocabularyLesson_removesOnlyUploadedPdfAfterCommit() {
+        prepareVocabularyDelete();
+        service.deleteLesson(20L);
+
+        verify(lessons).deleteById(20L);
+        verify(lessons).flush();
+        verifyNoInteractions(cloudinary);
+        org.springframework.transaction.support.TransactionSynchronizationManager.getSynchronizations()
+            .forEach(sync -> sync.afterCommit());
+        verify(cloudinary).deleteVocabularyPdf("Jtech/Lessons/Documents/new.pdf");
+        verifyNoMoreInteractions(cloudinary);
+    }
+
+    @Test
     void deleteLesson_reportsConflictOnFlush() {
-        when(lessons.existsById(20L)).thenReturn(true);
+        prepareVocabularyDelete();
         doThrow(new org.springframework.dao.DataIntegrityViolationException("foreign key"))
             .when(lessons)
             .flush();
@@ -596,6 +662,23 @@ class LessonServiceTest {
                 .getStatusCode()
                 .value()
         );
+        assertTrue(org.springframework.transaction.support.TransactionSynchronizationManager
+            .getSynchronizations().isEmpty());
+        verifyNoInteractions(cloudinary);
+    }
+
+    private void prepareVocabularyDelete() {
+        lesson.setSkillType(Lesson.SkillType.VOCABULARY);
+        lesson.setDocuments("""
+            [{"url":"https://example.test/file.pdf","publicId":"Jtech/Lessons/Documents/new.pdf"},
+             {"url":"https://example.test/link.pdf"}]
+            """);
+        when(lessons.existsById(20L)).thenReturn(true);
+        when(lessons.findById(20L)).thenReturn(Optional.of(lesson));
+    }
+
+    private LessonRequest vocabularyRequest(String documents) {
+        return new LessonRequest(Lesson.SkillType.VOCABULARY, 2, "Bài học", "Nội dung", documents, 2, null);
     }
 
     void prepareSave(boolean update) {

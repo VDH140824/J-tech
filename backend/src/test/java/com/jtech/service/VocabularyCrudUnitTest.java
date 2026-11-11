@@ -24,6 +24,12 @@ class VocabularyCrudUnitTest {
     private final VocabularyService access = mock(VocabularyService.class);
     private final VocabularyController controller = new VocabularyController(repository, access);
 
+    @BeforeEach
+    void useRealCreateAndUpdate() {
+        doCallRealMethod().when(access).create(eq(repository), anyLong(), any(), any());
+        doCallRealMethod().when(access).update(eq(repository), anyLong(), any());
+    }
+
     private VocabularyRequest request(String word, Integer order) {
         return new VocabularyRequest(
             word,

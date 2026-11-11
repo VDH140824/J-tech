@@ -88,6 +88,21 @@ export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) 
       <div className="sidebar-tagline">Luyện tiếng Nhật cùng JTech</div>
 
       <nav className="sidebar-nav-menu">
+        {user?.status?.toUpperCase() === "ACTIVE" &&
+          (normalizedRole === "STUDENT" ||
+            normalizedRole === "ROLE_STUDENT" ||
+            (!normalizedRole && normalizedRoleId === "1")) && (
+            <button
+              type="button"
+              className={`nav-link-btn ${location.pathname.startsWith("/games") ? "active" : ""}`}
+              onClick={() => navigate("/games")}
+            >
+              <span className="nav-link-icon" aria-hidden="true">
+                🎮
+              </span>
+              <span className="nav-link-text">Trò chơi</span>
+            </button>
+          )}
         {!isAdmin && !isModerator && (
           <>
             <button

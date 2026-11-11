@@ -1,6 +1,7 @@
 import { apiClient } from "../services/api";
 import type { LessonSummary } from "./lessonApi";
 export type VocabularyStatus = LessonSummary["status"];
+export type BulkVocabularyStatus = Exclude<VocabularyStatus, "ARCHIVED">;
 export interface VocabularyInput {
   displayOrder: number;
   status: VocabularyStatus;
@@ -23,6 +24,17 @@ export async function saveVocabulary(
 }
 export async function archiveVocabulary(path: string, id: number) {
   await apiClient.delete(`${path}/${id}`);
+}
+export async function updateVocabularyStatuses(
+  lessonId: number,
+  ids: number[],
+  status: BulkVocabularyStatus,
+) {
+  const { data } = await apiClient.patch<{ updatedCount: number }>(
+    `/lessons/${lessonId}/vocabularies/status`,
+    { ids, status },
+  );
+  return data.updatedCount;
 }
 export interface ChapterVocabularyCard {
   id: number;

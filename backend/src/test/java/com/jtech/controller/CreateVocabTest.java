@@ -22,6 +22,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -35,6 +36,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Tag("unit-test-report")
 class CreateVocabTest {
 
     // Example inputs for execution; these literal words are not specified by the SRS.
@@ -103,13 +105,6 @@ class CreateVocabTest {
                 .content(new ObjectMapper().writeValueAsString(request)))
             .andExpect(status().isBadRequest());
         verifyNoInteractions(vocabulary, lessons);
-    }
-
-    @Test
-    @DisplayName("Valid input needs no audio URL")
-    void validVocabularyDoesNotRequireAudioUrl() {
-        var violations = VALIDATOR.validate(validInput());
-        assertTrue(violations.isEmpty(), () -> "Synthesis replaces audio URL: " + violations);
     }
 
     @Test

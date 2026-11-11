@@ -5,10 +5,13 @@ import static org.mockito.Mockito.*;
 
 import com.jtech.entity.*;
 import com.jtech.repository.LessonRepository;
+import com.jtech.repository.VocabularyRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -86,5 +89,52 @@ class VocabularyServiceTest {
         lesson.setSkillType(Lesson.SkillType.KANJI);
         assertThrows(IllegalArgumentException.class, () -> service.checkLesson(1L, moderator));
         assertThrows(ResponseStatusException.class, () -> service.checkLesson(999L, moderator));
+    }
+
+    @Test
+    @Tag("unit-test-report")
+    void deleteArchivesExistingVocabularyAndPreservesContent() {
+        var repository = mock(VocabularyRepository.class);
+        var item = new Vocabulary();
+        item.setId(10L);
+        item.setLessonId(3L);
+        item.setWord("日本語");
+        item.setReading("にほんご");
+        item.setMeaningVi("Tiếng Nhật");
+        item.setDisplayOrder(0);
+        item.setStatus(Course.Status.PUBLISHED);
+        when(repository.findById(10L)).thenReturn(Optional.of(item));
+
+        service.delete(repository, 10L);
+
+        assertAll(
+            () -> assertEquals(Course.Status.ARCHIVED, item.getStatus()),
+            () -> assertEquals(10L, item.getId()),
+            () -> assertEquals(3L, item.getLessonId()),
+            () -> assertEquals("日本語", item.getWord()),
+            () -> assertEquals("にほんご", item.getReading()),
+            () -> assertEquals("Tiếng Nhật", item.getMeaningVi()),
+            () -> assertEquals(0, item.getDisplayOrder())
+        );
+        var calls = inOrder(repository);
+        calls.verify(repository).findById(10L);
+        calls.verify(repository).save(item);
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @Tag("unit-test-report")
+    void deleteRejectsMissingVocabularyWithoutSaving() {
+        var repository = mock(VocabularyRepository.class);
+        when(repository.findById(999L)).thenReturn(Optional.empty());
+
+        var failure = assertThrows(
+            ResponseStatusException.class, () -> service.delete(repository, 999L)
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, failure.getStatusCode());
+        assertEquals("Không tìm thấy từ vựng hoặc bài học.", failure.getReason());
+        verify(repository).findById(999L);
+        verifyNoMoreInteractions(repository);
     }
 }
