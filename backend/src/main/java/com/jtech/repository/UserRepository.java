@@ -3,6 +3,7 @@ package com.jtech.repository;
 import com.jtech.entity.User;
 import com.jtech.entity.UserStatus;
 import java.util.Optional;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -11,6 +12,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+    @EntityGraph(attributePaths = { "role" })
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) IN :emails")
+    List<User> findByNormalizedEmails(@Param("emails") List<String> emails);
+
     @EntityGraph(attributePaths = { "role" })
     Optional<User> findByEmail(String email);
 

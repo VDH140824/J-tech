@@ -3,6 +3,7 @@ package com.jtech.service;
 import com.cloudinary.Cloudinary;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockMultipartFile;
 import java.io.IOException;
@@ -76,5 +77,71 @@ class CloudinaryServiceTest {
         service.deleteDocument(null);
         service.deleteDocument("other-folder/file.pdf");
         verifyNoInteractions(cloudinary);
+    }
+
+    @Test void commentAttachmentUploadsImageWithImageResourceType() throws Exception {
+        when(cloudinary.uploader().upload(any(byte[].class), anyMap())).thenReturn(Map.of(
+                "secure_url", "https://res.cloudinary.com/demo/image/upload/photo.png",
+                "public_id", "Jtech/Classroom/Comment/photo"));
+        var result = service.uploadCommentAttachment(new MockMultipartFile(
+                "attachment", "photo.png", "image/png", new byte[]{1}));
+        assertEquals("image", result.get("resourceType"));
+        verify(cloudinary.uploader()).upload(any(byte[].class), argThat(options ->
+                "image".equals(options.get("resource_type"))
+                        && "Jtech/Classroom/Comment".equals(options.get("folder"))));
+    }
+
+    @Test void commentAttachmentUploadsDocumentAsRaw() throws Exception {
+        when(cloudinary.uploader().upload(any(byte[].class), anyMap())).thenReturn(Map.of(
+                "secure_url", "https://res.cloudinary.com/demo/raw/upload/document.pdf",
+                "public_id", "Jtech/Classroom/Comment/document.pdf"));
+        var result = service.uploadCommentAttachment(new MockMultipartFile(
+                "attachment", "document.pdf", "application/pdf", new byte[]{1}));
+        assertEquals("raw", result.get("resourceType"));
+    }
+
+    @ParameterizedTest @CsvSource({
+            "mp3, audio/mpeg", "wav, audio/wav", "m4a, audio/mp4",
+            "ogg, audio/ogg", "webm, audio/webm"})
+    void commentAttachmentUploadsAudioAsVideo(String extension, String mime) throws Exception {
+        when(cloudinary.uploader().upload(any(byte[].class), anyMap())).thenReturn(Map.of(
+                "secure_url", "https://res.cloudinary.com/demo/video/upload/audio." + extension,
+                "public_id", "Jtech/Classroom/Comment/audio"));
+        var result = service.uploadCommentAttachment(new MockMultipartFile(
+                "attachment", "recording." + extension, mime, new byte[]{1}));
+        assertEquals("video", result.get("resourceType"));
+        verify(cloudinary.uploader()).upload(any(byte[].class), argThat(options ->
+                "video".equals(options.get("resource_type"))
+                        && "Jtech/Classroom/Comment".equals(options.get("folder"))
+                        && !options.get("public_id").toString().endsWith("." + extension)));
+    }
+
+    @Test void commentAttachmentRejectsAudioWithMismatchedMime() {
+        assertThrows(IllegalArgumentException.class, () -> service.uploadCommentAttachment(
+                new MockMultipartFile("attachment", "recording.mp3", "video/mp4", new byte[]{1})));
+        verifyNoInteractions(cloudinary);
+    }
+
+    @Test void commentAttachmentRejectsInvalidOrOversizedFileBeforeUpload() {
+        assertThrows(IllegalArgumentException.class, () -> service.uploadCommentAttachment(
+                new MockMultipartFile("attachment", "program.exe", "application/octet-stream", new byte[]{1})));
+        assertThrows(IllegalArgumentException.class, () -> service.uploadCommentAttachment(
+                new MockMultipartFile("attachment", "document.pdf", "application/pdf",
+                        new byte[15 * 1024 * 1024 + 1])));
+        verifyNoInteractions(cloudinary);
+    }
+
+    @Test void commentAttachmentCleanupUsesImageResourceType() throws Exception {
+        service.deleteCommentAttachmentByUrl("Jtech/Classroom/Comment/photo",
+                "https://res.cloudinary.com/demo/image/upload/photo.png");
+        verify(cloudinary.uploader()).destroy(eq("Jtech/Classroom/Comment/photo"),
+                argThat(options -> "image".equals(options.get("resource_type"))));
+    }
+
+    @Test void commentAttachmentCleanupUsesVideoResourceTypeForAudio() throws Exception {
+        service.deleteCommentAttachmentByUrl("Jtech/Classroom/Comment/audio",
+                "https://res.cloudinary.com/demo/video/upload/audio.mp3");
+        verify(cloudinary.uploader()).destroy(eq("Jtech/Classroom/Comment/audio"),
+                argThat(options -> "video".equals(options.get("resource_type"))));
     }
 }
