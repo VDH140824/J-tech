@@ -180,7 +180,7 @@ class CommentServiceTest {
     void createTextOnlyCommentAsStudent() {
         rows = List.<Object[]>of(row(5, null, "Nội dung", null));
 
-        var result = service.create(1L, 2L, new CommentRequest("  Nội dung  ", null), null);
+        var result = service.createComment(1L, 2L, new CommentRequest("  Nội dung  ", null), null);
 
         assertEquals(5L, result.id());
         assertEquals("Nội dung", result.content());
@@ -200,7 +200,7 @@ class CommentServiceTest {
         rows = List.<Object[]>of(row(5, null, "Nội dung", url));
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
 
-        var result = service.create(1L, 2L, new CommentRequest("Nội dung", null), file);
+        var result = service.createComment(1L, 2L, new CommentRequest("Nội dung", null), file);
 
         assertEquals("Nội dung", result.content());
         assertEquals(url, result.attachmentUrl());
@@ -217,7 +217,7 @@ class CommentServiceTest {
         rows = List.<Object[]>of(row(5, null, null, url));
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
 
-        var result = service.create(1L, 2L, new CommentRequest("", null), file);
+        var result = service.createComment(1L, 2L, new CommentRequest("", null), file);
 
         assertEquals(5L, result.id());
         assertNull(result.content());
@@ -234,7 +234,7 @@ class CommentServiceTest {
         actor = user("MODERATOR", 5);
         rows = List.<Object[]>of(row(5, null, "Nội dung", null));
 
-        var result = service.create(1L, 2L, new CommentRequest("Nội dung", null), null);
+        var result = service.createComment(1L, 2L, new CommentRequest("Nội dung", null), null);
 
         assertEquals(5L, result.id());
         assertEquals(5L, savedComment.getUserId());
@@ -250,7 +250,7 @@ class CommentServiceTest {
         stored.setId(3L);
         rows = List.<Object[]>of(row(5, 3L, "Trả lời", null));
 
-        var result = service.create(1L, 2L, new CommentRequest("Trả lời", 3L), null);
+        var result = service.createComment(1L, 2L, new CommentRequest("Trả lời", 3L), null);
 
         assertEquals(3L, savedComment.getParentId());
         assertEquals(3L, result.parentId());
@@ -261,7 +261,7 @@ class CommentServiceTest {
     @DisplayName("UTCID12: Reject blank text without an attachment")
     void createRejectsBlankContent() {
         var error = assertThrows(IllegalArgumentException.class,
-                () -> service.create(1L, 2L, new CommentRequest("   ", null), null));
+                () -> service.createComment(1L, 2L, new CommentRequest("   ", null), null));
 
         assertEquals("Nội dung bình luận không được để trống", error.getMessage());
         assertEquals(0, cloudinary.uploads);
@@ -272,7 +272,7 @@ class CommentServiceTest {
     @DisplayName("UTCID13: Reject a link without HTTP or HTTPS")
     void createRejectsUnsupportedLinkProtocol() {
         var error = assertThrows(IllegalArgumentException.class,
-                () -> service.create(1L, 2L, new CommentRequest("ftp://example.com/file", null), null));
+                () -> service.createComment(1L, 2L, new CommentRequest("ftp://example.com/file", null), null));
 
         assertEquals("Liên kết chỉ được dùng HTTP hoặc HTTPS.", error.getMessage());
         assertEquals(0, cloudinary.uploads);
@@ -285,7 +285,7 @@ class CommentServiceTest {
         String content = "a".repeat(200);
         rows = List.<Object[]>of(row(5, null, content, null));
 
-        var result = service.create(1L, 2L, new CommentRequest(content, null), null);
+        var result = service.createComment(1L, 2L, new CommentRequest(content, null), null);
 
         assertEquals(content, result.content());
         assertEquals(200, savedComment.getContent().length());
@@ -296,7 +296,7 @@ class CommentServiceTest {
     @DisplayName("UTCID15: Reject a comment containing 201 characters")
     void createRejectsTwoHundredAndOneCharacters() {
         var error = assertThrows(IllegalArgumentException.class,
-                () -> service.create(1L, 2L, new CommentRequest("a".repeat(201), null), null));
+                () -> service.createComment(1L, 2L, new CommentRequest("a".repeat(201), null), null));
 
         assertEquals("Bình luận không được vượt quá 200 ký tự.", error.getMessage());
         assertEquals(0, saveCalls);
@@ -309,7 +309,7 @@ class CommentServiceTest {
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
 
         var error = assertThrows(AccessDeniedException.class,
-                () -> service.create(1L, 2L, new CommentRequest("Nội dung", null), file));
+                () -> service.createComment(1L, 2L, new CommentRequest("Nội dung", null), file));
 
         assertSame(accessFailure, error);
         assertEquals(0, postLookupCalls);
@@ -324,7 +324,7 @@ class CommentServiceTest {
         stored.setId(3L);
 
         var error = assertThrows(IllegalArgumentException.class,
-                () -> service.create(1L, 2L, new CommentRequest("Trả lời", 3L), null));
+                () -> service.createComment(1L, 2L, new CommentRequest("Trả lời", 3L), null));
 
         assertEquals("Không thể trả lời bình luận đã xóa.", error.getMessage());
         assertEquals(0, cloudinary.uploads);
@@ -338,7 +338,7 @@ class CommentServiceTest {
         cloudinary.uploadFailure = new IllegalArgumentException("Định dạng tệp không được hỗ trợ.");
 
         var error = assertThrows(IllegalArgumentException.class,
-                () -> service.create(1L, 2L, new CommentRequest("Nội dung", null), file));
+                () -> service.createComment(1L, 2L, new CommentRequest("Nội dung", null), file));
 
         assertSame(cloudinary.uploadFailure, error);
         assertEquals(1, cloudinary.uploads);
@@ -352,7 +352,7 @@ class CommentServiceTest {
         cloudinary.uploadFailure = new IllegalStateException("Cloudinary failed");
 
         var error = assertThrows(ResponseStatusException.class,
-                () -> service.create(1L, 2L, new CommentRequest("Nội dung", null), file));
+                () -> service.createComment(1L, 2L, new CommentRequest("Nội dung", null), file));
 
         assertEquals(500, error.getStatusCode().value());
         assertSame(cloudinary.uploadFailure, error.getCause());
@@ -367,7 +367,7 @@ class CommentServiceTest {
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
 
         var error = assertThrows(IllegalStateException.class,
-                () -> service.create(1L, 2L, new CommentRequest("Nội dung", null), file));
+                () -> service.createComment(1L, 2L, new CommentRequest("Nội dung", null), file));
 
         assertSame(saveFailure, error);
         assertEquals(1, cloudinary.uploads);
@@ -383,7 +383,7 @@ class CommentServiceTest {
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
         TransactionSynchronizationManager.initSynchronization();
         try {
-            service.create(1L, 2L, new CommentRequest("Nội dung", null), file);
+            service.createComment(1L, 2L, new CommentRequest("Nội dung", null), file);
             assertEquals(0, cloudinary.cleanups);
             for (var synchronization : TransactionSynchronizationManager.getSynchronizations())
                 synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK);
@@ -399,7 +399,7 @@ class CommentServiceTest {
         updatedRow[9] = Timestamp.valueOf(LocalDateTime.of(2026, 11, 11, 9, 1));
         rows = List.<Object[]>of(updatedRow);
 
-        var result = service.update(1L, 2L, 5L, new UpdateCommentRequest("  Mới  ", false), null);
+        var result = service.updateComment(1L, 2L, 5L, new UpdateCommentRequest("  Mới  ", false), null);
 
         assertEquals("Mới", stored.getContent());
         assertNotNull(stored.getUpdatedAt());
@@ -416,7 +416,7 @@ class CommentServiceTest {
         stored = comment("Cũ", oldUrl, "old.pdf");
         rows = List.<Object[]>of(row(5, null, "Mới", oldUrl));
 
-        var result = service.update(1L, 2L, 5L, new UpdateCommentRequest("Mới", false), null);
+        var result = service.updateComment(1L, 2L, 5L, new UpdateCommentRequest("Mới", false), null);
 
         assertEquals("Mới", result.content());
         assertEquals(oldUrl, stored.getAudioUrl());
@@ -433,7 +433,7 @@ class CommentServiceTest {
         stored = comment("Cũ", oldUrl, "old.pdf");
         rows = List.<Object[]>of(row(5, null, null, oldUrl));
 
-        var result = service.update(1L, 2L, 5L, new UpdateCommentRequest("  ", false), null);
+        var result = service.updateComment(1L, 2L, 5L, new UpdateCommentRequest("  ", false), null);
 
         assertNull(stored.getContent());
         assertEquals(oldUrl, result.attachmentUrl());
@@ -452,7 +452,7 @@ class CommentServiceTest {
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
         TransactionSynchronizationManager.initSynchronization();
         try {
-            var result = service.update(1L, 2L, 5L, new UpdateCommentRequest("Mới", false), file);
+            var result = service.updateComment(1L, 2L, 5L, new UpdateCommentRequest("Mới", false), file);
             assertEquals(newUrl, result.attachmentUrl());
             assertEquals(newUrl, stored.getAudioUrl());
             assertEquals("Jtech/Classroom/Comment/file.pdf", stored.getAudioPublicId());
@@ -471,7 +471,7 @@ class CommentServiceTest {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         rows = List.<Object[]>of(row(5, null, "Mới", null));
 
-        var result = service.update(1L, 2L, 5L, new UpdateCommentRequest("Mới", true), null);
+        var result = service.updateComment(1L, 2L, 5L, new UpdateCommentRequest("Mới", true), null);
 
         assertEquals("Mới", result.content());
         assertNull(result.attachmentUrl());
@@ -487,7 +487,7 @@ class CommentServiceTest {
         String oldUrl = "https://res.cloudinary.com/demo/raw/upload/old.pdf";
         stored = comment("Cũ", oldUrl, "old.pdf");
 
-        var error = assertThrows(IllegalArgumentException.class, () -> service.update(1L, 2L, 5L,
+        var error = assertThrows(IllegalArgumentException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("  ", true), null));
 
         assertEquals("Nội dung bình luận không được để trống", error.getMessage());
@@ -502,7 +502,7 @@ class CommentServiceTest {
     void updateRejectsUnsupportedLinkProtocol() {
         stored = comment("Cũ", null, null);
 
-        var error = assertThrows(IllegalArgumentException.class, () -> service.update(1L, 2L, 5L,
+        var error = assertThrows(IllegalArgumentException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("ftp://example.com/file", false), null));
 
         assertEquals("Liên kết chỉ được dùng HTTP hoặc HTTPS.", error.getMessage());
@@ -517,7 +517,7 @@ class CommentServiceTest {
         String content = "a".repeat(200);
         rows = List.<Object[]>of(row(5, null, content, null));
 
-        var result = service.update(1L, 2L, 5L, new UpdateCommentRequest(content, false), null);
+        var result = service.updateComment(1L, 2L, 5L, new UpdateCommentRequest(content, false), null);
 
         assertEquals(content, result.content());
         assertEquals(200, stored.getContent().length());
@@ -529,7 +529,7 @@ class CommentServiceTest {
     void updateRejectsTwoHundredAndOneCharacters() {
         stored = comment("Cũ", null, null);
 
-        var error = assertThrows(IllegalArgumentException.class, () -> service.update(1L, 2L, 5L,
+        var error = assertThrows(IllegalArgumentException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("a".repeat(201), false), null));
 
         assertEquals("Bình luận không được vượt quá 200 ký tự.", error.getMessage());
@@ -544,10 +544,10 @@ class CommentServiceTest {
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
         actor = user("STUDENT", 20);
 
-        assertThrows(AccessDeniedException.class, () -> service.update(1L, 2L, 5L,
+        assertThrows(AccessDeniedException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("Mới", false), file));
         actor = user("MODERATOR", 5);
-        assertThrows(AccessDeniedException.class, () -> service.update(1L, 2L, 5L,
+        assertThrows(AccessDeniedException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("Mới", false), file));
 
         assertEquals("Cũ", stored.getContent());
@@ -561,7 +561,7 @@ class CommentServiceTest {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
 
-        var error = assertThrows(IllegalArgumentException.class, () -> service.update(1L, 2L, 5L,
+        var error = assertThrows(IllegalArgumentException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("Mới", true), file));
 
         assertEquals("Không thể vừa gỡ vừa thay tệp đính kèm.", error.getMessage());
@@ -577,7 +577,7 @@ class CommentServiceTest {
         var file = new MockMultipartFile("attachment", "invalid.exe", "application/octet-stream", new byte[]{1});
         cloudinary.uploadFailure = new IllegalArgumentException("Tệp không hợp lệ.");
 
-        var error = assertThrows(IllegalArgumentException.class, () -> service.update(1L, 2L, 5L,
+        var error = assertThrows(IllegalArgumentException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("Mới", false), file));
 
         assertSame(cloudinary.uploadFailure, error);
@@ -593,7 +593,7 @@ class CommentServiceTest {
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
         cloudinary.uploadFailure = new IllegalStateException("Cloudinary failed");
 
-        var error = assertThrows(ResponseStatusException.class, () -> service.update(1L, 2L, 5L,
+        var error = assertThrows(ResponseStatusException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("Mới", false), file));
 
         assertEquals(500, error.getStatusCode().value());
@@ -610,7 +610,7 @@ class CommentServiceTest {
         saveFailure = new IllegalStateException("database failed");
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
 
-        var error = assertThrows(IllegalStateException.class, () -> service.update(1L, 2L, 5L,
+        var error = assertThrows(IllegalStateException.class, () -> service.updateComment(1L, 2L, 5L,
                 new UpdateCommentRequest("Mới", false), file));
 
         assertSame(saveFailure, error);
@@ -629,7 +629,7 @@ class CommentServiceTest {
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
         TransactionSynchronizationManager.initSynchronization();
         try {
-            service.update(1L, 2L, 5L, new UpdateCommentRequest("Mới", false), file);
+            service.updateComment(1L, 2L, 5L, new UpdateCommentRequest("Mới", false), file);
             assertEquals(0, cloudinary.cleanups);
             assertEquals(0, cloudinary.oldCleanups);
             for (var synchronization : TransactionSynchronizationManager.getSynchronizations())
@@ -644,7 +644,7 @@ class CommentServiceTest {
     void deleteOwnTextOnlyComment() {
         stored = comment("Cũ", null, null);
 
-        service.delete(1L, 2L, 5L);
+        service.deleteComment(1L, 2L, 5L);
 
         assertEquals(5L, stored.getId());
         assertNull(stored.getContent());
@@ -660,7 +660,7 @@ class CommentServiceTest {
     void deleteOwnAttachmentOnlyComment() {
         stored = comment(null, "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
 
-        service.delete(1L, 2L, 5L);
+        service.deleteComment(1L, 2L, 5L);
 
         assertNull(stored.getContent());
         assertNull(stored.getAudioUrl());
@@ -677,7 +677,7 @@ class CommentServiceTest {
         stored = comment("Cũ", null, null);
         stored.setUserId(10L);
 
-        service.delete(1L, 2L, 5L);
+        service.deleteComment(1L, 2L, 5L);
 
         assertEquals(10L, stored.getUserId());
         assertNull(stored.getContent());
@@ -692,7 +692,7 @@ class CommentServiceTest {
         stored = comment("Cũ", oldUrl, "old.pdf");
         stored.setUserId(20L);
 
-        var error = assertThrows(AccessDeniedException.class, () -> service.delete(1L, 2L, 5L));
+        var error = assertThrows(AccessDeniedException.class, () -> service.deleteComment(1L, 2L, 5L));
 
         assertEquals("Bạn chỉ được xóa bình luận của mình.", error.getMessage());
         assertEquals("Cũ", stored.getContent());
@@ -706,7 +706,7 @@ class CommentServiceTest {
     void deleteRejectsAlreadyDeletedComment() {
         stored = comment(null, null, null);
 
-        var error = assertThrows(EntityNotFoundException.class, () -> service.delete(1L, 2L, 5L));
+        var error = assertThrows(EntityNotFoundException.class, () -> service.deleteComment(1L, 2L, 5L));
 
         assertEquals("Bình luận đã xóa.", error.getMessage());
         assertEquals(0, saveCalls);
@@ -719,7 +719,7 @@ class CommentServiceTest {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         TransactionSynchronizationManager.initSynchronization();
         try {
-            service.delete(1L, 2L, 5L);
+            service.deleteComment(1L, 2L, 5L);
             assertEquals(1, saveCalls);
             assertEquals(0, cloudinary.oldCleanups);
             for (var synchronization : TransactionSynchronizationManager.getSynchronizations())
@@ -734,7 +734,7 @@ class CommentServiceTest {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         TransactionSynchronizationManager.initSynchronization();
         try {
-            service.delete(1L, 2L, 5L);
+            service.deleteComment(1L, 2L, 5L);
             for (var synchronization : TransactionSynchronizationManager.getSynchronizations())
                 synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK);
             assertEquals(1, saveCalls);
@@ -748,7 +748,7 @@ class CommentServiceTest {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         cloudinary.failOldCleanup = true;
 
-        assertDoesNotThrow(() -> service.delete(1L, 2L, 5L));
+        assertDoesNotThrow(() -> service.deleteComment(1L, 2L, 5L));
 
         assertNull(stored.getContent());
         assertNull(stored.getAudioUrl());

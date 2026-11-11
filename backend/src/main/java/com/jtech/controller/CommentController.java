@@ -30,18 +30,18 @@ public class CommentController {
     public ResponseEntity<CommentResponse> create(@PathVariable Long classId, @PathVariable Long postId,
             @RequestPart("request") CommentRequest request,
             @RequestPart(value = "attachment", required = false) MultipartFile attachment) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(classId, postId, request, attachment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createComment(classId, postId, request, attachment));
     }
     @PutMapping(value = "/{commentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommentResponse update(@PathVariable Long classId, @PathVariable Long postId,
             @PathVariable Long commentId, @RequestPart("request") UpdateCommentRequest request,
             @RequestPart(value = "attachment", required = false) MultipartFile attachment) {
-        return service.update(classId, postId, commentId, request, attachment);
+        return service.updateComment(classId, postId, commentId, request, attachment);
     }
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> delete(@PathVariable Long classId, @PathVariable Long postId,
             @PathVariable Long commentId) {
-        service.delete(classId, postId, commentId);
+        service.deleteComment(classId, postId, commentId);
         return ResponseEntity.noContent().build();
     }
 

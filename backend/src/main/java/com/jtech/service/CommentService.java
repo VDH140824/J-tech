@@ -46,7 +46,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponse create(Long classId, Long postId, CommentRequest request, MultipartFile attachment) {
+    public CommentResponse createComment(Long classId, Long postId, CommentRequest request, MultipartFile attachment) {
         User actor = postService.checkPostAccess(classId, true);
         requirePost(classId, postId);
         String content = validateContent(request == null ? null : request.content(), attachment != null);
@@ -94,7 +94,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponse update(Long classId, Long postId, Long commentId,
+    public CommentResponse updateComment(Long classId, Long postId, Long commentId,
             UpdateCommentRequest request, MultipartFile attachment) {
         User actor = postService.checkPostAccess(classId, true);
         requirePost(classId, postId);
@@ -151,7 +151,7 @@ public class CommentService {
     }
 
     @Transactional
-    public void delete(Long classId, Long postId, Long commentId) {
+    public void deleteComment(Long classId, Long postId, Long commentId) {
         User actor = postService.checkPostAccess(classId, true);
         requirePost(classId, postId);
         var comment = requireComment(postId, commentId);
