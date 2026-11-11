@@ -147,7 +147,7 @@ export function CommentSection({ classId, postId, comments, currentUserId, moder
       {editingId === comment.id ?
         <div className="comment-form comment-form--edit">
           <label className="comment-form__label" htmlFor={`edit-comment-${comment.id}`}>Chỉnh sửa bình luận</label>
-          <textarea id={`edit-comment-${comment.id}`} value={editingText} onChange={event => {
+          <textarea id={`edit-comment-${comment.id}`} maxLength={200} value={editingText} onChange={event => {
             setEditingText(event.target.value); setEditingError("");
           }} />
           {comment.attachmentUrl && !editingRemoveAttachment && <div className="comment-edit-current">
@@ -212,7 +212,7 @@ export function CommentSection({ classId, postId, comments, currentUserId, moder
         <span className="comment-reply-target__content">{replyTargetContent}</span>
       </div>}
       <label className="comment-form__label" htmlFor={`comment-text-${postId}`}>Nội dung bình luận</label>
-      <textarea id={`comment-text-${postId}`} placeholder="Viết nội dung..." value={text} onChange={event => setText(event.target.value)} />
+      <textarea id={`comment-text-${postId}`} placeholder="Viết nội dung..." maxLength={200} value={text} onChange={event => setText(event.target.value)} />
       <div className="comment-form__footer">
       <div className={`comment-attachment${attachmentError ? " comment-attachment-error" : ""}`}>
         <label htmlFor={`comment-file-${postId}`} className="comment-attachment__picker">▤ Đính kèm tệp</label>

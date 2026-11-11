@@ -182,7 +182,7 @@ public class CommentService {
         String value = input == null ? "" : input.trim();
         if (value.isEmpty() && !hasAttachment)
             throw new IllegalArgumentException("Nội dung bình luận không được để trống");
-        if (value.length() > 10000) throw new IllegalArgumentException("Bình luận không được vượt quá 10000 ký tự.");
+        if (value.length() > 200) throw new IllegalArgumentException("Bình luận không được vượt quá 200 ký tự.");
         for (String token : value.split("\\s+")) {
             if (token.matches("(?i)^[a-z][a-z0-9+.-]*://.*")
                     && !token.matches("(?i)^https?://.+"))
