@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { getClassStudents, getMyClasses, removeStudent, type ClassResponse, type ClassStudentPage,
   type ClassStudentResponse, type StudentStatus, type AddStudentsResponse } from "../../api/classApi";
 import { AddStudentModal, SKIP_LABELS } from "./AddStudentModal";
@@ -14,6 +15,7 @@ const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
 });
 
 export function ClassStudentListPage({ classId }: { classId: number }) {
+  const navigate = useNavigate();
   const [classroom, setClassroom] = useState<ClassResponse | null>(null);
   const [students, setStudents] = useState<ClassStudentPage | null>(null);
   const [searchInput, setSearchInput] = useState("");
@@ -108,6 +110,8 @@ export function ClassStudentListPage({ classId }: { classId: number }) {
 
   return (
     <section className="class-student-page" aria-label="Danh sách học viên trong lớp">
+      <button type="button" className="class-student-back"
+        onClick={() => navigate(`/moderator/classes/${classId}/posts`)}>← Trở lại lớp</button>
       <header className="class-student-heading">
         <div className="class-student-heading-top">
           <h2>Danh sách học viên trong lớp</h2>

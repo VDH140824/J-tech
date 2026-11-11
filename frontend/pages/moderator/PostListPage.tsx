@@ -99,6 +99,7 @@ export function PostListPage({ classId }: PostListPageProps) {
 
   return (
     <section className="post-list-page" aria-label="Danh sách bài đăng lớp học">
+      <button type="button" className="post-list-back" onClick={() => navigate("/moderator/classes")}>← Trở lại</button>
       <header className="post-list-heading">
         <div>
           <h2>{classroom ? `Lớp ${classroom.code}` : "Bài đăng lớp học"}</h2>

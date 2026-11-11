@@ -109,6 +109,7 @@ export function ClassListPage() {
 
   return (
     <section className="class-list-page" aria-label="Danh sách lớp học">
+      <button type="button" className="class-list-back" onClick={() => navigate("/moderator")}>← Trở lại</button>
       <div className="class-list-heading">
         <div>
           <h2>Quản lý lớp học</h2>

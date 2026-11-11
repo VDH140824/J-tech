@@ -66,13 +66,11 @@ export function StudentPostListPage() {
   const isArchived = classroom?.status === "ARCHIVED";
 
   return <section className="post-list-page student-class-page" aria-label="Danh sách bài đăng lớp học">
+    <button type="button" className="post-list-back" onClick={() => navigate("/classes")}>← Trở lại</button>
     <header className="post-list-heading">
       <div>
         <h2>{classroom ? `Lớp ${classroom.code}` : "Bài đăng lớp học"}</h2>
         <p>Trang chủ / Lớp học của tôi{classroom ? ` / Lớp ${classroom.code}` : ""}</p>
-      </div>
-      <div className="post-list-header-actions">
-        <button type="button" onClick={() => navigate("/classes")}>Danh sách lớp</button>
       </div>
     </header>
 

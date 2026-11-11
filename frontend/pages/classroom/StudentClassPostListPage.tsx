@@ -57,6 +57,7 @@ export function StudentClassPostListPage() {
   }
 
   return <section className="class-list-page student-class-page" aria-label="Danh sách lớp học của tôi">
+    <button type="button" className="class-list-back" onClick={() => navigate("/home")}>← Trở lại</button>
     <div className="class-list-heading">
       <div><h2>Lớp học của tôi</h2><p>Theo dõi các lớp học bạn đã tham gia.</p></div>
     </div>
