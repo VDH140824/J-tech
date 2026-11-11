@@ -1,6 +1,8 @@
 package com.jtech.service;
 
 import com.jtech.dto.response.PostResponse;
+import com.jtech.dto.response.PostDetailResponse;
+import com.jtech.dto.response.CommentResponse;
 import com.jtech.dto.request.PostRequest;
 import com.jtech.entity.ClassPost;
 import com.jtech.entity.User;
@@ -8,11 +10,15 @@ import com.jtech.entity.ClassroomStatus;
 import com.jtech.entity.UserStatus;
 import com.jtech.repository.ClassRepository;
 import com.jtech.repository.PostRepository;
+import com.jtech.repository.CommentRepository;
 import com.jtech.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -33,15 +39,17 @@ public class PostService {
     private static final Logger log = LoggerFactory.getLogger(PostService.class);
     private static final ZoneId POST_TIME_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     private final ClassRepository classRepository;
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
     private final EntityManager entityManager;
 
-    public PostService(PostRepository postRepository, ClassRepository classRepository,
+    public PostService(PostRepository postRepository, CommentRepository commentRepository, ClassRepository classRepository,
                        UserRepository userRepository, CloudinaryService cloudinaryService,
                        EntityManager entityManager) {
         this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
         this.classRepository = classRepository;
         this.userRepository = userRepository;
         this.cloudinaryService = cloudinaryService;
@@ -50,9 +58,44 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPostsByClass(Long classId) {
-        checkClassAccess(classId, false);
+        checkPostAccess(classId, false);
         return postRepository.findByClassroomOrderByCreatedAtDesc(classId).stream()
                 .map(PostResponse::fromQueryRow).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PostDetailResponse getPostDetail(Long classId, Long postId) {
+        checkPostAccess(classId, false);
+        Object[] row = postRepository.findDetailRows(classId, postId).stream().findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Bài đăng không tồn tại."));
+        List<CommentResponse> comments = buildCommentHierarchy(commentRepository.findThreadRows(postId));
+        boolean readOnly = classRepository.findById(classId)
+                .orElseThrow(() -> new EntityNotFoundException("Lớp học không tồn tại."))
+                .getStatus() != ClassroomStatus.ACTIVE;
+        return new PostDetailResponse(PostResponse.fromQueryRow(row), comments, readOnly);
+    }
+
+    public static List<CommentResponse> buildCommentHierarchy(List<Object[]> rows) {
+        Map<Long, Object[]> byId = new HashMap<>();
+        Map<Long, List<Long>> children = new HashMap<>();
+        List<Long> roots = new ArrayList<>();
+        for (Object[] row : rows) byId.put(((Number) row[0]).longValue(), row);
+        for (Object[] row : rows) {
+            Long id = ((Number) row[0]).longValue();
+            Long parent = row[7] == null ? null : ((Number) row[7]).longValue();
+            if (parent == null || !byId.containsKey(parent) || parent.equals(id)) roots.add(id);
+            else children.computeIfAbsent(parent, ignored -> new ArrayList<>()).add(id);
+        }
+        return roots.stream().map(id -> buildComment(id, byId, children, new HashSet<>())).toList();
+    }
+
+    private static CommentResponse buildComment(Long id, Map<Long, Object[]> rows,
+            Map<Long, List<Long>> children, Set<Long> visiting) {
+        if (!visiting.add(id)) throw new IllegalStateException("Cấu trúc bình luận không hợp lệ.");
+        List<CommentResponse> replies = children.getOrDefault(id, List.of()).stream()
+                .map(child -> buildComment(child, rows, children, visiting)).toList();
+        visiting.remove(id);
+        return CommentResponse.fromRow(rows.get(id), replies);
     }
 
     @Transactional
@@ -120,7 +163,7 @@ public class PostService {
         if (post.getAttachmentPublicId() != null) {
             attachments.add(new AttachmentRef(post.getAttachmentPublicId(), post.getAttachmentUrl(), false));
         }
-        for (Object[] row : postRepository.findCommentAudioAssets(postId)) {
+        for (Object[] row : postRepository.findCommentAttachments(postId)) {
             attachments.add(new AttachmentRef((String) row[0], (String) row[1], true));
         }
 
@@ -141,8 +184,8 @@ public class PostService {
                 if (status != STATUS_COMMITTED) return;
                 for (AttachmentRef attachment : attachments) {
                     try {
-                        if (attachment.commentAudio()) {
-                            cloudinaryService.deleteCommentAudioByUrl(attachment.publicId(), attachment.url());
+                        if (attachment.commentAttachment()) {
+                            cloudinaryService.deleteCommentAttachmentByUrl(attachment.publicId(), attachment.url());
                         } else {
                             cloudinaryService.deletePostAttachmentByUrl(attachment.publicId(), attachment.url());
                         }
@@ -154,7 +197,7 @@ public class PostService {
         });
     }
 
-    private record AttachmentRef(String publicId, String url, boolean commentAudio) {}
+    private record AttachmentRef(String publicId, String url, boolean commentAttachment) {}
 
     private PostRequest validatePostRequest(PostRequest request, LocalDateTime existingDueAt) {
         String postType = request == null || request.postType() == null ? "" : request.postType().trim();
@@ -221,5 +264,31 @@ public class PostService {
             throw new AccessDeniedException("Lớp lưu trữ chỉ được xem bài đăng.");
         }
         return moderator;
+    }
+
+    @Transactional(readOnly = true)
+    public User checkPostAccess(Long classId, boolean requireActive) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated())
+            throw new AuthenticationCredentialsNotFoundException("Vui lòng đăng nhập.");
+        var user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Tài khoản không tồn tại."));
+        if (user.getStatus() != UserStatus.ACTIVE || user.getRole() == null)
+            throw new AccessDeniedException("Bạn không có quyền truy cập lớp học.");
+        var classroom = classRepository.findById(classId)
+                .orElseThrow(() -> new EntityNotFoundException("Lớp học không tồn tại."));
+        if (classroom.getStatus() != ClassroomStatus.ACTIVE && classroom.getStatus() != ClassroomStatus.ARCHIVED)
+            throw new AccessDeniedException("Lớp học không hoạt động.");
+        if (requireActive && classroom.getStatus() != ClassroomStatus.ACTIVE)
+            throw new AccessDeniedException("Lớp lưu trữ chỉ được xem bình luận.");
+        String role = user.getRole().getRoleName();
+        boolean moderator = "MODERATOR".equals(role) && user.getUserId().equals(classroom.getModeratorId());
+        boolean student = "STUDENT".equals(role)
+                && ((Number) entityManager.createNativeQuery(
+                        "SELECT COUNT(*) FROM classroom_member WHERE classroom_id = :classId AND student_id = :studentId")
+                        .setParameter("classId", classId).setParameter("studentId", user.getUserId())
+                        .getSingleResult()).longValue() > 0;
+        if (!moderator && !student) throw new AccessDeniedException("Bạn không thuộc lớp học này.");
+        return user;
     }
 }

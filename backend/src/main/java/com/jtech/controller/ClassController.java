@@ -77,6 +77,12 @@ public class ClassController {
         return ResponseEntity.ok(classService.getClassesByCurrentModerator());
     }
 
+    @GetMapping("/enrolled")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<List<ClassResponse>> getEnrolledClasses() {
+        return ResponseEntity.ok(classService.getClassesByCurrentStudent());
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_MODERATOR')")
     public ResponseEntity<ClassResponse> createClass(@RequestBody ClassRequest request) {

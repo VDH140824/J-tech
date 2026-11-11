@@ -10,6 +10,7 @@ import com.jtech.entity.User;
 import com.jtech.entity.UserStatus;
 import com.jtech.repository.ClassRepository;
 import com.jtech.repository.PostRepository;
+import com.jtech.repository.CommentRepository;
 import com.jtech.repository.UserRepository;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -34,6 +35,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -52,6 +54,8 @@ class PostServiceTest {
     private Optional<Classroom> classroom;
     private Optional<ClassPost> existingPost;
     private List<Object[]> postRows;
+    private List<Object[]> detailRows;
+    private List<Object[]> detailComments;
     private int accountLookups;
     private int classroomLookups;
     private int postLookups;
@@ -67,6 +71,7 @@ class PostServiceTest {
     private String deleteFailureAt;
     private RuntimeException deleteFailure;
     private PostCloudinaryStub cloudinary;
+    private long studentMemberships;
 
     @BeforeEach
     void setUp() {
@@ -74,6 +79,8 @@ class PostServiceTest {
         classroom = Optional.of(classroom(ClassroomStatus.ACTIVE, MODERATOR_ID));
         existingPost = Optional.of(existingPost());
         postRows = List.of();
+        detailRows = List.of();
+        detailComments = List.of();
         commentAudioRows = List.of();
         leafCommentBatches = List.of();
         deleteOperations = new ArrayList<>();
@@ -98,6 +105,11 @@ class PostServiceTest {
             return classroom;
         });
         PostRepository postRepository = stub(PostRepository.class, (proxy, method, args) -> {
+            if (method.getName().equals("findDetailRows")) {
+                assertEquals(CLASS_ID, args[0]);
+                assertEquals(POST_ID, args[1]);
+                return detailRows;
+            }
             if (method.getName().equals("saveAndFlush")) {
                 saveCalls++;
                 if (saveFailure != null) throw saveFailure;
@@ -114,7 +126,7 @@ class PostServiceTest {
                 postFindCalls++;
                 return existingPost;
             }
-            if (method.getName().equals("findCommentAudioAssets")) {
+            if (method.getName().equals("findCommentAttachments")) {
                 assertEquals(POST_ID, args[0]);
                 return commentAudioRows;
             }
@@ -152,12 +164,26 @@ class PostServiceTest {
             postLookups++;
             return postRows;
         });
+        CommentRepository commentRepository = stub(CommentRepository.class, (proxy, method, args) -> {
+            if (method.getName().equals("findThreadRows")) {
+                assertEquals(POST_ID, args[0]);
+                return detailComments;
+            }
+            throw new AssertionError("Unexpected comment repository call: " + method.getName());
+        });
         EntityManager entityManager = stub(EntityManager.class, (proxy, method, args) -> {
-            if (!method.getName().equals("refresh")) throw new AssertionError("Unexpected entity manager call");
-            return null;
+            if (method.getName().equals("refresh")) return null;
+            if (method.getName().equals("createNativeQuery")) {
+                return stub(Query.class, (query, queryMethod, queryArgs) -> {
+                    if (queryMethod.getName().equals("setParameter")) return query;
+                    if (queryMethod.getName().equals("getSingleResult")) return studentMemberships;
+                    throw new AssertionError("Unexpected membership query call");
+                });
+            }
+            throw new AssertionError("Unexpected entity manager call");
         });
         cloudinary = new PostCloudinaryStub();
-        service = new PostService(postRepository, classRepository, userRepository,
+        service = new PostService(postRepository, commentRepository, classRepository, userRepository,
                 cloudinary, entityManager);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(EMAIL, "unused",
@@ -229,18 +255,50 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID06: Reject inactive accounts and non-moderators")
+    @DisplayName("UTCID06: Reject inactive accounts and accounts without a classroom role")
     void rejectInactiveOrNonModeratorAccount() {
         for (User candidate : List.of(user(UserStatus.PENDING, "MODERATOR"),
                 user(UserStatus.REJECTED, "MODERATOR"),
                 user(UserStatus.LOCKED, "MODERATOR"),
-                user(UserStatus.ACTIVE, "STUDENT"),
                 user(UserStatus.ACTIVE, null))) {
             account = Optional.of(candidate);
             assertThrows(AccessDeniedException.class, () -> service.getPostsByClass(CLASS_ID));
         }
         assertEquals(0, classroomLookups);
         assertEquals(0, postLookups);
+    }
+
+    @Test
+    void studentMustBelongToClassToReadPosts() {
+        User student = user(UserStatus.ACTIVE, "STUDENT");
+        student.setUserId(8L);
+        account = Optional.of(student);
+        assertThrows(AccessDeniedException.class, () -> service.getPostsByClass(CLASS_ID));
+        assertEquals(0, postLookups);
+        studentMemberships = 1;
+        assertEquals(List.of(), service.getPostsByClass(CLASS_ID));
+        assertEquals(1, postLookups);
+    }
+
+    @Test
+    void detailReturnsNotFoundBeforeLoadingComments() {
+        assertThrows(jakarta.persistence.EntityNotFoundException.class,
+                () -> service.getPostDetail(CLASS_ID, POST_ID));
+    }
+
+    @Test
+    void detailLoadsPostAndChronologicalCommentHierarchy() {
+        detailRows = List.<Object[]>of(postRow(POST_ID));
+        detailComments = List.of(
+                new Object[] {11L, POST_ID, 8L, "Học viên", null, "Bình luận", null, null,
+                        Timestamp.valueOf(LocalDateTime.of(2026, 11, 9, 11, 0)), null},
+                new Object[] {12L, POST_ID, 8L, "Học viên", null, "Trả lời", null, 11L,
+                        Timestamp.valueOf(LocalDateTime.of(2026, 11, 9, 12, 0)), null});
+        var detail = service.getPostDetail(CLASS_ID, POST_ID);
+        assertEquals(POST_ID, detail.post().id());
+        assertEquals(11L, detail.comments().get(0).id());
+        assertEquals(12L, detail.comments().get(0).replies().get(0).id());
+        assertEquals(false, detail.readOnly());
     }
 
     @Test
@@ -816,7 +874,7 @@ class PostServiceTest {
         }
 
         @Override
-        public void deleteCommentAudioByUrl(String publicId, String url) {
+        public void deleteCommentAttachmentByUrl(String publicId, String url) {
             deletedAssets.add("audio|" + publicId);
         }
     }

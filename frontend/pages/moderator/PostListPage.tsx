@@ -183,7 +183,7 @@ export function PostListPage({ classId }: PostListPageProps) {
                         <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
                       </div>
                       <div className="post-list-actions">
-                        <button type="button" disabled title="Chức năng xem chi tiết bài đăng chưa hỗ trợ">Xem chi tiết</button>
+                        <button type="button" onClick={() => navigate(`/moderator/classes/${classId}/posts/${post.id}`)}>Xem chi tiết</button>
                         {!isArchived && <>
                           <button type="button" onClick={() => { setSuccess(""); setPostToEdit(post); }}>✎ Chỉnh sửa</button>
                           <button type="button" onClick={() => {

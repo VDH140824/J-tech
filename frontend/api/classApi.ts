@@ -33,6 +33,11 @@ export async function getMyClasses(): Promise<ClassResponse[]> {
   return data;
 }
 
+export async function getEnrolledClasses(): Promise<ClassResponse[]> {
+  const { data } = await apiClient.get<ClassResponse[]>("/classes/enrolled");
+  return data;
+}
+
 export type StudentStatus = "PENDING" | "ACTIVE" | "REJECTED" | "LOCKED";
 
 export interface ClassStudentResponse {

@@ -162,6 +162,20 @@ public class ClassService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<ClassResponse> getClassesByCurrentStudent() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated())
+            throw new AuthenticationCredentialsNotFoundException("Vui lòng đăng nhập.");
+        var user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Tài khoản không tồn tại."));
+        if (user.getStatus() != UserStatus.ACTIVE || user.getRole() == null
+                || !"STUDENT".equals(user.getRole().getRoleName()))
+            throw new AccessDeniedException("Bạn không có quyền xem danh sách lớp.");
+        return classMemberRepository.findStudentClasses(user.getUserId()).stream()
+                .map(ClassResponse::fromQueryRow).toList();
+    }
+
     @Transactional
     public ClassResponse createClass(ClassRequest request) {
         ClassRequest data = validateClassData(request);

@@ -3,6 +3,7 @@ package com.jtech.controller;
 import com.jtech.dto.response.PostResponse;
 import com.jtech.dto.request.PostRequest;
 import com.jtech.service.PostService;
+import com.jtech.dto.response.PostDetailResponse;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +32,15 @@ public class PostController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR','ROLE_STUDENT')")
     public ResponseEntity<List<PostResponse>> getPostsByClass(@PathVariable Long classId) {
         return ResponseEntity.ok(postService.getPostsByClass(classId));
+    }
+
+    @GetMapping("/{postId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR','ROLE_STUDENT')")
+    public ResponseEntity<PostDetailResponse> getDetail(@PathVariable Long classId, @PathVariable Long postId) {
+        return ResponseEntity.ok(postService.getPostDetail(classId, postId));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

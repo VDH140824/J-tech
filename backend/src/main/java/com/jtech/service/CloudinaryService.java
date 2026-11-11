@@ -19,6 +19,8 @@ public class CloudinaryService {
     private static final String GRAMMAR_VIDEO_FOLDER = "Jtech/Moderator/Grammar/video";
     private static final String AVATAR_FOLDER = "Jtech/Users/Avatar";
     private static final String POST_FOLDER = "Jtech/Moderator/Classroom/Post";
+    private static final String COMMENT_FOLDER = "Jtech/Classroom/Comment";
+    private static final long COMMENT_FILE_MAX_BYTES = 15L * 1024 * 1024;
     private static final long POST_FILE_MAX_BYTES = 25L * 1024 * 1024;
     private static final Set<String> ALLOWED_VIDEO_CONTENT_TYPES = Set.of(
         "video/mp4",
@@ -110,6 +112,75 @@ public class CloudinaryService {
                 : url.contains("/raw/upload/") ? "raw" : null;
         if (resourceType == null) throw new IllegalStateException("Không xác định được loại tệp bài đăng.");
         deletePostAttachment(publicId, resourceType);
+    }
+
+    public Map<String, String> uploadCommentAttachment(MultipartFile file) {
+        if (file == null || file.isEmpty())
+            throw new IllegalArgumentException("Tệp đính kèm không có dữ liệu.");
+        if (file.getSize() > COMMENT_FILE_MAX_BYTES)
+            throw new IllegalArgumentException("Tệp vượt quá dung lượng cho phép (tối đa 15MB).");
+        String name = file.getOriginalFilename();
+        String extension = name == null || !name.contains(".") ? ""
+                : name.substring(name.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT);
+        String mime = file.getContentType() == null ? "" : file.getContentType().toLowerCase(java.util.Locale.ROOT);
+        boolean valid = switch (extension) {
+            case "pdf" -> mime.equals("application/pdf") || mime.equals("application/octet-stream");
+            case "docx" -> mime.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    || mime.equals("application/octet-stream");
+            case "zip" -> mime.equals("application/zip") || mime.equals("application/x-zip-compressed")
+                    || mime.equals("application/octet-stream");
+            case "png" -> mime.equals("image/png");
+            case "jpg", "jpeg" -> mime.equals("image/jpeg");
+            case "mp3" -> mime.equals("audio/mpeg") || mime.equals("audio/mp3");
+            case "wav" -> mime.equals("audio/wav") || mime.equals("audio/x-wav") || mime.equals("audio/wave");
+            case "m4a" -> mime.equals("audio/mp4") || mime.equals("audio/x-m4a");
+            case "ogg" -> mime.equals("audio/ogg") || mime.equals("application/ogg");
+            case "webm" -> mime.equals("audio/webm");
+            default -> false;
+        };
+        if (!valid) throw new IllegalArgumentException(
+                "Định dạng tệp không được hỗ trợ. Chọn PDF, DOCX, ZIP, PNG, JPG, MP3, WAV, M4A, OGG hoặc WebM.");
+        String resourceType = switch (extension) {
+            case "png", "jpg", "jpeg" -> "image";
+            case "mp3", "wav", "m4a", "ogg", "webm" -> "video";
+            default -> "raw";
+        };
+        String publicId = java.util.UUID.randomUUID() + ("raw".equals(resourceType) ? "." + extension : "");
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap("resource_type", resourceType, "folder", COMMENT_FOLDER,
+                            "public_id", publicId, "overwrite", false));
+            if (!(result.get("secure_url") instanceof String url) || url.isBlank()
+                    || !(result.get("public_id") instanceof String id) || id.isBlank())
+                throw new IllegalStateException("Cloudinary không trả về thông tin tệp bình luận.");
+            return Map.of("url", url, "publicId", id, "resourceType", resourceType);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể tải tệp bình luận lên Cloudinary.", exception);
+        }
+    }
+
+    public void deleteCommentAttachment(String publicId, String resourceType) {
+        if (publicId == null || !publicId.startsWith(COMMENT_FOLDER + "/")) return;
+        try { cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType)); }
+        catch (IOException exception) { throw new IllegalStateException("Không thể xóa tệp bình luận.", exception); }
+    }
+
+    public void deleteCommentAttachmentByUrl(String publicId, String url) {
+        if (publicId == null || publicId.isBlank()) return;
+        if (url == null) throw new IllegalStateException("Thiếu URL tệp bình luận.");
+        java.net.URI uri;
+        try { uri = java.net.URI.create(url); }
+        catch (IllegalArgumentException exception) { throw new IllegalStateException("URL tệp bình luận không hợp lệ.", exception); }
+        if (!"https".equalsIgnoreCase(uri.getScheme()) || !"res.cloudinary.com".equalsIgnoreCase(uri.getHost()))
+            throw new IllegalStateException("URL tệp bình luận không thuộc Cloudinary.");
+        String path = uri.getPath();
+        String resourceType = path.contains("/image/upload/") ? "image"
+                : path.contains("/raw/upload/") ? "raw"
+                : path.contains("/video/upload/") ? "video" : null;
+        if (resourceType == null) throw new IllegalStateException("Không xác định được loại tệp bình luận.");
+        try { cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType)); }
+        catch (IOException exception) { throw new IllegalStateException("Không thể xóa tệp bình luận.", exception); }
     }
 
     public void deleteCommentAudioByUrl(String publicId, String url) {

@@ -1,4 +1,5 @@
 import { apiClient } from "../services/api";
+import type { CommentResponse } from "./commentApi";
 
 export interface PostResponse {
   id: number;
@@ -16,6 +17,12 @@ export interface PostResponse {
 
 export async function getPostsByClass(classId: number): Promise<PostResponse[]> {
   const { data } = await apiClient.get<PostResponse[]>(`/classes/${classId}/posts`);
+  return data;
+}
+
+export interface PostDetailResponse { post: PostResponse; comments: CommentResponse[]; readOnly: boolean; }
+export async function getPostDetail(classId: number, postId: number): Promise<PostDetailResponse> {
+  const { data } = await apiClient.get<PostDetailResponse>(`/classes/${classId}/posts/${postId}`);
   return data;
 }
 

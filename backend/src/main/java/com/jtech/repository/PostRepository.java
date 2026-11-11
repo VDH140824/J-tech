@@ -10,9 +10,20 @@ import org.springframework.data.repository.query.Param;
 
 public interface PostRepository extends JpaRepository<ClassPost, Long> {
     Optional<ClassPost> findByIdAndClassroomId(Long id, Long classroomId);
+    boolean existsByIdAndClassroomId(Long id, Long classroomId);
+
+    @Query(value = """
+            SELECT p.id, p.classroom_id, p.author_id, u.full_name, u.avatar_url,
+                   p.title, p.content, p.attachment_url, p.due_at, p.created_at,
+                   (SELECT COUNT(*) FROM class_post_comment pc WHERE pc.post_id = p.id
+                    AND (pc.content IS NOT NULL OR pc.audio_url IS NOT NULL))
+            FROM class_post p JOIN user_account u ON u.id = p.author_id
+            WHERE p.id = :postId AND p.classroom_id = :classId
+            """, nativeQuery = true)
+    List<Object[]> findDetailRows(@Param("classId") Long classId, @Param("postId") Long postId);
 
     @Query(value = "SELECT audio_public_id, audio_url FROM class_post_comment WHERE post_id = :postId AND audio_public_id IS NOT NULL", nativeQuery = true)
-    List<Object[]> findCommentAudioAssets(@Param("postId") Long postId);
+    List<Object[]> findCommentAttachments(@Param("postId") Long postId);
 
     @Query(value = """
             SELECT c.id FROM class_post_comment c
@@ -32,7 +43,8 @@ public interface PostRepository extends JpaRepository<ClassPost, Long> {
     @Query(value = """
             SELECT p.id, p.classroom_id, p.author_id, u.full_name, u.avatar_url,
                    p.title, p.content, p.attachment_url, p.due_at, p.created_at,
-                   (SELECT COUNT(*) FROM class_post_comment pc WHERE pc.post_id = p.id)
+                   (SELECT COUNT(*) FROM class_post_comment pc WHERE pc.post_id = p.id
+                    AND (pc.content IS NOT NULL OR pc.audio_url IS NOT NULL))
             FROM class_post p
             JOIN user_account u ON u.id = p.author_id
             WHERE p.classroom_id = :classId
