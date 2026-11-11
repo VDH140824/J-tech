@@ -70,7 +70,7 @@ class ContentManagementAuthorizationTest {
         for (String role : List.of("MODERATOR", "ROLE_MODERATOR")) {
             authenticate(role);
             assertDoesNotThrow(() -> context.getBean(KanjiController.class).getKanji(1L));
-            assertDoesNotThrow(() -> context.getBean(GrammarController.class).getGrammarById(1L));
+            assertDoesNotThrow(() -> context.getBean(GrammarController.class).getGrammarsByLesson(1L, null));
             assertDoesNotThrow(() -> context.getBean(QuestionGrammarController.class).getAllGrammarQuestions(1L));
             assertDoesNotThrow(() -> context.getBean(LessonController.class).deleteLesson(99L));
         }
