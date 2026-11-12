@@ -1,6 +1,8 @@
 -- =============================================================================
 -- J-TECH DATABASE SCHEMA (MYSQL 8.0+)
--- Tổng số bảng: 37 bảng theo Phần III của tài liệu thiết kế J-Tech
+-- Tổng số bảng: 40 bảng (37 bảng theo Phần III của tài liệu thiết kế J-Tech
+--   + coin_reward_rule, streak_milestone, feedback_handling_history)
+-- Đã gộp toàn bộ migration trong doc/migrations (đến 2026-11-12).
 -- Charset: utf8mb4 / Collation: utf8mb4_unicode_ci / Engine: InnoDB
 -- Hãy sao lưu dữ liệu trước khi chạy nếu database đang có dữ liệu cần giữ.
 -- =============================================================================
@@ -16,6 +18,7 @@ DROP TABLE IF EXISTS system_setting;
 DROP TABLE IF EXISTS notification;
 
 -- NHÓM 7: THEO DÕI HỌC TẬP VÀ PHẢN HỒI
+DROP TABLE IF EXISTS feedback_handling_history;
 DROP TABLE IF EXISTS feedback;
 DROP TABLE IF EXISTS study_session;
 DROP TABLE IF EXISTS learning_item_progress;
@@ -28,6 +31,8 @@ DROP TABLE IF EXISTS classroom;
 
 -- NHÓM 5: GAME, XU VÀ CỬA HÀNG
 DROP TABLE IF EXISTS flashcard_progress;
+DROP TABLE IF EXISTS streak_milestone;
+DROP TABLE IF EXISTS coin_reward_rule;
 DROP TABLE IF EXISTS user_inventory;
 DROP TABLE IF EXISTS store_item;
 DROP TABLE IF EXISTS coin_transaction;
@@ -92,6 +97,7 @@ CREATE TABLE user_account (
   status ENUM('PENDING','ACTIVE','REJECTED','LOCKED') NOT NULL DEFAULT 'PENDING',
   status_reason VARCHAR(500) NULL,
   coin_balance INT UNSIGNED NOT NULL DEFAULT 0,
+  exp_balance BIGINT UNSIGNED NOT NULL DEFAULT 0,
   current_streak INT UNSIGNED NOT NULL DEFAULT 0,
   longest_streak INT UNSIGNED NOT NULL DEFAULT 0,
   last_study_date DATE NULL DEFAULT NULL,
@@ -508,6 +514,7 @@ CREATE TABLE speaking_session (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id BIGINT UNSIGNED NOT NULL,
   scenario_id BIGINT UNSIGNED NOT NULL,
+  swapped TINYINT(1) NOT NULL DEFAULT 0, -- 1 = học viên nói lời của vai AI
   status ENUM('IN_PROGRESS','COMPLETED','ABANDONED','FAILED') NOT NULL DEFAULT 'IN_PROGRESS',
   turn_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   overall_feedback TEXT NULL DEFAULT NULL,
@@ -583,7 +590,7 @@ CREATE TABLE coin_transaction (
 
 CREATE TABLE store_item (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  item_type ENUM('BADGE','AVATAR_FRAME','THEME','AVATAR') NOT NULL,
+  item_type ENUM('BADGE','AVATAR_FRAME','THEME','AVATAR','MATERIAL') NOT NULL,
   name VARCHAR(100) NOT NULL,
   description VARCHAR(500) NULL,
   image_url VARCHAR(500) NOT NULL,
@@ -595,6 +602,7 @@ CREATE TABLE store_item (
   updated_by BIGINT UNSIGNED NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL DEFAULT NULL,
+  material_url VARCHAR(500) NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (created_by) REFERENCES user_account (id),
   FOREIGN KEY (updated_by) REFERENCES user_account (id)
@@ -607,10 +615,30 @@ CREATE TABLE user_inventory (
   coin_transaction_id BIGINT UNSIGNED NOT NULL,
   is_equipped BOOLEAN NOT NULL DEFAULT FALSE,
   acquired_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  usable_until DATETIME NULL,
   PRIMARY KEY (id),
+  UNIQUE KEY uq_inventory_student_item (user_id, store_item_id),
   FOREIGN KEY (user_id) REFERENCES user_account (id),
   FOREIGN KEY (store_item_id) REFERENCES store_item (id),
   FOREIGN KEY (coin_transaction_id) REFERENCES coin_transaction (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE coin_reward_rule (
+  activity_type VARCHAR(30) NOT NULL PRIMARY KEY,
+  coin_amount INT UNSIGNED NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK (coin_amount > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE streak_milestone (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  target_days INT NOT NULL,
+  coin_amount BIGINT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  UNIQUE KEY uq_streak_days (target_days),
+  CHECK (target_days > 0),
+  CHECK (coin_amount > 0 AND coin_amount <= 4294967295)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE flashcard_progress (
@@ -780,11 +808,22 @@ CREATE TABLE feedback (
   resolved_at DATETIME NULL DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL DEFAULT NULL,
+  version BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (id),
   FOREIGN KEY (user_id) REFERENCES user_account (id),
   FOREIGN KEY (lesson_id) REFERENCES lesson (id),
   FOREIGN KEY (question_id) REFERENCES question (id),
   FOREIGN KEY (handled_by) REFERENCES user_account (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE feedback_handling_history (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  feedback_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  resolution_note TEXT NOT NULL,
+  handled_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX ix_feedback_history (feedback_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -855,3 +894,39 @@ INSERT INTO chapter (course_id, chapter_no, title, display_order, status) VALUES
 (2, 1, 'Chương 4', 1, 'PUBLISHED'),
 (2, 2, 'Chương 5', 2, 'PUBLISHED'),
 (2, 3, 'Chương 6', 3, 'PUBLISHED');
+
+-- Tình huống luyện nói AI mẫu, gắn vào chương PUBLISHED đầu tiên (Chương 1 - Nhật 1).
+-- sample_script: mảng JSON {speaker: AI|STUDENT, segments: [{text, free?}], translation, hint?};
+-- "free": true đánh dấu phần học viên có thể thay bằng từ của mình.
+SET @chapter_id = (SELECT id FROM chapter WHERE status = 'PUBLISHED' ORDER BY display_order, id LIMIT 1);
+
+INSERT INTO speaking_scenario
+  (chapter_id, title, situation, ai_role, student_role, max_turns, sample_script, display_order, status)
+VALUES
+(@chapter_id, 'Gọi món ở quán ramen',
+ 'Bạn vào một quán ramen ở Nhật. Nhân viên đón khách, hỏi số người và nhận gọi món.',
+ 'nhân viên 店員', 'khách 客', 20,
+ '[
+  {"speaker":"AI","segments":[{"text":"いらっしゃいませ。何名様ですか？"}],"translation":"Xin chào quý khách. Quý khách đi mấy người ạ?"},
+  {"speaker":"STUDENT","segments":[{"text":"一人","free":true},{"text":"です。"}],"translation":"Tôi đi một mình.","hint":"Có thể thay: 二人 (hai người), 三人 (ba người)."},
+  {"speaker":"AI","segments":[{"text":"こちらへどうぞ。ご注文はお決まりですか？"}],"translation":"Mời quý khách đi lối này. Quý khách đã chọn món chưa ạ?"},
+  {"speaker":"STUDENT","segments":[{"text":"すみません。"},{"text":"ラーメン","free":true},{"text":"を"},{"text":"一つ","free":true},{"text":"お願いします。"}],"translation":"Xin lỗi, cho tôi một bát ramen.","hint":"Có thể thay món (うどん, カレー) và số lượng (二つ, 三つ)."},
+  {"speaker":"AI","segments":[{"text":"かしこまりました。お飲み物はいかがですか？"}],"translation":"Vâng ạ. Quý khách có dùng đồ uống không ạ?"},
+  {"speaker":"STUDENT","segments":[{"text":"お水","free":true},{"text":"をください。"}],"translation":"Cho tôi nước lọc.","hint":"Có thể thay: お茶 (trà), コーラ (cola)."},
+  {"speaker":"AI","segments":[{"text":"お待たせしました。ラーメンとお水です。"}],"translation":"Xin lỗi đã để quý khách đợi. Ramen và nước của quý khách đây ạ."},
+  {"speaker":"STUDENT","segments":[{"text":"ありがとうございます。","free":true}],"translation":"Cảm ơn.","hint":"Có thể cảm ơn theo cách khác, ví dụ どうも。"},
+  {"speaker":"AI","segments":[{"text":"ごゆっくりどうぞ。"}],"translation":"Chúc quý khách ngon miệng."}
+ ]', 1, 'PUBLISHED'),
+(@chapter_id, 'Tự giới thiệu ngày đầu đi học',
+ 'Ngày đầu tiên ở trường tiếng Nhật, giáo viên hỏi thăm và mời bạn tự giới thiệu.',
+ 'giáo viên 先生', 'học viên 学生', 20,
+ '[
+  {"speaker":"AI","segments":[{"text":"はじめまして。お名前は何ですか？"}],"translation":"Rất vui được gặp em. Em tên là gì?"},
+  {"speaker":"STUDENT","segments":[{"text":"はじめまして。"},{"text":"アン","free":true},{"text":"です。"}],"translation":"Rất vui được gặp cô. Em là An.","hint":"Thay アン bằng tên của bạn."},
+  {"speaker":"AI","segments":[{"text":"お国はどちらですか？"}],"translation":"Em đến từ nước nào?"},
+  {"speaker":"STUDENT","segments":[{"text":"ベトナム","free":true},{"text":"から来ました。"}],"translation":"Em đến từ Việt Nam.","hint":"Có thể nói thêm thành phố: ハノイ, ホーチミン."},
+  {"speaker":"AI","segments":[{"text":"そうですか。お仕事は何ですか？"}],"translation":"Vậy à. Em làm nghề gì?"},
+  {"speaker":"STUDENT","segments":[{"text":"学生","free":true},{"text":"です。"}],"translation":"Em là sinh viên.","hint":"Có thể thay: エンジニア (kỹ sư), 会社員 (nhân viên công ty)."},
+  {"speaker":"AI","segments":[{"text":"これからよろしくお願いします。"}],"translation":"Từ nay mong được giúp đỡ nhé."},
+  {"speaker":"STUDENT","segments":[{"text":"どうぞよろしくお願いします。"}],"translation":"Rất mong được cô giúp đỡ."}
+ ]', 2, 'PUBLISHED');
