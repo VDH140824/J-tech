@@ -498,7 +498,22 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID28: Reject an edited link without HTTP or HTTPS")
+    @DisplayName("UTCID28: Reject submitting empty text without an attachment")
+    void updateRejectsEmptyTextWithoutAttachment() {
+        stored = comment("Cũ", null, null);
+
+        var error = assertThrows(IllegalArgumentException.class, () -> service.updateComment(1L, 2L, 5L,
+                new UpdateCommentRequest("", false), null));
+
+        assertEquals("Nội dung bình luận không được để trống", error.getMessage());
+        assertEquals("Cũ", stored.getContent());
+        assertNull(stored.getUpdatedAt());
+        assertEquals(0, saveCalls);
+        assertEquals(0, cloudinary.uploads);
+    }
+
+    @Test
+    @DisplayName("UTCID29: Reject an edited link without HTTP or HTTPS")
     void updateRejectsUnsupportedLinkProtocol() {
         stored = comment("Cũ", null, null);
 
@@ -511,7 +526,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID29: Accept an edit containing exactly 200 characters")
+    @DisplayName("UTCID30: Accept an edit containing exactly 200 characters")
     void updateAcceptsExactlyTwoHundredCharacters() {
         stored = comment("Cũ", null, null);
         String content = "a".repeat(200);
@@ -525,7 +540,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID30: Reject an edit containing 201 characters")
+    @DisplayName("UTCID31: Reject an edit containing 201 characters")
     void updateRejectsTwoHundredAndOneCharacters() {
         stored = comment("Cũ", null, null);
 
@@ -538,7 +553,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID31: Reject edits by anyone other than the comment author")
+    @DisplayName("UTCID32: Reject edits by anyone other than the comment author")
     void updateRejectsOtherAuthorsIncludingModerator() {
         stored = comment("Cũ", null, null);
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
@@ -556,7 +571,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID32: Reject removing and replacing an attachment together")
+    @DisplayName("UTCID33: Reject removing and replacing an attachment together")
     void updateRejectsConflictingAttachmentChanges() {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
@@ -571,7 +586,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID33: Keep the comment when the attachment service rejects a file")
+    @DisplayName("UTCID34: Keep the comment when the attachment service rejects a file")
     void updateRejectsInvalidAttachment() {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         var file = new MockMultipartFile("attachment", "invalid.exe", "application/octet-stream", new byte[]{1});
@@ -587,7 +602,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID34: Keep the comment when attachment upload fails")
+    @DisplayName("UTCID35: Keep the comment when attachment upload fails")
     void updateStopsWhenAttachmentUploadFails() {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         var file = new MockMultipartFile("attachment", "file.pdf", "application/pdf", new byte[]{1});
@@ -604,7 +619,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID35: Delete a new upload when saving the edit fails")
+    @DisplayName("UTCID36: Delete a new upload when saving the edit fails")
     void updateCleansNewUploadWhenSaveFails() {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         saveFailure = new IllegalStateException("database failed");
@@ -621,7 +636,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID36: Delete a new upload and retain the old one after rollback")
+    @DisplayName("UTCID37: Delete a new upload and retain the old one after rollback")
     void updateCleansNewUploadAfterRollback() {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         rows = List.<Object[]>of(row(5, null, "Mới",
@@ -640,7 +655,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID37: Student soft-deletes their text-only comment")
+    @DisplayName("UTCID38: Student soft-deletes their text-only comment")
     void deleteOwnTextOnlyComment() {
         stored = comment("Cũ", null, null);
 
@@ -656,7 +671,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID38: Student deletes their attachment-only comment")
+    @DisplayName("UTCID39: Student deletes their attachment-only comment")
     void deleteOwnAttachmentOnlyComment() {
         stored = comment(null, "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
 
@@ -671,7 +686,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID39: Moderator deletes a student's comment")
+    @DisplayName("UTCID40: Moderator deletes a student's comment")
     void moderatorDeletesStudentComment() {
         actor = user("MODERATOR", 5);
         stored = comment("Cũ", null, null);
@@ -686,7 +701,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID40: Student cannot delete another student's comment")
+    @DisplayName("UTCID41: Student cannot delete another student's comment")
     void studentCannotDeleteAnotherStudentComment() {
         String oldUrl = "https://res.cloudinary.com/demo/raw/upload/old.pdf";
         stored = comment("Cũ", oldUrl, "old.pdf");
@@ -702,7 +717,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID41: Reject deleting an already deleted comment")
+    @DisplayName("UTCID42: Reject deleting an already deleted comment")
     void deleteRejectsAlreadyDeletedComment() {
         stored = comment(null, null, null);
 
@@ -714,7 +729,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID42: Delete the attachment only after the transaction commits")
+    @DisplayName("UTCID43: Delete the attachment only after the transaction commits")
     void deleteAttachmentCleanupRunsAfterCommit() {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         TransactionSynchronizationManager.initSynchronization();
@@ -729,7 +744,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID43: Keep the attachment when the delete transaction rolls back")
+    @DisplayName("UTCID44: Keep the attachment when the delete transaction rolls back")
     void deleteKeepsAttachmentAfterRollback() {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         TransactionSynchronizationManager.initSynchronization();
@@ -743,7 +758,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID44: Keep deletion successful when Cloudinary cleanup fails")
+    @DisplayName("UTCID45: Keep deletion successful when Cloudinary cleanup fails")
     void deleteKeepsSuccessIfCloudinaryCleanupFails() {
         stored = comment("Cũ", "https://res.cloudinary.com/demo/raw/upload/old.pdf", "old.pdf");
         cloudinary.failOldCleanup = true;

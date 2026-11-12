@@ -5,6 +5,7 @@ import { getMyClasses, type ClassResponse } from "../../api/classApi";
 import { deletePost, getPostsByClass, type PostResponse } from "../../api/postApi";
 import { CreatePostModal } from "./CreatePostModal";
 import { EditPostModal } from "./EditPostModal";
+import { attachmentDownloadUrl } from "../../utils/classroomAttachment";
 import "./PostListPage.css";
 
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
@@ -203,7 +204,7 @@ export function PostListPage({ classId }: PostListPageProps) {
                     {post.attachmentUrl && (
                       <div className="post-list-attachment">
                         <span>▤ Tài liệu đính kèm</span>
-                        <a href={post.attachmentUrl} target="_blank" rel="noopener noreferrer">Tải xuống</a>
+                        <a href={attachmentDownloadUrl(post.attachmentUrl)} target="_blank" rel="noopener noreferrer">Tải xuống</a>
                       </div>
                     )}
                     {post.dueAt && <p className="post-list-due">Hạn nộp: {formatDate(post.dueAt)}</p>}

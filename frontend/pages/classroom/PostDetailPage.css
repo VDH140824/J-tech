@@ -107,7 +107,8 @@
 .attachment-preview__icon { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 9px; background: #ccfbf1; color: #0f766e; font-size: 19px; }
 .attachment-preview__name { min-width: 0; color: #334155; font-size: 13px; font-weight: 700; }
 .attachment-preview__name small { display: block; margin-top: 2px; color: #64748b; font-size: 10px; font-weight: 700; letter-spacing: .08em; }
-.attachment-preview__heading a { flex: 0 0 auto; margin-left: auto; padding: 6px 9px; border-radius: 6px; color: #0f766e; font-size: 12px; font-weight: 700; text-decoration: none; }
+.attachment-preview__actions { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+.attachment-preview__heading a { flex: 0 0 auto; padding: 6px 9px; border-radius: 6px; color: #0f766e; font-size: 12px; font-weight: 700; text-decoration: none; }
 .attachment-preview__heading a:hover { background: #ccfbf1; }
 .attachment-preview__image { display: block; max-width: 100%; max-height: 480px; margin: 0 auto 12px; border-radius: 6px; object-fit: contain; }
 .attachment-preview__audio { display: block; width: calc(100% - 24px); height: 42px; margin: 0 12px 12px; }
@@ -128,7 +129,7 @@
   .post-detail-page--detail .comment-replies { margin-left: 5px; padding-left: 9px; }
   .post-detail-page--detail .comment-item { padding: 12px; }
   .attachment-preview__heading { flex-wrap: wrap; }
-  .attachment-preview__heading a { margin-left: 0; }
+  .attachment-preview__actions { margin-left: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

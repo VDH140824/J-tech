@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { getEnrolledClasses, type ClassResponse } from "../../api/classApi";
 import { getPostsByClass, type PostResponse } from "../../api/postApi";
+import { attachmentDownloadUrl } from "../../utils/classroomAttachment";
 import "../moderator/PostListPage.css";
 import "./StudentClassPages.css";
 
@@ -111,7 +112,7 @@ export function StudentPostListPage() {
                 <p className="post-list-content">{post.content}</p>
                 {post.attachmentUrl && <div className="post-list-attachment">
                   <span>▤ Tài liệu đính kèm</span>
-                  <a href={post.attachmentUrl} target="_blank" rel="noopener noreferrer">Tải xuống</a>
+                  <a href={attachmentDownloadUrl(post.attachmentUrl)} target="_blank" rel="noopener noreferrer">Tải xuống</a>
                 </div>}
                 {post.dueAt && <p className="post-list-due">Hạn nộp: {formatDate(post.dueAt)}</p>}
                 <div className="post-list-comments">{post.commentCount} bình luận</div>
