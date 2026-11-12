@@ -20,6 +20,9 @@ import { AdminPortalPage } from "../pages/admin/AdminPortalPage";
 import { ModeratorPortalPage } from "../pages/moderator/ModeratorPortalPage";
 import { MainLayout } from "../layouts/MainLayout";
 import { FeedbackPage } from "../pages/feedback/FeedbackPage";
+import { StudentClassPostListPage } from "../pages/classroom/StudentClassPostListPage";
+import { StudentPostListPage } from "../pages/classroom/StudentPostListPage";
+import { PostDetailPage } from "../pages/classroom/PostDetailPage";
 
 export function AppRouter() {
   return (
@@ -80,6 +83,9 @@ export function AppRouter() {
               </StudentProtectedRoute>
             }
           />
+          <Route path="/classes" element={<StudentProtectedRoute><StudentClassPostListPage /></StudentProtectedRoute>} />
+          <Route path="/classes/:classId/posts" element={<StudentProtectedRoute><StudentPostListPage /></StudentProtectedRoute>} />
+          <Route path="/classes/:classId/posts/:postId" element={<StudentProtectedRoute><PostDetailPage portal="student" /></StudentProtectedRoute>} />
         </Route>
 
         <Route

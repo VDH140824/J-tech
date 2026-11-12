@@ -29,12 +29,6 @@ public class GrammarController {
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
-    @GetMapping("/grammars/{id}")
-    public ResponseEntity<GrammarDetailResponse> getGrammarById(@PathVariable Long id) {
-        return ResponseEntity.ok(grammarService.getById(id));
-    }
-
-    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @GetMapping("/lessons/{lessonId}/grammars")
     public ResponseEntity<List<GrammarDetailResponse>> getGrammarsByLesson(
             @PathVariable Long lessonId,
