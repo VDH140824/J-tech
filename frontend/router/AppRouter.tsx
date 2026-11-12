@@ -11,6 +11,9 @@ import { AccountRejectedPage } from "../pages/auth/AccountRejectedPage";
 import { HomePage } from "../pages/home/HomePage";
 import { CoursePage } from "../pages/home/CoursePage";
 import { ChapterPage } from "../pages/home/ChapterPage";
+import { SpeakingScenarioListPage } from "../pages/speaking/SpeakingScenarioListPage";
+import { SpeakingSessionPage } from "../pages/speaking/SpeakingSessionPage";
+import { SpeakingResultPage } from "../pages/speaking/SpeakingResultPage";
 import { BackgroundMusic } from "../components/ui/BackgroundMusic";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { AdminProtectedRoute } from "../components/auth/AdminProtectedRoute";
@@ -67,6 +70,18 @@ export function AppRouter() {
           <Route
             path="/courses/:courseId/chapters/:chapterId"
             element={<ChapterPage />}
+          />
+          <Route
+            path="/courses/:courseId/chapters/:chapterId/speaking"
+            element={<SpeakingScenarioListPage />}
+          />
+          <Route
+            path="/courses/:courseId/chapters/:chapterId/speaking/:scenarioId"
+            element={<SpeakingSessionPage />}
+          />
+          <Route
+            path="/courses/:courseId/chapters/:chapterId/speaking/:scenarioId/result/:sessionId"
+            element={<SpeakingResultPage />}
           />
           <Route
             path="/profile"

@@ -1,7 +1,9 @@
 import { useAuthStore } from "../../store/authStore";
 import { checkIsModerator } from "../../utils/auth";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, Navigate, useParams } from "react-router-dom";
+import { getSpeakingScenarios } from "../../api/speakingApi";
 import {
   getStudentChapters,
   type StudentChapterList,
@@ -47,6 +49,11 @@ function ChapterCard({
     chapter.lessons.reduce((n, l) => n + l[field], 0);
   const groups = new Map<number, StudentLesson[]>();
   chapter.lessons.forEach((l) => groups.set(l.lessonNo, [...(groups.get(l.lessonNo) ?? []), l]));
+  const speaking = useQuery({
+    queryKey: ["speaking-scenarios", chapter.id],
+    queryFn: () => getSpeakingScenarios(chapter.id),
+  });
+  const hasSpeaking = (speaking.data?.length ?? 0) > 0;
   return (
     <details
       className="student-chapter-card"
@@ -73,6 +80,25 @@ function ChapterCard({
       </summary>
       <div className="chapter-body">
         {chapter.description && <p>{chapter.description}</p>}
+        {/* Shown only for chapters that have speaking scenarios; independent of published lessons. */}
+        {hasSpeaking && (
+          <Link
+            to={`/courses/${courseId}/chapters/${chapter.id}/speaking`}
+            style={{
+              display: "inline-block",
+              margin: "4px 0 12px",
+              padding: "8px 14px",
+              borderRadius: "10px",
+              background: "#fdf2f8",
+              border: "1.5px solid #fbcfe8",
+              color: "#db2777",
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            🗣️ Luyện nói với AI →
+          </Link>
+        )}
         {!chapter.lessons.length && <p>Chưa có bài học được xuất bản trong chương này.</p>}
         {Array.from(groups, ([number, lessons]) => (
           <details

@@ -61,6 +61,16 @@ app:
     secure: ${APP_COOKIE_SECURE:false}
     same-site: Lax
     path: /api/auth
+  speaking:
+    # Keys come from the environment only; leave them unset to disable scoring or feedback.
+    azure:
+      key: ${AZURE_SPEECH_KEY:}
+      region: ${AZURE_SPEECH_REGION:}
+      language: ja-JP
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:gemini-3.8-flash}
+      timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:60}
 
 logging:
   level:

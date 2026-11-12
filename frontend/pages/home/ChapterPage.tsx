@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getChapterStudy } from "../../api/courseApi";
+import { getSpeakingScenarios } from "../../api/speakingApi";
 import { SECTIONS, type LessonSection } from "../moderator/sectionConfig";
 import { ModeratorChapterSkillsOverview } from "../moderator/ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "../moderator/ModeratorLessonListTab";
@@ -21,6 +22,12 @@ export function ChapterPage() {
     queryFn: () => getChapterStudy(Number(courseId), Number(chapterId)),
     enabled: valid,
   });
+  const speaking = useQuery({
+    queryKey: ["speaking-scenarios", Number(chapterId)],
+    queryFn: () => getSpeakingScenarios(Number(chapterId)),
+    enabled: valid,
+  });
+  const hasSpeaking = (speaking.data?.length ?? 0) > 0;
   const active = SECTIONS.find(
     (section) => section.key === params.get("skill") || section.skillType === params.get("skill"),
   );
@@ -162,6 +169,11 @@ export function ChapterPage() {
           {...context}
           onSelectSkill={selectSkill}
           onBack={back}
+          onOpenSpeaking={
+            hasSpeaking
+              ? () => navigate(`/courses/${courseId}/chapters/${chapterId}/speaking`)
+              : undefined
+          }
         />
       );
   }
