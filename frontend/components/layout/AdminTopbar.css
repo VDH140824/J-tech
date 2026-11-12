@@ -66,6 +66,10 @@
   gap: 16px;
 }
 
+.moderator-topbar-right {
+  margin-left: auto;
+}
+
 .admin-topbar-notif-btn {
   width: 40px;
   height: 40px;
