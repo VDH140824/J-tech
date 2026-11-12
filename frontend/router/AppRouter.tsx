@@ -22,6 +22,9 @@ import { MainLayout } from "../layouts/MainLayout";
 import { FeedbackPage } from "../pages/feedback/FeedbackPage";
 import { GamesPage } from "../pages/games/GamesPage";
 import { VocabularyRainPage } from "../pages/games/VocabularyRainPage";
+import { StudentClassPostListPage } from "../pages/classroom/StudentClassPostListPage";
+import { StudentPostListPage } from "../pages/classroom/StudentPostListPage";
+import { PostDetailPage } from "../pages/classroom/PostDetailPage";
 
 export function AppRouter() {
   return (
@@ -29,26 +32,11 @@ export function AppRouter() {
       <BackgroundMusic />
       <Routes>
         {/* Public routes */}
-        <Route
-          path="/"
-          element={<LandingPage />}
-        />
-        <Route
-          path="/login"
-          element={<LoginPage />}
-        />
-        <Route
-          path="/oauth2/redirect"
-          element={<OAuth2RedirectPage />}
-        />
-        <Route
-          path="/pending-approval"
-          element={<PendingApprovalPage />}
-        />
-        <Route
-          path="/account-rejected"
-          element={<AccountRejectedPage />}
-        />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/oauth2/redirect" element={<OAuth2RedirectPage />} />
+        <Route path="/pending-approval" element={<PendingApprovalPage />} />
+        <Route path="/account-rejected" element={<AccountRejectedPage />} />
 
         {/* Authenticated main application routes sharing MainLayout */}
         <Route
@@ -58,22 +46,13 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route
-            path="/home"
-            element={<HomePage />}
-          />
-          <Route
-            path="/courses/:courseId"
-            element={<CoursePage />}
-          />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/courses/:courseId" element={<CoursePage />} />
           <Route
             path="/courses/:courseId/chapters/:chapterId"
             element={<ChapterPage />}
           />
-          <Route
-            path="/profile"
-            element={<ProfilePage />}
-          />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route
             path="/games"
             element={
@@ -98,9 +77,30 @@ export function AppRouter() {
               </StudentProtectedRoute>
             }
           />
-          <Route path="/classes" element={<StudentProtectedRoute><StudentClassPostListPage /></StudentProtectedRoute>} />
-          <Route path="/classes/:classId/posts" element={<StudentProtectedRoute><StudentPostListPage /></StudentProtectedRoute>} />
-          <Route path="/classes/:classId/posts/:postId" element={<StudentProtectedRoute><PostDetailPage portal="student" /></StudentProtectedRoute>} />
+          <Route
+            path="/classes"
+            element={
+              <StudentProtectedRoute>
+                <StudentClassPostListPage />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/classes/:classId/posts"
+            element={
+              <StudentProtectedRoute>
+                <StudentPostListPage />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/classes/:classId/posts/:postId"
+            element={
+              <StudentProtectedRoute>
+                <PostDetailPage portal="student" />
+              </StudentProtectedRoute>
+            }
+          />
         </Route>
 
         <Route
@@ -137,10 +137,7 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route
-            index
-            element={<CoinHistoryPage />}
-          />
+          <Route index element={<CoinHistoryPage />} />
         </Route>
         <Route
           path="/streak"
@@ -152,10 +149,7 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route
-            index
-            element={<StudentStreakPage />}
-          />
+          <Route index element={<StudentStreakPage />} />
         </Route>
         {/* Admin routes (Admin has its own dedicated portal layout) */}
         <Route
@@ -209,15 +203,7 @@ export function AppRouter() {
           }
         />
 
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to="/home"
-              replace
-            />
-          }
-        />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </>
   );
