@@ -24,6 +24,7 @@ function load(relative) {
       getCourses: async () => { throw new Error('unexpected fetch'); },
       getChapterStudy: async () => { throw new Error('unexpected fetch'); },
     };
+    if (name.includes('/api/speakingApi')) return { SPEAKING_DEMO: false, getSpeakingScenarios: async () => { throw new Error('unexpected fetch'); } };
     if (name.includes('/services/api')) return { apiClient: { get: async () => { throw new Error('unexpected fetch'); } } };
     if (name.startsWith('.')) {
       const base = path.resolve(path.dirname(file), name);
