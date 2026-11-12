@@ -13,6 +13,8 @@ import { VocabularyChapterFlashcards } from "./VocabularyChapterFlashcards";
 import { VocabularyChapterTestPage } from "./VocabularyChapterTestPage";
 import { ModeratorSkillItemListPage } from "./ModeratorSkillItemListPage";
 import { ModeratorKanjiPage } from "./kanji/ModeratorKanjiPage";
+import { ModeratorKanjiTestPage } from "./kanji/ModeratorKanjiTestPage";
+import { StudentKanjiFlashcardPage } from "../home/StudentKanjiFlashcardPage";
 
 // Re-export for external consumers
 export { SECTIONS, type LessonSection, type SectionConfig };
@@ -110,6 +112,7 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.set("skill", sec);
+          next.delete("kanjiChapterView");
           next.delete("lessonId");
           next.delete("grammarId");
           next.delete("questionList");
@@ -122,6 +125,7 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.delete("skill");
+          next.delete("kanjiChapterView");
           next.delete("lessonId");
           next.delete("grammarId");
           next.delete("questionList");
@@ -188,6 +192,7 @@ export function ModeratorChapterDetailPage({
         (prev) => {
           const next = new URLSearchParams(prev);
           next.set("lessonId", String(lesson.id));
+          next.delete("kanjiChapterView");
           next.delete("grammarId");
           next.delete("questionList");
           next.delete("vocabTab");
@@ -231,12 +236,17 @@ export function ModeratorChapterDetailPage({
         const next = new URLSearchParams(previous);
         next.delete("lessonId");
         next.delete("vocabTab");
-        if (view) next.set("vocabChapterView", view);
-        else next.delete("vocabChapterView");
+        const key=activeConfig?.key==="kanji" ? "kanjiChapterView" : "vocabChapterView";
+        next.delete("kanjiChapterView");next.delete("vocabChapterView");
+        if (view) next.set(key, view);
         return next;
       },
       { replace: true },
     );
+  if(activeConfig?.key==="kanji" && searchParams.get("kanjiChapterView")==="flashcards")
+    return <StudentKanjiFlashcardPage key={chapterId} chapterId={chapterId} chapterNo={chapterNo} readOnly onBack={()=>setChapterView(null)}/>;
+  if(activeConfig?.key==="kanji" && searchParams.get("kanjiChapterView")==="test")
+    return <ModeratorKanjiTestPage key={chapterId} chapterId={chapterId} chapterNo={chapterNo} onBack={()=>setChapterView(null)}/>;
   if (activeConfig?.key === "vocabulary" && searchParams.get("vocabChapterView") === "flashcards") {
     return (
       <VocabularyChapterFlashcards
