@@ -10,6 +10,7 @@ import {
 } from "../../api/lessonApi";
 import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
 import { LessonFormModal } from "./LessonFormModal";
+import "./VocabularyMiniTests.css";
 
 interface ModeratorLessonListTabProps {
   courseId?: number;
@@ -233,7 +234,7 @@ export function ModeratorLessonListTab({
       {/* Section Header with "➕ Thêm bài học" */}
       <div className="admin-page-header">
         <div
-          className={`mod-header-action-row ${activeConfig.key === "vocabulary" ? "mod-vocab-header-actions" : ""}`}
+          className={`mod-header-action-row ${["vocabulary", "kanji"].includes(activeConfig.key) ? "mod-vocab-header-actions" : ""}`}
           style={{ width: "100%" }}
         >
           <div className="admin-header-titles">
@@ -260,7 +261,7 @@ export function ModeratorLessonListTab({
               )}
             </p>
           </div>
-          {activeConfig.key === "vocabulary" && onOpenChapterFlashcards && (
+          {["vocabulary","kanji"].includes(activeConfig.key) && onOpenChapterFlashcards && (
             <button
               type="button"
               className="mod-btn-back"
@@ -269,13 +270,13 @@ export function ModeratorLessonListTab({
               Flashcard tổng hợp chương
             </button>
           )}
-          {activeConfig.key === "vocabulary" && onOpenChapterTest && (
+          {["vocabulary","kanji"].includes(activeConfig.key) && onOpenChapterTest && (
             <button
               type="button"
               className="mod-btn-back"
               onClick={onOpenChapterTest}
             >
-              Bài test chương Vocab
+              Bài test chương {activeConfig.key==="kanji" ? "Kanji" : "Vocab"}
             </button>
           )}
           {!readOnly && (

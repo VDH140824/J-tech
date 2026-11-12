@@ -3,11 +3,12 @@ import {
   changeAdminUserRole,
   deleteAdminUser,
   getAdminUsers,
+  getAdminDashboardStats,
   preCreateAdminUser,
   updateAdminUserStatus,
 } from "../../api/adminApi";
 import type { UserResponse } from "../../types/auth";
-import type { AdminUserStatusRequest } from "../../types/admin";
+import type { AdminDashboardStatsResponse, AdminUserStatusRequest } from "../../types/admin";
 
 type UserStatus = AdminUserStatusRequest["status"];
 
@@ -100,6 +101,7 @@ interface AdminUsersTabProps {
 
 export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   const [users, setUsers] = useState<UserResponse[]>([]);
+  const [stats, setStats] = useState<AdminDashboardStatsResponse | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
@@ -131,6 +133,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   //Load to adminApi
   const fetchUsers = async () => {
+    getAdminDashboardStats().then(setStats).catch(() => setStats(null));
     try {
       setLoading(true);
       setError(null);
@@ -184,6 +187,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
     try {
       setPreCreateLoading(true);
       await preCreateAdminUser({ email: preCreateEmail.trim(), role: preCreateRole });
+      window.dispatchEvent(new Event("admin-users-changed"));
       showNotification(`Đã tạo tài khoản ${preCreateEmail.trim()} với quyền ${preCreateRole}!`);
       setShowPreCreate(false);
       //reset input box
@@ -231,6 +235,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       } else if (needsReason && editingUser.statusReason !== reason) {
         await updateAdminUserStatus(id, { status: editStatus, statusReason: reason });
       }
+      window.dispatchEvent(new Event("admin-users-changed"));
       showNotification(`Đã cập nhật thông tin tài khoản #${id}!`);
       setEditingUser(null);
       fetchUsers();
@@ -246,6 +251,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
     try {
       setDeleteLoading(true);
       await deleteAdminUser(deletingUser.id);
+      window.dispatchEvent(new Event("admin-users-changed"));
       showNotification("Đã xóa tài khoản thành công!");
       setDeletingUser(null);
       fetchUsers();
@@ -257,9 +263,9 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   };
 
   // Quick stats calculation
-  const activeCount = users.filter((u) => u.status === "ACTIVE").length;
-  const pendingCount = users.filter((u) => u.status === "PENDING").length;
-  const lockedCount = users.filter((u) => u.status === "LOCKED" || u.status === "REJECTED").length;
+  const activeCount = stats?.activeUsers ?? "—";
+  const pendingCount = stats?.pendingUsers ?? "—";
+  const lockedCount = stats ? stats.lockedUsers + stats.rejectedUsers : "—";
 
   return (
     <div className="admin-page-container">
@@ -372,8 +378,8 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
         {/* Quick Stats Pill Row */}
         <div className="admin-quick-stats-row">
-          <span className="quick-stats-label">Thống kê nhanh:</span>
-          <span className="stat-pill pill-total">Tổng: {totalElements || users.length}</span>
+          <span className="quick-stats-label">Toàn hệ thống:</span>
+          <span className="stat-pill pill-total">Tổng: {stats?.totalUsers ?? "—"}</span>
           <span className="stat-pill pill-active">Đang hoạt động: {activeCount}</span>
           <span
             className="stat-pill pill-pending clickable"
@@ -382,7 +388,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
           >
             Chờ kích hoạt: {pendingCount}
           </span>
-          <span className="stat-pill pill-locked">Bị khóa: {lockedCount}</span>
+          <span className="stat-pill pill-locked">Khóa / Từ chối: {lockedCount}</span>
         </div>
       </div>
 
@@ -687,6 +693,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                     className="modal-input"
                     aria-invalid={!!editStatusReasonError}
                   />
+                  <span>{editStatusReason.length}/500 ký tự</span>
                   {editStatusReasonError && <span className="modal-field-error" role="alert">{editStatusReasonError}</span>}
                 </label>
               )}

@@ -26,6 +26,9 @@ function getAvatarStyle(id: number) {
 
 export function PendingUsersPage() {
   const [users, setUsers] = useState<UserResponse[]>([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
@@ -38,7 +41,13 @@ export function PendingUsersPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await getPendingAdminUsers({ size: 100 });
+      const response = await getPendingAdminUsers({ page, size: 10 });
+      setTotalPages(response.totalPages);
+      setTotalElements(response.totalElements);
+      if (page > 0 && page >= response.totalPages) {
+        setPage(Math.max(0, response.totalPages - 1));
+        return;
+      }
       setUsers(response.content ?? []);
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Không thể tải danh sách tài khoản chờ duyệt.");
@@ -49,7 +58,7 @@ export function PendingUsersPage() {
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [page]);
 
   const showNotification = (msg: string) => {
     setActionSuccess(msg);
@@ -67,6 +76,7 @@ export function PendingUsersPage() {
         showNotification(`Đã từ chối tài khoản #${userId}!`);
         setRejectingUser(null);
       }
+      window.dispatchEvent(new Event("admin-users-changed"));
       await loadUsers();
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Không thể cập nhật tài khoản này.");
@@ -99,11 +109,12 @@ export function PendingUsersPage() {
         <button
           type="button"
           className="admin-btn-refresh-clean"
+          disabled={loading || processingId !== null}
           onClick={loadUsers}
           title="Làm mới danh sách"
         >
           <span className="btn-icon">🔄</span>
-          <span>Làm mới ({users.length})</span>
+          <span>Làm mới ({totalElements})</span>
         </button>
       </div>
 
@@ -195,7 +206,7 @@ export function PendingUsersPage() {
                             <button
                               type="button"
                               className="btn-approve-clean"
-                              disabled={isProcessing}
+                              disabled={processingId !== null}
                               onClick={() => changeStatus(user.id, "approve")}
                               title="Chấp nhận tài khoản này"
                             >
@@ -204,7 +215,7 @@ export function PendingUsersPage() {
                             <button
                               type="button"
                               className="btn-reject-clean"
-                              disabled={isProcessing}
+                              disabled={processingId !== null}
                               onClick={() => {
                                 setRejectingUser(user);
                                 setRejectReason("Tài khoản không phải của sinh viên FPT");
@@ -225,6 +236,13 @@ export function PendingUsersPage() {
           </div>
         )}
       </div>
+      {totalPages > 0 && (
+        <div className="admin-pagination-footer">
+          <span className="pagination-info">Trang {page + 1} / {totalPages} ({totalElements} tài khoản chờ duyệt)</span>
+          <button type="button" className="btn-page" disabled={loading || processingId !== null || page === 0} onClick={() => setPage(p => p - 1)}>Trang trước</button>
+          <button type="button" className="btn-page" disabled={loading || processingId !== null || page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Trang sau</button>
+        </div>
+      )}
       {rejectingUser && (
         <div className="admin-modal-backdrop" onClick={() => setRejectingUser(null)}>
           <div className="admin-modal-dialog" onClick={(e) => e.stopPropagation()}>
@@ -241,6 +259,7 @@ export function PendingUsersPage() {
                   className="modal-input"
                   aria-invalid={!!rejectReasonError}
                 />
+                <span>{rejectReason.length}/500 ký tự</span>
                 {rejectReasonError && <span className="modal-field-error" role="alert">{rejectReasonError}</span>}
               </label>
               <div className="modal-actions-row">
