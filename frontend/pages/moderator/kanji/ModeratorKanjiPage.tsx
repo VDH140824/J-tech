@@ -4,10 +4,13 @@ import type { LessonSummary } from "../../../api/lessonApi";
 import { listKanji, getKanji, saveKanji, deleteKanji, type KanjiInput, type KanjiItem, type KanjiPage } from "../../../api/kanjiApi";
 import "./kanji.css";
 import { lessonDocuments } from "./lessonDocuments";
+import { KanjiExercisesTab } from "./KanjiExercisesTab";
+import { useSearchParams } from "react-router-dom";
 
 const empty: KanjiInput = { characterText: "", sinoVietnamese: "", onyomi: "", kunyomi: "", meaningVi: "", examples: "", mnemonicStory: "", removeImage: false };
 const labels: Record<string, string> = { DRAFT: "Bản nháp", PUBLISHED: "Đã xuất bản", HIDDEN: "Ẩn", ARCHIVED: "Đã lưu trữ" };
 export function ModeratorKanjiPage({ lesson, onBack }: { lesson: LessonSummary; onBack: () => void }) {
+  const [tab, setTab] = useState<"kanji" | "exercise">("kanji");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");
   const [page, setPage] = useState(0);
@@ -95,10 +98,15 @@ export function ModeratorKanjiPage({ lesson, onBack }: { lesson: LessonSummary; 
     <button className="mod-btn-back" onClick={onBack}>← Danh sách bài học</button>
     <div className="admin-page-header"><div><h2>Kanji · Bài {lesson.lessonNo}: {lesson.title}</h2>
       <p>Quản lý chữ Hán, cách đọc, ví dụ và hình ảnh minh họa.</p></div>
-      <button className="mod-btn-add" disabled={busy || lesson.status === "ARCHIVED"} onClick={() => edit()}>+ Thêm Kanji</button></div>
+      {tab === "kanji" && <button className="mod-btn-add" disabled={busy || lesson.status === "ARCHIVED"} onClick={() => edit()}>+ Thêm Kanji</button>}</div>
     {lessonDocuments(lesson.documents).length > 0 && <section aria-label="Tài liệu bài học"><h3>Tài liệu bài học</h3>
       <ul>{lessonDocuments(lesson.documents).map((doc, index) => <li key={`${doc.url}-${index}`}><a href={doc.url} target="_blank" rel="noopener noreferrer">{doc.name}</a></li>)}</ul>
     </section>}
+    <nav className="kanji-content-tabs" aria-label="Nội dung bài học Kanji">
+      <button type="button" aria-pressed={tab === "kanji"} onClick={() => setTab("kanji")}>Danh sách Kanji</button>
+      <button type="button" aria-pressed={tab === "exercise"} onClick={() => setTab("exercise")}>Bài tập Kanji</button>
+    </nav>
+    {tab === "exercise" ? <KanjiExercisesTab key={lesson.id} lessonId={lesson.id} readOnly={lesson.status === "ARCHIVED"} /> : <>
     {error && <p role="alert" className="kanji-error">{error} <button onClick={() => setReload(n => n + 1)}>Thử lại</button></p>}
     {notice && <p role="status">{notice}</p>}
     <div className="mod-section-toolbar">
@@ -115,6 +123,7 @@ export function ModeratorKanjiPage({ lesson, onBack }: { lesson: LessonSummary; 
       <div className="kanji-pagination"><button disabled={page === 0} onClick={() => setPage(n => n - 1)}>← Trước</button>
         <span>Trang {page + 1} / {Math.max(1, data?.totalPages ?? 0)}</span>
         <button disabled={page + 1 >= (data?.totalPages ?? 0)} onClick={() => setPage(n => n + 1)}>Sau →</button></div>
+    </>}
     </>}
     {hasDialog && <div className="kanji-overlay"><section ref={dialogRef} tabIndex={-1} className="kanji-dialog" role="dialog" aria-modal="true" aria-label={editing ? "Nhập Kanji" : "Chi tiết Kanji"}>
       <button className="kanji-close" aria-label="Đóng" disabled={busy} onClick={() => { setEditing(false); setDetail(undefined); }}>×</button>

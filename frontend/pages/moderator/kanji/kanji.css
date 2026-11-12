@@ -1,4 +1,17 @@
 .kanji-page input,.kanji-page select,.kanji-page textarea{padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;max-width:100%}
+.kanji-content-tabs{display:flex;gap:12px;margin:20px 0;border-bottom:1px solid #cbd5e1;padding-bottom:12px}
+.kanji-content-tabs button[aria-pressed="true"]{background:#7c3aed;color:#fff}
+.kanji-exercise-editor,.kanji-exercise-preview{padding:24px;margin:20px 0;background:#fff;border:1px solid #cbd5e1;border-radius:12px}
+.kanji-exercise-editor fieldset{border:0;padding:0;min-width:0}
+.kanji-exercise-editor label,.kanji-exercise-preview label{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.kanji-exercise-editor textarea{min-height:90px;resize:vertical}
+.kanji-exercise-option{display:flex;gap:10px;align-items:center;margin:10px 0}
+.kanji-exercise-option input:not([type="radio"]){flex:1;min-width:0}
+.kanji-exercise-preview label.kanji-exercise-option{flex-direction:row}
+.kanji-exercise-actions{display:flex;flex-wrap:wrap;gap:8px}
+.kanji-exercise-text{white-space:pre-wrap;overflow-wrap:anywhere}
+.kanji-exercise-summary{max-width:320px;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:640px){.kanji-exercise-editor,.kanji-exercise-preview{padding:12px}.kanji-exercise-option{flex-wrap:wrap}}
 .kanji-page button{cursor:pointer;border:none;border-radius:8px;padding:8px 16px;font:inherit;font-weight:500;transition:background .18s,opacity .18s,transform .1s}
 .kanji-page button:not(:disabled):active{transform:scale(.97)}
 .kanji-page button:disabled{cursor:default;opacity:.55}

@@ -98,6 +98,9 @@ export function AppRouter() {
               </StudentProtectedRoute>
             }
           />
+          <Route path="/classes" element={<StudentProtectedRoute><StudentClassPostListPage /></StudentProtectedRoute>} />
+          <Route path="/classes/:classId/posts" element={<StudentProtectedRoute><StudentPostListPage /></StudentProtectedRoute>} />
+          <Route path="/classes/:classId/posts/:postId" element={<StudentProtectedRoute><PostDetailPage portal="student" /></StudentProtectedRoute>} />
         </Route>
 
         <Route

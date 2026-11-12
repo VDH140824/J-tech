@@ -1,6 +1,0 @@
-**/node_modules/**
-**/dist/**
-**/target/**
-**/bin/**
-.audit-docs/**
-frontend/package-lock.json

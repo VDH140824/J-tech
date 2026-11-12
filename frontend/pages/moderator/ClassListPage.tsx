@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { deleteClass, getMyClasses, type ClassResponse, type ClassroomStatus } from "../../api/classApi";
 import "./ClassListPage.css";
 import { ClassCreateModal } from "./ClassCreateModal";
@@ -13,6 +14,7 @@ const STATUS_LABELS: Record<ClassroomStatus, string> = {
 };
 
 export function ClassListPage() {
+  const navigate = useNavigate();
   const [selectedClass, setSelectedClass] = useState<ClassResponse | null>(null);
   const [classToDelete, setClassToDelete] = useState<ClassResponse | null>(null);
   const deleteDialog = useRef<HTMLDialogElement>(null);
@@ -107,6 +109,7 @@ export function ClassListPage() {
 
   return (
     <section className="class-list-page" aria-label="Danh sách lớp học">
+      <button type="button" className="class-list-back" onClick={() => navigate("/moderator")}>← Trở lại</button>
       <div className="class-list-heading">
         <div>
           <h2>Quản lý lớp học</h2>
@@ -190,11 +193,10 @@ export function ClassListPage() {
                     </span>
                     <p className="class-list-count">Học sinh: <strong>{classroom.studentCount}</strong> học viên</p>
                     <div className="class-list-actions">
-                      <button type="button" disabled title="Chưa hỗ trợ">Xem chi tiết</button>
+                      <button type="button" onClick={() => navigate(`/moderator/classes/${classroom.id}/posts`)}>Xem chi tiết</button>
                       <button type="button" onClick={() => { setSuccess(""); setSelectedClass(classroom); }}>Chỉnh sửa</button>
                       <button type="button" onClick={() => openDeleteConfirmation(classroom)}>Xóa</button>
                     </div>
-                    <small className="class-list-unavailable">Xem chi tiết chưa hỗ trợ.</small>
                   </div>
                 </article>
               ))}

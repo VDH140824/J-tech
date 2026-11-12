@@ -251,13 +251,13 @@ void UTCID03() {
         verify(userRepository, never()).save(any(User.class));
     }
 
-    // UTCID11: Chấp nhận lý do từ chối dài đúng 100 ký tự.
+    // UTCID11: Chấp nhận lý do từ chối dài đúng 500 ký tự.
     @Test
     void UTCID11() {
         user.setStatus(UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
-        String reason = "a".repeat(100);
+        String reason = "a".repeat(500);
         RejectUserRequest request = new RejectUserRequest();
         request.setStatusReason(reason);
 
@@ -268,18 +268,18 @@ void UTCID03() {
         verify(userRepository).save(user);
     }
 
-    // UTCID12: Từ chối lý do dài hơn 100 ký tự và không lưu thay đổi.
+    // UTCID12: Từ chối lý do dài hơn 500 ký tự và không lưu thay đổi.
     @Test
     void UTCID12() {
         user.setStatus(UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         RejectUserRequest request = new RejectUserRequest();
-        request.setStatusReason("a".repeat(101));
+        request.setStatusReason("a".repeat(501));
 
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> service.rejectUser(1L, request));
 
-        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals("Lý do không được vượt quá 500 ký tự", error.getMessage());
         assertEquals(UserStatus.PENDING, user.getStatus());
         verify(userRepository, never()).save(any(User.class));
     }
@@ -335,12 +335,12 @@ void UTCID03() {
         verify(userRepository, never()).save(any(User.class));
     }
 
-    // UTCID16: Chấp nhận lý do khóa dài đúng 100 ký tự.
+    // UTCID16: Chấp nhận lý do khóa dài đúng 500 ký tự.
     @Test
     void UTCID16() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
-        String reason = "a".repeat(100);
+        String reason = "a".repeat(500);
         AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
         request.setStatusReason(reason);
 
@@ -351,27 +351,27 @@ void UTCID03() {
         verify(userRepository).save(user);
     }
 
-    // UTCID17: Từ chối lý do khóa dài hơn 100 ký tự.
+    // UTCID17: Từ chối lý do khóa dài hơn 500 ký tự.
     @Test
     void UTCID17() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
-        request.setStatusReason("a".repeat(101));
+        request.setStatusReason("a".repeat(501));
 
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> service.updateUserStatus(1L, request));
 
-        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals("Lý do không được vượt quá 500 ký tự", error.getMessage());
         assertEquals(UserStatus.ACTIVE, user.getStatus());
         verify(userRepository, never()).save(any(User.class));
     }
 
-    // UTCID18: Chấp nhận lý do đổi sang REJECTED dài đúng 100 ký tự.
+    // UTCID18: Chấp nhận lý do đổi sang REJECTED dài đúng 500 ký tự.
     @Test
     void UTCID18() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
-        String reason = "a".repeat(100);
+        String reason = "a".repeat(500);
         AdminUserStatusRequest request = new AdminUserStatusRequest("REJECTED");
         request.setStatusReason(reason);
 
@@ -382,17 +382,17 @@ void UTCID03() {
         verify(userRepository).save(user);
     }
 
-    // UTCID19: Từ chối lý do đổi sang REJECTED dài hơn 100 ký tự.
+    // UTCID19: Từ chối lý do đổi sang REJECTED dài hơn 500 ký tự.
     @Test
     void UTCID19() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         AdminUserStatusRequest request = new AdminUserStatusRequest("REJECTED");
-        request.setStatusReason("a".repeat(101));
+        request.setStatusReason("a".repeat(501));
 
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> service.updateUserStatus(1L, request));
 
-        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals("Lý do không được vượt quá 500 ký tự", error.getMessage());
         assertEquals(UserStatus.ACTIVE, user.getStatus());
         verify(userRepository, never()).save(any(User.class));
     }

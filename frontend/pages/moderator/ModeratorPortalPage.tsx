@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useMatch, useSearchParams } from "react-router-dom";
 import { ModeratorCoursesTab } from "./ModeratorCoursesTab";
 import { ClassListPage } from "./ClassListPage";
+import { PostListPage } from "./PostListPage";
+import { PostDetailPage } from "../classroom/PostDetailPage";
+import { ClassStudentListPage } from "./ClassStudentListPage";
 import { ModeratorChapterDetailPage } from "./ModeratorChapterDetailPage";
 import { ModeratorLayout } from "../../layouts/ModeratorLayout";
 import { ModeratorKanjiManagementPage } from "./kanji/ModeratorKanjiManagementPage";
@@ -31,6 +34,9 @@ export function ModeratorPortalPage() {
   // Match clean URL pattern: /moderator/courses/:courseId/chapters/:chapterId
   const matchChapter = useMatch("/moderator/courses/:courseId/chapters/:chapterId");
   const matchClasses = useMatch("/moderator/classes");
+  const matchClassPosts = useMatch("/moderator/classes/:classId/posts");
+  const matchPostDetail = useMatch("/moderator/classes/:classId/posts/:postId");
+  const matchClassStudents = useMatch("/moderator/classes/:classId/students");
   const matchConjugations = useMatch("/moderator/conjugation-forms");
 
   const [chapterInfo, setChapterInfo] = useState<ChapterDetail | null>(null);
@@ -52,7 +58,7 @@ export function ModeratorPortalPage() {
     location.pathname.replace(/\/$/, "") === "/moderator/kanji"
       ? "kanji"
       : matchClasses
-        ? "classes"
+        || matchClassPosts || matchPostDetail || matchClassStudents ? "classes"
         : location.pathname === "/moderator/feedback"
           ? "feedback"
           : matchChapter
@@ -99,6 +105,9 @@ export function ModeratorPortalPage() {
 
   let breadcrumb = "Trang chủ / Danh sách môn học";
   if (activeTab === "classes") breadcrumb = "Trang chủ / Quản lý lớp học";
+  if (matchClassPosts) breadcrumb = "Trang chủ / Quản lý lớp học / Bài đăng";
+  if (matchPostDetail) breadcrumb = "Trang chủ / Quản lý lớp học / Chi tiết bài đăng";
+  if (matchClassStudents) breadcrumb = "Trang chủ / Quản lý lớp học / Danh sách học viên";
   if (activeTab === "chapter-detail") {
     if (chapterInfo && chapterInfo.courseName) {
       breadcrumb = `Trang chủ / ${chapterInfo.courseName} / Chương ${chapterInfo.chapterNo}: ${chapterInfo.title}`;
@@ -123,7 +132,10 @@ export function ModeratorPortalPage() {
       breadcrumb={breadcrumb}
     >
       {activeTab === "kanji" && <ModeratorKanjiManagementPage />}
-      {activeTab === "classes" && <ClassListPage />}
+      {matchClasses && <ClassListPage />}
+      {matchClassPosts && <PostListPage classId={Number(matchClassPosts.params.classId)} />}
+      {matchPostDetail && <PostDetailPage classId={Number(matchPostDetail.params.classId)} postId={Number(matchPostDetail.params.postId)} portal="moderator" />}
+      {matchClassStudents && <ClassStudentListPage classId={Number(matchClassStudents.params.classId)} />}
       {activeTab === "conjugations" && <ModeratorConjugationTab />}
       {activeTab === "feedback" && <FeedbackPage portal="moderator" />}
       {activeTab === "courses" && (

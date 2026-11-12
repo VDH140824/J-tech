@@ -69,16 +69,7 @@ application-local.yaml
 *.swp
 *.swo
 *~
-
 .fake
-# Thư mục test
-tests/
-__tests__/
-
-# File test
-*.test.*
 *.spec.*
-/backend/src/test/
-/frontend/tests/
 # 7. AUDIT DOCUMENTS
 .audit-docs/

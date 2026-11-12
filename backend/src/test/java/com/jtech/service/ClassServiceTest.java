@@ -5,6 +5,7 @@ import com.jtech.dto.request.ClassRequest;
 import com.jtech.entity.Classroom;
 import com.jtech.entity.ClassroomStatus;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -12,9 +13,14 @@ import org.springframework.dao.DataIntegrityViolationException;
 import com.jtech.entity.User;
 import com.jtech.entity.UserStatus;
 import com.jtech.repository.ClassRepository;
+import com.jtech.repository.ClassMemberRepository;
 import com.jtech.repository.UserRepository;
+import com.jtech.dto.response.StudentResponse;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,6 +40,7 @@ import static org.mockito.Mockito.*;
 class ClassServiceTest {
     @Mock EntityManager entityManager;
     @Mock ClassRepository classRepository;
+    @Mock ClassMemberRepository classMemberRepository;
     @Mock UserRepository userRepository;
     @InjectMocks ClassService service;
     private User moderator;
@@ -339,5 +346,274 @@ class ClassServiceTest {
         when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
         assertThrows(AccessDeniedException.class, service::getClassesByCurrentModerator);
         verifyNoInteractions(classRepository);
+    }
+
+    /*==Test Student==*/
+
+    @Test
+    @DisplayName("UTCID27: View students in a classroom")
+    void viewClassStudents() {
+        prepareUpdate();
+        var joinedAt = LocalDateTime.of(2026, 11, 10, 9, 0);
+        var student = new StudentResponse(21L, "Nguyen An", "an@example.com", null,
+                UserStatus.ACTIVE, joinedAt);
+        var pageable = PageRequest.of(0, 10);
+        when(classMemberRepository.findStudentsByClassId(10L, "an", UserStatus.ACTIVE, pageable))
+                .thenReturn(new PageImpl<>(List.of(student), pageable, 1));
+
+        var result = service.getClassStudents(10L, " an ", "active", 0, 10);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(21L, result.getContent().get(0).id());
+        assertEquals("an@example.com", result.getContent().get(0).email());
+        assertEquals(0, result.getNumber());
+        verify(classMemberRepository).findStudentsByClassId(10L, "an", UserStatus.ACTIVE, pageable);
+    }
+
+    @Test
+    @DisplayName("UTCID28: Return an empty list when the classroom has no students")
+    void viewEmptyClassStudents() {
+        prepareUpdate();
+        var pageable = PageRequest.of(0, 10);
+        when(classMemberRepository.findStudentsByClassId(10L, "", null, pageable))
+                .thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+        var result = service.getClassStudents(10L, "", "", 0, 10);
+
+        assertTrue(result.isEmpty());
+        assertEquals(0, result.getTotalElements());
+        verify(classMemberRepository).findStudentsByClassId(10L, "", null, pageable);
+    }
+
+    @Test
+    @DisplayName("UTCID29: Propagate an error when loading classroom students fails")
+    void viewClassStudentsLoadFailure() {
+        prepareUpdate();
+        when(classMemberRepository.findStudentsByClassId(10L, "", null, PageRequest.of(0, 10)))
+                .thenThrow(new RuntimeException("Database unavailable"));
+
+        var error = assertThrows(RuntimeException.class,
+                () -> service.getClassStudents(10L, "", "", 0, 10));
+
+        assertEquals("Database unavailable", error.getMessage());
+    }
+
+    private Classroom prepareStudentAdd() {
+        var classroom = new Classroom();
+        classroom.setId(10L);
+        classroom.setModeratorId(12L);
+        when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
+        when(classRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(classroom));
+        return classroom;
+    }
+
+    private User student(Long id, String email, UserStatus status, String roleName) {
+        var role = new Role();
+        role.setRoleName(roleName);
+        var user = new User();
+        user.setUserId(id);
+        user.setEmail(email);
+        user.setStatus(status);
+        user.setRole(role);
+        return user;
+    }
+
+    @Test
+    @DisplayName("UTCID30: Add active students to a classroom")
+    void addActiveStudents() {
+        var classroom = prepareStudentAdd();
+        var first = student(21L, "first@example.com", UserStatus.ACTIVE, "STUDENT");
+        var second = student(22L, "second@example.com", UserStatus.ACTIVE, "STUDENT");
+        when(userRepository.findByNormalizedEmails(List.of("first@example.com", "second@example.com")))
+                .thenReturn(List.of(first, second));
+        when(classMemberRepository.findExistingStudentIds(10L, java.util.Set.of(21L, 22L)))
+                .thenReturn(java.util.Set.of());
+
+        var result = service.addStudents(10L, List.of(" FIRST@example.com ", "second@example.com"));
+
+        assertEquals(2, result.addedCount());
+        assertEquals(0, result.skippedCount());
+        var members = org.mockito.ArgumentCaptor.forClass(java.util.List.class);
+        verify(classMemberRepository).saveAllAndFlush(members.capture());
+        assertEquals(2, members.getValue().size());
+        var firstMember = (com.jtech.entity.ClassroomMember) members.getValue().get(0);
+        var secondMember = (com.jtech.entity.ClassroomMember) members.getValue().get(1);
+        assertSame(classroom, firstMember.getClassroom());
+        assertSame(first, firstMember.getStudent());
+        assertSame(second, secondMember.getStudent());
+    }
+
+    @Test
+    @DisplayName("UTCID31: Skip an email with no matching account")
+    void addMissingAccount() {
+        prepareStudentAdd();
+        when(userRepository.findByNormalizedEmails(List.of("missing@example.com")))
+                .thenReturn(List.of());
+
+        var result = service.addStudents(10L, List.of("missing@example.com"));
+
+        assertEquals(0, result.addedCount());
+        assertEquals(1, result.skippedCount());
+        assertEquals("ACCOUNT_NOT_FOUND", result.skippedEmails().get(0).reason());
+        verify(classMemberRepository, never()).saveAllAndFlush(anyList());
+    }
+
+    @Test
+    @DisplayName("UTCID32: Skip a student who is already in the classroom")
+    void addExistingClassMember() {
+        prepareStudentAdd();
+        var existing = student(21L, "existing@example.com", UserStatus.ACTIVE, "STUDENT");
+        when(userRepository.findByNormalizedEmails(List.of("existing@example.com")))
+                .thenReturn(List.of(existing));
+        when(classMemberRepository.findExistingStudentIds(10L, java.util.Set.of(21L)))
+                .thenReturn(java.util.Set.of(21L));
+
+        var result = service.addStudents(10L, List.of("existing@example.com"));
+
+        assertEquals(0, result.addedCount());
+        assertEquals("ALREADY_IN_CLASSROOM", result.skippedEmails().get(0).reason());
+        verify(classMemberRepository, never()).saveAllAndFlush(anyList());
+    }
+
+    @Test
+    @DisplayName("UTCID33: Add a student only once when an email is repeated")
+    void addDuplicateEmailOnce() {
+        prepareStudentAdd();
+        var candidate = student(21L, "student@example.com", UserStatus.ACTIVE, "STUDENT");
+        when(userRepository.findByNormalizedEmails(List.of("student@example.com")))
+                .thenReturn(List.of(candidate));
+        when(classMemberRepository.findExistingStudentIds(10L, java.util.Set.of(21L)))
+                .thenReturn(java.util.Set.of());
+
+        var result = service.addStudents(10L, List.of("STUDENT@example.com", "student@example.com"));
+
+        assertEquals(1, result.addedCount());
+        assertEquals(1, result.skippedCount());
+        assertEquals("DUPLICATE_EMAIL", result.skippedEmails().get(0).reason());
+        verify(userRepository).findByNormalizedEmails(List.of("student@example.com"));
+        var saved = org.mockito.ArgumentCaptor.forClass(java.util.List.class);
+        verify(classMemberRepository).saveAllAndFlush(saved.capture());
+        assertEquals(1, saved.getValue().size());
+    }
+
+    @Test
+    @DisplayName("UTCID34: Skip accounts that are not active students")
+    void addIneligibleAccounts() {
+        prepareStudentAdd();
+        var pending = student(21L, "pending@example.com", UserStatus.PENDING, "STUDENT");
+        var moderatorAccount = student(22L, "mod2@example.com", UserStatus.ACTIVE, "MODERATOR");
+        when(userRepository.findByNormalizedEmails(List.of("pending@example.com", "mod2@example.com")))
+                .thenReturn(List.of(pending, moderatorAccount));
+
+        var result = service.addStudents(10L, List.of("pending@example.com", "mod2@example.com"));
+
+        assertEquals(0, result.addedCount());
+        assertEquals(2, result.skippedCount());
+        assertTrue(result.skippedEmails().stream().allMatch(item ->
+                "INVALID_STUDENT_ACCOUNT".equals(item.reason())));
+        verify(classMemberRepository, never()).saveAllAndFlush(anyList());
+    }
+
+    @Test
+    @DisplayName("UTCID35: Reject an empty email list")
+    void addWithEmptyInput() {
+        prepareStudentAdd();
+
+        assertThrows(IllegalArgumentException.class, () -> service.addStudents(10L, List.of()));
+        verify(userRepository, never()).findByNormalizedEmails(anyList());
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    @DisplayName("UTCID36: Reject a moderator who does not own the classroom")
+    void addToAnotherModeratorsClass() {
+        var classroom = prepareStudentAdd();
+        classroom.setModeratorId(99L);
+
+        assertThrows(AccessDeniedException.class,
+                () -> service.addStudents(10L, List.of("new@example.com")));
+        verify(userRepository, never()).findByNormalizedEmails(anyList());
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    @DisplayName("UTCID37: Propagate a failure when saving classroom members")
+    void addStudentsSaveFailure() {
+        prepareStudentAdd();
+        var newStudent = student(21L, "new@example.com", UserStatus.ACTIVE, "STUDENT");
+        when(userRepository.findByNormalizedEmails(List.of("new@example.com")))
+                .thenReturn(List.of(newStudent));
+        when(classMemberRepository.findExistingStudentIds(10L, java.util.Set.of(21L)))
+                .thenReturn(java.util.Set.of());
+        when(classMemberRepository.saveAllAndFlush(anyList()))
+                .thenThrow(new DataIntegrityViolationException("Database error"));
+
+        assertThrows(DataIntegrityViolationException.class,
+                () -> service.addStudents(10L, List.of("new@example.com")));
+    }
+
+    @Test
+    @DisplayName("UTCID38: Remove a student from the classroom without deleting the account")
+    void removeClassStudent() {
+        var classroom = prepareUpdate();
+        var member = new com.jtech.entity.ClassroomMember(classroom,
+                student(21L, "student@example.com", UserStatus.ACTIVE, "STUDENT"));
+        when(classMemberRepository.findByClassroom_IdAndStudent_UserId(10L, 21L))
+                .thenReturn(Optional.of(member));
+
+        service.removeStudent(10L, 21L);
+
+        verify(classMemberRepository).delete(member);
+        verify(classMemberRepository).flush();
+        verify(userRepository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("UTCID39: Reject a moderator who does not own the classroom")
+    void rejectRemovalFromAnotherModeratorsClass() {
+        var classroom = prepareUpdate();
+        classroom.setModeratorId(99L);
+
+        assertThrows(AccessDeniedException.class, () -> service.removeStudent(10L, 21L));
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    @DisplayName("UTCID40: Report a classroom that does not exist")
+    void reportMissingClassOnRemoval() {
+        when(userRepository.findByEmail("mod@example.com")).thenReturn(Optional.of(moderator));
+        when(classRepository.findById(10L)).thenReturn(Optional.empty());
+
+        var error = assertThrows(EntityNotFoundException.class, () -> service.removeStudent(10L, 21L));
+        assertEquals("Lớp học không tồn tại.", error.getMessage());
+        verifyNoInteractions(classMemberRepository);
+    }
+
+    @Test
+    @DisplayName("UTCID41: Report a student who is not in the classroom")
+    void reportStudentNotInClass() {
+        prepareUpdate();
+        when(classMemberRepository.findByClassroom_IdAndStudent_UserId(10L, 21L))
+                .thenReturn(Optional.empty());
+
+        var error = assertThrows(EntityNotFoundException.class, () -> service.removeStudent(10L, 21L));
+        assertEquals("Học viên không tồn tại trong lớp.", error.getMessage());
+        verify(classMemberRepository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("UTCID42: Propagate a failure when deleting a classroom member")
+    void removeClassStudentDeleteFailure() {
+        var classroom = prepareUpdate();
+        var member = new com.jtech.entity.ClassroomMember(classroom,
+                student(21L, "student@example.com", UserStatus.ACTIVE, "STUDENT"));
+        when(classMemberRepository.findByClassroom_IdAndStudent_UserId(10L, 21L))
+                .thenReturn(Optional.of(member));
+        doThrow(new DataIntegrityViolationException("Database error"))
+                .when(classMemberRepository).flush();
+
+        assertThrows(DataIntegrityViolationException.class, () -> service.removeStudent(10L, 21L));
+        verify(classMemberRepository).delete(member);
+        verify(classMemberRepository).flush();
     }
 }

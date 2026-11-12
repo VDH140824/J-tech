@@ -107,6 +107,14 @@ export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) 
           <>
             <button
               type="button"
+              className={`nav-link-btn ${location.pathname.startsWith("/classes") ? "active" : ""}`}
+              onClick={() => navigate("/classes")}
+            >
+              <span className="nav-link-icon">🏫</span>
+              <span className="nav-link-text">Lớp học của tôi</span>
+            </button>
+            <button
+              type="button"
               className={`nav-link-btn ${location.pathname === "/streak" ? "active" : ""}`}
               onClick={() => navigate("/streak")}
             >
