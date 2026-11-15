@@ -147,8 +147,8 @@ export function ConjugationFormModal({ isOpen, editingForm, onClose, onSaved }: 
       if (!errors[field] && form[field].trim().length > max) errors[field] = MESSAGES.MSG23;
     }
     const questions = Number(form.questionsPerPractice);
-    if (!errors.questionsPerPractice && (!Number.isInteger(questions) || questions <= 0)) {
-      errors.questionsPerPractice = "Số câu hỏi mỗi lượt phải là số nguyên lớn hơn 0.";
+    if (!errors.questionsPerPractice && (!Number.isInteger(questions) || questions < 5)) {
+      errors.questionsPerPractice = "Số câu hỏi mỗi lượt phải tối thiểu là 5.";
     }
     const order = form.displayOrder.trim() === "" ? 0 : Number(form.displayOrder);
     if (!Number.isInteger(order) || order < 0) {
@@ -323,7 +323,7 @@ export function ConjugationFormModal({ isOpen, editingForm, onClose, onSaved }: 
           <div className={isEdit ? "cf-grid-3" : "modal-grid-2"}>
             <div className={fieldClass("questionsPerPractice")}>
               <label className="modal-label" htmlFor="cf-questionsPerPractice">Số câu hỏi mỗi lượt{required}</label>
-              <input {...inputProps("questionsPerPractice")} type="number" min={1} step={1} inputMode="numeric" className="modal-input" />
+              <input {...inputProps("questionsPerPractice")} type="number" min={5} step={1} inputMode="numeric" className="modal-input" />
               <span className="cf-hint">Khi xuất bản cần từ 5 câu trở lên và không vượt quá số câu hỏi đã soạn.</span>
               {errorText("questionsPerPractice")}
             </div>

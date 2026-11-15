@@ -51,6 +51,17 @@ public class LearningActivityService {
         long attemptId = progress.saveVocabularyExerciseAttempt(studentId, exerciseId, lessonId, result, answers, submitted);
         return recordDay(studentId, submitted, "PRACTICE", "practice_attempt_id", attemptId);
     }
+    public record ExerciseRecord(long attemptId, CompletionResult streak) {}
+    /** UC-23: hoàn thành một lượt luyện tập thể chia → lưu practice_attempt và ghi nhận ngày học. */
+    @Transactional
+    public ExerciseRecord recordConjugationPracticeCompletion(long studentId, long formId, int verbGroup,
+            String difficulty, String mode, int totalQuestions, int correctCount, java.math.BigDecimal score, Map<String, String> answers) {
+        balances.lockAccount(studentId);
+        LocalDateTime submitted = LocalDateTime.now(StreakService.LEARNING_ZONE);
+        long attemptId = progress.saveConjugationAttempt(studentId, formId, verbGroup, difficulty, mode,
+            totalQuestions, correctCount, score, answers, submitted);
+        return new ExerciseRecord(attemptId, recordDay(studentId, submitted, "PRACTICE", "practice_attempt_id", attemptId));
+    }
 
     private CompletionResult recordDay(long studentId, LocalDateTime time, String type, String referenceColumn, long referenceId) {
         LocalDate today = LocalDate.now(StreakService.LEARNING_ZONE);

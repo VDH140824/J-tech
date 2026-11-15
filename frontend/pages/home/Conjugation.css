@@ -1,0 +1,684 @@
+/* Thể chia (3.6.25 / 3.6.26) — gồm các lớp sg-* dùng chung ở cuối file */
+.cj-page {
+  max-width: 1120px;
+}
+
+.cj-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.cj-toolbar input,
+.cj-toolbar select {
+  padding: 9px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font: inherit;
+}
+
+.cj-toolbar input[type="search"] {
+  flex: 1 1 260px;
+}
+
+.cj-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.cj-mode {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+.cj-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.cj-layout.has-detail {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+}
+
+.cj-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.cj-layout.has-detail .cj-cards {
+  grid-template-columns: 1fr;
+}
+
+.cj-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-surface);
+}
+
+.cj-card.is-selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.cj-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.cj-card h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.cj-card-jp {
+  color: var(--primary-active);
+  font-weight: 600;
+}
+
+.cj-card-desc,
+.cj-card-meta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.cj-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.cj-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--text-body);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.cj-badge.is-done {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.cj-detail {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-surface);
+}
+
+.cj-detail > .mod-btn-back {
+  align-self: flex-start;
+}
+
+/* Tài liệu cách chia */
+.cj-material h2 {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+  color: var(--text-main);
+}
+
+.cj-material.is-compact h2 {
+  font-size: 1rem;
+}
+
+.cj-group-tabs {
+  display: inline-flex;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.cj-group-tabs button {
+  padding: 6px 16px;
+  border: 0;
+  background: var(--bg-surface);
+  color: var(--text-body);
+  cursor: pointer;
+}
+
+.cj-group-tabs button.is-active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.cj-group-tabs button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.cj-group-info {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-left: 4px solid var(--accent);
+  background: var(--accent-light);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-body);
+  font-size: 0.9rem;
+}
+
+.cj-table-wrap {
+  overflow-x: auto;
+}
+
+.cj-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.cj-table th,
+.cj-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-light);
+  text-align: left;
+  vertical-align: top;
+}
+
+.cj-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.cj-table td[lang="ja"] {
+  font-size: 1.05rem;
+  color: var(--text-main);
+}
+
+.cj-notes {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--text-body);
+  line-height: 1.7;
+}
+
+.cj-pre {
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.cj-muted {
+  color: var(--text-light);
+}
+
+.cj-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+.cj-summary p {
+  margin: 0;
+  color: var(--text-body);
+}
+
+/* Câu luyện tập */
+.cj-verb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  margin-bottom: 20px;
+}
+
+.cj-verb-word {
+  font-size: 2.5rem;
+  line-height: 1.1;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.cj-verb-reading {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+.cj-verb-meaning {
+  color: var(--text-body);
+}
+
+.cj-answer label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+.cj-answer-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cj-answer-row input {
+  flex: 1 1 240px;
+  padding: 12px 14px;
+  font-size: 1.25rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+}
+
+.cj-answer-row input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.cj-answer-row input.is-correct {
+  border-color: var(--success);
+  background: var(--success-bg);
+}
+
+.cj-answer-row input.is-wrong {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.cj-rule-panel {
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  position: sticky;
+  top: 16px;
+}
+
+/* Màn hình rộng: panel “Cách chia” luôn hiện bên phải; nút bật/tắt chỉ dùng trên màn hình hẹp */
+.cj-page .sg-layout {
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.cj-rule-toggle {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .cj-layout.has-detail,
+  .cj-page .sg-layout {
+    grid-template-columns: 1fr;
+  }
+  .cj-detail,
+  .cj-rule-panel {
+    position: static;
+  }
+  .cj-rule-toggle {
+    display: inline-block;
+  }
+  .cj-rule-panel {
+    display: none;
+  }
+  .cj-rule-panel.is-open {
+    display: block;
+  }
+  .cj-mode {
+    margin-left: 0;
+  }
+}
+
+.cj-saved {
+  margin: 12px 0 0;
+  color: var(--success-text);
+}
+
+/* Hộp thoại chọn nhóm động từ, độ khó, hình thức trước khi luyện tập (UC-23) */
+.cj-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.cj-dialog {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+}
+
+.cj-dialog h2 {
+  margin: 0 0 16px;
+  font-size: 1.15rem;
+}
+
+.cj-choice-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+
+.cj-choice-group legend {
+  width: 100%;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.cj-choice-group button {
+  padding: 8px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font: inherit;
+  cursor: pointer;
+}
+
+.cj-choice-group button span {
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
+.cj-choice-group button.is-active {
+  border-color: #f43f5e;
+  background: #f43f5e;
+  color: #fff;
+}
+
+.cj-choice-group button.is-active span {
+  color: inherit;
+}
+
+.cj-choice-group button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cj-dialog-note {
+  margin: 0 0 16px;
+  color: var(--text-body);
+}
+
+.cj-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Màn luyện tập: chỉ hiển thị lựa chọn đã chốt, không có lý thuyết bên cạnh */
+.cj-practice {
+  max-width: 760px;
+}
+
+.cj-practice-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cj-practice-summary .cj-badge {
+  font-size: 0.85rem;
+}
+
+/* ===== Bố cục trang luyện tập dùng chung (sg-*) — tách từ StudentGrammar.css để trang thể chia không phụ thuộc phần Ngữ pháp ===== */
+
+.sg-page {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sg-page > .mod-btn-back {
+  align-self: flex-start;
+}
+
+.sg-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.35;
+  color: var(--text-main);
+}
+
+.sg-breadcrumb {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.sg-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+
+.sg-progress-track > span {
+  display: block;
+  height: 100%;
+  background: var(--success);
+  transition: width 0.3s ease;
+}
+
+.sg-question-progress {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-body);
+  font-weight: 600;
+}
+
+.sg-question {
+  padding: 24px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-surface);
+}
+
+.sg-instruction {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+}
+
+.sg-options {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sg-option-key {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.sg-options:disabled .sg-option {
+  cursor: default;
+}
+
+.sg-feedback {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+}
+
+.sg-feedback p {
+  margin: 6px 0 0;
+}
+
+.sg-feedback.is-correct {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.sg-feedback.is-wrong {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.sg-error {
+  margin: 12px 0 0;
+  color: var(--danger-text);
+}
+
+.sg-result {
+  padding: 32px 24px;
+  text-align: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+}
+
+.sg-result-score {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sg-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sg-btn {
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.sg-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sg-btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.sg-btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.sg-btn-secondary {
+  background: var(--bg-surface);
+  border-color: var(--border-strong);
+  color: var(--text-body);
+}
+
+.sg-btn:focus-visible,
+.sg-chip:focus-visible,
+.sg-unit-main:focus-visible,
+.sg-tabs button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sg-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .sg-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-progress-track > span {
+    transition: none;
+  }
+}
+
+.sg-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.sg-result.is-passed {
+  border-color: var(--success);
+  background: var(--success-bg);
+}
+
+.sg-result.is-failed {
+  border-color: var(--warning);
+  background: var(--warning-bg);
+}
+
+.sg-result p {
+  margin: 4px 0 0;
+}
+
+.sg-result-status {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.sg-question-progress {
+  grid-template-columns: auto 1fr auto;
+}
+
+.sg-dialog-actions,
+.sg-footer-group,
+.sg-module-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}

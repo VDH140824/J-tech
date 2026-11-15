@@ -8,26 +8,65 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
-/** Các truy vấn trên bảng question phục vụ chức năng quản lý thể chia (conjugation form). */
+import java.util.Collection;
+import java.util.List;
+
 public interface QuestionConjugationRepository extends JpaRepository<Question, Long> {
 
-    /**
-     * Số câu hỏi ACTIVE đã gắn với thể chia (BR-111).
-     * sd View Conjugation Forms: message 1.1.1.2. sd Update Conjugation Form: message 3.3.1.5.
-     *
-     * Flush mode COMMIT: trong luồng Update, form đã được gán dữ liệu mới (3.3.1.4) trước câu COUNT này.
-     * Với flush mode mặc định (AUTO), Hibernate có thể chạy lệnh UPDATE conjugation_form ngay trước câu COUNT,
-     * tức là trước khi BR-111 được kiểm tra (3.3.1.6). COMMIT để việc ghi chỉ diễn ra khi transaction commit.
-     */
+    /** Số câu hỏi đã gắn với thể chia. Flush mode COMMIT để không auto-flush form đang sửa (SD-29.3). */
     @QueryHints(@QueryHint(name = "org.hibernate.flushMode", value = "COMMIT"))
     long countByConjugationFormIdAndStatus(Long conjugationFormId, Question.QuestionStatus status);
 
-    /**
-     * sd Delete / Archive Conjugation Form, message 3.1.1.6.1:
-     * DELETE FROM question WHERE conjugation_form_id = ?
-     * Chỉ gọi khi thể chia chưa có dữ liệu học tập (nhánh [else] của BR-88).
-     */
+    /** Số câu hỏi dùng cho luyện tập (is_exercise_question = TRUE) - BR111. */
+    @QueryHints(@QueryHint(name = "org.hibernate.flushMode", value = "COMMIT"))
+    @Query("SELECT COUNT(q) FROM Question q WHERE q.conjugationFormId = :formId " +
+           "AND q.status = :status AND q.isExerciseQuestion = true")
+    long countPracticeQuestions(@Param("formId") Long formId,
+                                @Param("status") Question.QuestionStatus status);
+
+    /** SD-29.5: câu hỏi ACTIVE của thể chia, lọc tùy chọn theo mức độ. */
+    default List<Question> findForPractice(Long formId, Question.Difficulty difficulty) {
+        return findByFormAndDifficulty(formId, difficulty, Question.QuestionStatus.ACTIVE);
+    }
+
+    @Query("SELECT q FROM Question q WHERE q.conjugationFormId = :formId AND q.status = :status " +
+           "AND (:difficulty IS NULL OR q.difficulty = :difficulty) " +
+           "ORDER BY q.displayOrder ASC, q.id ASC")
+    List<Question> findByFormAndDifficulty(@Param("formId") Long formId,
+                                           @Param("difficulty") Question.Difficulty difficulty,
+                                           @Param("status") Question.QuestionStatus status);
+
+    /** SD-29.5: bỏ chọn toàn bộ câu luyện tập của thể chia. */
     @Modifying
-    @Query("DELETE FROM Question q WHERE q.conjugationFormId = :conjugationFormId")
-    void deleteByConjugationFormId(@Param("conjugationFormId") Long conjugationFormId);
+    @Query("UPDATE Question q SET q.isExerciseQuestion = false WHERE q.conjugationFormId = :formId")
+    void clearExerciseFlags(@Param("formId") Long formId);
+
+    /** SD-29.5: đánh dấu các câu được chọn dùng cho luyện tập. */
+    @Modifying
+    @Query("UPDATE Question q SET q.isExerciseQuestion = true " +
+           "WHERE q.conjugationFormId = :formId AND q.id IN :ids")
+    void markExerciseQuestions(@Param("formId") Long formId, @Param("ids") Collection<Long> ids);
+
+    /** SD-29.4, luồng 6b: gỡ liên kết câu hỏi khỏi thể chia, không xóa khỏi ngân hàng câu hỏi. */
+    @Modifying
+    @Query("UPDATE Question q SET q.conjugationFormId = NULL, q.isExerciseQuestion = false " +
+           "WHERE q.conjugationFormId = :formId")
+    void unlinkConjugationForm(@Param("formId") Long formId);
+
+    /** UC-23: câu luyện tập (ACTIVE, is_exercise_question) của thể chia, theo thứ tự hiển thị. */
+    @Query("SELECT q FROM Question q WHERE q.conjugationFormId = :formId AND q.status = :status " +
+           "AND q.isExerciseQuestion = true ORDER BY q.displayOrder ASC, q.id ASC")
+    List<Question> findStudentPracticeQuestions(@Param("formId") Long formId,
+                                                @Param("status") Question.QuestionStatus status);
+
+    /** Thêm / sửa câu hỏi: chặn trùng nội dung (cùng động từ) trong thể chia. */
+    boolean existsByConjugationFormIdAndContentAndStatus(Long conjugationFormId, String content,
+                                                         Question.QuestionStatus status);
+
+    boolean existsByConjugationFormIdAndContentAndStatusAndIdNot(Long conjugationFormId, String content,
+                                                                 Question.QuestionStatus status, Long id);
+
+    /** Câu mới được xếp sau câu cuối cùng của thể chia. */
+    @Query("SELECT COALESCE(MAX(q.displayOrder), 0) FROM Question q WHERE q.conjugationFormId = :formId")
+    int findMaxDisplayOrder(@Param("formId") Long formId);
 }

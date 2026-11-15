@@ -6,12 +6,7 @@ import "./ModeratorSidebar.css";
 function DekiruModBadgeIcon() {
   return (
     <div className="mod-brand-icon-box">
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 40 40"
-        fill="none"
-      >
+      <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
         <g transform="translate(20, 20)">
           {[0, 72, 144, 216, 288].map((angle, i) => (
             <path
@@ -21,18 +16,8 @@ function DekiruModBadgeIcon() {
               fill="#0D9488"
             />
           ))}
-          <circle
-            cx="0"
-            cy="0"
-            r="3.5"
-            fill="#F0FDFA"
-          />
-          <circle
-            cx="0"
-            cy="0"
-            r="2"
-            fill="#5EEAD4"
-          />
+          <circle cx="0" cy="0" r="3.5" fill="#F0FDFA" />
+          <circle cx="0" cy="0" r="2" fill="#5EEAD4" />
         </g>
       </svg>
     </div>
@@ -44,7 +29,10 @@ interface ModeratorSidebarProps {
   onSelectTab?: (tab: string) => void;
 }
 
-export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarProps) {
+export function ModeratorSidebar({
+  activeTab,
+  onSelectTab,
+}: ModeratorSidebarProps) {
   const navigate = useNavigate();
 
   const currentTab = activeTab || "courses";
@@ -59,10 +47,7 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
   return (
     <aside className="admin-dekiru-sidebar mod-sidebar">
       {/* Brand Header */}
-      <div
-        className="admin-sidebar-header"
-        onClick={() => navigate("/home")}
-      >
+      <div className="admin-sidebar-header" onClick={() => navigate("/home")}>
         <DekiruModBadgeIcon />
         <div className="admin-sidebar-brand-text">
           <div className="brand-name-row">
@@ -105,7 +90,9 @@ export function ModeratorSidebar({ activeTab, onSelectTab }: ModeratorSidebarPro
         <button
           type="button"
           className={`admin-nav-item ${currentTab === "conjugations" ? "active mod-active" : ""}`}
-          onClick={() => handleNavClick("conjugations", "/moderator/conjugation-forms")}
+          onClick={() =>
+            handleNavClick("conjugations", "/moderator/conjugation-forms")
+          }
         >
           <span className="admin-nav-icon">🔄</span>
           <span className="admin-nav-label">Quản lý thể chia</span>

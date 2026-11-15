@@ -25,6 +25,8 @@ import { VocabularyRainPage } from "../pages/games/VocabularyRainPage";
 import { StudentClassPostListPage } from "../pages/classroom/StudentClassPostListPage";
 import { StudentPostListPage } from "../pages/classroom/StudentPostListPage";
 import { PostDetailPage } from "../pages/classroom/PostDetailPage";
+import { ConjugationListPage } from "../pages/home/ConjugationListPage";
+import { ConjugationPracticePage } from "../pages/home/ConjugationPracticePage";
 
 export function AppRouter() {
   return (
@@ -151,6 +153,24 @@ export function AppRouter() {
         >
           <Route index element={<StudentStreakPage />} />
         </Route>
+
+        <Route
+          path="/conjugations"
+          element={
+            <ProtectedRoute>
+              <StudentProtectedRoute>
+                <MainLayout />
+              </StudentProtectedRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ConjugationListPage />} />
+          <Route
+            path=":formId/practice"
+            element={<ConjugationPracticePage />}
+          />
+        </Route>
+
         {/* Admin routes (Admin has its own dedicated portal layout) */}
         <Route
           path="/admin"
