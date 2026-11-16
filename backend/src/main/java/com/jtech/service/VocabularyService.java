@@ -92,7 +92,12 @@ public class VocabularyService {
         Authentication authentication
     ) {
         checkLesson(lessonId, authentication);
-        if (repository.existsByLessonIdAndWordIgnoreCase(lessonId, request.word().trim())) {
+        if (
+            repository.existsByLessonIdAndWordIgnoreCase(
+                lessonId,
+                request.word().trim()
+            )
+        ) {
             throw new IllegalStateException(
                 "Từ vựng này đã tồn tại trong bài học. Vui lòng kiểm tra cả nội dung đã lưu trữ."
             );
@@ -103,8 +108,17 @@ public class VocabularyService {
         return repository.save(item);
     }
 
-    public Vocabulary update(VocabularyRepository repository, Long id, VocabularyRequest request) {
+    @Transactional
+    public Vocabulary update(
+        VocabularyRepository repository,
+        Long lessonId,
+        Long id,
+        VocabularyRequest request,
+        Authentication authentication
+    ) {
+        checkLesson(lessonId, authentication);
         Vocabulary item = require(repository, id);
+        if (!lessonId.equals(item.getLessonId())) throw notFound();
         if (
             repository.existsByLessonIdAndWordIgnoreCaseAndIdNot(
                 item.getLessonId(),
@@ -140,12 +154,81 @@ public class VocabularyService {
                 HttpStatus.BAD_REQUEST, "Một số từ đã lưu trữ hoặc không thuộc bài học này."
             );
         }
-        return repository.updateStatuses(lessonId, uniqueIds, status, LocalDateTime.now());
+        return repository.updateStatuses(
+            lessonId,
+            uniqueIds,
+            status,
+            LocalDateTime.now()
+        );
+    }
+
+    @Transactional
+    public int assignFromChapter(
+        VocabularyRepository repository,
+        Long lessonId,
+        List<Long> ids,
+        Authentication authentication
+    ) {
+        lockLesson(lessonId, authentication);
+        Lesson target = require(lessons, lessonId);
+        Set<Long> uniqueIds = Set.copyOf(ids);
+        var selected = repository
+            .findForChapter(target.getChapter().getId(), Lesson.SkillType.VOCABULARY)
+            .stream()
+            .filter(item -> uniqueIds.contains(item.getId()))
+            .toList();
+        if (
+            selected.size() != uniqueIds.size() ||
+            selected.stream().anyMatch(item -> item.getStatus() == Course.Status.ARCHIVED)
+        ) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Một số từ đã lưu trữ hoặc không thuộc chương này."
+            );
+        }
+        var targetWords = repository.findByLessonIdOrderByDisplayOrderAscIdAsc(lessonId);
+        for (Vocabulary item : selected) {
+            if (
+                !lessonId.equals(item.getLessonId()) &&
+                targetWords.stream().anyMatch(existing ->
+                    existing.getWord().equalsIgnoreCase(item.getWord()) &&
+                    existing.getStatus() != Course.Status.ARCHIVED
+                )
+            ) {
+                throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Bài học đã có từ “" + item.getWord() + "”."
+                );
+            }
+        }
+        int changed = 0;
+        for (Vocabulary item : selected) {
+            if (!lessonId.equals(item.getLessonId())) {
+                item.setLessonId(lessonId);
+                changed++;
+            }
+        }
+        repository.saveAll(selected);
+        return changed;
     }
 
     @Transactional
     public void delete(JpaRepository<Vocabulary, Long> repository, Long id) {
         Vocabulary item = require(repository, id);
+        item.setStatus(Course.Status.ARCHIVED);
+        repository.save(item);
+    }
+
+    @Transactional
+    public void archive(
+        VocabularyRepository repository,
+        Long lessonId,
+        Long id,
+        Authentication authentication
+    ) {
+        checkLesson(lessonId, authentication);
+        Vocabulary item = require(repository, id);
+        if (!lessonId.equals(item.getLessonId())) throw notFound();
         item.setStatus(Course.Status.ARCHIVED);
         repository.save(item);
     }

@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jtech.exception.GlobalExceptionHandler;
-import com.jtech.service.VocabularyMiniTestService;
+import com.jtech.service.VocabularyExerciseService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.*;
@@ -19,7 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-class VocabularyMiniTestControllerTest {
+class VocabularyExerciseControllerTest {
 
     @Configuration
     @EnableMethodSecurity
@@ -29,8 +29,8 @@ class VocabularyMiniTestControllerTest {
     void studentsCannotReadAnswersOrChangeTests() {
         try (var context = new AnnotationConfigApplicationContext()) {
             context.register(SecurityConfiguration.class);
-            context.registerBean(VocabularyMiniTestService.class, () ->
-                mock(VocabularyMiniTestService.class)
+            context.registerBean(VocabularyExerciseService.class, () ->
+                mock(VocabularyExerciseService.class)
             );
             context.registerBean(com.jtech.service.FeedbackService.class, () ->
                 mock(com.jtech.service.FeedbackService.class)
@@ -42,7 +42,7 @@ class VocabularyMiniTestControllerTest {
                 mock(com.jtech.service.VocabularyChapterTestService.class)
             );
             context.register(
-                VocabularyMiniTestController.class,
+                VocabularyExerciseController.class,
                 StudentVocabularyExerciseController.class,
                 VocabularyChapterTestController.class
             );
@@ -54,7 +54,7 @@ class VocabularyMiniTestControllerTest {
                     List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
                 )
             );
-            var controller = context.getBean(VocabularyMiniTestController.class);
+            var controller = context.getBean(VocabularyExerciseController.class);
             assertThrows(AccessDeniedException.class, () -> controller.detail(1L));
             assertThrows(AccessDeniedException.class, () -> controller.archive(1L));
             assertThrows(AccessDeniedException.class, () ->
@@ -78,12 +78,12 @@ class VocabularyMiniTestControllerTest {
 
     @Test
     void invalidDurationAndQuestionCountsAreRejectedBeforeWrites() throws Exception {
-        var service = mock(VocabularyMiniTestService.class);
-        var mvc = MockMvcBuilders.standaloneSetup(new VocabularyMiniTestController(service))
+        var service = mock(VocabularyExerciseService.class);
+        var mvc = MockMvcBuilders.standaloneSetup(new VocabularyExerciseController(service))
             .setControllerAdvice(new GlobalExceptionHandler())
             .build();
         mvc.perform(
-            post("/moderator/vocabulary/lessons/1/mini-tests")
+            post("/moderator/vocabulary/lessons/1/exercises")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """

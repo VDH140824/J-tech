@@ -343,12 +343,12 @@ export function LessonFormModal({
                 }
               >
                 <option value="PUBLISHED">
-                  {vietnameseOnly ? "Đã xuất bản" : "Đã xuất bản (PUBLISHED)"}
+                  {vietnameseOnly ? "Đã xuất bản" : "Đã xuất bản"}
                 </option>
-                <option value="DRAFT">{vietnameseOnly ? "Bản nháp" : "Bản nháp (DRAFT)"}</option>
-                <option value="HIDDEN">{vietnameseOnly ? "Ẩn" : "Ẩn (HIDDEN)"}</option>
+                <option value="DRAFT">{vietnameseOnly ? "Bản nháp" : "Bản nháp"}</option>
+                <option value="HIDDEN">{vietnameseOnly ? "Ẩn" : "Ẩn"}</option>
                 <option value="ARCHIVED">
-                  {vietnameseOnly ? "Lưu trữ" : "Lưu trữ (ARCHIVED)"}
+                  {vietnameseOnly ? "Lưu trữ" : "Lưu trữ"}
                 </option>
               </select>
             </div>

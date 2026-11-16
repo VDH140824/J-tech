@@ -1,9 +1,9 @@
 import { apiClient } from "../services/api";
 import { isAxiosError } from "axios";
 
-export type MiniTestStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+export type ExerciseStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type QuestionType = "MCQ" | "FILL_IN" | "MATCHING";
-export interface MiniTestQuestionInput {
+export interface ExerciseQuestionInput {
   sourceVocabularyId?: number | null;
   questionType: QuestionType;
   content: string;
@@ -13,26 +13,26 @@ export interface MiniTestQuestionInput {
   correctAnswer: string;
   matches: Record<string, string>;
 }
-export interface MiniTestInput {
+export interface ExerciseInput {
   title: string;
   description: string;
   durationMinutes: number;
   passingScore: number;
-  status: MiniTestStatus;
-  questions: MiniTestQuestionInput[];
+  status: ExerciseStatus;
+  questions: ExerciseQuestionInput[];
 }
-export interface MiniTestQuestion extends MiniTestQuestionInput {
+export interface ExerciseQuestion extends ExerciseQuestionInput {
   id: number;
 }
-export interface VocabularyMiniTest extends Omit<MiniTestInput, "questions"> {
+export interface VocabularyExercise extends Omit<ExerciseInput, "questions"> {
   id: number;
   lessonId: number | null;
   chapterId: number | null;
   questionCount: number;
   attemptCount: number;
-  questions: MiniTestQuestion[];
+  questions: ExerciseQuestion[];
 }
-export interface MiniTestResult {
+export interface ExerciseResult {
   score: number;
   correctCount: number;
   totalQuestions: number;
@@ -46,8 +46,8 @@ export interface MiniTestResult {
   }[];
 }
 export interface StudentVocabularyExercise
-  extends Pick<VocabularyMiniTest, "id" | "title" | "description" | "durationMinutes" | "passingScore"> {
-  questions: (Pick<MiniTestQuestion, "id" | "questionType" | "content" | "options"> & {
+  extends Pick<VocabularyExercise, "id" | "title" | "description" | "durationMinutes" | "passingScore"> {
+  questions: (Pick<ExerciseQuestion, "id" | "questionType" | "content" | "options"> & {
     matchingPrompts: string[];
     matchingOptions: string[];
   })[];
@@ -61,31 +61,31 @@ export async function submitStudentVocabularyExercise(
   exercise: StudentVocabularyExercise,
   answers: Record<string, string>,
 ) {
-  return (await apiClient.post<MiniTestResult>(`/vocabulary-exercises/${exercise.id}/submit`, {
+  return (await apiClient.post<ExerciseResult>(`/vocabulary-exercises/${exercise.id}/submit`, {
     questionIds: exercise.questions.map((question) => question.id),
     answers,
   })).data;
 }
 const base = "/moderator/vocabulary";
-export async function getMiniTests(lessonId: number, signal?: AbortSignal) {
+export async function getExercises(lessonId: number, signal?: AbortSignal) {
   return (
-    await apiClient.get<VocabularyMiniTest[]>(`${base}/lessons/${lessonId}/mini-tests`, { signal })
+    await apiClient.get<VocabularyExercise[]>(`${base}/lessons/${lessonId}/mini-tests`, { signal })
   ).data;
 }
-export async function getMiniTest(id: number) {
-  return (await apiClient.get<VocabularyMiniTest>(`${base}/mini-tests/${id}`)).data;
+export async function getExercise(id: number) {
+  return (await apiClient.get<VocabularyExercise>(`${base}/mini-tests/${id}`)).data;
 }
-export async function archiveMiniTest(id: number) {
+export async function archiveExercise(id: number) {
   await apiClient.delete(`${base}/mini-tests/${id}`);
 }
-export async function generateMiniTest(
+export async function saveExercise(
   lessonId: number,
-  input: Omit<MiniTestInput, "questions"> & { vocabularyIds: number[] },
+  input: ExerciseInput,
 ) {
-  return (await apiClient.post<VocabularyMiniTest>(`${base}/lessons/${lessonId}/mini-tests`, input))
+  return (await apiClient.post<VocabularyExercise>(`${base}/lessons/${lessonId}/mini-tests`, input))
     .data;
 }
-export function miniTestError(error: unknown): string {
+export function exerciseError(error: unknown): string {
   if (isAxiosError(error)) {
     if (error.response?.status === 404)
       return "Không tìm thấy API exercise. Hãy khởi động lại backend bản code mới và kiểm tra địa chỉ API.";
@@ -93,6 +93,6 @@ export function miniTestError(error: unknown): string {
   }
   return "Không thể tải hoặc lưu dữ liệu. Vui lòng thử lại.";
 }
-export async function gradeMiniTestPreview(id: number, answers: Record<string, string>) {
-  return (await apiClient.post<MiniTestResult>(`${base}/mini-tests/${id}/preview`, answers)).data;
+export async function gradeExercisePreview(id: number, answers: Record<string, string>) {
+  return (await apiClient.post<ExerciseResult>(`${base}/mini-tests/${id}/preview`, answers)).data;
 }

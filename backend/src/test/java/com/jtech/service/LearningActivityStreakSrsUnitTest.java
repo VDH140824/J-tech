@@ -3,7 +3,7 @@ package com.jtech.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.jtech.dto.response.VocabularyMiniTestResponse.Result;
+import com.jtech.dto.response.VocabularyTestResponse.Result;
 import com.jtech.repository.LearningProgressRepository;
 import com.jtech.repository.LearningProgressRepository.ContentType;
 import com.jtech.repository.UserRewardBalanceRepository;

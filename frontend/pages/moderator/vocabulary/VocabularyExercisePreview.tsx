@@ -1,28 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  gradeMiniTestPreview,
-  miniTestError,
-  type MiniTestResult,
+  gradeExercisePreview,
+  exerciseError,
+  type ExerciseResult,
   type StudentVocabularyExercise,
-  type VocabularyMiniTest,
-} from "../../api/vocabularyMiniTestApi";
+  type VocabularyExercise,
+} from "../../../api/vocabularyExerciseApi";
 
-export function VocabularyMiniTestPreview({
+export function VocabularyExercisePreview({
   test,
   onBack,
-  grade = gradeMiniTestPreview,
+  grade = gradeExercisePreview,
   student = false,
+  backLabel,
 }: {
-  test: VocabularyMiniTest | StudentVocabularyExercise;
+  test: VocabularyExercise | StudentVocabularyExercise;
   onBack: () => void;
-  grade?: (id: number, answers: Record<string, string>) => Promise<MiniTestResult>;
+  grade?: (id: number, answers: Record<string, string>) => Promise<ExerciseResult>;
   student?: boolean;
+  backLabel?: string;
 }) {
   const [started, setStarted] = useState(false);
   const [deadline, setDeadline] = useState(0);
   const [remaining, setRemaining] = useState(test.durationMinutes * 60);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<MiniTestResult | null>(null);
+  const [result, setResult] = useState<ExerciseResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [confirmSubmit, setConfirmSubmit] = useState(false);
@@ -71,7 +73,7 @@ export function VocabularyMiniTestPreview({
     try {
       setResult(await grade(test.id, answers));
     } catch (failure) {
-      setError(miniTestError(failure));
+      setError(exerciseError(failure));
     } finally {
       submitting.current = false;
       setBusy(false);
@@ -116,8 +118,8 @@ export function VocabularyMiniTestPreview({
   const locked = busy || !!result || remaining === 0;
 
   return (
-    <div className="mod-mini-preview">
-      <div className="mod-mini-heading">
+    <div className="mod-assessment-preview">
+      <div className="mod-assessment-heading">
         <div>
           <h3>{test.title}</h3>
           {!student && <p>Chế độ làm thử dành cho moderator, không ghi vào lịch sử học sinh.</p>}
@@ -128,12 +130,12 @@ export function VocabularyMiniTestPreview({
           disabled={busy}
           onClick={onBack}
         >
-          {student ? "Về bài học" : "Về danh sách"}
+          {backLabel || (student ? "Về bài học" : "Về danh sách")}
         </button>
       </div>
       {!started ? (
-        <div className="mod-mini-start">
-          <div className="mod-mini-info">
+        <div className="mod-assessment-start">
+          <div className="mod-assessment-info">
             <span>{test.questions.length} câu hỏi</span>
             <span>{test.durationMinutes} phút</span>
             <span>Điểm đạt: {test.passingScore}/100</span>
@@ -151,7 +153,7 @@ export function VocabularyMiniTestPreview({
         </div>
       ) : (
         <>
-          <div className={`mod-mini-timer ${remaining < 60 ? "urgent" : ""}`}>
+          <div className={`mod-assessment-timer ${remaining < 60 ? "urgent" : ""}`}>
             <span>
               Đã trả lời {completed}/{test.questions.length} câu
             </span>
@@ -165,7 +167,7 @@ export function VocabularyMiniTestPreview({
           </div>
           {error && (
             <div
-              className="mod-mini-error"
+              className="mod-assessment-error"
               role="alert"
             >
               {error}
@@ -180,7 +182,7 @@ export function VocabularyMiniTestPreview({
           )}
           {result && (
             <div
-              className={`mod-mini-result ${result.passed ? "passed" : "failed"}`}
+              className={`mod-assessment-result ${result.passed ? "passed" : "failed"}`}
               role="status"
             >
               <strong>
@@ -198,26 +200,26 @@ export function VocabularyMiniTestPreview({
               question.questionType === "MATCHING" ? JSON.parse(answers[question.id] || "{}") : {};
             return (
               <article
-                className="mod-mini-question"
+                className="mod-assessment-question"
                 key={question.id}
               >
                 <h4>
                   Câu {index + 1}
                   {review && (
                     <span
-                      className={`mod-mini-review-status ${review.correct ? "correct" : "incorrect"}`}
+                      className={`mod-assessment-review-status ${review.correct ? "correct" : "incorrect"}`}
                     >
                       {review.correct ? "Đúng" : "Sai / Chưa trả lời"}
                     </span>
                   )}
                 </h4>
-                <p className="mod-mini-prompt">{question.content}</p>
+                <p className="mod-assessment-prompt">{question.content}</p>
                 <fieldset
                   disabled={locked}
                   className="mod-content-fieldset"
                 >
                   {question.questionType === "MCQ" && (
-                    <div className="mod-mini-answer-options">
+                    <div className="mod-assessment-answer-options">
                       {choiceOrders[question.id].map((option, position) => (
                         <label key={position}>
                           <input
@@ -246,7 +248,7 @@ export function VocabularyMiniTestPreview({
                     />
                   )}
                   {question.questionType === "MATCHING" && (
-                    <div className="mod-mini-matching">
+                    <div className="mod-assessment-matching">
                       {("matches" in question ? Object.keys(question.matches) : question.matchingPrompts).map((left) => (
                         <label key={left}>
                           <span>{left}</span>
@@ -280,7 +282,7 @@ export function VocabularyMiniTestPreview({
                   )}
                 </fieldset>
                 {review && (
-                  <div className="mod-mini-review">
+                  <div className="mod-assessment-review">
                     <strong>Đáp án đúng: </strong>
                     {question.questionType === "MATCHING"
                       ? Object.entries(review.matches)

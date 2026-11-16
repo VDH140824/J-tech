@@ -3,9 +3,9 @@ package com.jtech.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jtech.dto.request.VocabularyMiniTestGenerateRequest;
-import com.jtech.dto.request.VocabularyMiniTestRequest;
-import com.jtech.dto.response.VocabularyMiniTestResponse;
+import com.jtech.dto.request.VocabularyExerciseGenerateRequest;
+import com.jtech.dto.request.VocabularyExerciseRequest;
+import com.jtech.dto.response.VocabularyTestResponse;
 import com.jtech.dto.response.StudentVocabularyExercise;
 import com.jtech.entity.*;
 import com.jtech.repository.*;
@@ -21,7 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional(readOnly = true)
-public class VocabularyMiniTestService {
+public class VocabularyExerciseService {
 
     public record AnswerData(
         List<String> options,
@@ -34,17 +34,17 @@ public class VocabularyMiniTestService {
         }
     }
 
-    private final VocabularyMiniTestRepository tests;
-    private final VocabularyMiniTestQuestionRepository questions;
-    private final VocabularyMiniTestLinkRepository links;
+    private final VocabularyTestRepository tests;
+    private final VocabularyTestQuestionRepository questions;
+    private final VocabularyTestQuestionLinkRepository links;
     private final VocabularyService vocabulary;
     private final ObjectMapper json;
     private final VocabularyRepository words;
 
-    public VocabularyMiniTestService(
-        VocabularyMiniTestRepository tests,
-        VocabularyMiniTestQuestionRepository questions,
-        VocabularyMiniTestLinkRepository links,
+    public VocabularyExerciseService(
+        VocabularyTestRepository tests,
+        VocabularyTestQuestionRepository questions,
+        VocabularyTestQuestionLinkRepository links,
         VocabularyService vocabulary,
         ObjectMapper json,
         VocabularyRepository words
@@ -57,34 +57,34 @@ public class VocabularyMiniTestService {
         this.words = words;
     }
 
-    public List<VocabularyMiniTestResponse> list(Long lessonId, Authentication authentication) {
+    public List<VocabularyTestResponse> list(Long lessonId, Authentication authentication) {
         vocabulary.checkLesson(lessonId, authentication);
         return tests
             .findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
                 lessonId,
-                VocabularyMiniTest.Type.MINI_TEST,
-                VocabularyMiniTest.Skill.VOCABULARY
+                VocabularyTest.Type.EXERCISE,
+                VocabularyTest.Skill.VOCABULARY
             )
             .stream()
             .map(test -> response(test, false))
             .toList();
     }
 
-    public VocabularyMiniTestResponse get(Long id) {
+    public VocabularyTestResponse get(Long id) {
         return response(requireTest(id, false), true);
     }
 
     @Transactional
-    public VocabularyMiniTestResponse generate(
+    public VocabularyTestResponse generate(
         Long lessonId,
-        VocabularyMiniTestGenerateRequest settings,
+        VocabularyExerciseGenerateRequest settings,
         Authentication authentication
     ) {
         vocabulary.lockLesson(lessonId, authentication);
         var existing = tests.findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
             lessonId,
-            VocabularyMiniTest.Type.MINI_TEST,
-            VocabularyMiniTest.Skill.VOCABULARY
+            VocabularyTest.Type.EXERCISE,
+            VocabularyTest.Skill.VOCABULARY
         );
         if (existing.size() > 1) throw new IllegalStateException(
             "Bài học đang có nhiều exercise cũ. Cần xử lý dữ liệu cũ trước khi áp dụng một exercise mỗi bài."
@@ -112,7 +112,7 @@ public class VocabularyMiniTestService {
             .map(String::trim)
             .collect(
                 java.util.stream.Collectors.toMap(
-                    VocabularyMiniTestService::normalize,
+                    VocabularyExerciseService::normalize,
                     value -> value,
                     (first, second) -> first,
                     LinkedHashMap::new
@@ -121,7 +121,7 @@ public class VocabularyMiniTestService {
         if (definitions.size() < 2) throw new IllegalArgumentException(
             "Hãy chọn ít nhất hai từ có nghĩa khác nhau để tạo đáp án trắc nghiệm."
         );
-        var inputs = new ArrayList<VocabularyMiniTestRequest.Question>();
+        var inputs = new ArrayList<VocabularyExerciseRequest.Question>();
         for (var word : source) {
             var distractors = new ArrayList<>(
                 definitions
@@ -135,15 +135,15 @@ public class VocabularyMiniTestService {
             options.add(word.getMeaningVi().trim());
             Collections.shuffle(options);
             inputs.add(
-                new VocabularyMiniTestRequest.Question(
-                    VocabularyMiniTestQuestion.Type.MCQ,
+                new VocabularyExerciseRequest.Question(
+                    VocabularyTestQuestion.Type.MCQ,
                     "Chọn nghĩa đúng của từ: " +
                         word.getWord() +
                         (word.getReading() == null || word.getReading().isBlank()
                             ? ""
                             : " (" + word.getReading() + ")"),
                     word.getWord() + ": " + word.getMeaningVi(),
-                    VocabularyMiniTestQuestion.Difficulty.EASY,
+                    VocabularyTestQuestion.Difficulty.EASY,
                     options,
                     word.getMeaningVi().trim(),
                     Map.of(),
@@ -151,7 +151,7 @@ public class VocabularyMiniTestService {
                 )
             );
         }
-        var request = new VocabularyMiniTestRequest(
+        var request = new VocabularyExerciseRequest(
             settings.title(),
             settings.description(),
             settings.durationMinutes(),
@@ -165,9 +165,45 @@ public class VocabularyMiniTestService {
     }
 
     @Transactional
-    public VocabularyMiniTestResponse create(
+    public VocabularyTestResponse saveReviewed(
         Long lessonId,
-        VocabularyMiniTestRequest request,
+        VocabularyExerciseRequest request,
+        Authentication authentication
+    ) {
+        vocabulary.checkLesson(lessonId, authentication);
+        vocabulary.lockLesson(lessonId, authentication);
+        var existing = tests.findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
+            lessonId,
+            VocabularyTest.Type.EXERCISE,
+            VocabularyTest.Skill.VOCABULARY
+        );
+        if (existing.size() > 1) throw new IllegalStateException(
+            "Bài học có nhiều exercise. Không thể xác định exercise cần cập nhật."
+        );
+        Set<Long> sourceIds = request.questions().stream()
+            .map(VocabularyExerciseRequest.Question::sourceVocabularyId)
+            .filter(Objects::nonNull)
+            .collect(java.util.stream.Collectors.toSet());
+        if (sourceIds.size() != request.questions().size()) {
+            throw new IllegalArgumentException("Mỗi câu hỏi cần gắn với một từ vựng đã chọn.");
+        }
+        var sourceWords = words.findByLessonIdOrderByDisplayOrderAscIdAsc(lessonId).stream()
+            .filter(word -> sourceIds.contains(word.getId()))
+            .toList();
+        if (sourceWords.size() != sourceIds.size() || sourceWords.stream().anyMatch(word ->
+            word.getStatus() != Course.Status.PUBLISHED && word.getStatus() != Course.Status.DRAFT
+        )) {
+            throw new IllegalArgumentException("Từ vựng được chọn không còn thuộc bài học.");
+        }
+        return existing.isEmpty()
+            ? create(lessonId, request, authentication)
+            : update(existing.getFirst().getId(), request);
+    }
+
+    @Transactional
+    public VocabularyTestResponse create(
+        Long lessonId,
+        VocabularyExerciseRequest request,
         Authentication authentication
     ) {
         vocabulary.checkLesson(lessonId, authentication);
@@ -176,8 +212,8 @@ public class VocabularyMiniTestService {
             !tests
                 .findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
                     lessonId,
-                    VocabularyMiniTest.Type.MINI_TEST,
-                    VocabularyMiniTest.Skill.VOCABULARY
+                    VocabularyTest.Type.EXERCISE,
+                    VocabularyTest.Skill.VOCABULARY
                 )
                 .isEmpty()
         ) {
@@ -186,7 +222,7 @@ public class VocabularyMiniTestService {
             );
         }
         validate(request);
-        var test = new VocabularyMiniTest();
+        var test = new VocabularyTest();
         test.setLessonId(lessonId);
         apply(test, request);
         tests.saveAndFlush(test);
@@ -195,7 +231,7 @@ public class VocabularyMiniTestService {
     }
 
     @Transactional
-    public VocabularyMiniTestResponse update(Long id, VocabularyMiniTestRequest request) {
+    public VocabularyTestResponse update(Long id, VocabularyExerciseRequest request) {
         var test = requireTest(id, true);
         if (tests.countAttempts(id) > 0) {
             throw new IllegalStateException(
@@ -208,7 +244,7 @@ public class VocabularyMiniTestService {
         // Questions shared with another test must keep their original content and status.
         for (var question : previousQuestions) {
             if (!links.existsByQuestionId(question.getId())) {
-                question.setStatus(VocabularyMiniTestQuestion.Status.ARCHIVED);
+                question.setStatus(VocabularyTestQuestion.Status.ARCHIVED);
                 questions.save(question);
             }
         }
@@ -224,11 +260,11 @@ public class VocabularyMiniTestService {
         if (tests.countActiveAttempts(id) > 0) throw new IllegalStateException(
             "Có học sinh đang làm bài. Vui lòng chờ hết lượt làm trước khi lưu trữ."
         );
-        test.setStatus(VocabularyMiniTest.Status.ARCHIVED);
+        test.setStatus(VocabularyTest.Status.ARCHIVED);
         tests.save(test);
     }
 
-    public VocabularyMiniTestResponse.Result preview(Long id, Map<String, String> answers) {
+    public VocabularyTestResponse.Result preview(Long id, Map<String, String> answers) {
         var test = requireTest(id, false);
         var items = questions.findForTest(id);
         return grade(test, items, answers);
@@ -237,9 +273,9 @@ public class VocabularyMiniTestService {
     public StudentVocabularyExercise studentExercise(Long lessonId, Authentication authentication) {
         vocabulary.checkLesson(lessonId, authentication);
         var test = tests.findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
-                lessonId, VocabularyMiniTest.Type.MINI_TEST, VocabularyMiniTest.Skill.VOCABULARY
+                lessonId, VocabularyTest.Type.EXERCISE, VocabularyTest.Skill.VOCABULARY
             ).stream()
-            .filter(item -> item.getStatus() == VocabularyMiniTest.Status.PUBLISHED)
+            .filter(item -> item.getStatus() == VocabularyTest.Status.PUBLISHED)
             .findFirst()
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bài học chưa có exercise được xuất bản."));
         var items = questions.findForTest(test.getId()).stream().map(question -> {
@@ -254,26 +290,26 @@ public class VocabularyMiniTestService {
         );
     }
 
-    public record GradedExercise(Long lessonId, VocabularyMiniTestResponse.Result result) {}
+    public record GradedExercise(Long lessonId, VocabularyTestResponse.Result result) {}
 
     public GradedExercise submitExercise(
         Long id, List<Long> questionIds, Map<String, String> answers, Authentication authentication
     ) {
         var test = requireTest(id, false);
-        if (test.getStatus() != VocabularyMiniTest.Status.PUBLISHED) {
+        if (test.getStatus() != VocabularyTest.Status.PUBLISHED) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise chưa được xuất bản.");
         }
         vocabulary.checkLesson(test.getLessonId(), authentication);
         var items = questions.findForTest(id);
-        if (!items.stream().map(VocabularyMiniTestQuestion::getId).toList().equals(questionIds)) {
+        if (!items.stream().map(VocabularyTestQuestion::getId).toList().equals(questionIds)) {
             throw new IllegalStateException("Exercise đã thay đổi. Vui lòng mở lại bài để làm đề mới.");
         }
         return new GradedExercise(test.getLessonId(), grade(test, items, answers));
     }
 
-    VocabularyMiniTestResponse.Result grade(
-        VocabularyMiniTest test,
-        List<VocabularyMiniTestQuestion> items,
+    VocabularyTestResponse.Result grade(
+        VocabularyTest test,
+        List<VocabularyTestQuestion> items,
         Map<String, String> answers
     ) {
         if (items.isEmpty()) throw new IllegalStateException("Exercise chưa có câu hỏi.");
@@ -282,13 +318,13 @@ public class VocabularyMiniTestService {
         if (
             answers == null || !questionIds.containsAll(answers.keySet())
         ) throw new IllegalArgumentException("Câu trả lời không thuộc bài kiểm tra.");
-        var results = new ArrayList<VocabularyMiniTestResponse.QuestionResult>();
+        var results = new ArrayList<VocabularyTestResponse.QuestionResult>();
         for (var question : items) {
             var data = readAnswer(question);
             String supplied = answers.get(question.getId().toString());
             boolean correct = matches(question.getQuestionType(), data, supplied);
             results.add(
-                new VocabularyMiniTestResponse.QuestionResult(
+                new VocabularyTestResponse.QuestionResult(
                     question.getId(),
                     correct,
                     data.correctAnswer(),
@@ -299,14 +335,14 @@ public class VocabularyMiniTestService {
         }
         int correctCount = (int) results
             .stream()
-            .filter(VocabularyMiniTestResponse.QuestionResult::correct)
+            .filter(VocabularyTestResponse.QuestionResult::correct)
             .count();
         BigDecimal score = BigDecimal.valueOf(correctCount * 100L).divide(
             BigDecimal.valueOf(items.size()),
             2,
             RoundingMode.HALF_UP
         );
-        return new VocabularyMiniTestResponse.Result(
+        return new VocabularyTestResponse.Result(
             score,
             correctCount,
             items.size(),
@@ -315,9 +351,9 @@ public class VocabularyMiniTestService {
         );
     }
 
-    boolean matches(VocabularyMiniTestQuestion.Type type, AnswerData data, String supplied) {
+    boolean matches(VocabularyTestQuestion.Type type, AnswerData data, String supplied) {
         if (supplied == null || supplied.length() > 20000) return false;
-        if (type != VocabularyMiniTestQuestion.Type.MATCHING) return normalize(supplied).equals(
+        if (type != VocabularyTestQuestion.Type.MATCHING) return normalize(supplied).equals(
             normalize(data.correctAnswer())
         );
         try {
@@ -335,7 +371,7 @@ public class VocabularyMiniTestService {
         }
     }
 
-    private void validate(VocabularyMiniTestRequest request) {
+    private void validate(VocabularyExerciseRequest request) {
         if (
             request.questions() == null || request.questions().isEmpty()
         ) throw new IllegalArgumentException(
@@ -344,7 +380,7 @@ public class VocabularyMiniTestService {
         for (var question : request.questions()) validateAnswer(question);
     }
 
-    AnswerData validateAnswer(VocabularyMiniTestRequest.Question question) {
+    AnswerData validateAnswer(VocabularyExerciseRequest.Question question) {
         switch (question.questionType()) {
             case MCQ -> {
                 var options =
@@ -355,7 +391,7 @@ public class VocabularyMiniTestService {
                     options.size() < 2 ||
                     options.size() > 6 ||
                     options.stream().anyMatch(String::isBlank) ||
-                    options.stream().map(VocabularyMiniTestService::normalize).distinct().count() !=
+                    options.stream().map(VocabularyExerciseService::normalize).distinct().count() !=
                         options.size()
                 ) {
                     throw new IllegalArgumentException(
@@ -396,13 +432,13 @@ public class VocabularyMiniTestService {
                     pairs
                         .keySet()
                         .stream()
-                        .map(VocabularyMiniTestService::normalize)
+                        .map(VocabularyExerciseService::normalize)
                         .distinct()
                         .count() != pairs.size() ||
                     pairs
                         .values()
                         .stream()
-                        .map(VocabularyMiniTestService::normalize)
+                        .map(VocabularyExerciseService::normalize)
                         .distinct()
                         .count() != pairs.size()
                 ) {
@@ -418,7 +454,7 @@ public class VocabularyMiniTestService {
         }
     }
 
-    private void apply(VocabularyMiniTest test, VocabularyMiniTestRequest request) {
+    private void apply(VocabularyTest test, VocabularyExerciseRequest request) {
         test.setTitle(request.title().trim());
         test.setDescription(request.description() == null ? null : request.description().trim());
         test.setDurationMinutes(request.durationMinutes());
@@ -427,12 +463,12 @@ public class VocabularyMiniTestService {
     }
 
     private void saveQuestions(
-        VocabularyMiniTest test,
-        List<VocabularyMiniTestRequest.Question> inputs
+        VocabularyTest test,
+        List<VocabularyExerciseRequest.Question> inputs
     ) {
         for (int index = 0; index < inputs.size(); index++) {
             var input = inputs.get(index);
-            var question = new VocabularyMiniTestQuestion();
+            var question = new VocabularyTestQuestion();
             question.setLessonId(test.getLessonId());
             question.setQuestionType(input.questionType());
             question.setContent(input.content().trim());
@@ -445,7 +481,7 @@ public class VocabularyMiniTestService {
                 throw new IllegalStateException("Không thể lưu đáp án.");
             }
             questions.saveAndFlush(question);
-            var link = new VocabularyMiniTestLink();
+            var link = new VocabularyTestQuestionLink();
             link.setTestId(test.getId());
             link.setQuestionId(question.getId());
             links.save(link);
@@ -453,13 +489,13 @@ public class VocabularyMiniTestService {
         links.flush();
     }
 
-    private VocabularyMiniTest requireTest(Long id, boolean lock) {
+    private VocabularyTest requireTest(Long id, boolean lock) {
         var test = (lock ? tests.findForUpdate(id) : tests.findById(id)).orElseThrow(() ->
             new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy exercise.")
         );
         if (
-            test.getSkill() != VocabularyMiniTest.Skill.VOCABULARY ||
-            test.getTestType() != VocabularyMiniTest.Type.MINI_TEST ||
+            test.getSkill() != VocabularyTest.Skill.VOCABULARY ||
+            test.getTestType() != VocabularyTest.Type.EXERCISE ||
             test.getLessonId() == null
         ) {
             throw new ResponseStatusException(
@@ -470,14 +506,14 @@ public class VocabularyMiniTestService {
         return test;
     }
 
-    VocabularyMiniTestResponse response(VocabularyMiniTest test, boolean detail) {
-        List<VocabularyMiniTestResponse.Question> items = detail
+    VocabularyTestResponse response(VocabularyTest test, boolean detail) {
+        List<VocabularyTestResponse.Question> items = detail
             ? questions
                   .findForTest(test.getId())
                   .stream()
                   .map(question -> {
                       var data = readAnswer(question);
-                      return new VocabularyMiniTestResponse.Question(
+                      return new VocabularyTestResponse.Question(
                           question.getId(),
                           question.getQuestionType(),
                           question.getContent(),
@@ -491,7 +527,7 @@ public class VocabularyMiniTestService {
                   })
                   .toList()
             : List.of();
-        return new VocabularyMiniTestResponse(
+        return new VocabularyTestResponse(
             test.getId(),
             test.getLessonId(),
             test.getChapterId(),
@@ -506,7 +542,7 @@ public class VocabularyMiniTestService {
         );
     }
 
-    AnswerData readAnswer(VocabularyMiniTestQuestion question) {
+    AnswerData readAnswer(VocabularyTestQuestion question) {
         try {
             var data = json.readValue(question.getAnswerData(), AnswerData.class);
             if (

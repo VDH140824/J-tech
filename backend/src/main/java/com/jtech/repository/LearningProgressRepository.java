@@ -2,7 +2,7 @@ package com.jtech.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jtech.dto.response.VocabularyMiniTestResponse;
+import com.jtech.dto.response.VocabularyTestResponse;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class LearningProgressRepository {
     }
 
     public long saveVocabularyExerciseAttempt(long studentId, long exerciseId, long lessonId,
-            VocabularyMiniTestResponse.Result result, Map<String, String> answers, LocalDateTime submitted) {
+            VocabularyTestResponse.Result result, Map<String, String> answers, LocalDateTime submitted) {
         String answerData;
         try {
             answerData = json.writeValueAsString(Map.of("exerciseId", exerciseId, "answers", answers, "result", result));

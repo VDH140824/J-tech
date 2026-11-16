@@ -1,8 +1,8 @@
 package com.jtech.controller;
 
-import com.jtech.dto.request.VocabularyMiniTestGenerateRequest;
-import com.jtech.dto.response.VocabularyMiniTestResponse;
-import com.jtech.service.VocabularyMiniTestService;
+import com.jtech.dto.request.VocabularyExerciseRequest;
+import com.jtech.dto.response.VocabularyTestResponse;
+import com.jtech.service.VocabularyExerciseService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -14,16 +14,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/moderator/vocabulary")
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
-public class VocabularyMiniTestController {
+public class VocabularyExerciseController {
 
-    private final VocabularyMiniTestService service;
+    private final VocabularyExerciseService service;
 
-    public VocabularyMiniTestController(VocabularyMiniTestService service) {
+    public VocabularyExerciseController(VocabularyExerciseService service) {
         this.service = service;
     }
 
     @GetMapping("/lessons/{lessonId}/mini-tests")
-    public List<VocabularyMiniTestResponse> list(
+    public List<VocabularyTestResponse> list(
         @PathVariable Long lessonId,
         Authentication authentication
     ) {
@@ -31,17 +31,17 @@ public class VocabularyMiniTestController {
     }
 
     @GetMapping("/mini-tests/{id}")
-    public VocabularyMiniTestResponse detail(@PathVariable Long id) {
+    public VocabularyTestResponse detail(@PathVariable Long id) {
         return service.get(id);
     }
 
     @PostMapping("/lessons/{lessonId}/mini-tests")
-    public ResponseEntity<VocabularyMiniTestResponse> create(
+    public ResponseEntity<VocabularyTestResponse> create(
         @PathVariable Long lessonId,
-        @Valid @RequestBody VocabularyMiniTestGenerateRequest request,
+        @Valid @RequestBody VocabularyExerciseRequest request,
         Authentication authentication
     ) {
-        return ResponseEntity.ok(service.generate(lessonId, request, authentication));
+        return ResponseEntity.ok(service.saveReviewed(lessonId, request, authentication));
     }
 
     @DeleteMapping("/mini-tests/{id}")
@@ -51,7 +51,7 @@ public class VocabularyMiniTestController {
     }
 
     @PostMapping("/mini-tests/{id}/preview")
-    public VocabularyMiniTestResponse.Result preview(
+    public VocabularyTestResponse.Result preview(
         @PathVariable Long id,
         @RequestBody Map<String, String> answers
     ) {

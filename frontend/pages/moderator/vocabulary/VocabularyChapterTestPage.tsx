@@ -6,10 +6,10 @@ import {
   saveChapterTest,
   type ChapterBankQuestion,
   type ChapterTestInput,
-} from "../../api/vocabularyChapterTestApi";
-import { miniTestError, type VocabularyMiniTest } from "../../api/vocabularyMiniTestApi";
-import { VocabularyMiniTestPreview } from "./VocabularyMiniTestPreview";
-import "./VocabularyMiniTests.css";
+} from "../../../api/vocabularyChapterTestApi";
+import { exerciseError, type VocabularyExercise } from "../../../api/vocabularyExerciseApi";
+import { VocabularyExercisePreview } from "./VocabularyExercisePreview";
+import "./VocabularyExercises.css";
 
 interface Props {
   chapterId: number;
@@ -21,7 +21,7 @@ type Settings = Omit<ChapterTestInput, "questionIds">;
 const difficultyNames = { EASY: "Dễ", MEDIUM: "Trung bình", HARD: "Khó" };
 export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, onBack }: Props) {
   const [bank, setBank] = useState<ChapterBankQuestion[]>([]);
-  const [test, setTest] = useState<VocabularyMiniTest | null>(null);
+  const [test, setTest] = useState<VocabularyExercise | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [settings, setSettings] = useState<Settings>({
     title: `Bài test Vocab chương ${chapterNo}`,
@@ -60,7 +60,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
           });
       })
       .catch((failure) => {
-        if (!controller.signal.aborted) setError(miniTestError(failure));
+        if (!controller.signal.aborted) setError(exerciseError(failure));
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
@@ -82,7 +82,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
       setTest(saved);
       setNotice("Đã lưu bài test chương từ các câu hỏi đã chọn.");
     } catch (failure) {
-      setError(miniTestError(failure));
+      setError(exerciseError(failure));
     } finally {
       setBusy(false);
     }
@@ -97,7 +97,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
       setNotice("Đã lưu trữ bài test chương.");
       setReload((value) => value + 1);
     } catch (failure) {
-      setError(miniTestError(failure));
+      setError(exerciseError(failure));
     } finally {
       setBusy(false);
     }
@@ -114,7 +114,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
   if (preview && test)
     return (
       <div className="admin-page-container admin-table-card">
-        <VocabularyMiniTestPreview
+        <VocabularyExercisePreview
           test={test}
           onBack={() => setPreview(false)}
           grade={(_id, answers) => gradeChapterTestPreview(chapterId, answers)}
@@ -170,10 +170,10 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
           <p>Đang tải ngân hàng câu hỏi...</p>
         </div>
       ) : (
-        <div className="admin-table-card mod-mini-tab">
+        <div className="admin-table-card mod-assessment-tab">
           {error && (
             <div
-              className="mod-mini-error"
+              className="mod-assessment-error"
               role="alert"
             >
               {error}
@@ -189,15 +189,15 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
           )}
           {notice && (
             <div
-              className="mod-mini-success"
+              className="mod-assessment-success"
               role="status"
             >
               ✓ {notice}
             </div>
           )}
           {test && (
-            <div className="mod-mini-heading">
-              <div className="mod-mini-info">
+            <div className="mod-assessment-heading">
+              <div className="mod-assessment-info">
                 <span>
                   {test.status === "PUBLISHED"
                     ? "Đã xuất bản"
@@ -219,7 +219,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
             </div>
           )}
           {!!test?.attemptCount && (
-            <p className="mod-mini-error">
+            <p className="mod-assessment-error">
               Bài đã có lượt làm nên không thể thay đổi câu hỏi hoặc cấu hình. Bạn vẫn có thể xem
               thử hoặc lưu trữ bài.
             </p>
@@ -229,7 +229,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
               className="mod-content-fieldset"
               disabled={locked}
             >
-              <div className="modal-grid-2 mod-mini-settings">
+              <div className="modal-grid-2 mod-assessment-settings">
                 <div className="modal-field-group mod-content-wide">
                   <label
                     className="modal-label"
@@ -326,7 +326,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
                   />
                 </div>
               </div>
-              <div className="mod-mini-heading">
+              <div className="mod-assessment-heading">
                 <div>
                   <h3>Ngân hàng đề Vocab</h3>
                   <p>Đã chọn {selected.size} câu · Tổng điểm 100, chia đều theo số câu.</p>
@@ -401,7 +401,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
                 </select>
               </div>
               {missingIds.length > 0 && (
-                <div className="mod-mini-error">
+                <div className="mod-assessment-error">
                   Có {missingIds.length} câu đã lưu không còn trong ngân hàng đang hoạt động.
                   <button
                     type="button"
@@ -447,7 +447,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
                             />
                           </td>
                           <td>
-                            <p className="mod-mini-prompt">{question.content}</p>
+                            <p className="mod-assessment-prompt">{question.content}</p>
                             <details>
                               <summary>Xem lựa chọn và đáp án</summary>
                               <ul>
@@ -493,7 +493,7 @@ export function VocabularyChapterTestPage({ chapterId, chapterNo, courseName, on
           </form>
           {confirmArchive && (
             <div
-              className="mod-mini-confirm"
+              className="mod-assessment-confirm"
               role="region"
               aria-live="polite"
             >

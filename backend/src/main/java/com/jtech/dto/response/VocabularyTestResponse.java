@@ -1,12 +1,12 @@
 package com.jtech.dto.response;
 
-import com.jtech.entity.VocabularyMiniTest;
-import com.jtech.entity.VocabularyMiniTestQuestion;
+import com.jtech.entity.VocabularyTest;
+import com.jtech.entity.VocabularyTestQuestion;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-public record VocabularyMiniTestResponse(
+public record VocabularyTestResponse(
     Long id,
     Long lessonId,
     Long chapterId,
@@ -14,17 +14,17 @@ public record VocabularyMiniTestResponse(
     String description,
     Integer durationMinutes,
     BigDecimal passingScore,
-    VocabularyMiniTest.Status status,
+    VocabularyTest.Status status,
     long questionCount,
     long attemptCount,
     List<Question> questions
 ) {
     public record Question(
         Long id,
-        VocabularyMiniTestQuestion.Type questionType,
+        VocabularyTestQuestion.Type questionType,
         String content,
         String explanation,
-        VocabularyMiniTestQuestion.Difficulty difficulty,
+        VocabularyTestQuestion.Difficulty difficulty,
         List<String> options,
         String correctAnswer,
         Map<String, String> matches,

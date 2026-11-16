@@ -39,7 +39,7 @@ function load(relative) {
 const { ChapterPage } = load('../pages/home/ChapterPage.tsx');
 const { CoursePage } = load('../pages/home/CoursePage.tsx');
 const { ModeratorLessonListTab } = load('../pages/moderator/ModeratorLessonListTab.tsx');
-const { ModeratorVocabularyListPage } = load('../pages/moderator/ModeratorVocabularyListPage.tsx');
+const { ModeratorVocabularyListPage } = load('../pages/moderator/vocabulary/ModeratorVocabularyListPage.tsx');
 const context = { courseName: 'Nhật 1', chapterNo: 1, chapterTitle: 'Chương 1' };
 function render(Component, route, url, data, props) {
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });

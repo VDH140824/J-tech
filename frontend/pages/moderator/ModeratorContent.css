@@ -16,6 +16,39 @@
   height: auto !important;
   font-weight: 600;
 }
+.mod-vocab-button {
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.mod-vocab-button--back {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+}
+.mod-vocab-button--back:hover {
+  border-color: #a5b4fc;
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.mod-vocab-button--primary {
+  border-color: #0d9488;
+  background: #0d9488;
+  color: #fff;
+}
+.mod-vocab-button--primary:hover {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+}
+.mod-vocab-button--status {
+  border-color: #bae6fd;
+  background: #f0f9ff;
+  color: #0369a1;
+}
+.mod-vocab-button--status:hover {
+  border-color: #7dd3fc;
+  background: #e0f2fe;
+  color: #075985;
+}
 .mod-vocab-lesson-link {
   padding: 0;
   border: 0;

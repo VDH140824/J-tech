@@ -25,6 +25,12 @@ public class VocabularyController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @GetMapping("/chapters/{chapterId}/vocabularies")
+    public List<Vocabulary> listChapter(@PathVariable Long chapterId) {
+        return repository.findForChapter(chapterId, Lesson.SkillType.VOCABULARY);
+    }
+
     @GetMapping("/lessons/{parentId}/vocabularies")
     public List<Vocabulary> list(
         @PathVariable Long parentId,
@@ -51,9 +57,14 @@ public class VocabularyController {
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
-    @PutMapping("/vocabularies/{id}")
-    public Vocabulary update(@PathVariable Long id, @Valid @RequestBody VocabularyRequest request) {
-        return service.update(repository, id, request);
+    @PutMapping("/lessons/{lessonId}/vocabularies/{id}")
+    public Vocabulary update(
+        @PathVariable Long lessonId,
+        @PathVariable Long id,
+        @Valid @RequestBody VocabularyRequest request,
+        Authentication authentication
+    ) {
+        return service.update(repository, lessonId, id, request, authentication);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
@@ -68,16 +79,32 @@ public class VocabularyController {
         );
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
+    @PatchMapping("/lessons/{lessonId}/vocabularies/assign")
+    public BulkStatusResult assignToLesson(
+        @PathVariable Long lessonId,
+        @Valid @RequestBody VocabularyAssignmentRequest request,
+        Authentication authentication
+    ) {
+        return new BulkStatusResult(
+            service.assignFromChapter(repository, lessonId, request.ids(), authentication)
+        );
+    }
+
     public record BulkStatusRequest(@NotEmpty List<@NotNull @Positive Long> ids, @NotNull Course.Status status) {}
+
+    public record VocabularyAssignmentRequest(@NotEmpty List<@NotNull @Positive Long> ids) {}
 
     public record BulkStatusResult(int updatedCount) {}
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ADMIN', 'ROLE_MODERATOR', 'MODERATOR')")
-    @DeleteMapping("/vocabularies/{id}")
-    public ResponseEntity<Void> archive(@PathVariable Long id) {
-        Vocabulary item = service.require(repository, id);
-        item.setStatus(Course.Status.ARCHIVED);
-        repository.save(item);
+    @DeleteMapping("/lessons/{lessonId}/vocabularies/{id}")
+    public ResponseEntity<Void> archive(
+        @PathVariable Long lessonId,
+        @PathVariable Long id,
+        Authentication authentication
+    ) {
+        service.archive(repository, lessonId, id, authentication);
         return ResponseEntity.noContent().build();
     }
 }

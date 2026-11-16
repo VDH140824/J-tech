@@ -11,7 +11,7 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "question")
 @Getter
 @Setter
-public class VocabularyMiniTestQuestion {
+public class VocabularyTestQuestion {
 
     public enum Skill {
         VOCABULARY,

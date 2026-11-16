@@ -2,7 +2,7 @@ package com.jtech.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.jtech.dto.request.VocabularyMiniTestRequest;
+import com.jtech.dto.request.VocabularyExerciseRequest;
 import com.jtech.entity.*;
 import com.jtech.repository.*;
 import java.math.BigDecimal;
@@ -19,10 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @EnabledIfSystemProperty(named = "jtech.integration", matches = "true")
-class VocabularyMiniTestPersistenceTest {
+class VocabularyExercisePersistenceTest {
 
     @Autowired
-    VocabularyMiniTestService service;
+    VocabularyExerciseService service;
 
     @Autowired
     CourseRepository courses;
@@ -34,13 +34,13 @@ class VocabularyMiniTestPersistenceTest {
     LessonRepository lessons;
 
     @Autowired
-    VocabularyMiniTestRepository tests;
+    VocabularyTestRepository tests;
 
     @Autowired
-    VocabularyMiniTestQuestionRepository questions;
+    VocabularyTestQuestionRepository questions;
 
     @Autowired
-    VocabularyMiniTestLinkRepository links;
+    VocabularyTestQuestionLinkRepository links;
 
     @Autowired
     VocabularyRepository vocabulary;
@@ -68,7 +68,7 @@ class VocabularyMiniTestPersistenceTest {
     org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping mappings;
 
     @Test
-    void generatedMiniTestUsesExactlyLessonWordsAndChapterFlashcardsCombineLessons() {
+    void generatedExerciseUsesExactlyLessonWordsAndChapterFlashcardsCombineLessons() {
         assertTrue(
             mappings
                 .getHandlerMethods()
@@ -77,7 +77,7 @@ class VocabularyMiniTestPersistenceTest {
                 .anyMatch(mapping ->
                     mapping
                         .getPatternValues()
-                        .contains("/moderator/vocabulary/lessons/{lessonId}/mini-tests")
+                        .contains("/moderator/vocabulary/lessons/{lessonId}/exercises")
                 )
         );
         var course = new Course();
@@ -138,12 +138,12 @@ class VocabularyMiniTestPersistenceTest {
             "",
             List.of(new SimpleGrantedAuthority("ROLE_MODERATOR"))
         );
-        var settings = new com.jtech.dto.request.VocabularyMiniTestGenerateRequest(
+        var settings = new com.jtech.dto.request.VocabularyExerciseGenerateRequest(
             "Từ của bài",
             "",
             10,
             new BigDecimal("70"),
-            VocabularyMiniTest.Status.DRAFT,
+            VocabularyTest.Status.DRAFT,
             List.copyOf(sourceIds)
         );
         var created = service.generate(lesson.getId(), settings, auth);
@@ -153,7 +153,7 @@ class VocabularyMiniTestPersistenceTest {
             created
                 .questions()
                 .stream()
-                .map(com.jtech.dto.response.VocabularyMiniTestResponse.Question::sourceVocabularyId)
+                .map(com.jtech.dto.response.VocabularyTestResponse.Question::sourceVocabularyId)
                 .collect(java.util.stream.Collectors.toSet())
         );
         for (var question : created.questions()) {
@@ -165,14 +165,14 @@ class VocabularyMiniTestPersistenceTest {
             .questions()
             .stream()
             .limit(3)
-            .map(com.jtech.dto.response.VocabularyMiniTestResponse.Question::id)
+            .map(com.jtech.dto.response.VocabularyTestResponse.Question::id)
             .toList();
         var chapterRequest = new com.jtech.dto.request.VocabularyChapterTestRequest(
             "Test chương Vocab",
             "",
             20,
             new BigDecimal("70"),
-            VocabularyMiniTest.Status.DRAFT,
+            VocabularyTest.Status.DRAFT,
             selectedIds
         );
         var chapterTest = chapterTests.save(chapter.getId(), chapterRequest);
@@ -180,7 +180,7 @@ class VocabularyMiniTestPersistenceTest {
         assertEquals(chapter.getId(), chapterTest.chapterId());
         assertEquals(3, chapterTest.questionCount());
         assertEquals(
-            VocabularyMiniTest.Type.CHAPTER_TEST,
+            VocabularyTest.Type.CHAPTER_TEST,
             tests.findById(chapterTest.id()).orElseThrow().getTestType()
         );
         assertEquals(10, chapterTests.setup(chapter.getId()).bank().size());
@@ -199,7 +199,7 @@ class VocabularyMiniTestPersistenceTest {
         assertEquals(1, service.list(lesson.getId(), auth).size());
         selectedIds.forEach(id ->
             assertEquals(
-                VocabularyMiniTestQuestion.Status.ACTIVE,
+                VocabularyTestQuestion.Status.ACTIVE,
                 questions.findById(id).orElseThrow().getStatus()
             )
         );
@@ -210,7 +210,7 @@ class VocabularyMiniTestPersistenceTest {
                 .test()
                 .questions()
                 .stream()
-                .map(com.jtech.dto.response.VocabularyMiniTestResponse.Question::id)
+                .map(com.jtech.dto.response.VocabularyTestResponse.Question::id)
                 .toList()
         );
         assertEquals(12, chapterVocabulary.flashcards(chapter.getId()).size());
@@ -230,8 +230,8 @@ class VocabularyMiniTestPersistenceTest {
         course.setStatus(Course.Status.PUBLISHED);
         chapter.setStatus(Course.Status.PUBLISHED);
         other.setStatus(Course.Status.PUBLISHED);
-        var publishedSettings = new com.jtech.dto.request.VocabularyMiniTestGenerateRequest(
-            "Exercise", "", 10, new BigDecimal("70"), VocabularyMiniTest.Status.PUBLISHED, otherIds
+        var publishedSettings = new com.jtech.dto.request.VocabularyExerciseGenerateRequest(
+            "Exercise", "", 10, new BigDecimal("70"), VocabularyTest.Status.PUBLISHED, otherIds
         );
         var published = service.generate(other.getId(), publishedSettings, auth);
         var student = new UsernamePasswordAuthenticationToken(
@@ -282,20 +282,20 @@ class VocabularyMiniTestPersistenceTest {
         lesson.setStatus(Course.Status.DRAFT);
         lessons.saveAndFlush(lesson);
         var inputs = List.of(
-            new VocabularyMiniTestRequest.Question(
-                VocabularyMiniTestQuestion.Type.MCQ,
+            new VocabularyExerciseRequest.Question(
+                VocabularyTestQuestion.Type.MCQ,
                 "猫 nghĩa là gì?",
                 "猫 là mèo",
-                VocabularyMiniTestQuestion.Difficulty.EASY,
+                VocabularyTestQuestion.Difficulty.EASY,
                 List.of("Mèo", "Chó"),
                 "Mèo",
                 Map.of()
             ),
-            new VocabularyMiniTestRequest.Question(
-                VocabularyMiniTestQuestion.Type.MATCHING,
+            new VocabularyExerciseRequest.Question(
+                VocabularyTestQuestion.Type.MATCHING,
                 "Nối từ",
                 "Giải thích nối",
-                VocabularyMiniTestQuestion.Difficulty.EASY,
+                VocabularyTestQuestion.Difficulty.EASY,
                 List.of(),
                 "",
                 Map.of("猫", "Mèo", "犬", "Chó")
@@ -304,12 +304,12 @@ class VocabularyMiniTestPersistenceTest {
             fillIn(),
             fillIn()
         );
-        var request = new VocabularyMiniTestRequest(
+        var request = new VocabularyExerciseRequest(
             "Bài thử",
             "Hướng dẫn",
             10,
             new BigDecimal("70"),
-            VocabularyMiniTest.Status.DRAFT,
+            VocabularyTest.Status.DRAFT,
             inputs
         );
         var authentication = new UsernamePasswordAuthenticationToken(
@@ -325,43 +325,43 @@ class VocabularyMiniTestPersistenceTest {
         for (var question : created.questions())
             answers.put(
                 question.id().toString(),
-                question.questionType() == VocabularyMiniTestQuestion.Type.MATCHING
+                question.questionType() == VocabularyTestQuestion.Type.MATCHING
                     ? "{\"犬\":\"Chó\",\"猫\":\"Mèo\"}"
                     : question.correctAnswer()
             );
         assertEquals(new BigDecimal("100.00"), service.preview(created.id(), answers).score());
         var updated = service.update(
             created.id(),
-            new VocabularyMiniTestRequest(
+            new VocabularyExerciseRequest(
                 "Bài đã sửa",
                 "",
                 15,
                 new BigDecimal("80"),
-                VocabularyMiniTest.Status.PUBLISHED,
+                VocabularyTest.Status.PUBLISHED,
                 inputs
             )
         );
         assertEquals("Bài đã sửa", updated.title());
         assertEquals(5, updated.questions().size());
         assertEquals(
-            VocabularyMiniTestQuestion.Status.ARCHIVED,
+            VocabularyTestQuestion.Status.ARCHIVED,
             questions.findById(created.questions().getFirst().id()).orElseThrow().getStatus()
         );
         assertNotEquals(created.questions().getFirst().id(), updated.questions().getFirst().id());
         service.archive(created.id());
         assertEquals(
-            VocabularyMiniTest.Status.ARCHIVED,
+            VocabularyTest.Status.ARCHIVED,
             tests.findById(created.id()).orElseThrow().getStatus()
         );
         assertEquals(5, links.countByTestId(created.id()));
     }
 
-    private VocabularyMiniTestRequest.Question fillIn() {
-        return new VocabularyMiniTestRequest.Question(
-            VocabularyMiniTestQuestion.Type.FILL_IN,
+    private VocabularyExerciseRequest.Question fillIn() {
+        return new VocabularyExerciseRequest.Question(
+            VocabularyTestQuestion.Type.FILL_IN,
             "Điền cách đọc 日本語",
             "にほんご",
-            VocabularyMiniTestQuestion.Difficulty.EASY,
+            VocabularyTestQuestion.Difficulty.EASY,
             List.of(),
             "にほんご",
             Map.of()

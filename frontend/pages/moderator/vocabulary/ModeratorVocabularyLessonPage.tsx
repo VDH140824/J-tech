@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { getLessonById, type LessonSummary } from "../../api/lessonApi";
-import { parseLessonDocuments } from "../../utils/lessonDocuments";
+import { getLessonById, type LessonSummary } from "../../../api/lessonApi";
+import { parseLessonDocuments } from "../../../utils/lessonDocuments";
 import { ModeratorVocabularyListPage } from "./ModeratorVocabularyListPage";
-import { VocabularyMiniTestsTab } from "./VocabularyMiniTestsTab";
-import { StudentVocabularyExerciseTab } from "../home/StudentVocabularyExerciseTab";
-import "./ModeratorContent.css";
+import { VocabularyExerciseTab } from "./VocabularyExerciseTab";
+import { StudentVocabularyExerciseTab } from "../../home/StudentVocabularyExerciseTab";
+import "../ModeratorContent.css";
 
 interface Props {
   lessonId: number;
@@ -100,7 +100,7 @@ export function ModeratorVocabularyLessonPage({
     return (
       <div className="admin-page-container">
         <button
-          className="mod-btn-back"
+          className="mod-btn-back mod-vocab-button mod-vocab-button--back"
           onClick={onBack}
         >
           ← Danh sách bài học
@@ -145,7 +145,7 @@ export function ModeratorVocabularyLessonPage({
       <div className="mod-chapter-back-row">
         <button
           type="button"
-          className="mod-btn-back"
+          className="mod-btn-back mod-vocab-button mod-vocab-button--back"
           onClick={onBack}
         >
           ← Quay lại danh sách bài học
@@ -165,7 +165,7 @@ export function ModeratorVocabularyLessonPage({
           {!readOnly && (
             <button
               type="button"
-              className="mod-btn-back"
+              className="mod-btn-back mod-vocab-button mod-vocab-button--primary"
               onClick={() => selectTab("words")}
             >
               Quản lý từ vựng
@@ -290,7 +290,7 @@ export function ModeratorVocabularyLessonPage({
             onBack={() => selectTab("document")}
           />
         ) : (
-          <VocabularyMiniTestsTab
+          <VocabularyExerciseTab
             key={lesson.id}
             lessonId={lesson.id}
           />

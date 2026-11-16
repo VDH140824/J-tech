@@ -10,12 +10,28 @@ import lombok.Setter;
 @Table(name = "test")
 @Getter
 @Setter
-public class VocabularyMiniTest {
+public class VocabularyTest {
 
     public enum Type {
-        MINI_TEST,
+        EXERCISE,
         LESSON_TEST,
         CHAPTER_TEST,
+    }
+
+    @Converter
+    public static class TypeConverter implements AttributeConverter<Type, String> {
+
+        @Override
+        public String convertToDatabaseColumn(Type type) {
+            if (type == null) return null;
+            return type == Type.EXERCISE ? "MINI_TEST" : type.name();
+        }
+
+        @Override
+        public Type convertToEntityAttribute(String value) {
+            if (value == null) return null;
+            return value.equals("MINI_TEST") ? Type.EXERCISE : Type.valueOf(value);
+        }
     }
 
     public enum Skill {
@@ -36,9 +52,12 @@ public class VocabularyMiniTest {
     @Column(columnDefinition = "BIGINT UNSIGNED")
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "test_type", nullable = false)
-    private Type testType = Type.MINI_TEST;
+    @Convert(converter = TypeConverter.class)
+    @Column(
+            name = "test_type",
+            nullable = false,
+            columnDefinition = "ENUM('MINI_TEST','LESSON_TEST','CHAPTER_TEST')")
+    private Type testType = Type.EXERCISE;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

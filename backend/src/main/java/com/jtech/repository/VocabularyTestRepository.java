@@ -1,26 +1,26 @@
 package com.jtech.repository;
 
-import com.jtech.entity.VocabularyMiniTest;
+import com.jtech.entity.VocabularyTest;
 import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 
-public interface VocabularyMiniTestRepository extends JpaRepository<VocabularyMiniTest, Long> {
-    List<VocabularyMiniTest> findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
+public interface VocabularyTestRepository extends JpaRepository<VocabularyTest, Long> {
+    List<VocabularyTest> findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
         Long lessonId,
-        VocabularyMiniTest.Type type,
-        VocabularyMiniTest.Skill skill
+        VocabularyTest.Type type,
+        VocabularyTest.Skill skill
     );
-    List<VocabularyMiniTest> findByChapterIdAndTestTypeAndSkillOrderByIdDesc(
+    List<VocabularyTest> findByChapterIdAndTestTypeAndSkillOrderByIdDesc(
         Long chapterId,
-        VocabularyMiniTest.Type type,
-        VocabularyMiniTest.Skill skill
+        VocabularyTest.Type type,
+        VocabularyTest.Skill skill
     );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select t from VocabularyMiniTest t where t.id = :id")
-    Optional<VocabularyMiniTest> findForUpdate(Long id);
+    @Query("select t from VocabularyTest t where t.id = :id")
+    Optional<VocabularyTest> findForUpdate(Long id);
 
     @Query(value = "select count(*) from test_attempt where test_id = :id", nativeQuery = true)
     long countAttempts(Long id);

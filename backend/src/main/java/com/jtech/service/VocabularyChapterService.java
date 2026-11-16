@@ -1,12 +1,15 @@
 package com.jtech.service;
 
+import com.jtech.entity.Chapter;
 import com.jtech.entity.Course;
 import com.jtech.entity.Lesson;
 import com.jtech.repository.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional(readOnly = true)
@@ -59,10 +62,7 @@ public class VocabularyChapterService {
             .findForChapter(chapterId, Lesson.SkillType.VOCABULARY)
             .stream()
             .filter(
-                word ->
-                    lessonMap.containsKey(word.getLessonId()) &&
-                    (word.getStatus() == Course.Status.PUBLISHED ||
-                        word.getStatus() == Course.Status.DRAFT)
+                word -> lessonMap.containsKey(word.getLessonId())
             )
             .map(word ->
                 new Flashcard(
@@ -77,6 +77,45 @@ public class VocabularyChapterService {
                     word.getExampleVi()
                 )
             )
+            .toList();
+    }
+
+    public List<Flashcard> studentFlashcards(Long chapterId) {
+        Chapter chapter = chapters.findById(chapterId).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương.")
+        );
+        if (
+            chapter.getStatus() != Course.Status.PUBLISHED ||
+            chapter.getCourse().getStatus() != Course.Status.PUBLISHED
+        ) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương.");
+        }
+        var lessonMap = lessons
+            .findByChapterIdAndSkillTypeOrderByDisplayOrderAscLessonNoAscIdAsc(
+                chapterId,
+                Lesson.SkillType.VOCABULARY
+            )
+            .stream()
+            .filter(lesson -> lesson.getStatus() == Course.Status.PUBLISHED)
+            .collect(Collectors.toMap(Lesson::getId, lesson -> lesson));
+        return vocabulary
+            .findForChapter(chapterId, Lesson.SkillType.VOCABULARY)
+            .stream()
+            .filter(word -> lessonMap.containsKey(word.getLessonId()))
+            .map(word -> {
+                Lesson lesson = lessonMap.get(word.getLessonId());
+                return new Flashcard(
+                    word.getId(),
+                    lesson.getId(),
+                    lesson.getLessonNo(),
+                    lesson.getTitle(),
+                    word.getWord(),
+                    word.getReading(),
+                    word.getMeaningVi(),
+                    word.getExampleJp(),
+                    word.getExampleVi()
+                );
+            })
             .toList();
     }
 }

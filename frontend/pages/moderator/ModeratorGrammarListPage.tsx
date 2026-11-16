@@ -266,9 +266,9 @@ export function ModeratorGrammarListPage({
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="ALL">Tất cả trạng thái</option>
-              <option value="PUBLISHED">Đã xuất bản (PUBLISHED)</option>
-              <option value="DRAFT">Bản nháp (DRAFT)</option>
-              <option value="HIDDEN">Ẩn (HIDDEN)</option>
+              <option value="PUBLISHED">Đã xuất bản</option>
+              <option value="DRAFT">Bản nháp</option>
+              <option value="HIDDEN">Ẩn</option>
             </select>
           )}
         </div>
@@ -583,9 +583,9 @@ export function ModeratorGrammarListPage({
                       })
                     }
                   >
-                    <option value="PUBLISHED">Đã xuất bản (PUBLISHED)</option>
-                    <option value="DRAFT">Bản nháp (DRAFT)</option>
-                    <option value="HIDDEN">Ẩn (HIDDEN)</option>
+                    <option value="PUBLISHED">Đã xuất bản</option>
+                    <option value="DRAFT">Bản nháp</option>
+                    <option value="HIDDEN">Ẩn</option>
                   </select>
                 </div>
               </div>

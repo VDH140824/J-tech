@@ -8,7 +8,7 @@ import lombok.Setter;
 @Table(name = "test_question")
 @Getter
 @Setter
-public class VocabularyMiniTestLink {
+public class VocabularyTestQuestionLink {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

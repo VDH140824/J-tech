@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { isAxiosError } from "axios";
-import type { LessonSummary } from "../../api/lessonApi";
+import { getLessonsByChapter, type LessonSummary } from "../../../api/lessonApi";
 import {
+  assignVocabulariesToLesson,
   archiveVocabulary,
+  getChapterVocabularies,
   getVocabularies,
   saveVocabulary,
   updateVocabularyStatuses,
@@ -10,10 +12,10 @@ import {
   type VocabularyInput,
   type VocabularyStatus,
   type VocabularyItem,
-} from "../../api/vocabularyApi";
+} from "../../../api/vocabularyApi";
 import { VOCABULARY_CONFIG } from "./vocabularyConfig";
-import { LearningCompletionButton } from "../../components/learning/LearningCompletionButton";
-import "./ModeratorContent.css";
+import { LearningCompletionButton } from "../../../components/learning/LearningCompletionButton";
+import "../ModeratorContent.css";
 
 interface ModeratorVocabularyListPageProps {
   skillLabel: string;
@@ -58,7 +60,6 @@ export function ModeratorVocabularyListPage({
   const config = VOCABULARY_CONFIG;
   const parentId = lesson.id;
   const collectionPath = `/lessons/${parentId}/${config.path}`;
-  const itemPath = `/${config.path}`;
   const [items, setItems] = useState<VocabularyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -66,7 +67,7 @@ export function ModeratorVocabularyListPage({
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("DEFAULT");
   const [notice, setNotice] = useState("");
-  const [modal, setModal] = useState<"create" | "edit" | "view" | null>(null);
+  const [modal, setModal] = useState<"create" | "edit" | "view" | "assign" | null>(null);
   const [selected, setSelected] = useState<VocabularyItem | null>(null);
   const [deleting, setDeleting] = useState<VocabularyItem | null>(null);
   const [form, setForm] = useState<VocabularyInput>({ displayOrder: 0, status: "DRAFT" });
@@ -76,6 +77,10 @@ export function ModeratorVocabularyListPage({
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<BulkVocabularyStatus>("PUBLISHED");
   const [bulkError, setBulkError] = useState("");
+  const [chapterWords, setChapterWords] = useState<VocabularyItem[]>([]);
+  const [chapterLessons, setChapterLessons] = useState<LessonSummary[]>([]);
+  const [assignIds, setAssignIds] = useState<Set<number>>(new Set());
+  const [assignLoading, setAssignLoading] = useState(false);
   const dialog = useRef<HTMLDivElement>(null);
   const locked = useRef(false);
 
@@ -184,7 +189,7 @@ export function ModeratorVocabularyListPage({
     try {
       await saveVocabulary(
         collectionPath,
-        itemPath,
+        parentId,
         input,
         modal === "edit" ? selected?.id : undefined,
       );
@@ -198,13 +203,52 @@ export function ModeratorVocabularyListPage({
       setBusy(false);
     }
   };
+  const openAssign = async () => {
+    if (readOnly || locked.current) return;
+    setModal("assign");
+    setActionError("");
+    setAssignIds(new Set());
+    setAssignLoading(true);
+    try {
+      const [wordsInChapter, lessonsInChapter] = await Promise.all([
+        getChapterVocabularies(lesson.chapterId),
+        getLessonsByChapter(lesson.chapterId, "VOCABULARY"),
+      ]);
+      setChapterWords(wordsInChapter);
+      setChapterLessons(lessonsInChapter);
+    } catch (error) {
+      setActionError(errorMessage(error));
+    } finally {
+      setAssignLoading(false);
+    }
+  };
+  const assignSelected = async () => {
+    if (readOnly || !assignIds.size || locked.current) return;
+    locked.current = true;
+    setBusy(true);
+    setActionError("");
+    try {
+      const count = await assignVocabulariesToLesson(parentId, [...assignIds]);
+      setModal(null);
+      setAssignIds(new Set());
+      setNotice(count
+        ? `Đã gán ${count} từ vựng vào ${context}.`
+        : `Các từ đã chọn hiện thuộc ${context}.`);
+      setReload((value) => value + 1);
+    } catch (error) {
+      setActionError(errorMessage(error));
+    } finally {
+      locked.current = false;
+      setBusy(false);
+    }
+  };
   const archive = async () => {
     if (readOnly || !deleting || locked.current) return;
     locked.current = true;
     setBusy(true);
     setActionError("");
     try {
-      await archiveVocabulary(itemPath, deleting.id);
+      await archiveVocabulary(parentId, deleting.id);
       setDeleting(null);
       setNotice("Đã lưu trữ từ vựng và ngừng hiển thị cho học sinh.");
       setReload((n) => n + 1);
@@ -278,7 +322,7 @@ export function ModeratorVocabularyListPage({
       )}
       <div className="mod-chapter-back-row">
         <button
-          className="mod-btn-back"
+          className="mod-btn-back mod-vocab-button mod-vocab-button--back"
           onClick={onBack}
         >
           ← Quay lại {backLabel}
@@ -299,13 +343,23 @@ export function ModeratorVocabularyListPage({
             </p>
           </div>
           {!readOnly && (
-            <button
-              className="mod-btn-add"
-              onClick={() => open("create")}
-              disabled={loading || !!loadError}
-            >
-              ＋ Thêm {skillLabel.toLowerCase()}
-            </button>
+            <div className="row-actions-group">
+              <button
+                type="button"
+                className="mod-btn-back"
+                onClick={() => void openAssign()}
+                disabled={loading || !!loadError}
+              >
+                Chọn từ trong chương
+              </button>
+              <button
+                className="mod-btn-add"
+                onClick={() => open("create")}
+                disabled={loading || !!loadError}
+              >
+                ＋ Thêm {skillLabel.toLowerCase()}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -470,7 +524,7 @@ export function ModeratorVocabularyListPage({
                     {readOnly || bulkMode ? "Trạng thái" : (
                       <button
                         type="button"
-                        className="mod-btn-back"
+                        className="mod-btn-back mod-vocab-button mod-vocab-button--status"
                         disabled={busy || !selectable.length}
                         onClick={() => {
                           resetSelection();
@@ -581,7 +635,9 @@ export function ModeratorVocabularyListPage({
               >
                 {deleting
                   ? "Xóa từ vựng"
-                  : modal === "view"
+                  : modal === "assign"
+                    ? "Chọn từ vựng trong chương"
+                    : modal === "view"
                     ? "Chi tiết từ vựng"
                     : modal === "edit"
                       ? "Chỉnh sửa từ vựng"
@@ -627,6 +683,78 @@ export function ModeratorVocabularyListPage({
                     onClick={archive}
                   >
                     {busy ? "Đang xử lý..." : "Xác nhận lưu trữ"}
+                  </button>
+                </div>
+              </div>
+            ) : modal === "assign" ? (
+              <div className="modal-form-body">
+                <p className="modal-description">
+                  Chọn các từ đang thuộc bài khác trong cùng chương để gán vào {context}. Từ đã lưu trữ không hiển thị ở đây.
+                </p>
+                {assignLoading ? (
+                  <div className="admin-loading-state" role="status">
+                    <div className="admin-loading-spinner" />
+                    <p>Đang tải từ vựng trong chương...</p>
+                  </div>
+                ) : (
+                  <div className="table-responsive" style={{ maxHeight: "48vh", overflowY: "auto" }}>
+                    <table className="admin-users-table">
+                      <thead>
+                        <tr>
+                          <th>Chọn</th>
+                          <th>Thứ tự</th>
+                          <th>Từ vựng</th>
+                          <th>Ý nghĩa</th>
+                          <th>Bài hiện tại</th>
+                          <th>Trạng thái</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chapterWords
+                          .filter((item) => item.lessonId !== parentId && item.status !== "ARCHIVED")
+                          .map((item) => {
+                            const owner = chapterLessons.find((entry) => entry.id === item.lessonId);
+                            return (
+                              <tr key={item.id}>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    aria-label={`Chọn từ ${String(item.word ?? "")}`}
+                                    checked={assignIds.has(item.id)}
+                                    disabled={busy}
+                                    onChange={(event) => setAssignIds((current) => {
+                                      const next = new Set(current);
+                                      if (event.target.checked) next.add(item.id);
+                                      else next.delete(item.id);
+                                      return next;
+                                    })}
+                                  />
+                                </td>
+                                <td>{item.displayOrder}</td>
+                                <td>{String(item.word ?? "")}</td>
+                                <td>{String(item.meaningVi ?? "")}</td>
+                                <td>{owner ? `Bài ${owner.lessonNo}: ${owner.title}` : "Không rõ bài"}</td>
+                                <td>{STATUS_LABELS[item.status]}</td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                    {!chapterWords.some((item) => item.lessonId !== parentId && item.status !== "ARCHIVED") && (
+                      <p className="admin-empty-desc">Không còn từ vựng nào khác trong chương để gán.</p>
+                    )}
+                  </div>
+                )}
+                <div className="modal-actions-row">
+                  <button className="btn-modal-cancel" disabled={busy} onClick={close}>
+                    Hủy bỏ
+                  </button>
+                  <button
+                    className="btn-modal-submit"
+                    disabled={busy || assignLoading || !assignIds.size}
+                    onClick={() => void assignSelected()}
+                  >
+                    {busy ? "Đang gán..." : `Gán ${assignIds.size} từ vào bài`}
                   </button>
                 </div>
               </div>

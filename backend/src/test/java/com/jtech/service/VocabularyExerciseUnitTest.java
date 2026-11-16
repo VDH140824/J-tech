@@ -16,18 +16,18 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.server.ResponseStatusException;
 
-/** One method per column in the Vocab MiniTest report sheet. */
-class VocabularyMiniTestUnitTest {
+/** One method per column in the Vocabulary Exercise report sheet. */
+class VocabularyExerciseUnitTest {
 
-    private final VocabularyMiniTestRepository tests = mock(VocabularyMiniTestRepository.class);
-    private final VocabularyMiniTestQuestionRepository questions = mock(
-        VocabularyMiniTestQuestionRepository.class
+    private final VocabularyTestRepository tests = mock(VocabularyTestRepository.class);
+    private final VocabularyTestQuestionRepository questions = mock(
+        VocabularyTestQuestionRepository.class
     );
-    private final VocabularyMiniTestLinkRepository links = mock(
-        VocabularyMiniTestLinkRepository.class
+    private final VocabularyTestQuestionLinkRepository links = mock(
+        VocabularyTestQuestionLinkRepository.class
     );
     private final ObjectMapper json = new ObjectMapper();
-    private final VocabularyMiniTestService service = new VocabularyMiniTestService(
+    private final VocabularyExerciseService service = new VocabularyExerciseService(
         tests,
         questions,
         links,
@@ -36,8 +36,8 @@ class VocabularyMiniTestUnitTest {
         mock(VocabularyRepository.class)
     );
 
-    private VocabularyMiniTest test() {
-        var t = new VocabularyMiniTest();
+    private VocabularyTest test() {
+        var t = new VocabularyTest();
         t.setId(1L);
         t.setLessonId(2L);
         t.setPassingScore(new BigDecimal("70"));
@@ -49,13 +49,13 @@ class VocabularyMiniTestUnitTest {
     private void fiveQuestions() throws Exception {
         test();
         var data = json.writeValueAsString(
-            new VocabularyMiniTestService.AnswerData(List.of(), "correct", Map.of())
+            new VocabularyExerciseService.AnswerData(List.of(), "correct", Map.of())
         );
-        var list = new ArrayList<VocabularyMiniTestQuestion>();
+        var list = new ArrayList<VocabularyTestQuestion>();
         for (long id = 1; id <= 5; id++) {
-            var q = new VocabularyMiniTestQuestion();
+            var q = new VocabularyTestQuestion();
             q.setId(id);
-            q.setQuestionType(VocabularyMiniTestQuestion.Type.FILL_IN);
+            q.setQuestionType(VocabularyTestQuestion.Type.FILL_IN);
             q.setAnswerData(data);
             list.add(q);
         }
@@ -63,18 +63,18 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC001: Validate generation duration")
+    @DisplayName("Vocabulary Exercise/UTC001: Validate generation duration")
     void utc001() throws Exception {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var v = factory
                 .getValidator()
                 .validate(
-                    new VocabularyMiniTestGenerateRequest(
+                    new VocabularyExerciseGenerateRequest(
                         "Test",
                         "",
                         10,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT,
+                        VocabularyTest.Status.DRAFT,
                         List.of(1L, 2L)
                     )
                 );
@@ -83,18 +83,18 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC002: Validate generation duration")
+    @DisplayName("Vocabulary Exercise/UTC002: Validate generation duration")
     void utc002() throws Exception {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var v = factory
                 .getValidator()
                 .validate(
-                    new VocabularyMiniTestGenerateRequest(
+                    new VocabularyExerciseGenerateRequest(
                         "Test",
                         "",
                         5,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT,
+                        VocabularyTest.Status.DRAFT,
                         List.of(1L, 2L)
                     )
                 );
@@ -103,18 +103,18 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC003: Validate generation duration")
+    @DisplayName("Vocabulary Exercise/UTC003: Validate generation duration")
     void utc003() throws Exception {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var v = factory
                 .getValidator()
                 .validate(
-                    new VocabularyMiniTestGenerateRequest(
+                    new VocabularyExerciseGenerateRequest(
                         "Test",
                         "",
                         30,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT,
+                        VocabularyTest.Status.DRAFT,
                         List.of(1L, 2L)
                     )
                 );
@@ -123,18 +123,18 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC004: Validate generation duration")
+    @DisplayName("Vocabulary Exercise/UTC004: Validate generation duration")
     void utc004() throws Exception {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var v = factory
                 .getValidator()
                 .validate(
-                    new VocabularyMiniTestGenerateRequest(
+                    new VocabularyExerciseGenerateRequest(
                         "Test",
                         "",
                         4,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT,
+                        VocabularyTest.Status.DRAFT,
                         List.of(1L, 2L)
                     )
                 );
@@ -146,18 +146,18 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC005: Validate generation duration")
+    @DisplayName("Vocabulary Exercise/UTC005: Validate generation duration")
     void utc005() throws Exception {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var v = factory
                 .getValidator()
                 .validate(
-                    new VocabularyMiniTestGenerateRequest(
+                    new VocabularyExerciseGenerateRequest(
                         "Test",
                         "",
                         31,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT,
+                        VocabularyTest.Status.DRAFT,
                         List.of(1L, 2L)
                     )
                 );
@@ -169,18 +169,18 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC006: Validate generation duration")
+    @DisplayName("Vocabulary Exercise/UTC006: Validate generation duration")
     void utc006() throws Exception {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var v = factory
                 .getValidator()
                 .validate(
-                    new VocabularyMiniTestGenerateRequest(
+                    new VocabularyExerciseGenerateRequest(
                         "Test",
                         "",
                         null,
                         new BigDecimal("70"),
-                        VocabularyMiniTest.Status.DRAFT,
+                        VocabularyTest.Status.DRAFT,
                         List.of(1L, 2L)
                     )
                 );
@@ -192,44 +192,44 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC007: Grade fill-in answer")
+    @DisplayName("Vocabulary Exercise/UTC007: Grade fill-in answer")
     void utc007() throws Exception {
-        var answer = new VocabularyMiniTestService.AnswerData(List.of(), "API Test", Map.of());
+        var answer = new VocabularyExerciseService.AnswerData(List.of(), "API Test", Map.of());
         assertEquals(
             true,
-            service.matches(VocabularyMiniTestQuestion.Type.FILL_IN, answer, "API Test")
+            service.matches(VocabularyTestQuestion.Type.FILL_IN, answer, "API Test")
         );
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC008: Grade fill-in answer")
+    @DisplayName("Vocabulary Exercise/UTC008: Grade fill-in answer")
     void utc008() throws Exception {
-        var answer = new VocabularyMiniTestService.AnswerData(List.of(), "API Test", Map.of());
+        var answer = new VocabularyExerciseService.AnswerData(List.of(), "API Test", Map.of());
         assertEquals(
             true,
-            service.matches(VocabularyMiniTestQuestion.Type.FILL_IN, answer, " ＡＰＩ   test ")
+            service.matches(VocabularyTestQuestion.Type.FILL_IN, answer, " ＡＰＩ   test ")
         );
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC009: Grade fill-in answer")
+    @DisplayName("Vocabulary Exercise/UTC009: Grade fill-in answer")
     void utc009() throws Exception {
-        var answer = new VocabularyMiniTestService.AnswerData(List.of(), "API Test", Map.of());
+        var answer = new VocabularyExerciseService.AnswerData(List.of(), "API Test", Map.of());
         assertEquals(
             false,
-            service.matches(VocabularyMiniTestQuestion.Type.FILL_IN, answer, "different")
+            service.matches(VocabularyTestQuestion.Type.FILL_IN, answer, "different")
         );
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC010: Grade fill-in answer")
+    @DisplayName("Vocabulary Exercise/UTC010: Grade fill-in answer")
     void utc010() throws Exception {
-        var answer = new VocabularyMiniTestService.AnswerData(List.of(), "API Test", Map.of());
-        assertEquals(false, service.matches(VocabularyMiniTestQuestion.Type.FILL_IN, answer, null));
+        var answer = new VocabularyExerciseService.AnswerData(List.of(), "API Test", Map.of());
+        assertEquals(false, service.matches(VocabularyTestQuestion.Type.FILL_IN, answer, null));
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC011: Calculate preview score")
+    @DisplayName("Vocabulary Exercise/UTC011: Calculate preview score")
     void utc011() throws Exception {
         fiveQuestions();
         var answers = new HashMap<String, String>();
@@ -241,7 +241,7 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC012: Calculate preview score")
+    @DisplayName("Vocabulary Exercise/UTC012: Calculate preview score")
     void utc012() throws Exception {
         fiveQuestions();
         var answers = new HashMap<String, String>();
@@ -253,7 +253,7 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC013: Calculate preview score")
+    @DisplayName("Vocabulary Exercise/UTC013: Calculate preview score")
     void utc013() throws Exception {
         fiveQuestions();
         var answers = new HashMap<String, String>();
@@ -265,7 +265,7 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC014: Reject answer outside test")
+    @DisplayName("Vocabulary Exercise/UTC014: Reject answer outside test")
     void utc014() throws Exception {
         fiveQuestions();
         assertThrows(IllegalArgumentException.class, () ->
@@ -274,18 +274,18 @@ class VocabularyMiniTestUnitTest {
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC015: Archive mini-test")
+    @DisplayName("Vocabulary Exercise/UTC015: Archive exercise")
     void utc015() throws Exception {
         var t = test();
         when(tests.countActiveAttempts(1L)).thenReturn(0L);
         service.archive(1L);
-        assertEquals(VocabularyMiniTest.Status.ARCHIVED, t.getStatus());
+        assertEquals(VocabularyTest.Status.ARCHIVED, t.getStatus());
         verify(tests).save(t);
         verifyNoInteractions(links, questions);
     }
 
     @Test
-    @DisplayName("Vocab MiniTest/UTC016: Archive mini-test")
+    @DisplayName("Vocabulary Exercise/UTC016: Archive exercise")
     void utc016() throws Exception {
         var t = test();
         when(tests.countActiveAttempts(1L)).thenReturn(1L);

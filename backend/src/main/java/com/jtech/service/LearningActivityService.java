@@ -1,6 +1,6 @@
 package com.jtech.service;
 
-import com.jtech.dto.response.VocabularyMiniTestResponse;
+import com.jtech.dto.response.VocabularyTestResponse;
 import com.jtech.repository.*;
 import com.jtech.repository.LearningProgressRepository.ContentType;
 import java.time.*;
@@ -45,7 +45,7 @@ public class LearningActivityService {
 
     @Transactional
     public CompletionResult recordExerciseCompletion(long studentId, long exerciseId, long lessonId,
-            VocabularyMiniTestResponse.Result result, Map<String, String> answers) {
+            VocabularyTestResponse.Result result, Map<String, String> answers) {
         balances.lockAccount(studentId);
         LocalDateTime submitted = LocalDateTime.now(StreakService.LEARNING_ZONE);
         long attemptId = progress.saveVocabularyExerciseAttempt(studentId, exerciseId, lessonId, result, answers, submitted);

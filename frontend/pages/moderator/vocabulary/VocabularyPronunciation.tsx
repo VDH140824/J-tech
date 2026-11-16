@@ -81,12 +81,16 @@ export function VocabularyPronunciation({ word, reading }: Props) {
     }
   };
 
+  const message = !supported
+    ? "Trình duyệt này chưa hỗ trợ đọc văn bản. Hãy dùng Chrome hoặc Edge."
+    : error || (speaking ? "Đang đọc tiếng Nhật…" : "");
+
   return (
     <div className="mod-vocab-pronunciation">
       <div className="mod-chapter-flashcard-actions">
         <button
           type="button"
-          className="mod-btn-back"
+          className="mod-btn-back mod-vocab-pronunciation-button"
           disabled={!supported}
           onClick={() => pronounce(1)}
           aria-label={`Nghe phát âm ${word}`}
@@ -95,7 +99,7 @@ export function VocabularyPronunciation({ word, reading }: Props) {
         </button>
         <button
           type="button"
-          className="mod-btn-back"
+          className="mod-btn-back mod-vocab-pronunciation-button mod-vocab-pronunciation-button--slow"
           disabled={!supported}
           onClick={() => pronounce(0.7)}
         >
@@ -104,19 +108,14 @@ export function VocabularyPronunciation({ word, reading }: Props) {
         {speaking && (
           <button
             type="button"
-            className="mod-btn-back"
+            className="mod-btn-back mod-vocab-pronunciation-button"
             onClick={stop}
           >
             Dừng đọc
           </button>
         )}
       </div>
-      <p aria-live="polite">
-        {!supported
-          ? "Trình duyệt này chưa hỗ trợ đọc văn bản. Hãy dùng Chrome hoặc Edge."
-          : error ||
-            (speaking ? "Đang đọc tiếng Nhật…" : "Phát âm tiếng Nhật bằng giọng đọc của thiết bị.")}
-      </p>
+      {message && <p aria-live="polite">{message}</p>}
     </div>
   );
 }

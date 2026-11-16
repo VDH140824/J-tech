@@ -1,14 +1,14 @@
 package com.jtech.dto.request;
 
-import com.jtech.entity.VocabularyMiniTest;
-import com.jtech.entity.VocabularyMiniTestQuestion;
+import com.jtech.entity.VocabularyTest;
+import com.jtech.entity.VocabularyTestQuestion;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-public record VocabularyMiniTestRequest(
+public record VocabularyExerciseRequest(
     @NotBlank @Size(max = 200) String title,
     @Size(max = 10000) String description,
     @NotNull @Min(5) @Max(30) Integer durationMinutes,
@@ -17,16 +17,16 @@ public record VocabularyMiniTestRequest(
     @DecimalMax("100")
     @Digits(integer = 3, fraction = 2)
     BigDecimal passingScore,
-    @NotNull VocabularyMiniTest.Status status,
+    @NotNull VocabularyTest.Status status,
     @NotNull
     @Size(min = 1, message = "Exercise phải có câu hỏi từ danh sách từ vựng của bài.")
     List<@NotNull @Valid Question> questions
 ) {
     public record Question(
-        @NotNull VocabularyMiniTestQuestion.Type questionType,
+        @NotNull VocabularyTestQuestion.Type questionType,
         @NotBlank @Size(max = 10000) String content,
         @Size(max = 10000) String explanation,
-        @NotNull VocabularyMiniTestQuestion.Difficulty difficulty,
+        @NotNull VocabularyTestQuestion.Difficulty difficulty,
         @Size(max = 6) List<@NotBlank @Size(max = 1000) String> options,
         @Size(max = 1000) String correctAnswer,
         @Size(max = 10)
@@ -34,10 +34,10 @@ public record VocabularyMiniTestRequest(
         Long sourceVocabularyId
     ) {
         public Question(
-            VocabularyMiniTestQuestion.Type type,
+            VocabularyTestQuestion.Type type,
             String content,
             String explanation,
-            VocabularyMiniTestQuestion.Difficulty difficulty,
+            VocabularyTestQuestion.Difficulty difficulty,
             List<String> options,
             String answer,
             Map<String, String> matches

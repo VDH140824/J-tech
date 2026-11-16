@@ -1,7 +1,7 @@
 package com.jtech.controller;
 
 import com.jtech.dto.request.VocabularyChapterTestRequest;
-import com.jtech.dto.response.VocabularyMiniTestResponse;
+import com.jtech.dto.response.VocabularyTestResponse;
 import com.jtech.service.VocabularyChapterTestService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -26,7 +26,7 @@ public class VocabularyChapterTestController {
     }
 
     @PostMapping
-    public VocabularyMiniTestResponse save(
+    public VocabularyTestResponse save(
         @PathVariable Long chapterId,
         @Valid @RequestBody VocabularyChapterTestRequest request
     ) {
@@ -40,7 +40,7 @@ public class VocabularyChapterTestController {
     }
 
     @PostMapping("/preview")
-    public VocabularyMiniTestResponse.Result preview(
+    public VocabularyTestResponse.Result preview(
         @PathVariable Long chapterId,
         @RequestBody Map<String, String> answers
     ) {

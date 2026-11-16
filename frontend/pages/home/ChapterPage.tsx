@@ -4,7 +4,7 @@ import { getChapterStudy } from "../../api/courseApi";
 import { SECTIONS, type LessonSection } from "../moderator/sectionConfig";
 import { ModeratorChapterSkillsOverview } from "../moderator/ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "../moderator/ModeratorLessonListTab";
-import { ModeratorVocabularyLessonPage } from "../moderator/ModeratorVocabularyLessonPage";
+import { ModeratorVocabularyLessonPage } from "../moderator/vocabulary/ModeratorVocabularyLessonPage";
 import { ModeratorGrammarListPage } from "../moderator/ModeratorGrammarListPage";
 import { ModeratorSkillItemListPage } from "../moderator/ModeratorSkillItemListPage";
 import "./StudentLearningPage.css";
@@ -13,6 +13,9 @@ import { StudentKanjiContentPage } from "./StudentKanjiContentPage";
 import { StudentKanjiFlashcardPage } from "./StudentKanjiFlashcardPage";
 import { StudentKanjiTestPage } from "./StudentKanjiTestPage";
 import { StudentKanjiChapterPage } from "./StudentKanjiChapterPage";
+import { StudentVocabularyChapterPage } from "./StudentVocabularyChapterPage";
+import { StudentVocabularyChapterTestPage } from "./StudentVocabularyChapterTestPage";
+import { VocabularyChapterFlashcards } from "../moderator/vocabulary/VocabularyChapterFlashcards";
 
 export function ChapterPage() {
   const { courseId, chapterId } = useParams();
@@ -45,6 +48,7 @@ export function ChapterPage() {
       next.delete("vocabTab");
       next.delete("kanjiView");
       next.delete("kanjiChapterView");
+      next.delete("vocabChapterView");
       next.delete("kanjiId");
       next.delete("document");
       if (skill) next.set("skill", skill);
@@ -57,6 +61,7 @@ export function ChapterPage() {
       next.delete("vocabTab");
       next.delete("kanjiView");
       next.delete("kanjiChapterView");
+      next.delete("vocabChapterView");
       next.delete("kanjiId");
       next.delete("document");
       if (id) next.set("lessonId", String(id));
@@ -90,9 +95,27 @@ export function ChapterPage() {
         "kanjiId",
         "document",
         "kanjiChapterView",
+        "vocabChapterView",
       ])
         next.delete(key);
       if (view) next.set("kanjiChapterView", view);
+      return next;
+    });
+
+  const openChapterVocabulary = (view: "flashcards" | "test" | null) =>
+    setParams((previous) => {
+      const next = new URLSearchParams(previous);
+      next.set("skill", "VOCABULARY");
+      for (const key of [
+        "lessonId",
+        "vocabTab",
+        "kanjiView",
+        "kanjiId",
+        "document",
+        "vocabChapterView",
+      ])
+        next.delete(key);
+      if (view) next.set("vocabChapterView", view);
       return next;
     });
 
@@ -137,7 +160,33 @@ export function ChapterPage() {
     const chapterView =
       params.get("kanjiChapterView") ||
       (selected?.skillType === "KANJI" ? params.get("kanjiView") : null);
+    const vocabularyChapterView = params.get("vocabChapterView");
     if (
+      (active?.key === "vocabulary" || selected?.skillType === "VOCABULARY") &&
+      vocabularyChapterView === "flashcards"
+    )
+      content = (
+        <VocabularyChapterFlashcards
+          key={data.id}
+          chapterId={data.id}
+          chapterNo={data.chapterNo}
+          courseName={data.courseName}
+          student
+          onBack={() => openChapterVocabulary(null)}
+        />
+      );
+    else if (
+      (active?.key === "vocabulary" || selected?.skillType === "VOCABULARY") &&
+      vocabularyChapterView === "test"
+    )
+      content = (
+        <StudentVocabularyChapterTestPage
+          key={data.id}
+          chapterId={data.id}
+          onBack={() => openChapterVocabulary(null)}
+        />
+      );
+    else if (
       (active?.key === "kanji" || selected?.skillType === "KANJI") &&
       chapterView === "flashcards"
     )
@@ -222,7 +271,18 @@ export function ChapterPage() {
             onBack={lessonBack}
           />
         );
-    } else if (active?.key === "kanji")
+    } else if (active?.key === "vocabulary")
+      content = (
+        <StudentVocabularyChapterPage
+          chapterId={data.id}
+          chapterNo={data.chapterNo}
+          lessons={data.lessons}
+          onLesson={selectLesson}
+          onOpen={openChapterVocabulary}
+          onBack={() => selectSkill(null)}
+        />
+      );
+    else if (active?.key === "kanji")
       content = (
         <StudentKanjiChapterPage
           chapterId={data.id}
