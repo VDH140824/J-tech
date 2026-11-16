@@ -97,6 +97,17 @@ export function ModeratorSidebar({
           <span className="admin-nav-icon">🔄</span>
           <span className="admin-nav-label">Quản lý thể chia</span>
         </button>
+
+        <button
+          type="button"
+          className={`admin-nav-item ${currentTab === "question-bank" ? "active mod-active" : ""}`}
+          onClick={() =>
+            handleNavClick("question-bank", "/moderator/question-bank")
+          }
+        >
+          <span className="admin-nav-icon">🗂️</span>
+          <span className="admin-nav-label">Ngân hàng câu hỏi</span>
+        </button>
       </nav>
 
       {/* Footer Back Home */}
