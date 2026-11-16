@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { StudentProtectedRoute } from "../components/auth/StudentProtectedRoute";
 import { StudentStreakPage } from "../pages/streak/StudentStreakPage";
 import { CoinHistoryPage } from "../pages/store/CoinHistoryPage";
@@ -27,6 +28,8 @@ import { StudentPostListPage } from "../pages/classroom/StudentPostListPage";
 import { PostDetailPage } from "../pages/classroom/PostDetailPage";
 import { ConjugationListPage } from "../pages/home/ConjugationListPage";
 import { ConjugationPracticePage } from "../pages/home/ConjugationPracticePage";
+
+const Campus3DPage = lazy(() => import("../game_3d/Campus3DPage"));
 
 export function AppRouter() {
   return (
@@ -60,6 +63,16 @@ export function AppRouter() {
             element={
               <StudentProtectedRoute>
                 <GamesPage />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/games/campus-3d"
+            element={
+              <StudentProtectedRoute>
+                <Suspense fallback={<p role="status" style={{ padding: "2rem" }}>Đang mở bản đồ 3D…</p>}>
+                  <Campus3DPage />
+                </Suspense>
               </StudentProtectedRoute>
             }
           />

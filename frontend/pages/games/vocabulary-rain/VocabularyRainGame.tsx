@@ -4,7 +4,7 @@ import {
   acceptRainComposition, advanceRainRound, cardProgress, rainReading,
   roundScore, startRainRound, typeRainCharacters,
   STARTING_LIVES, type RainRound, type RainWord,
-} from "./vocabularyRainGame";
+} from "./rainGameLogic";
 import "./VocabularyRainGame.css";
 
 const MUSIC_URL =
