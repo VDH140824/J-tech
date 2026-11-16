@@ -17,10 +17,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
@@ -47,6 +50,8 @@ public class QuestionBankService {
     static final String UNSUPPORTED_SKILL = "Ngân hàng câu hỏi chỉ quản lý câu hỏi Từ vựng, Kanji và Ngữ pháp.";
     static final String ANSWER_LOCKED = "Câu hỏi đã có học viên làm bài nên không thể thay đổi đáp án (BR-29). "
             + "Bạn vẫn có thể sửa nội dung, giải thích và độ khó.";
+    static final String TEST_NOT_AVAILABLE = "Đề kiểm tra đã chọn không thuộc bài học / chương của câu hỏi.";
+    static final String TEST_LOCKED = "Đề \"%s\" đã có học viên làm nên không thể thêm hoặc bỏ câu hỏi.";
 
     /** Đáp án ở dạng chung để kiểm tra, so sánh (BR-29) và trả về màn hình. */
     record Answer(List<String> options, String correctAnswer, Map<String, String> matches) {
@@ -76,6 +81,13 @@ public class QuestionBankService {
         return queries.targets();
     }
 
+    /** Đề có thể gắn câu hỏi: mini test của bài học (cùng kỹ năng) và test chương tổng hợp của chương. */
+    @Transactional(readOnly = true)
+    public List<QuestionBankResponse.TestItem> availableTests(long lessonId, Question.Skill skill) {
+        if (!BANK_SKILLS.contains(skill)) throw badRequest(UNSUPPORTED_SKILL);
+        return queries.availableTests(lessonId, skill.name());
+    }
+
     // ===== A2: xem chi tiết =====
     @Transactional(readOnly = true)
     public QuestionBankResponse.Detail detail(long id) {
@@ -86,7 +98,8 @@ public class QuestionBankService {
         boolean attempted = queries.hasAttempts(id);
         String reason = retentionReason(q, attempted);
         return new QuestionBankResponse.Detail(summary, q.getGrammarId(), q.getExplanation(), answer.options(),
-                answer.correctAnswer(), answer.matches(), attempted, reason == null, reason);
+                answer.correctAnswer(), answer.matches(), attempted, reason == null, reason,
+                queries.linkedTests(id));
     }
 
     // ===== Bước 3–11: tạo câu hỏi =====
@@ -110,6 +123,7 @@ public class QuestionBankService {
         q.setCreatedBy(moderator.getUserId());
         q.setCreatedAt(LocalDateTime.now());
         Question saved = questions.save(q);
+        syncTests(saved, request.testIds());
         return detail(saved.getId());
     }
 
@@ -139,6 +153,7 @@ public class QuestionBankService {
         q.setUpdatedBy(moderator.getUserId());
         q.setUpdatedAt(LocalDateTime.now());
         questions.saveAndFlush(q);
+        syncTests(q, request.testIds());
         return detail(id);
     }
 
@@ -174,6 +189,42 @@ public class QuestionBankService {
         q.setUpdatedBy(moderator.getUserId());
         q.setUpdatedAt(LocalDateTime.now());
         questions.save(q);
+    }
+
+    // ===== Gắn câu hỏi vào mini test / test chương =====
+    /**
+     * Thêm / bỏ câu hỏi khỏi các đề ngân hàng quản lý (mini test của bài học, test chương tổng hợp của chương).
+     * Câu hỏi nằm trong đề khác (vd. test chương riêng của Từ vựng / Kanji) giữ nguyên. Đề đã có lượt làm thì khóa.
+     * Đổi bài học thì bỏ được câu hỏi khỏi mini test của bài cũ (đề cũ không còn trong danh sách chọn).
+     */
+    void syncTests(Question q, List<Long> testIds) {
+        if (testIds == null) return;
+        Set<Long> wanted = new LinkedHashSet<>();
+        testIds.stream().filter(id -> id != null).forEach(wanted::add);
+        List<QuestionBankResponse.TestItem> candidates = q.getLessonId() == null ? List.of()
+                : queries.availableTests(q.getLessonId(), q.getSkill().name());
+        Map<Long, QuestionBankResponse.TestItem> available = candidates.stream()
+                .collect(Collectors.toMap(QuestionBankResponse.TestItem::id, Function.identity(), (a, b) -> a));
+        Map<Long, QuestionBankResponse.TestItem> linked = queries.linkedTests(q.getId()).stream()
+                .collect(Collectors.toMap(QuestionBankResponse.TestItem::id, Function.identity(), (x, y) -> x));
+        for (Long id : wanted) {
+            if (linked.containsKey(id)) continue;
+            QuestionBankResponse.TestItem test = available.get(id);
+            if (test == null) throw badRequest(TEST_NOT_AVAILABLE);
+            if (test.locked()) throw new ResponseStatusException(HttpStatus.CONFLICT, TEST_LOCKED.formatted(test.title()));
+            queries.linkTest(id, q.getId(), q.getSkill().name());
+        }
+        for (QuestionBankResponse.TestItem test : linked.values()) {
+            if (!managed(test) || wanted.contains(test.id())) continue;
+            if (test.locked()) throw new ResponseStatusException(HttpStatus.CONFLICT, TEST_LOCKED.formatted(test.title()));
+            queries.unlinkTest(test.id(), q.getId());
+        }
+    }
+
+    /** Đề do ngân hàng gắn câu hỏi: mini test, hoặc test chương tổng hợp (skill = ALL). */
+    static boolean managed(QuestionBankResponse.TestItem test) {
+        return "MINI_TEST".equals(test.testType())
+                || ("CHAPTER_TEST".equals(test.testType()) && "ALL".equals(test.skill()));
     }
 
     // ===== Helpers =====

@@ -5,6 +5,7 @@ import {
   LEVEL_LABEL,
   SKILL_LABEL,
   STATE_LABEL,
+  TEST_KIND_LABEL,
   chapterLabel,
   chapterOfLesson,
   chaptersOf,
@@ -67,6 +68,7 @@ export function QuestionBankTab() {
   const [courseId, setCourseId] = useState<number | "">("");
   const [chapterId, setChapterId] = useState<number | "">("");
   const [lessonId, setLessonId] = useState<number | "">("");
+  const [testId, setTestId] = useState<number | "">("");
 
   const [viewing, setViewing] = useState<QuestionBankDetail | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -86,6 +88,7 @@ export function QuestionBankTab() {
         courseId: courseId === "" ? undefined : courseId,
         chapterId: chapterId === "" ? undefined : chapterId,
         lessonId: lessonId === "" ? undefined : lessonId,
+        testId: testId === "" ? undefined : testId,
         page,
         size: PAGE_SIZE,
       });
@@ -97,7 +100,7 @@ export function QuestionBankTab() {
     } finally {
       setLoading(false);
     }
-  }, [keyword, skill, format, status, courseId, chapterId, lessonId, page]);
+  }, [keyword, skill, format, status, courseId, chapterId, lessonId, testId, page]);
 
   useEffect(() => {
     void fetchQuestions();
@@ -114,6 +117,15 @@ export function QuestionBankTab() {
 
   const chapters = useMemo(() => chaptersOf(targets, courseId), [targets, courseId]);
   const lessons = useMemo(() => lessonsOf(targets, courseId, chapterId, skill), [targets, courseId, chapterId, skill]);
+  // Bài test theo chương / bài học đang chọn
+  const tests = useMemo(() => {
+    const chapterIds = new Set(chapters.map((c) => c.id));
+    return (targets?.tests ?? []).filter((t) => {
+      if (lessonId !== "") return t.lessonId === lessonId || (t.testType === "CHAPTER_TEST" && t.chapterId === chapterId);
+      if (chapterId !== "") return t.chapterId === chapterId;
+      return courseId === "" || (t.chapterId !== null && chapterIds.has(t.chapterId));
+    });
+  }, [targets, chapters, courseId, chapterId, lessonId]);
 
   const resetPage = () => setPage(0);
 
@@ -188,7 +200,7 @@ export function QuestionBankTab() {
     }
   };
 
-  const isFiltering = keyword !== "" || skill !== "" || format !== "" || courseId !== "" || status !== "ACTIVE";
+  const isFiltering = keyword !== "" || skill !== "" || format !== "" || courseId !== "" || testId !== "" || status !== "ACTIVE";
 
   return (
     <div className="admin-page-container">
@@ -259,6 +271,7 @@ export function QuestionBankTab() {
               setCourseId(toNumber(e.target.value));
               setChapterId("");
               setLessonId("");
+              setTestId("");
               resetPage();
             }}>
             <option value="">Tất cả khóa học</option>
@@ -274,6 +287,7 @@ export function QuestionBankTab() {
               setChapterId(next);
               if (next !== "") setCourseId(courseOfChapter(targets, next));
               setLessonId("");
+              setTestId("");
               resetPage();
             }}>
             <option value="">Tất cả chương</option>
@@ -292,12 +306,25 @@ export function QuestionBankTab() {
                 setChapterId(chapter);
                 setCourseId(courseOfChapter(targets, chapter));
               }
+              setTestId("");
               resetPage();
             }}>
             <option value="">Tất cả bài học</option>
             {lessons.map((l) => (
               <option key={l.id} value={l.id}>
                 {lessonLabel(targets, l, chapterId === "")}
+              </option>
+            ))}
+          </select>
+          <select className="admin-filter-select" aria-label="Lọc theo bài test" value={testId}
+            onChange={(e) => {
+              setTestId(toNumber(e.target.value));
+              resetPage();
+            }}>
+            <option value="">Tất cả bài test</option>
+            {tests.map((t) => (
+              <option key={t.id} value={t.id}>
+                {TEST_KIND_LABEL[t.testType]}: {t.title}
               </option>
             ))}
           </select>
@@ -458,11 +485,22 @@ export function QuestionBankTab() {
                 </span>
               </div>
               <div className="qb-detail-row">
+                <span>Loại test</span>
+                <span>
+                  {viewing.tests.length === 0
+                    ? "Chưa gắn vào đề nào"
+                    : viewing.tests.map((t) => (
+                        <div key={t.id}>
+                          {TEST_KIND_LABEL[t.testType]}: {t.title}
+                        </div>
+                      ))}
+                </span>
+              </div>
+              <div className="qb-detail-row">
                 <span>Trạng thái</span>
                 <span>
                   {STATE_LABEL[viewing.summary.status]}
                   {viewing.attempted && <div className="cell-email">Đã có học viên làm bài — khóa sửa đáp án (BR-29).</div>}
-                  {viewing.summary.exerciseQuestion ? "" : <div className="cell-email">Không dùng cho bài luyện tập.</div>}
                 </span>
               </div>
               <div className="modal-actions-row">

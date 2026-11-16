@@ -19,7 +19,7 @@ import org.springframework.stereotype.Repository;
 public class QuestionBankQueryRepository {
 
     public record Filter(Question.Skill skill, Question.QuestionType questionType, Question.QuestionStatus status,
-                         Long courseId, Long chapterId, Long lessonId, String keyword) {
+                         Long courseId, Long chapterId, Long lessonId, String keyword, Long testId) {
     }
 
     private static final String FROM = """
@@ -93,6 +93,10 @@ public class QuestionBankQueryRepository {
             sql.append(" AND l.id = ?");
             args.add(f.lessonId());
         }
+        if (f.testId() != null) {
+            sql.append(" AND EXISTS (SELECT 1 FROM test_question tq WHERE tq.question_id = q.id AND tq.test_id = ?)");
+            args.add(f.testId());
+        }
         if (f.keyword() != null && !f.keyword().isBlank()) {
             sql.append(" AND q.content LIKE ?");
             args.add("%" + f.keyword().trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%");
@@ -135,7 +139,15 @@ public class QuestionBankQueryRepository {
                         (rs, i) -> new QuestionBankResponse.LessonItem(rs.getLong(1), rs.getLong(2), rs.getString(3),
                                 rs.getInt(4), rs.getString(5))),
                 db.query("SELECT id, lesson_id, structure_name FROM grammar ORDER BY lesson_id, display_order, id",
-                        (rs, i) -> new QuestionBankResponse.GrammarItem(rs.getLong(1), rs.getLong(2), rs.getString(3))));
+                        (rs, i) -> new QuestionBankResponse.GrammarItem(rs.getLong(1), rs.getLong(2), rs.getString(3))),
+                db.query("""
+                        SELECT t.id, t.test_type, t.skill, t.title, COALESCE(t.chapter_id, l.chapter_id), t.lesson_id
+                        FROM test t LEFT JOIN lesson l ON l.id = t.lesson_id
+                        WHERE t.status <> 'ARCHIVED' AND t.test_type IN ('MINI_TEST', 'CHAPTER_TEST')
+                        ORDER BY FIELD(t.test_type, 'MINI_TEST', 'CHAPTER_TEST'), t.title, t.id
+                        """,
+                        (rs, i) -> new QuestionBankResponse.TestOption(rs.getLong(1), rs.getString(2), rs.getString(3),
+                                rs.getString(4), (Long) rs.getObject(5, Long.class), (Long) rs.getObject(6, Long.class))));
     }
 
     // ===== Kiểm tra nơi gắn câu hỏi =====
@@ -149,6 +161,50 @@ public class QuestionBankQueryRepository {
     public Optional<Long> findGrammarLesson(long grammarId) {
         return db.query("SELECT lesson_id FROM grammar WHERE id = ?", (rs, i) -> rs.getLong(1), grammarId)
                 .stream().findFirst();
+    }
+
+    // ===== Gắn câu hỏi vào đề kiểm tra (test_question, không thêm bảng / cột) =====
+    private static final String TEST_COLUMNS = """
+            SELECT t.id, t.test_type, t.skill, t.title, t.status,
+                   EXISTS(SELECT 1 FROM test_attempt ta WHERE ta.test_id = t.id) AS locked
+            """;
+
+    private static QuestionBankResponse.TestItem testItem(ResultSet rs) throws SQLException {
+        return new QuestionBankResponse.TestItem(rs.getLong("id"), rs.getString("test_type"), rs.getString("skill"),
+                rs.getString("title"), rs.getString("status"), rs.getBoolean("locked"));
+    }
+
+    /**
+     * Đề có thể gắn câu hỏi của bài học: mini test của chính bài học (cùng kỹ năng)
+     * và test chương tổng hợp (skill = ALL) của chương chứa bài học. Bỏ qua đề đã lưu trữ.
+     */
+    public List<QuestionBankResponse.TestItem> availableTests(long lessonId, String skill) {
+        return db.query(TEST_COLUMNS + """
+                FROM test t JOIN lesson l ON l.id = ?
+                WHERE t.status <> 'ARCHIVED'
+                  AND ((t.test_type = 'MINI_TEST' AND t.lesson_id = l.id AND t.skill IN (?, 'ALL'))
+                    OR (t.test_type = 'CHAPTER_TEST' AND t.chapter_id = l.chapter_id AND t.lesson_id IS NULL
+                        AND t.skill = 'ALL'))
+                ORDER BY FIELD(t.test_type, 'MINI_TEST', 'CHAPTER_TEST'), t.id
+                """, (rs, i) -> testItem(rs), lessonId, skill);
+    }
+
+    /** Các đề đang chứa câu hỏi. */
+    public List<QuestionBankResponse.TestItem> linkedTests(long questionId) {
+        return db.query(TEST_COLUMNS + """
+                FROM test_question tq JOIN test t ON t.id = tq.test_id
+                WHERE tq.question_id = ?
+                ORDER BY FIELD(t.test_type, 'MINI_TEST', 'LESSON_TEST', 'CHAPTER_TEST'), t.id
+                """, (rs, i) -> testItem(rs), questionId);
+    }
+
+    public void linkTest(long testId, long questionId, String partType) {
+        db.update("INSERT IGNORE INTO test_question (test_id, question_id, part_type) VALUES (?, ?, ?)",
+                testId, questionId, partType);
+    }
+
+    public void unlinkTest(long testId, long questionId) {
+        db.update("DELETE FROM test_question WHERE test_id = ? AND question_id = ?", testId, questionId);
     }
 
     // ===== BR-29 / BR-13 =====

@@ -40,6 +40,21 @@ export interface QuestionBankDetail {
   /** BR-13: true = xóa vĩnh viễn được, false = chỉ lưu trữ */
   canDelete: boolean;
   retentionReason: string | null;
+  /** Các đề kiểm tra đang chứa câu hỏi */
+  tests: QuestionTest[];
+}
+
+export type TestKind = "MINI_TEST" | "LESSON_TEST" | "CHAPTER_TEST";
+
+/** Đề kiểm tra: mini test của bài học hoặc test chương (tổng hợp Kanji, Từ vựng, Ngữ pháp). */
+export interface QuestionTest {
+  id: number;
+  testType: TestKind;
+  skill: QuestionSkill | "ALL";
+  title: string;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  /** Đề đã có lượt làm → không thêm / bỏ câu hỏi được */
+  locked: boolean;
 }
 
 export interface QuestionBankPage {
@@ -58,6 +73,8 @@ export interface QuestionBankQuery {
   chapterId?: number;
   lessonId?: number;
   keyword?: string;
+  /** Lọc câu hỏi thuộc một bài test */
+  testId?: number;
   page?: number;
   size?: number;
 }
@@ -67,6 +84,7 @@ export interface QuestionBankTargets {
   chapters: { id: number; courseId: number; chapterNo: number; title: string }[];
   lessons: { id: number; chapterId: number; skillType: string; lessonNo: number; title: string }[];
   grammars: { id: number; lessonId: number; structureName: string }[];
+  tests: { id: number; testType: TestKind; skill: string; title: string; chapterId: number | null; lessonId: number | null }[];
 }
 
 export interface QuestionBankInput {
@@ -81,6 +99,8 @@ export interface QuestionBankInput {
   options?: string[];
   correctAnswer?: string;
   matches?: Record<string, string>;
+  /** Đề mini test / test chương gắn câu hỏi; bỏ trống = giữ nguyên */
+  testIds?: number[];
 }
 
 export interface QuestionDeleteResult {
@@ -97,6 +117,12 @@ export async function getQuestionBank(query: QuestionBankQuery): Promise<Questio
 
 export async function getQuestionBankTargets(): Promise<QuestionBankTargets> {
   const { data } = await apiClient.get<QuestionBankTargets>("/moderator/question-bank/targets");
+  return data;
+}
+
+/** Đề có thể gắn câu hỏi: mini test của bài học và test chương của chương chứa bài học. */
+export async function getAvailableTests(lessonId: number, skill: QuestionSkill): Promise<QuestionTest[]> {
+  const { data } = await apiClient.get<QuestionTest[]>("/moderator/question-bank/tests", { params: { lessonId, skill } });
   return data;
 }
 
@@ -142,6 +168,12 @@ export const LEVEL_LABEL: Record<QuestionLevel, string> = {
   EASY: "Dễ",
   MEDIUM: "Trung bình",
   HARD: "Khó",
+};
+
+export const TEST_KIND_LABEL: Record<TestKind, string> = {
+  MINI_TEST: "Mini test",
+  LESSON_TEST: "Test bài học",
+  CHAPTER_TEST: "Test chương",
 };
 
 export const STATE_LABEL: Record<QuestionState, string> = {

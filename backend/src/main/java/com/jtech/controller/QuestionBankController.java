@@ -8,6 +8,7 @@ import com.jtech.service.QuestionBankService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,9 +43,10 @@ public class QuestionBankController {
             @RequestParam(required = false) Long chapterId,
             @RequestParam(required = false) Long lessonId,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long testId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        var filter = new QuestionBankQueryRepository.Filter(skill, questionType, status, courseId, chapterId, lessonId, keyword);
+        var filter = new QuestionBankQueryRepository.Filter(skill, questionType, status, courseId, chapterId, lessonId, keyword, testId);
         return ResponseEntity.ok(service.search(filter, page, size));
     }
 
@@ -52,6 +54,13 @@ public class QuestionBankController {
     @GetMapping("/targets")
     public ResponseEntity<QuestionBankResponse.Targets> targets() {
         return ResponseEntity.ok(service.targets());
+    }
+
+    /** Đề có thể gắn câu hỏi của bài học: mini test của bài học và test chương tổng hợp của chương. */
+    @GetMapping("/tests")
+    public ResponseEntity<List<QuestionBankResponse.TestItem>> tests(@RequestParam Long lessonId,
+            @RequestParam Question.Skill skill) {
+        return ResponseEntity.ok(service.availableTests(lessonId, skill));
     }
 
     /** A2: xem chi tiết. */

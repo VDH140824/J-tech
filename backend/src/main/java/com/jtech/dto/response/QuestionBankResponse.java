@@ -45,7 +45,9 @@ public final class QuestionBankResponse {
             /** BR-13: true = xóa vĩnh viễn được; false = chỉ lưu trữ. */
             boolean canDelete,
             /** Lý do phải lưu trữ thay vì xóa (null nếu canDelete). */
-            String retentionReason) {
+            String retentionReason,
+            /** Các đề kiểm tra đang chứa câu hỏi (test_question). */
+            List<TestItem> tests) {
     }
 
     public record Page(List<Summary> content, long totalElements, int totalPages, int page, int size) {
@@ -56,7 +58,9 @@ public final class QuestionBankResponse {
             List<CourseItem> courses,
             List<ChapterItem> chapters,
             List<LessonItem> lessons,
-            List<GrammarItem> grammars) {
+            List<GrammarItem> grammars,
+            /** Đề kiểm tra cho bộ lọc "Bài test" */
+            List<TestOption> tests) {
     }
 
     public record CourseItem(Long id, String name) {
@@ -69,6 +73,17 @@ public final class QuestionBankResponse {
     }
 
     public record GrammarItem(Long id, Long lessonId, String structureName) {
+    }
+
+    /** Đề kiểm tra cho bộ lọc: chapterId của mini test lấy theo bài học. */
+    public record TestOption(Long id, String testType, String skill, String title, Long chapterId, Long lessonId) {
+    }
+
+    /**
+     * Đề kiểm tra (bảng test): MINI_TEST của bài học hoặc CHAPTER_TEST của chương.
+     * locked = đề đã có lượt làm → không thêm / bỏ câu hỏi được.
+     */
+    public record TestItem(Long id, String testType, String skill, String title, String status, boolean locked) {
     }
 
     /** archived = true khi BR-13 buộc giữ lại câu hỏi (chuyển ARCHIVED); reason = lý do giữ lại. */
