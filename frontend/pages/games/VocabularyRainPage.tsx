@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { getCourses } from "../../api/courseApi";
 import { getStudentChapters } from "../../api/studentChapterApi";
 import { getVocabularies } from "../../api/vocabularyApi";
-import { VocabularyRainGame } from "./vocabulary-rain/VocabularyRainGame.jsx";
-import { toRainWords, type RainWord } from "./vocabulary-rain/vocabularyRainGame";
+import { VocabularyRainGame } from "./vocabulary-rain/VocabularyRainGame";
+import { toRainWords, type RainWord } from "./vocabulary-rain/rainGameLogic";
 import "./GamesPage.css";
 
 export function VocabularyRainPage() {
