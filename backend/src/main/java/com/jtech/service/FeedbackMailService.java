@@ -60,4 +60,23 @@ public class FeedbackMailService {
             );
         }
     }
+
+    public void sendLearningReminder(String email, String studentName) {
+        try {
+            JavaMailSender sender = senders.getIfAvailable();
+            if (sender == null) {
+                log.warn("SMTP chưa được cấu hình; không gửi được email nhắc học tới {}", email);
+                return;
+            }
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(from);
+            message.setTo(email);
+            message.setSubject("J-Tech: Nhắc bạn duy trì thói quen học hôm nay");
+            message.setText("Chào " + (studentName == null || studentName.isBlank() ? "bạn" : studentName)
+                + ",\n\nHôm nay bạn chưa có hoạt động học được ghi nhận. Hãy dành ít phút học tiếng Nhật để duy trì chuỗi ngày học nhé!\n\nJ-Tech");
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Không gửi được email nhắc học tới {}", email, ex);
+        }
+    }
 }

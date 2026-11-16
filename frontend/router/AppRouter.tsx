@@ -23,6 +23,8 @@ import { MainLayout } from "../layouts/MainLayout";
 import { FeedbackPage } from "../pages/feedback/FeedbackPage";
 import { GamesPage } from "../pages/games/GamesPage";
 import { VocabularyRainPage } from "../pages/games/VocabularyRainPage";
+import { KanjiFruitPage } from "../pages/games/KanjiFruitPage";
+import { useCurrentUser } from "../hooks/useAuth";
 import { StudentClassPostListPage } from "../pages/classroom/StudentClassPostListPage";
 import { StudentPostListPage } from "../pages/classroom/StudentPostListPage";
 import { PostDetailPage } from "../pages/classroom/PostDetailPage";
@@ -30,6 +32,12 @@ import { ConjugationListPage } from "../pages/home/ConjugationListPage";
 import { ConjugationPracticePage } from "../pages/home/ConjugationPracticePage";
 
 const Campus3DPage = lazy(() => import("../game_3d/Campus3DPage"));
+
+function KanjiFruitRoute() {
+  const { isLoading } = useCurrentUser();
+  if (isLoading) return <p role="status" style={{ padding: "2rem" }}>Đang kiểm tra tài khoản…</p>;
+  return <StudentProtectedRoute><KanjiFruitPage /></StudentProtectedRoute>;
+}
 
 export function AppRouter() {
   return (
@@ -83,6 +91,10 @@ export function AppRouter() {
                 <VocabularyRainPage />
               </StudentProtectedRoute>
             }
+          />
+          <Route
+            path="/games/kanji-fruit"
+            element={<KanjiFruitRoute />}
           />
           <Route
             path="/feedback"

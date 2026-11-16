@@ -85,6 +85,24 @@
   font-weight: 800;
   letter-spacing: .08em;
 }
+.jtech-kanji-fruit-cover {
+  position: relative;
+  display: flex;
+  height: 155px;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 115%, #fff0c6, transparent 56%), linear-gradient(140deg, #183c56, #10253d);
+}
+.jtech-kanji-fruit-cover::before, .jtech-kanji-fruit-cover::after {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 14% 24%, #fff 0 1px, transparent 2px), radial-gradient(circle at 84% 36%, #fff 0 1px, transparent 2px);
+  content: "";
+}
+.jtech-kanji-fruit-cover span { z-index: 1; font-size: clamp(1.7rem, 6vw, 2.8rem); filter: drop-shadow(0 5px 4px #0006); }
+.jtech-kanji-fruit-cover span:first-child { padding: .1em .22em; border: 1px solid #ffd778; border-radius: .5rem; background: #fff4d9; color: #173652; }
 .jtech-games-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
@@ -104,3 +122,6 @@
 }
 
 .jtech-games-fields select:disabled { background: #f6f3f5; color: #655761; }
+.kanji-fruit-mode { display: flex; flex-wrap: wrap; gap: .55rem; margin: 1rem 0; }
+.kanji-fruit-mode button { padding: .55rem .85rem; border: 1px solid #d9ccd5; border-radius: 999px; background: #fff; color: #4b5367; font: inherit; font-weight: 700; cursor: pointer; }
+.kanji-fruit-mode button[aria-pressed="true"] { border-color: #bb4772; background: #fff0f5; color: #972d55; box-shadow: 0 2px 0 #e9c5d2; }

@@ -1,5 +1,6 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { createGameSessionId, type StudentGameResult } from "../../../api/gameApi";
 import {
   acceptRainComposition, advanceRainRound, cardProgress, rainReading,
   roundScore, startRainRound, typeRainCharacters,
@@ -14,6 +15,7 @@ interface VocabularyRainGameProps {
   title: string;
   words: RainWord[];
   onExit: () => void;
+  onComplete: (result: { sessionId: string; correctCount: number; totalCount: number }) => Promise<StudentGameResult>;
 }
 
 const RainCardContent = memo(function RainCardContent({ word, typedCount }: { word: RainWord; typedCount: number }) {
@@ -32,8 +34,11 @@ const RainCardContent = memo(function RainCardContent({ word, typedCount }: { wo
   );
 });
 
-export function VocabularyRainGame({ title, words, onExit }: VocabularyRainGameProps) {
+export function VocabularyRainGame({ title, words, onExit, onComplete }: VocabularyRainGameProps) {
   const [round, setRound] = useState<RainRound | null>(null);
+  const [rewardMessage, setRewardMessage] = useState("");
+  const sessionId = useRef(createGameSessionId());
+  const submittedSession = useRef("");
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [musicError, setMusicError] = useState(false);
   const music = useRef<HTMLAudioElement>(null);
@@ -49,6 +54,15 @@ export function VocabularyRainGame({ title, words, onExit }: VocabularyRainGameP
   const canType = phase === "playing" && !!round?.lives;
   const inputRevision = round?.inputRevision ?? 0;
   const missed = round?.missed;
+
+  useEffect(() => {
+    if (phase !== "finished" || !round || submittedSession.current === sessionId.current) return;
+    submittedSession.current = sessionId.current;
+    setRewardMessage("Đang lưu thành tích…");
+    void onComplete({ sessionId: sessionId.current, correctCount: round.correct, totalCount: words.length })
+      .then((result) => setRewardMessage(`Thành tích đã lưu · +${result.coinAwarded} coin`))
+      .catch(() => setRewardMessage("Chưa lưu được thành tích. Vui lòng thử lại sau."));
+  }, [onComplete, phase, round, words.length]);
 
   useEffect(() => {
     if (!missed || missed.length <= spokenMisses.current) return;
@@ -134,6 +148,9 @@ export function VocabularyRainGame({ title, words, onExit }: VocabularyRainGameP
     if (utterances.current.size) window.speechSynthesis.cancel();
     utterances.current.clear();
     spokenMisses.current = 0;
+    sessionId.current = createGameSessionId();
+    submittedSession.current = "";
+    setRewardMessage("");
     setRound(startRainRound(words));
   }
 
@@ -260,6 +277,7 @@ export function VocabularyRainGame({ title, words, onExit }: VocabularyRainGameP
             <div className="jtech-rain-overlay jtech-rain-result">
               <h2 ref={resultHeading} tabIndex={-1}>{round.lives ? "Hoàn thành ván chơi" : "Đã hết tim"}</h2>
               <p>{roundScore(round)} điểm · Đúng {round.correct}/{words.length} từ</p>
+              <p role="status">{rewardMessage}</p>
               {!!round.missed.length && (
                 <div className="jtech-rain-missed">
                   <h3>Từ đã bỏ lỡ</h3>

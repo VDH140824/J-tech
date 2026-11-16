@@ -18,6 +18,16 @@ export function GamesPage() {
           </div>
         </article>
         <article className="jtech-games-card">
+          <div className="jtech-kanji-fruit-cover" aria-hidden="true">
+            <span>林</span><span>🍊</span><span>🍑</span><span>🍏</span>
+          </div>
+          <div className="jtech-games-card-body">
+            <h2>Chém Kanji</h2>
+            <p>Nhìn chữ Kanji và chém trái cây mang âm Hán Việt đúng.</p>
+            <Link className="jtech-games-action" to="/games/kanji-fruit">Chọn nội dung</Link>
+          </div>
+        </article>
+        <article className="jtech-games-card">
           <div className="jtech-campus-cover" aria-hidden="true">
             <svg viewBox="0 0 340 155" fill="none">
               <path d="M30 128 170 65 310 128 170 153Z" fill="#b7d6c3" />
