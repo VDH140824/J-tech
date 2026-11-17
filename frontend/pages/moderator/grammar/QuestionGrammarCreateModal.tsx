@@ -133,25 +133,25 @@ export function QuestionGrammarCreateModal({ lessonId, grammarId, onClose, onCre
           <button type="button" className="modal-btn-close" onClick={onClose} disabled={saving} aria-label="Đóng">✕</button>
         </div>
         <form className="modal-form-body" onSubmit={(event) => void handleSubmit(event)}>
-          <p className="modal-description">Nội dung, giải thích và từng đáp án MCQ bắt buộc, tối đa 100 ký tự mỗi trường.</p>
+          <p className="modal-description">Nội dung, giải thích và từng đáp án trắc nghiệm bắt buộc, tối đa 100 ký tự mỗi trường.</p>
           <p className="modal-description">Câu hỏi thuộc bài học ID {lessonId}. Kỹ năng Grammar được hệ thống tự gán.</p>
           <div className="modal-grid-2">
             <div className="modal-field-group">
               <label className="modal-label" htmlFor="question-grammar-create-type">Loại câu hỏi *</label>
               <select id="question-grammar-create-type" className="modal-input" value={form.questionType} disabled={saving}
                 onChange={(event) => setForm({ ...form, questionType: event.target.value as GrammarQuestion["questionType"] })}>
-                <option value="MCQ">MCQ</option>
-                <option value="FILL_IN">FILL_IN</option>
-                <option value="MATCHING">MATCHING</option>
+                <option value="MCQ">Trắc nghiệm</option>
+                <option value="FILL_IN">Điền từ</option>
+                <option value="MATCHING">Ghép nối</option>
               </select>
             </div>
             <div className="modal-field-group">
               <label className="modal-label" htmlFor="question-grammar-create-difficulty">Độ khó *</label>
               <select id="question-grammar-create-difficulty" className="modal-input" value={form.difficulty} disabled={saving}
                 onChange={(event) => setForm({ ...form, difficulty: event.target.value as GrammarQuestion["difficulty"] })}>
-                <option value="EASY">EASY</option>
-                <option value="MEDIUM">MEDIUM</option>
-                <option value="HARD">HARD</option>
+                <option value="EASY">Dễ</option>
+                <option value="MEDIUM">Trung bình</option>
+                <option value="HARD">Khó</option>
               </select>
             </div>
           </div>

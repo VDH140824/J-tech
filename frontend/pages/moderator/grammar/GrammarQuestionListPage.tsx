@@ -1,8 +1,10 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { deleteQuestionGrammar, getAllGrammarQuestions, type GrammarQuestion } from "../../../api/grammarQuestionApi";
 import { QuestionGrammarCreateModal } from "./QuestionGrammarCreateModal";
 import { QuestionGrammarEditModal } from "./QuestionGrammarEditModal";
+import { GrammarQuestionImportModal } from "./GrammarQuestionImportModal";
+import { downloadGrammarQuestionTemplate } from "../../../config/grammarQuestionImport";
 
 interface GrammarQuestionListPageProps {
   courseName: string;
@@ -12,6 +14,18 @@ interface GrammarQuestionListPageProps {
   grammarId: number;
   onBack: () => void;
 }
+
+const questionTypeLabels: Record<GrammarQuestion["questionType"], string> = {
+  MCQ: "Trắc nghiệm",
+  FILL_IN: "Điền từ",
+  MATCHING: "Ghép nối",
+};
+
+const difficultyLabels: Record<GrammarQuestion["difficulty"], string> = {
+  EASY: "Dễ",
+  MEDIUM: "Trung bình",
+  HARD: "Khó",
+};
 
 function displayValue(value: string | number | boolean | null): string {
   if (value == null || value === "") return "—";
@@ -49,6 +63,26 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const listRequest = useRef(0);
+  const downloadBusy = useRef(false);
+
+  const downloadTemplate = async () => {
+    if (downloadBusy.current) return;
+    downloadBusy.current = true;
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      await downloadGrammarQuestionTemplate();
+    } catch (error) {
+      setDownloadError(error instanceof Error ? error.message : "Không tải được mẫu Excel. Vui lòng thử lại.");
+    } finally {
+      downloadBusy.current = false;
+      setDownloading(false);
+    }
+  };
 
   const onClickDelete = (question: GrammarQuestion) => {
     setDeleteError(null);
@@ -94,28 +128,34 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
     return () => window.clearTimeout(timeout);
   }, [success]);
 
-  useEffect(() => {
-    let active = true;
+  const loadQuestions = useCallback(async (afterImport = false) => {
+    const request = ++listRequest.current;
     setLoading(true);
     setError(null);
 
-    getAllGrammarQuestions(grammarId)
-      .then((items) => {
-        if (active) setQuestions(items);
-      })
-      .catch(() => {
-        if (active) setError("Không thể tải danh sách câu hỏi Grammar.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    try {
+      const items = await getAllGrammarQuestions(grammarId);
+      if (request === listRequest.current) setQuestions(items);
+    } catch {
+      if (request === listRequest.current) {
+        setError(afterImport
+          ? "Câu hỏi đã được nhập thành công nhưng chưa tải lại được danh sách. Vui lòng bấm Thử lại, không cần nhập lại file."
+          : "Không thể tải danh sách câu hỏi Grammar.");
+      }
+    } finally {
+      if (request === listRequest.current) setLoading(false);
+    }
+  }, [grammarId]);
 
-    return () => { active = false; };
-  }, [reloadKey, grammarId]);
+  useEffect(() => {
+    void loadQuestions();
+    // Ignore responses from an older request or a page that has already closed.
+    return () => { listRequest.current += 1; };
+  }, [reloadKey, loadQuestions]);
 
   const columns: { label: string; value: (question: GrammarQuestion) => string }[] = [
-    { label: "Loại câu hỏi", value: (q) => q.questionType },
-    { label: "Độ khó", value: (q) => q.difficulty },
+    { label: "Loại câu hỏi", value: (q) => questionTypeLabels[q.questionType] ?? displayValue(q.questionType) },
+    { label: "Độ khó", value: (q) => difficultyLabels[q.difficulty] ?? displayValue(q.difficulty) },
     { label: "Nội dung", value: (q) => displayValue(q.content) },
     { label: "Giải thích", value: (q) => displayValue(q.explanation) },
     { label: "Đáp án", value: displayAnswer },
@@ -129,17 +169,24 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
         <span className="mod-chapter-breadcrumb-pill">{courseName} / Chương {chapterNo} / {lessonTitle} / Câu hỏi Grammar</span>
       </div>
       <div className="admin-page-header">
-        <div className="mod-header-action-row" style={{ width: "100%" }}>
+        <div className="mod-header-action-row grammar-question-header" style={{ width: "100%" }}>
           <div className="admin-header-titles">
             <h2 className="admin-main-title">Danh sách câu hỏi Grammar</h2>
             <p className="admin-main-subtitle">Các câu hỏi ngữ pháp đang hoạt động.</p>
           </div>
-          <button type="button" className="mod-btn-add mod-question-btn--primary" disabled={loading}
-            onClick={() => setIsCreateOpen(true)}>Thêm câu hỏi</button>
+          <div className="grammar-import-actions">
+            <button type="button" className="mod-btn-add mod-question-btn--secondary" disabled={downloading}
+              onClick={() => void downloadTemplate()}>{downloading ? "Đang tải mẫu…" : "Tải mẫu Excel"}</button>
+            <button type="button" className="mod-btn-add mod-question-btn--secondary" disabled={loading}
+              onClick={() => setIsImportOpen(true)}>Nhập từ Excel</button>
+            <button type="button" className="mod-btn-add mod-question-btn--primary" disabled={loading}
+              onClick={() => setIsCreateOpen(true)}>Thêm câu hỏi</button>
+          </div>
         </div>
       </div>
 
       {success && <p role="status" style={{ color: "#166534", fontWeight: 600 }}>{success}</p>}
+      {downloadError && <p role="alert" className="grammar-import-error">{downloadError}</p>}
 
       {loading ? (
         <div className="admin-loading-state" role="status">
@@ -182,6 +229,13 @@ export function GrammarQuestionListPage({ courseName, chapterNo, lessonTitle, le
           </div>
         </div>
       )}
+      {isImportOpen && <GrammarQuestionImportModal grammarId={grammarId}
+        onClose={() => setIsImportOpen(false)}
+        onImported={async (result) => {
+          setIsImportOpen(false);
+          setSuccess(`Đã nhập thành công ${result.importedCount} câu hỏi.`);
+          await loadQuestions(true);
+        }} />}
       {isCreateOpen && (
         <QuestionGrammarCreateModal
           grammarId={grammarId}
