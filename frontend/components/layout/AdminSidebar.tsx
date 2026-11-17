@@ -112,6 +112,11 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
 
       {/* Nav Menu */}
       <nav className="admin-sidebar-menu">
+        <button type="button" className={`admin-nav-item ${currentTab === "system-logs" ? "active" : ""}`}
+          onClick={() => handleNavClick("system-logs", "/admin/system-logs")}>
+          <span className="admin-nav-icon" aria-hidden="true">📋</span>
+          <span className="admin-nav-label">Nhật ký hệ thống</span>
+        </button>
         {([["items", "Quản lý cửa hàng đổi quà"], ["rules", "Cấu hình điểm thưởng"], ["milestones", "Mốc chuỗi học tập"]] as const).map(([key,label]) => <button key={key} type="button" className={`admin-nav-item ${currentTab === key ? "active" : ""}`} onClick={() => handleNavClick(key, `/admin/rewards/${key}`)}><span className="admin-nav-label">{label}</span></button>)}
         <button
           type="button"
