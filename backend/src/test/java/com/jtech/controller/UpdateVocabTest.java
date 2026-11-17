@@ -12,16 +12,21 @@ import com.jtech.service.VocabularyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jtech.exception.GlobalExceptionHandler;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.server.ResponseStatusException;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Tag("unit-test-report")
 class UpdateVocabTest {
 
     // Example inputs for execution; expected behavior comes from UC-42.
@@ -30,6 +35,18 @@ class UpdateVocabTest {
     private final LessonRepository lessons = mock(LessonRepository.class);
     private final VocabularyService service = new VocabularyService(lessons);
     private final VocabularyController controller = new VocabularyController(vocabulary, service);
+    private final UsernamePasswordAuthenticationToken moderator = new UsernamePasswordAuthenticationToken(
+        "moderator",
+        "",
+        java.util.List.of(new SimpleGrantedAuthority("MODERATOR"))
+    );
+
+    @BeforeEach
+    void stubVocabularyLesson() {
+        var lesson = new com.jtech.entity.Lesson();
+        lesson.setSkillType(com.jtech.entity.Lesson.SkillType.VOCABULARY);
+        when(lessons.findById(3L)).thenReturn(Optional.of(lesson));
+    }
 
     private VocabularyRequest input(String word, String reading, String meaning, Integer order) {
         return new VocabularyRequest(
@@ -67,7 +84,7 @@ class UpdateVocabTest {
         when(vocabulary.findById(10L)).thenReturn(Optional.of(word));
         when(vocabulary.existsByLessonIdAndWordIgnoreCaseAndIdNot(3L, "別", 10L)).thenReturn(true);
         assertThrows(IllegalStateException.class, () ->
-            controller.update(10L, input("別", "べつ", "Khác", 1))
+            controller.update(3L, 10L, input("別", "べつ", "Khác", 1), moderator)
         );
         assertEquals("日本語", word.getWord());
         verify(vocabulary).findById(10L);
@@ -91,7 +108,7 @@ class UpdateVocabTest {
             2,
             Course.Status.PUBLISHED
         );
-        var updated = controller.update(10L, request);
+        var updated = controller.update(3L, 10L, request, moderator);
         assertAll(
             () -> assertEquals("別", updated.getWord()),
             () -> assertEquals("べつ", updated.getReading()),
@@ -112,7 +129,7 @@ class UpdateVocabTest {
         var word = existing(Course.Status.ARCHIVED);
         when(vocabulary.findById(10L)).thenReturn(Optional.of(word));
         when(vocabulary.save(word)).thenReturn(word);
-        var updated = controller.update(10L, validInput());
+        var updated = controller.update(3L, 10L, validInput(), moderator);
         assertEquals(Course.Status.DRAFT, updated.getStatus());
         assertEquals(10L, updated.getId());
         verify(vocabulary).save(word);
@@ -121,7 +138,7 @@ class UpdateVocabTest {
     @Test
     @DisplayName("Update rejects a missing vocabulary item")
     void updateRejectsMissingVocabulary() {
-        assertThrows(ResponseStatusException.class, () -> controller.update(999L, validInput()));
+        assertThrows(ResponseStatusException.class, () -> controller.update(3L, 999L, validInput(), moderator));
         verify(vocabulary).findById(999L);
         verifyNoMoreInteractions(vocabulary);
     }
@@ -132,7 +149,7 @@ class UpdateVocabTest {
         var word = existing(Course.Status.DRAFT);
         when(vocabulary.findById(10L)).thenReturn(Optional.of(word));
         when(vocabulary.save(word)).thenReturn(word);
-        assertSame(word, controller.update(10L, validInput()));
+        assertSame(word, controller.update(3L, 10L, validInput(), moderator));
         verify(vocabulary).existsByLessonIdAndWordIgnoreCaseAndIdNot(3L, "日本語", 10L);
         verify(vocabulary).save(word);
     }
@@ -146,7 +163,7 @@ class UpdateVocabTest {
         ((com.fasterxml.jackson.databind.node.ObjectNode) body).putNull(field);
         var mvc = MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler()).build();
-        mvc.perform(put("/vocabularies/10").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(put("/lessons/3/vocabularies/10").contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(body)))
             .andExpect(status().isBadRequest());
         verifyNoInteractions(vocabulary, lessons);
@@ -157,7 +174,7 @@ class UpdateVocabTest {
     void rejectNegativeDisplayOrder() throws Exception {
         var mvc = MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler()).build();
-        mvc.perform(put("/vocabularies/10").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(put("/lessons/3/vocabularies/10").contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(input("日本語", "にほんご", "Tiếng Nhật", -1))))
             .andExpect(status().isBadRequest());
         verifyNoInteractions(vocabulary, lessons);

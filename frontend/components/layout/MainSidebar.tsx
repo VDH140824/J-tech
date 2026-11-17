@@ -30,18 +30,8 @@ function DekiruLogoIcon() {
             fill="#FF4B72"
           />
         ))}
-        <circle
-          cx="0"
-          cy="0"
-          r="3.5"
-          fill="#FFF5F7"
-        />
-        <circle
-          cx="0"
-          cy="0"
-          r="2"
-          fill="#FF8CA3"
-        />
+        <circle cx="0" cy="0" r="3.5" fill="#FFF5F7" />
+        <circle cx="0" cy="0" r="2" fill="#FF8CA3" />
       </g>
     </svg>
   );
@@ -59,7 +49,11 @@ function SidebarCatDecoration() {
   );
 }
 
-export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) {
+export function MainSidebar({
+  onOpenFeedback,
+}: {
+  onOpenFeedback: () => void;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
@@ -75,10 +69,7 @@ export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) 
 
   return (
     <aside className="dekiru-sidebar">
-      <div
-        className="sidebar-brand"
-        onClick={() => navigate("/home")}
-      >
+      <div className="sidebar-brand" onClick={() => navigate("/home")}>
         <DekiruLogoIcon />
         <div className="brand-titles">
           <span className="dekiru-brand-name">JTech</span>
@@ -88,6 +79,21 @@ export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) 
       <div className="sidebar-tagline">Luyện tiếng Nhật cùng JTech</div>
 
       <nav className="sidebar-nav-menu">
+        {user?.status?.toUpperCase() === "ACTIVE" &&
+          (normalizedRole === "STUDENT" ||
+            normalizedRole === "ROLE_STUDENT" ||
+            (!normalizedRole && normalizedRoleId === "1")) && (
+            <button
+              type="button"
+              className={`nav-link-btn ${location.pathname.startsWith("/games") ? "active" : ""}`}
+              onClick={() => navigate("/games")}
+            >
+              <span className="nav-link-icon" aria-hidden="true">
+                🎮
+              </span>
+              <span className="nav-link-text">Trò chơi</span>
+            </button>
+          )}
         {!isAdmin && !isModerator && (
           <>
             <button
@@ -98,6 +104,16 @@ export function MainSidebar({ onOpenFeedback }: { onOpenFeedback: () => void }) 
               <span className="nav-link-icon">🏫</span>
               <span className="nav-link-text">Lớp học của tôi</span>
             </button>
+
+            <button
+              type="button"
+              className={`nav-link-btn ${location.pathname.startsWith("/conjugations") ? "active" : ""}`}
+              onClick={() => navigate("/conjugations")}
+            >
+              <span className="nav-link-icon">✍️</span>
+              <span className="nav-link-text">Thể chia</span>
+            </button>
+
             <button
               type="button"
               className={`nav-link-btn ${location.pathname === "/streak" ? "active" : ""}`}

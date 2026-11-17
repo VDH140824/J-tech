@@ -6,6 +6,8 @@ import com.jtech.security.JwtAuthenticationFilter;
 import com.jtech.security.JwtService;
 import com.jtech.security.RestAuthenticationEntryPoint;
 import java.util.List;
+import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -23,6 +25,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    @Value("${app.frontend.allowed-origins:${app.frontend.url:http://localhost:5173}}")
+    private String frontendOrigins = "http://localhost:5173";
 
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
@@ -63,6 +67,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/**",
+                                // The campus socket authenticates its first frame before joining a room.
+                                "/campus/ws",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/error",
@@ -84,7 +90,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(Arrays.stream(frontendOrigins.split(",")).map(String::trim).filter(value -> !value.isEmpty()).toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

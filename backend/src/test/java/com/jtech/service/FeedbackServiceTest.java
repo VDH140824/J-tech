@@ -12,6 +12,7 @@ import com.jtech.repository.UserRepository;
 import java.security.Principal;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,6 +51,7 @@ class FeedbackServiceTest {
     }
 
     @Test
+    @Tag("unit-test-report")
     void rejectsMismatchedCategoryBeforePersistenceOrUpload() {
         var input = new FeedbackRequest(
             FeedbackRequest.Type.CONTENT,
@@ -64,6 +66,7 @@ class FeedbackServiceTest {
     }
 
     @Test
+    @Tag("unit-test-report")
     void rejectsTechnicalFeedbackWithContentReference() {
         var input = new FeedbackRequest(
             FeedbackRequest.Type.TECHNICAL,
@@ -78,6 +81,7 @@ class FeedbackServiceTest {
     }
 
     @Test
+    @Tag("unit-test-report")
     void rejectsUnpublishedOrMissingLesson() {
         when(db.queryForObject(anyString(), eq(Integer.class), eq(1L))).thenReturn(0);
         var input = new FeedbackRequest(
@@ -93,6 +97,7 @@ class FeedbackServiceTest {
     }
 
     @Test
+    @Tag("unit-test-report")
     void rejectsQuestionFromAnotherLesson() {
         when(db.queryForList(anyString(), eq(7L))).thenReturn(List.of(Map.of("lesson_id", 2L)));
         var input = new FeedbackRequest(
@@ -154,6 +159,7 @@ class FeedbackServiceTest {
     }
 
     @Test
+    @Tag("unit-test-report")
     void resolutionCannotCrossQueues() {
         when(db.queryForList(anyString(), eq(8L), eq("TECHNICAL"))).thenReturn(List.of());
         assertThrows(ResponseStatusException.class, () ->
@@ -168,6 +174,7 @@ class FeedbackServiceTest {
     }
 
     @Test
+    @Tag("unit-test-report")
     void finalStatusesRequireNonWhitespaceNote() {
         when(db.queryForList(anyString(), eq(8L), eq("CONTENT"))).thenReturn(
             List.of(Map.of("id", 8L))
@@ -189,6 +196,7 @@ class FeedbackServiceTest {
     }
 
     @Test
+    @Tag("unit-test-report")
     void validResolutionWritesNotificationAndPublishesEmail() {
         when(
             db.queryForList(startsWith("SELECT id FROM feedback"), eq(8L), eq("CONTENT"))

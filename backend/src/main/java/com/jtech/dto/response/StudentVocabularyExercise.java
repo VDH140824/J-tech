@@ -1,6 +1,6 @@
 package com.jtech.dto.response;
 
-import com.jtech.entity.VocabularyMiniTestQuestion;
+import com.jtech.entity.VocabularyTestQuestion;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -14,7 +14,7 @@ public record StudentVocabularyExercise(
 ) {
     public record Question(
         Long id,
-        VocabularyMiniTestQuestion.Type questionType,
+        VocabularyTestQuestion.Type questionType,
         String content,
         List<String> options,
         List<String> matchingPrompts,

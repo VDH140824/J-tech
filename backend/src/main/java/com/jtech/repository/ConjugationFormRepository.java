@@ -29,6 +29,10 @@ public interface ConjugationFormRepository extends JpaRepository<ConjugationForm
     /** Dùng cho luồng Update: bỏ qua chính bản ghi đang sửa. */
     boolean existsByCodeAndIdNot(String code, Long id);
 
+    boolean existsByNameViIgnoreCase(String nameVi);
+
+    boolean existsByNameViIgnoreCaseAndIdNot(String nameVi, Long id);
+
     /**
      * sd Delete / Archive Conjugation Form, message 3.1.1.2.1:
      * SELECT COUNT(*) FROM practice_attempt WHERE conjugation_form_id = ?
@@ -39,4 +43,7 @@ public interface ConjugationFormRepository extends JpaRepository<ConjugationForm
     @Query(value = "SELECT COUNT(*) FROM practice_attempt WHERE conjugation_form_id = :conjugationFormId",
            nativeQuery = true)
     long countPracticeAttempts(@Param("conjugationFormId") Long conjugationFormId);
+
+    /** UC-21: học viên chỉ thấy thể chia PUBLISHED, theo thứ tự hiển thị. */
+    java.util.List<ConjugationForm> findByStatusOrderByDisplayOrderAscIdAsc(Course.Status status);
 }

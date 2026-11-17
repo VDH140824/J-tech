@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
 import { getCourseForEdit, saveCourse, type CourseInput, type CourseStatus } from "../../api/moderatorCourseApi";
 export function courseError(error: unknown) {

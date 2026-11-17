@@ -1,5 +1,9 @@
 package com.jtech.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jtech.dto.request.LessonRequest;
 import com.jtech.dto.response.LessonResponse;
 import com.jtech.entity.Chapter;
@@ -8,12 +12,19 @@ import com.jtech.entity.Lesson;
 import com.jtech.repository.ChapterRepository;
 import com.jtech.repository.LessonRepository;
 import jakarta.validation.Validator;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -143,7 +154,7 @@ public class LessonService {
                 skill == Lesson.SkillType.KANJI && kanjiService != null
                     ? kanjiService.documents(request.documents(), file)
                     : skill == Lesson.SkillType.VOCABULARY
-                      ? request.documents()
+                      ? vocabularyDocuments(request.documents(), null, file)
                       : skill == Lesson.SkillType.GRAMMAR && file == null
                         ? null
                         : uploadDocument(file, null)
@@ -192,7 +203,7 @@ public class LessonService {
                 );
             }
         } else if (skill == Lesson.SkillType.VOCABULARY) {
-            lesson.setDocuments(request.documents());
+            lesson.setDocuments(vocabularyDocuments(request.documents(), lesson.getDocuments(), null));
         } else if (file != null) {
             lesson.setDocuments(uploadDocument(file, lesson.getDocuments()));
         }
@@ -207,12 +218,100 @@ public class LessonService {
             HttpStatus.NOT_FOUND
         );
         try {
+            List<String> vocabularyPdfIds = lessonRepository.findById(id)
+                .filter(lesson -> lesson.getSkillType() == Lesson.SkillType.VOCABULARY)
+                .map(lesson -> vocabularyPdfIds(lesson.getDocuments()))
+                .orElseGet(List::of);
             lessonRepository.deleteById(id);
             lessonRepository.flush();
+            if (!vocabularyPdfIds.isEmpty()) {
+                TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            vocabularyPdfIds.forEach(LessonService.this::cleanupVocabularyPdf);
+                        }
+                    }
+                );
+            }
         } catch (org.springframework.dao.DataIntegrityViolationException exception) {
             throw new ResponseStatusException(
                 HttpStatus.CONFLICT,
                 "Không thể xóa bài học vì đang có dữ liệu liên kết (từ vựng, bài kiểm tra hoặc lịch sử học tập).",
+                exception
+            );
+        }
+    }
+
+    private String vocabularyDocuments(String requested, String previous, MultipartFile file) {
+        if (requested == null && file == null) return null;
+
+        Map<String, String> managedIdsByUrl = new HashMap<>();
+        for (JsonNode entry : documentEntries(previous)) {
+            String publicId = entry.path("publicId").asText("");
+            String url = entry.path("url").asText("");
+            if (!publicId.isBlank() && !url.isBlank()) managedIdsByUrl.put(url, publicId);
+        }
+
+        ArrayNode documents = documentEntries(requested);
+        for (JsonNode entry : documents) {
+            if (entry instanceof ObjectNode document) {
+                // Only metadata stored by the server can authorize deleting an asset.
+                document.remove("publicId");
+                String publicId = managedIdsByUrl.get(document.path("url").asText());
+                if (publicId != null) document.put("publicId", publicId);
+            }
+        }
+
+        if (file != null) {
+            String filename = file.getOriginalFilename();
+            if (file.isEmpty() || filename == null || !filename.toLowerCase(Locale.ROOT).endsWith(".pdf")) {
+                throw new IllegalArgumentException("Vui lòng chọn tệp PDF có dữ liệu.");
+            }
+            var uploaded = cloudinary.uploadDocument(file);
+            String publicId = uploaded.get("publicId");
+            TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCompletion(int status) {
+                        if (status == STATUS_ROLLED_BACK) cleanupVocabularyPdf(publicId);
+                    }
+                }
+            );
+            documents.add(mapper.valueToTree(uploaded));
+        }
+        return documents.toString();
+    }
+
+    private ArrayNode documentEntries(String documents) {
+        ArrayNode entries = mapper.createArrayNode();
+        if (documents == null || documents.isBlank()) return entries;
+        try {
+            JsonNode parsed = mapper.readTree(documents);
+            if (parsed instanceof ArrayNode array) return array;
+            if (parsed != null && !parsed.isNull()) entries.add(parsed);
+        } catch (JsonProcessingException exception) {
+            entries.add(documents.trim());
+        }
+        return entries;
+    }
+
+    private List<String> vocabularyPdfIds(String documents) {
+        List<String> publicIds = new ArrayList<>();
+        for (JsonNode entry : documentEntries(documents)) {
+            String publicId = entry.path("publicId").asText("");
+            if (!publicId.isBlank() && !publicIds.contains(publicId)) publicIds.add(publicId);
+        }
+        return publicIds;
+    }
+
+    private void cleanupVocabularyPdf(String publicId) {
+        try {
+            cloudinary.deleteVocabularyPdf(publicId);
+        } catch (RuntimeException exception) {
+            org.slf4j.LoggerFactory.getLogger(LessonService.class).warn(
+                "Không thể xóa PDF bài học từ vựng {}",
+                publicId,
                 exception
             );
         }

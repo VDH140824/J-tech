@@ -10,7 +10,7 @@ import {
 } from "../../api/lessonApi";
 import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
 import { LessonFormModal } from "./LessonFormModal";
-import "./VocabularyMiniTests.css";
+import "./vocabulary/VocabularyExercises.css";
 
 interface ModeratorLessonListTabProps {
   courseId?: number;
@@ -316,14 +316,14 @@ export function ModeratorLessonListTab({
             >
               <option value="ALL">Tất cả trạng thái</option>
               <option value="PUBLISHED">
-                {selectedSection === "kanji" ? "Đã xuất bản" : "Đã xuất bản (PUBLISHED)"}
+                {selectedSection === "kanji" ? "Đã xuất bản" : "Đã xuất bản"}
               </option>
               <option value="DRAFT">
-                {selectedSection === "kanji" ? "Bản nháp" : "Bản nháp (DRAFT)"}
+                {selectedSection === "kanji" ? "Bản nháp" : "Bản nháp"}
               </option>
-              <option value="HIDDEN">{selectedSection === "kanji" ? "Ẩn" : "Ẩn (HIDDEN)"}</option>
+              <option value="HIDDEN">{selectedSection === "kanji" ? "Ẩn" : "Ẩn"}</option>
               <option value="ARCHIVED">
-                {selectedSection === "kanji" ? "Lưu trữ" : "Lưu trữ (ARCHIVED)"}
+                {selectedSection === "kanji" ? "Lưu trữ" : "Lưu trữ"}
               </option>
             </select>
           )}

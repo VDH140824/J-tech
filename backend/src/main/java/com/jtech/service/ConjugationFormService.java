@@ -1,11 +1,16 @@
 package com.jtech.service;
 
 import com.jtech.dto.request.ConjugationFormRequest;
+import com.jtech.dto.request.ConjugationQuestionRequest;
 import com.jtech.dto.response.ConjugationFormResponse;
 import com.jtech.dto.response.DeleteResultResponse;
+import com.jtech.dto.response.PracticeQuestionResponse;
+import com.jtech.entity.Question;
 import com.jtech.entity.Course;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface ConjugationFormService {
 
@@ -40,4 +45,17 @@ public interface ConjugationFormService {
      * @throws org.springframework.web.server.ResponseStatusException 404 khi không tìm thấy id
      */
     DeleteResultResponse delete(Long id, String moderatorEmail);
+
+    List<PracticeQuestionResponse> getPracticeQuestions(Long id, Question.Difficulty difficulty, Integer verbGroup);
+
+    ConjugationFormResponse updatePracticeQuestions(Long id, List<Long> questionIds, String moderatorEmail);
+
+    /** UC-47 bước 5: Moderator thêm câu hỏi thủ công. */
+    PracticeQuestionResponse createQuestion(Long id, ConjugationQuestionRequest request, String moderatorEmail);
+
+    /** UC-47 bước 5: sửa câu hỏi. */
+    PracticeQuestionResponse updateQuestion(Long id, Long questionId, ConjugationQuestionRequest request, String moderatorEmail);
+
+    /** UC-47 bước 5: xóa mềm câu hỏi (status = ARCHIVED). */
+    void deleteQuestion(Long id, Long questionId, String moderatorEmail);
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { attachmentDownloadUrl } from "../../utils/classroomAttachment";
 
 type AttachmentKind = "image" | "audio" | "video" | "pdf" | "document" | "archive" | "file";
 
@@ -45,7 +46,10 @@ export function AttachmentPreview({ url, audioOnlyVideo = false }: { url: string
     <div className="attachment-preview__heading">
       <span className="attachment-preview__icon" aria-hidden="true">{kind === "audio" ? "♫" : kind === "video" ? "▶" : kind === "image" ? "▧" : "▤"}</span>
       <span className="attachment-preview__name">{label}<small>{extension}</small></span>
-      <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Mở ${label.toLowerCase()} trong tab mới`}>Mở tệp ↗</a>
+      <span className="attachment-preview__actions">
+        <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Mở ${label.toLowerCase()} trong tab mới`}>Mở tệp ↗</a>
+        <a href={attachmentDownloadUrl(href)} target="_blank" rel="noopener noreferrer" aria-label={`Tải xuống ${label.toLowerCase()}`}>Tải xuống ↓</a>
+      </span>
     </div>
     {kind === "image" && !previewFailed && <img className="attachment-preview__image" src={href} alt={label} loading="lazy" onError={() => setFailedUrl(href)} />}
     {kind === "audio" && !previewFailed && <audio className="attachment-preview__audio" src={href} controls preload="metadata" onError={() => setFailedUrl(href)}>Trình duyệt không hỗ trợ phát âm thanh.</audio>}
