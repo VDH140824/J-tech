@@ -1,20 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import type { LessonSummary } from "../../api/lessonApi";
 import { getStudentKanjiTests } from "../../api/studentKanjiApi";
+import { parseLessonDocuments } from "../../utils/lessonDocuments";
 import "./StudentKanjiFlashcards.css";
 
 export function StudentKanjiChapterPage({
   chapterId,
   chapterNo,
   lessons,
-  onLesson,
+  onDocument,
   onOpen,
   onBack,
 }: {
   chapterId: number;
   chapterNo: number;
   lessons: LessonSummary[];
-  onLesson: (id: number) => void;
+  onDocument: (lessonId: number, documentIndex: number) => void;
   onOpen: (view: "flashcards" | "test") => void;
   onBack: () => void;
 }) {
@@ -23,29 +24,33 @@ export function StudentKanjiChapterPage({
     queryFn: ({ signal }) => getStudentKanjiTests(chapterId, signal),
     refetchOnMount: "always",
   });
+  const documents = lessons
+    .filter(lesson => lesson.skillType === "KANJI" && lesson.status === "PUBLISHED" && lesson.chapterId === chapterId)
+    .flatMap(lesson => parseLessonDocuments(lesson.documents).map((document, index) => ({
+      ...document, lessonId: lesson.id, documentIndex: index,
+    })));
   return (
     <section className="student-kanji-page">
       <button type="button" className="kanji-text-button" onClick={onBack}>
-        ← Chọn kỹ năng
+        ← Quay lại chương
       </button>
       <h2>Chữ Hán · Chương {chapterNo}</h2>
+      {!documents.length && <p role="status">Chương này chưa có tài liệu Kanji.</p>}
       <div className="kanji-content-grid">
-        {lessons
-          .filter((l) => l.skillType === "KANJI" && l.status === "PUBLISHED")
-          .map((l) => (
+        {documents.map(document => (
             <button
               type="button"
               className="kanji-tile"
-              key={l.id}
-              onClick={() => onLesson(l.id)}
+              key={`${document.lessonId}-${document.url}`}
+              onClick={() => onDocument(document.lessonId, document.documentIndex)}
             >
               <div className="kanji-tile-banner kanji-banner-content">
-                <small>CHỮ HÁN</small>
-                <strong>Bài {l.lessonNo}</strong>
+                <small>TÀI LIỆU KANJI</small>
+                <strong aria-hidden="true">文</strong>
               </div>
               <div className="kanji-tile-body">
-                <h4>{l.title}</h4>
-                <small>Bài học · Tài liệu</small>
+                <h4>{document.name}</h4>
+                <small>Đọc tài liệu</small>
               </div>
             </button>
           ))}
@@ -64,7 +69,7 @@ export function StudentKanjiChapterPage({
           </div>
           <div className="kanji-tile-body">
             <h4>Flashcard chữ Hán chương {chapterNo}</h4>
-            <small>Tổng hợp từ các bài đã xuất bản</small>
+            <small>Ôn tập các chữ Hán trong chương</small>
           </div>
         </button>
         {tests.isSuccess && !tests.isFetching && tests.data.length > 0 && (

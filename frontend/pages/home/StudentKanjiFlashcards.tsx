@@ -55,11 +55,7 @@ export function StudentKanjiFlashcards({
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
   const [error, setError] = useState("");
-  const [lessonFilter, setLessonFilter] = useState("ALL");
-  const allCards = query.data || [];
-  const cards = allCards.filter(
-    (card) => lessonFilter === "ALL" || String(card.lessonId) === lessonFilter,
-  );
+  const cards = query.data || [];
   const remembered = cards.filter((card) => card.remembered).length;
   const current = deck?.[index];
   const start = (mode: "all" | "remembered" | "new") => {
@@ -126,7 +122,9 @@ export function StudentKanjiFlashcards({
             : "Dữ liệu trả về không hợp lệ. Vui lòng thử lại."}
         </p>
         <button onClick={() => query.refetch()}>Thử lại</button>
-        <button onClick={onBack}>Quay lại</button>
+        <button onClick={onBack}>
+          {readOnly ? "Quay lại chương" : "Quay lại Chữ Hán"}
+        </button>
       </div>
     );
 
@@ -136,33 +134,23 @@ export function StudentKanjiFlashcards({
         type="button"
         className="kanji-text-button"
         disabled={saving}
-        onClick={() => {
-          if (deck) setDeck(null);
-          else onBack();
-        }}
+        onClick={onBack}
       >
-        ← {deck ? "Chọn nhóm thẻ" : "Quay lại chương"}
+        ← {readOnly ? "Quay lại chương" : "Quay lại Chữ Hán"}
       </button>
+      {deck && current && (
+        <button
+          type="button"
+          className="kanji-text-button"
+          disabled={saving}
+          onClick={() => setDeck(null)}
+        >
+          Chọn nhóm thẻ
+        </button>
+      )}
       {!deck ? (
         <>
           <h3>Ôn tập Kanji toàn chương</h3>
-          <label>
-            Lọc theo bài{" "}
-            <select
-              aria-label="Lọc flashcard theo bài"
-              value={lessonFilter}
-              onChange={(e) => setLessonFilter(e.target.value)}
-            >
-              <option value="ALL">Tất cả bài học</option>
-              {Array.from(
-                new Map(allCards.map((card) => [card.lessonId, card])).values(),
-              ).map((card) => (
-                <option key={card.lessonId} value={card.lessonId}>
-                  Bài {card.lessonNo}: {card.lessonTitle}
-                </option>
-              ))}
-            </select>
-          </label>
           <div className="kanji-mode-grid">
             <div className="kanji-mode kanji-mode-new">
               <h4>Từ chưa nhớ</h4>

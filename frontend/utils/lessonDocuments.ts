@@ -3,6 +3,17 @@ export interface LessonDocument {
   url: string;
 }
 
+export function getPdfPreviewUrl(value: string): string {
+  const url = new URL(value);
+  const [parameters, ...directives] = url.hash.slice(1).split(":~:");
+  const options = new URLSearchParams(parameters);
+  options.set("toolbar", "0");
+  options.set("navpanes", "0");
+  options.set("view", "FitH");
+  url.hash = options.toString() + (directives.length ? `:~:${directives.join(":~:")}` : "");
+  return url.toString();
+}
+
 export function isDocumentUrl(value: string): boolean {
   try {
     const url = new URL(value);

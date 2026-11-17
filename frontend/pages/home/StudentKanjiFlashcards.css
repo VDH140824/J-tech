@@ -462,12 +462,35 @@
   white-space: pre-wrap;
 }
 .kanji-document-frame {
+  box-sizing: border-box;
   display: block;
-  margin-top: 20px;
   width: 100%;
-  height: 72vh;
+  height: clamp(360px, 78vh, 960px);
+  background: #f6f8f8;
   border: 1px solid #dde5e7;
-  border-radius: 12px;
+}
+.kanji-reading-panel.kanji-document-reader {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 960px;
+  margin: 24px auto 0;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+.kanji-document-reader > h2 {
+  margin: 0 0 16px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.kanji-document-reader-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: .875rem;
 }
 @media (max-width: 850px) {
   .kanji-content-grid {
@@ -480,6 +503,9 @@
   }
   .kanji-reading-panel {
     padding: 18px;
+  }
+  .kanji-reading-panel.kanji-document-reader {
+    padding: 10px;
   }
 }
 .kanji-test-editor fieldset,

@@ -1,10 +1,8 @@
+import { deleteChapterKanjiExercise, getChapterKanjiExercise, listChapterKanjiExercises, saveChapterKanjiExercise,
+  prepareKanjiDocument, assignKanjiExercise, type KanjiDocument } from "../../../api/kanjiChapterApi";
 import { useEffect, useState, type FormEvent } from "react";
 import {
-  deleteKanjiExercise,
-  getKanjiExercise,
   kanjiExerciseError,
-  listKanjiExercises,
-  saveKanjiExercise,
   type KanjiDifficulty,
   type KanjiExercise,
   type KanjiExerciseInput,
@@ -32,10 +30,18 @@ const normalize = (s: string) => s.trim().normalize("NFKC").toLowerCase();
 type Pair = { left: string; right: string };
 
 export function KanjiExercisesTab({
-  lessonId,
+  chapterId,
+  documentLessonId,
+  unassigned = false,
+  documents = [],
+  onChanged,
   readOnly = false,
 }: {
-  lessonId: number;
+  chapterId: number;
+  documentLessonId?: number;
+  unassigned?: boolean;
+  documents?: KanjiDocument[];
+  onChanged?: () => Promise<void>;
   readOnly?: boolean;
 }) {
   const [page, setPage] = useState(0);
@@ -56,13 +62,14 @@ export function KanjiExercisesTab({
     Record<string, string>
   >({});
   const [checked, setChecked] = useState(false);
+  const [assignmentTarget, setAssignmentTarget] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
     setError("");
     setListError(false);
-    listKanjiExercises(lessonId, page, status, controller.signal)
+    listChapterKanjiExercises(chapterId, page, status, controller.signal, documentLessonId, unassigned)
       .then((result) => {
         if (controller.signal.aborted) return;
         if (page > 0 && page >= result.totalPages) {
@@ -81,7 +88,7 @@ export function KanjiExercisesTab({
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [lessonId, page, status, reload]);
+  }, [chapterId, documentLessonId, unassigned, page, status, reload]);
 
   function edit(item?: KanjiExercise) {
     setEditingId(item?.id);
@@ -113,7 +120,7 @@ export function KanjiExercisesTab({
     setAnswer("");
     setMatchingAnswers({});
     try {
-      setPreview(await getKanjiExercise(lessonId, id));
+      setPreview(await getChapterKanjiExercise(chapterId, id, documentLessonId));
       setDraft(undefined);
     } catch (e) {
       setError(kanjiExerciseError(e));
@@ -168,7 +175,7 @@ export function KanjiExercisesTab({
     setBusy(true);
     setError("");
     try {
-      const saved = await saveKanjiExercise(lessonId, editingId, input);
+      const saved = await saveChapterKanjiExercise(chapterId, editingId, input, documentLessonId);
       setDraft(undefined);
       setReload((n) => n + 1);
       setNotice(
@@ -176,6 +183,7 @@ export function KanjiExercisesTab({
           ? "Đã lưu bản thay thế. Câu hỏi cũ được lưu trữ để giữ lịch sử."
           : "Đã lưu bài tập Kanji.",
       );
+      await onChanged?.();
     } catch (e) {
       setError(kanjiExerciseError(e));
     } finally {
@@ -193,7 +201,7 @@ export function KanjiExercisesTab({
     setBusy(true);
     setError("");
     try {
-      const result = await deleteKanjiExercise(lessonId, item.id);
+      const result = await deleteChapterKanjiExercise(chapterId, item.id, documentLessonId);
       setPreview(undefined);
       setReload((n) => n + 1);
       setNotice(
@@ -201,8 +209,31 @@ export function KanjiExercisesTab({
           ? "Đã lưu trữ câu hỏi và giữ lịch sử."
           : "Đã xóa câu hỏi.",
       );
+      await onChanged?.();
     } catch (e) {
       setError(kanjiExerciseError(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function assign(item: KanjiExercise) {
+    const target = assignmentTarget === "" ? undefined : documents[Number(assignmentTarget)];
+    if (!target || busy || readOnly || item.status !== "ACTIVE") return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const prepared = await prepareKanjiDocument(chapterId, target);
+      await assignKanjiExercise(chapterId, item.id, prepared.lessonId);
+      setAssignmentTarget("");
+      setPreview(undefined);
+      setDraft(undefined);
+      setReload(value => value + 1);
+      setNotice(`Đã gán câu hỏi vào tài liệu “${target.name}”.`);
+      await onChanged?.();
+    } catch (error) {
+      setError(kanjiExerciseError(error));
     } finally {
       setBusy(false);
     }
@@ -211,15 +242,15 @@ export function KanjiExercisesTab({
   return (
     <section className="kanji-exercises" aria-label="Quản lý bài tập Kanji">
       <div className="mod-section-toolbar">
-        <h3>Bài tập Kanji</h3>
-        <button
+        <h3>{unassigned ? "Câu hỏi chưa gán tài liệu" : "Bài tập Kanji"}</h3>
+        {!unassigned && <button
           type="button"
           className="mod-btn-add"
           disabled={busy || readOnly}
           onClick={() => edit()}
         >
           + Thêm câu hỏi
-        </button>
+        </button>}
         <label>
           Trạng thái{" "}
           <select
@@ -243,6 +274,14 @@ export function KanjiExercisesTab({
           Tải lại
         </button>
       </div>
+      {unassigned && <label className="kanji-document-toolbar">Tài liệu nhận câu hỏi{" "}
+        <select aria-label="Tài liệu nhận câu hỏi" value={assignmentTarget} disabled={busy || readOnly}
+          onChange={event => setAssignmentTarget(event.target.value)}>
+          <option value="">Chọn tài liệu</option>
+          {documents.map((document, index) => <option key={`${document.lessonId}-${index}`} value={index}>{document.name}</option>)}
+        </select>
+        {!documents.length && <span>Upload tài liệu để gán các câu hỏi này.</span>}
+      </label>}
       {error && (
         <p role="alert" className="kanji-error">
           {error}
@@ -598,6 +637,8 @@ export function KanjiExercisesTab({
                         </td>
                         <td>
                           <div className="kanji-exercise-actions">
+                            {unassigned && <button disabled={busy || readOnly || assignmentTarget === "" || q.status !== "ACTIVE"}
+                              onClick={() => assign(q)}>Gán tài liệu</button>}
                             <button disabled={busy} onClick={() => open(q.id)}>
                               Xem trước
                             </button>

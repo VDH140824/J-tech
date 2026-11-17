@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { LessonSummary } from "../../api/lessonApi";
 import { getStudentKanjiCards } from "../../api/studentKanjiApi";
-import { parseLessonDocuments } from "../../utils/lessonDocuments";
+import { getPdfPreviewUrl, parseLessonDocuments } from "../../utils/lessonDocuments";
 import "./StudentKanjiFlashcards.css";
 
 export function StudentKanjiContentPage({
@@ -22,6 +22,9 @@ export function StudentKanjiContentPage({
     /^\d+$/.test(documentIndex) &&
     Number.isSafeInteger(Number(documentIndex));
   const document = validDocument ? documents[Number(documentIndex)] : undefined;
+  const isCloudinaryPdf = !!document && /^https:\/\/res\.cloudinary\.com\//i.test(document.url)
+    && (/\.pdf(?:[?#]|$)/i.test(document.url) || /\.pdf$/i.test(document.name));
+  const documentPreviewUrl = isCloudinaryPdf ? getPdfPreviewUrl(document.url) : document?.url;
   const query = useQuery({
     queryKey: ["student-kanji-flashcards", lesson.id],
     queryFn: ({ signal }) => getStudentKanjiCards(lesson.id, signal),
@@ -31,29 +34,31 @@ export function StudentKanjiContentPage({
   return (
     <section className="student-kanji-page">
       <button type="button" className="kanji-text-button" onClick={onBack}>
-        ← Chữ Hán · Bài {lesson.lessonNo}
+        ← Quay lại Chữ Hán
       </button>
       <p className="kanji-breadcrumb">
-        Bài {lesson.lessonNo}: {lesson.title}
+        {document?.name ?? "Chữ Hán"}
       </p>
       {isDocument ? (
         document ? (
-          <article className="kanji-reading-panel">
+          <article className="kanji-reading-panel kanji-document-reader">
             <h2>{document.name}</h2>
-            <a href={document.url} target="_blank" rel="noopener noreferrer">
-              Mở tài liệu trong tab mới ↗
-            </a>
             <iframe
+              key={documentPreviewUrl}
               className="kanji-document-frame"
-              src={document.url}
+              src={documentPreviewUrl}
               title={document.name}
-              sandbox="allow-scripts allow-same-origin allow-popups"
+              sandbox={isCloudinaryPdf ? undefined : "allow-scripts allow-same-origin allow-popups"}
               referrerPolicy="no-referrer"
             />
-            <p>Nếu tài liệu không hiển thị, hãy mở bằng liên kết phía trên.</p>
+            <div className="kanji-document-reader-actions">
+              <a href={document.url} target="_blank" rel="noopener noreferrer">
+                Mở tài liệu trong tab mới ↗
+              </a>
+            </div>
           </article>
         ) : (
-          <p role="alert">Tài liệu không tồn tại trong bài học này.</p>
+          <p role="alert">Tài liệu đã được gỡ hoặc đường dẫn không còn hợp lệ.</p>
         )
       ) : query.isPending ? (
         <p role="status">Đang tải bài học…</p>
