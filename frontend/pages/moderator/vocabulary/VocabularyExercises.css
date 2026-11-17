@@ -125,6 +125,124 @@
 .mod-chapter-flashcards > p {
   color: #64748b;
 }
+.mod-vocab-flashcard-review,
+.mod-vocab-flashcard-complete {
+  width: min(100%, 880px);
+  margin: 36px auto;
+  text-align: center;
+}
+.mod-vocab-flashcard-review h3,
+.mod-vocab-flashcard-complete h3 {
+  margin: 0 0 18px;
+  color: #0f172a;
+}
+.mod-vocab-flashcard-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.mod-vocab-flashcard-group {
+  min-height: 235px;
+  padding: 28px;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: #0f172a;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 8px 22px #0f172a14;
+  background-image: repeating-radial-gradient(ellipse at 20% 20%, transparent 0 14px, #ffffff55 15px 17px, transparent 18px 30px);
+}
+.mod-vocab-flashcard-group--new {
+  background-color: #ffe7a8;
+  border-color: #fcd34d;
+}
+.mod-vocab-flashcard-group--remembered {
+  background-color: #a7f3c0;
+  border-color: #6ee7a0;
+}
+.mod-vocab-flashcard-group strong {
+  font-size: 1.35rem;
+}
+.mod-vocab-flashcard-group > span {
+  font-size: 1.1rem;
+}
+.mod-vocab-flashcard-group b {
+  margin-top: 8px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: #f97316;
+  color: #fff;
+}
+.mod-vocab-flashcard-group--remembered b {
+  background: #0d9488;
+}
+.mod-vocab-flashcard-group:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.mod-vocab-flashcard-review-all {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f766e;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px #0f172a14;
+}
+.mod-vocab-flashcard-complete {
+  padding: 40px 24px;
+  border: 1px solid #99f6e4;
+  border-radius: 20px;
+  background: #fff;
+}
+.mod-vocab-flashcard-complete p {
+  margin: 0 0 20px;
+  color: #64748b;
+}
+.mod-vocab-flashcard-progress-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.mod-vocab-flashcard-progress-button {
+  padding: 10px 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  color: #334155;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.mod-vocab-flashcard-progress-button--new {
+  border-color: #fbbf24;
+  background: #fffbeb;
+  color: #b45309;
+}
+.mod-vocab-flashcard-progress-button--remembered {
+  border-color: #5eead4;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+.mod-vocab-flashcard-progress-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.mod-vocab-flashcard-progress-actions > p {
+  flex-basis: 100%;
+  color: #b91c1c;
+}
 .mod-chapter-flashcard {
   width: 100%;
   min-height: clamp(440px, 56vh, 520px);
@@ -476,6 +594,12 @@
   line-height: 1.55;
 }
 @media (max-width: 640px) {
+  .mod-vocab-flashcard-groups {
+    grid-template-columns: 1fr;
+  }
+  .mod-vocab-flashcard-group {
+    min-height: 190px;
+  }
   .mod-chapter-flashcard {
     min-height: 420px;
     padding: 28px 20px;

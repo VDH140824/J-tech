@@ -114,7 +114,7 @@ function ChapterCard({
                     <div className="lesson-content">
                       <h3>
                         <Link
-                          to={`/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}&lessonId=${l.id}`}
+                          to={`/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`}
                         >
                           {skills[l.skillType] ?? l.skillType}
                         </Link>

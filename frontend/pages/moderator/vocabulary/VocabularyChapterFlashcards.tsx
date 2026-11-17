@@ -4,6 +4,7 @@ import {
   getChapterVocabularyCards,
   getChapterVocabularies,
   getStudentChapterVocabularyCards,
+  saveStudentVocabularyProgress,
   saveVocabulary,
   type ChapterVocabularyCard,
   type VocabularyInput,
@@ -91,6 +92,9 @@ export function VocabularyChapterFlashcards({
   const [lessonFilter, setLessonFilter] = useState("ALL");
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [deck, setDeck] = useState<ChapterVocabularyCard[] | null>(null);
+  const [progressSaving, setProgressSaving] = useState(false);
+  const [progressError, setProgressError] = useState("");
   const [vocabularyItems, setVocabularyItems] = useState<VocabularyItem[]>([]);
   const [vocabularyLessons, setVocabularyLessons] = useState<LessonSummary[]>([]);
   const [editing, setEditing] = useState(false);
@@ -102,6 +106,7 @@ export function VocabularyChapterFlashcards({
   const [actionError, setActionError] = useState("");
   const dialog = useRef<HTMLDivElement>(null);
   const locked = useRef(false);
+  const progressLocked = useRef(false);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -122,6 +127,7 @@ export function VocabularyChapterFlashcards({
           setVocabularyLessons(lessons);
           setIndex(0);
           setFlipped(false);
+          setDeck(null);
         }
       })
       .catch((failure) => {
@@ -135,7 +141,8 @@ export function VocabularyChapterFlashcards({
   const visible = cards.filter(
     (card) => lessonFilter === "ALL" || String(card.lessonId) === lessonFilter,
   );
-  const card = visible[index];
+  const card = student ? deck?.[index] : visible[index];
+  const rememberedCount = visible.filter((item) => item.remembered).length;
   const lessons = [
     ...new Map(
       cards.map((item) => [
@@ -147,15 +154,48 @@ export function VocabularyChapterFlashcards({
   const move = (value: number) => {
     setIndex(value);
     setFlipped(false);
+    setProgressError("");
+  };
+  const startStudentStudy = (mode: "all" | "remembered" | "new") => {
+    const selected = visible.filter(
+      (item) => mode === "all" || Boolean(item.remembered) === (mode === "remembered"),
+    );
+    setDeck(selected);
+    setIndex(0);
+    setFlipped(false);
+    setProgressError("");
   };
   const shuffle = () => {
-    const next = [...cards];
+    const source = student && deck ? deck : cards;
+    const next = [...source];
     for (let position = next.length - 1; position > 0; position--) {
       const selected = Math.floor(Math.random() * (position + 1));
       [next[position], next[selected]] = [next[selected], next[position]];
     }
-    setCards(next);
+    if (student && deck) setDeck(next);
+    else setCards(next);
     move(0);
+  };
+  const markRemembered = async (remembered: boolean) => {
+    if (!student || !card || progressLocked.current) return;
+    progressLocked.current = true;
+    setProgressSaving(true);
+    setProgressError("");
+    try {
+      await saveStudentVocabularyProgress(chapterId, card.id, remembered);
+      const updated = (items: ChapterVocabularyCard[]) => items.map((item) =>
+        item.id === card.id ? { ...item, remembered } : item,
+      );
+      setCards(updated);
+      setDeck((items) => items ? updated(items) : items);
+      setIndex((value) => value + 1);
+      setFlipped(false);
+    } catch {
+      setProgressError("Chưa lưu được trạng thái. Thẻ vẫn được giữ lại để bạn thử lại.");
+    } finally {
+      progressLocked.current = false;
+      setProgressSaving(false);
+    }
   };
   const exportCards = () => {
     const rows = [
@@ -379,6 +419,7 @@ export function VocabularyChapterFlashcards({
               value={lessonFilter}
               onChange={(event) => {
                 setLessonFilter(event.target.value);
+                setDeck(null);
                 move(0);
               }}
             >
@@ -413,7 +454,51 @@ export function VocabularyChapterFlashcards({
               Trộn thẻ
             </button>
           </div>
-          {!card ? (
+          {student && deck === null && visible.length > 0 ? (
+            <section className="mod-vocab-flashcard-review" aria-label="Ôn tập từ vựng">
+              <h3>Ôn tập từ vựng chương {chapterNo}</h3>
+              <div className="mod-vocab-flashcard-groups">
+                <button
+                  className="mod-vocab-flashcard-group mod-vocab-flashcard-group--new"
+                  disabled={!visible.some((item) => !item.remembered)}
+                  onClick={() => startStudentStudy("new")}
+                >
+                  <strong>Từ chưa nhớ</strong>
+                  <span>({visible.length - rememberedCount} từ)</span>
+                  <b>HỌC NGAY</b>
+                </button>
+                <button
+                  className="mod-vocab-flashcard-group mod-vocab-flashcard-group--remembered"
+                  disabled={!rememberedCount}
+                  onClick={() => startStudentStudy("remembered")}
+                >
+                  <strong>Từ đã nhớ</strong>
+                  <span>({rememberedCount} từ)</span>
+                  <b>HỌC LẠI</b>
+                </button>
+              </div>
+              <button
+                className="mod-vocab-flashcard-review-all"
+                onClick={() => startStudentStudy("all")}
+              >
+                HỌC TẤT CẢ TỪ VỰNG ({visible.length} TỪ)
+              </button>
+            </section>
+          ) : student && deck !== null && index >= deck.length ? (
+            <section className="mod-vocab-flashcard-complete" role="status">
+              <h3>Đã ôn tập xong</h3>
+              <p>Bạn đã xem hết {deck.length} từ trong lượt ôn tập này.</p>
+              <button
+                className="mod-btn-back mod-vocab-button mod-vocab-button--primary"
+                onClick={() => {
+                  setDeck(null);
+                  move(0);
+                }}
+              >
+                Chọn nhóm từ khác
+              </button>
+            </section>
+          ) : !card ? (
             <div className="admin-table-card admin-empty-state">
               <h3>Chưa có từ vựng</h3>
               <p>Gán từ vựng cho các bài trong chương để hiển thị flashcard.</p>
@@ -421,7 +506,7 @@ export function VocabularyChapterFlashcards({
           ) : (
             <div className="mod-chapter-flashcards">
               <p>
-                Bài {card.lessonNo}: {card.lessonTitle} · Thẻ {index + 1}/{visible.length}
+                Bài {card.lessonNo}: {card.lessonTitle} · Thẻ {index + 1}/{student ? deck?.length : visible.length}
               </p>
               <button
                 className={`mod-chapter-flashcard ${flipped ? "flipped" : ""}`}
@@ -430,7 +515,7 @@ export function VocabularyChapterFlashcards({
                 }
                 onClick={() => setFlipped((value) => !value)}
                 onKeyDown={(event) => {
-                  if (event.key === "ArrowRight" && index < visible.length - 1) {
+                  if (event.key === "ArrowRight" && index < (student ? (deck?.length ?? 0) : visible.length) - 1) {
                     event.preventDefault();
                     move(index + 1);
                   }
@@ -466,6 +551,25 @@ export function VocabularyChapterFlashcards({
                 word={card.word}
                 reading={card.reading}
               />
+              {student && (
+                <div className="mod-vocab-flashcard-progress-actions" aria-label="Đánh dấu trạng thái từ">
+                  <button
+                    className="mod-vocab-flashcard-progress-button mod-vocab-flashcard-progress-button--new"
+                    disabled={progressSaving}
+                    onClick={() => void markRemembered(false)}
+                  >
+                    Chưa nhớ
+                  </button>
+                  <button
+                    className="mod-vocab-flashcard-progress-button mod-vocab-flashcard-progress-button--remembered"
+                    disabled={progressSaving}
+                    onClick={() => void markRemembered(true)}
+                  >
+                    {progressSaving ? "Đang lưu..." : "Đã nhớ"}
+                  </button>
+                  {progressError && <p role="alert">{progressError}</p>}
+                </div>
+              )}
               <div className="mod-chapter-flashcard-actions">
                 <button
                   className="mod-btn-back"
@@ -482,7 +586,7 @@ export function VocabularyChapterFlashcards({
                 </button>
                 <button
                   className="mod-btn-back"
-                  disabled={index >= visible.length - 1}
+                  disabled={index >= (student ? (deck?.length ?? 0) : visible.length) - 1}
                   onClick={() => move(index + 1)}
                 >
                   Thẻ sau →

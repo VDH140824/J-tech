@@ -30,7 +30,7 @@ export function StudentVocabularyChapterPage({
   return (
     <section className="student-kanji-page">
       <button type="button" className="kanji-text-button" onClick={onBack}>
-        ← Chọn kỹ năng
+        ← Quay lại chương
       </button>
       <h2>Từ vựng · Chương {chapterNo}</h2>
       <div className="kanji-content-grid">

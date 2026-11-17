@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getChapterStudy } from "../../api/courseApi";
 import { SECTIONS, type LessonSection } from "../moderator/sectionConfig";
-import { ModeratorChapterSkillsOverview } from "../moderator/ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "../moderator/ModeratorLessonListTab";
 import { ModeratorVocabularyLessonPage } from "../moderator/vocabulary/ModeratorVocabularyLessonPage";
 import { ModeratorGrammarListPage } from "../moderator/ModeratorGrammarListPage";
@@ -295,7 +294,7 @@ export function ChapterPage() {
           lessons={data.lessons}
           onLesson={selectLesson}
           onOpen={openChapterVocabulary}
-          onBack={() => selectSkill(null)}
+          onBack={backToChapter}
         />
       );
     else if (active?.key === "kanji")
@@ -323,15 +322,7 @@ export function ChapterPage() {
           onViewLessonItems={(lesson) => selectLesson(lesson.id)}
         />
       );
-    else
-      content = (
-        <ModeratorChapterSkillsOverview
-          readOnly
-          {...context}
-          onSelectSkill={selectSkill}
-          onBack={back}
-        />
-      );
+    else content = <Navigate to={`/courses/${courseId}#chapter-${chapterId}`} replace />;
   }
   return <div className="student-learning-page">{content}</div>;
 }

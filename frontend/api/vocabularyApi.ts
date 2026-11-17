@@ -63,6 +63,7 @@ export interface ChapterVocabularyCard {
   meaningVi: string;
   exampleJp: string | null;
   exampleVi: string | null;
+  remembered?: boolean;
 }
 export async function getChapterVocabularyCards(chapterId: number, signal?: AbortSignal) {
   return (
@@ -79,4 +80,14 @@ export async function getStudentChapterVocabularyCards(chapterId: number, signal
       { signal },
     )
   ).data;
+}
+export async function saveStudentVocabularyProgress(
+  chapterId: number,
+  vocabularyId: number,
+  remembered: boolean,
+) {
+  await apiClient.put(
+    `/student/vocabulary/chapters/${chapterId}/flashcards/${vocabularyId}/progress`,
+    { remembered },
+  );
 }
