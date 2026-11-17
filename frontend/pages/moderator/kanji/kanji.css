@@ -1,6 +1,51 @@
 .kanji-page input,.kanji-page select,.kanji-page textarea{padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;max-width:100%}
 .kanji-content-tabs{display:flex;gap:12px;margin:20px 0;border-bottom:1px solid #cbd5e1;padding-bottom:12px}
 .kanji-content-tabs button[aria-pressed="true"]{background:#7c3aed;color:#fff}
+.kanji-content-tabs{flex-wrap:wrap}
+.kanji-document-panel{padding:24px;background:#fff;border:1px solid #cbd5e1;border-radius:12px}
+.kanji-document-upload{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.kanji-document-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px}
+.kanji-document-toolbar input,.kanji-document-toolbar select{min-width:0;max-width:100%}
+.kanji-document-toolbar a{overflow-wrap:anywhere}
+.kanji-document-list{margin-bottom:20px}
+.kanji-document-list td:first-child{overflow-wrap:anywhere;max-width:360px}
+.kanji-document-reader {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 960px;
+  margin: 24px auto 0;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+.kanji-document-reader h3 {
+  margin: 0 0 16px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.kanji-document-preview {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: clamp(360px, 78vh, 960px);
+  background: #f6f8f8;
+  border: 1px solid #cbd5e1;
+}
+.kanji-document-reader-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: .875rem;
+}
+@media (max-width: 640px) {
+  .kanji-document-reader { padding: 10px; }
+}
+@media(max-width:640px){.kanji-document-panel{padding:12px}.kanji-document-toolbar input,.kanji-document-toolbar select{width:100%}}
 .kanji-exercise-editor,.kanji-exercise-preview{padding:24px;margin:20px 0;background:#fff;border:1px solid #cbd5e1;border-radius:12px}
 .kanji-exercise-editor fieldset{border:0;padding:0;min-width:0}
 .kanji-exercise-editor label,.kanji-exercise-preview label{display:flex;flex-direction:column;gap:8px;margin:12px 0}

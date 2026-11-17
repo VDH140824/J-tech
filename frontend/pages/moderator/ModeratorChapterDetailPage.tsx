@@ -161,7 +161,7 @@ export function ModeratorChapterDetailPage({
     let active = true;
     setLessonError("");
     setActiveLessonForItemsState(null);
-    if (!lessonIdParam) { setLessonLoading(false); return; }
+    if (!lessonIdParam || validSkill === "kanji") { setLessonLoading(false); return; }
     const id = Number(lessonIdParam);
     if (!Number.isSafeInteger(id) || id <= 0) { setLessonError("Bài học không hợp lệ."); return; }
     setLessonLoading(true);
@@ -224,7 +224,7 @@ export function ModeratorChapterDetailPage({
   const grammarId = grammarIdParam && /^\d+$/.test(grammarIdParam) ? Number(grammarIdParam) : null;
 
   // Show the selected lesson's grammar detail directly.
-  if (lessonIdParam && (lessonLoading || lessonError)) {
+  if (validSkill !== "kanji" && lessonIdParam && (lessonLoading || lessonError)) {
     return <div className="admin-page-container">
       <button className="mod-btn-back" onClick={() => handleViewLessonItems(null)}>← Danh sách bài học</button>
       {lessonLoading ? <p role="status">Đang tải bài học…</p> : <p role="alert">{lessonError} <button onClick={() => setLessonRetry(n => n + 1)}>Thử lại</button></p>}
@@ -247,6 +247,9 @@ export function ModeratorChapterDetailPage({
     return <StudentKanjiFlashcardPage key={chapterId} chapterId={chapterId} chapterNo={chapterNo} readOnly onBack={()=>setChapterView(null)}/>;
   if(activeConfig?.key==="kanji" && searchParams.get("kanjiChapterView")==="test")
     return <ModeratorKanjiTestPage key={chapterId} chapterId={chapterId} chapterNo={chapterNo} onBack={()=>setChapterView(null)}/>;
+  if (activeConfig?.key === "kanji") {
+    return <ModeratorKanjiPage key={chapterId} chapterId={chapterId} onBack={() => handleSelectSection(null)} />;
+  }
   if (activeConfig?.key === "vocabulary" && searchParams.get("vocabChapterView") === "flashcards") {
     return (
       <VocabularyChapterFlashcards
@@ -285,9 +288,6 @@ export function ModeratorChapterDetailPage({
   // 1. SUB-PAGE: LIST OF ITEMS FOR A SPECIFIC LESSON (e.g. list_grammar)
   // ONLY render when lessonId is in URL and activeLessonForItems exists
   if (lessonIdParam && activeLessonForItems && activeConfig) {
-    if (activeConfig.key === "kanji") {
-      return <ModeratorKanjiPage key={activeLessonForItems.id} lesson={activeLessonForItems} onBack={() => handleViewLessonItems(null)} />;
-    }
     if (activeConfig.key === "grammar") {
       if (searchParams.get("questionList") === "1" && grammarId != null && grammarId > 0) {
         return (

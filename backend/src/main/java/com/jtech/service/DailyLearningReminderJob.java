@@ -13,14 +13,17 @@ public class DailyLearningReminderJob {
 
     private final UserStreakRepository days;
     private final FeedbackMailService mail;
+    private final SystemSettingService settings;
 
-    public DailyLearningReminderJob(UserStreakRepository days, FeedbackMailService mail) {
+    public DailyLearningReminderJob(UserStreakRepository days, FeedbackMailService mail, SystemSettingService settings) {
         this.days = days;
         this.mail = mail;
+        this.settings = settings;
     }
 
     @Scheduled(cron = "0 * * * * *", zone = "Asia/Ho_Chi_Minh")
     public void sendReminders() {
+        if (!settings.learningReminderEnabled()) return;
         LocalDate today = LocalDate.now(LEARNING_ZONE);
         for (Map<String, Object> student : days.findStudentsWithoutLearningToday(today)) {
             long studentId = ((Number) student.get("user_id")).longValue();

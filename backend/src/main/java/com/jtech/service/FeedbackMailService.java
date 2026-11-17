@@ -15,13 +15,16 @@ public class FeedbackMailService {
     private static final Logger log = LoggerFactory.getLogger(FeedbackMailService.class);
     private final ObjectProvider<JavaMailSender> senders;
     private final String from;
+    private final SystemSettingService settings;
 
     public FeedbackMailService(
         ObjectProvider<JavaMailSender> senders,
-        @Value("${app.feedback.mail-from:no-reply@jtech.local}") String from
+        @Value("${app.feedback.mail-from:no-reply@jtech.local}") String from,
+        SystemSettingService settings
     ) {
         this.senders = senders;
         this.from = from;
+        this.settings = settings;
     }
 
     public record ResolutionMail(
@@ -36,6 +39,7 @@ public class FeedbackMailService {
     @TransactionalEventListener
     public void send(ResolutionMail event) {
         try {
+            if (!settings.feedbackEmailEnabled()) return;
             JavaMailSender sender = senders.getIfAvailable();
             if (sender == null) {
                 log.warn(

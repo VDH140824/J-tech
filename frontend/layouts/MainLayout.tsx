@@ -1,4 +1,5 @@
 import { RewardEquipment } from "../components/layout/RewardEquipment";
+import { SystemAnnouncement } from "../components/layout/SystemAnnouncement";
 import { Outlet } from "react-router-dom";
 import { useState } from "react";
 import { FeedbackPage } from "../pages/feedback/FeedbackPage";
@@ -20,6 +21,7 @@ export function MainLayout() {
       <div className="dekiru-main-area">
         <MainTopbar />
         <main className="main-layout-page">
+          <SystemAnnouncement />
           {feedbackNotice && <div className="feedback-success" role="status">
             {feedbackNotice} <button type="button" onClick={() => setFeedbackNotice("")}>Đóng</button>
           </div>}

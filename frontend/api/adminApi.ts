@@ -1,10 +1,21 @@
 import { apiClient } from "../services/api";
+import type { SystemLog, SystemLogFilters, SystemLogPage } from "../types/admin";
 import type {
   AdminDashboardStatsResponse,
   AdminUserStatusRequest,
   AdminUsersPageResponse,
 } from "../types/admin";
 import type { UserResponse } from "../types/auth";
+
+export async function getSystemLogs(params: SystemLogFilters, signal?: AbortSignal): Promise<SystemLogPage> {
+  const { data } = await apiClient.get<SystemLogPage>("/admin/system-logs", { params, signal });
+  return data;
+}
+
+export async function getSystemLog(id: string, signal?: AbortSignal): Promise<SystemLog> {
+  const { data } = await apiClient.get<SystemLog>(`/admin/system-logs/${encodeURIComponent(id)}`, { signal });
+  return data;
+}
 
 /**
  * GET /api/admin/stats/dashboard

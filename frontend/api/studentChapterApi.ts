@@ -3,6 +3,7 @@ export interface StudentLesson {
     id: number;
     lessonNo: number;
     title: string;
+    documents?: string | null;
     skillType: string;
     itemCount: number;
     videoCount: number;

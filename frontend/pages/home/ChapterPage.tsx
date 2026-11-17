@@ -24,16 +24,18 @@ export function ChapterPage() {
   const valid = [courseId, chapterId].every(
     (value) => Number.isSafeInteger(Number(value)) && Number(value) > 0,
   );
-  const chapter = useQuery({
-    queryKey: ["chapter-study", Number(courseId), Number(chapterId)],
-    queryFn: () => getChapterStudy(Number(courseId), Number(chapterId)),
-    enabled: valid,
-  });
   const active = SECTIONS.find(
     (section) =>
       section.key === params.get("skill") ||
       section.skillType === params.get("skill"),
   );
+  const chapter = useQuery({
+    queryKey: ["chapter-study", Number(courseId), Number(chapterId)],
+    queryFn: () => getChapterStudy(Number(courseId), Number(chapterId)),
+    enabled: valid,
+    refetchOnMount: active?.key === "kanji" ? "always" : true,
+    refetchOnWindowFocus: active?.key === "kanji" ? "always" : false,
+  });
   const selectedId = Number(params.get("lessonId"));
   const selected = chapter.data?.lessons.find(
     (lesson) =>
@@ -41,7 +43,8 @@ export function ChapterPage() {
       lesson.status === "PUBLISHED" &&
       lesson.chapterId === Number(chapterId),
   );
-  const selectSkill = (skill: LessonSection | null) =>
+  const selectSkill = (skill: LessonSection | null) => {
+    if (skill === "kanji") void chapter.refetch();
     setParams((previous) => {
       const next = new URLSearchParams(previous);
       next.delete("lessonId");
@@ -53,6 +56,19 @@ export function ChapterPage() {
       next.delete("document");
       if (skill) next.set("skill", skill);
       else next.delete("skill");
+      return next;
+    });
+  };
+  const openDocument = (lessonId: number, documentIndex: number) =>
+    setParams(previous => {
+      const next = new URLSearchParams(previous);
+      next.set("skill", "KANJI");
+      next.set("lessonId", String(lessonId));
+      next.set("kanjiView", "content");
+      next.set("document", String(documentIndex));
+      next.delete("kanjiId");
+      next.delete("kanjiChapterView");
+      next.delete("vocabTab");
       return next;
     });
   const selectLesson = (id: number | null) =>
@@ -69,6 +85,7 @@ export function ChapterPage() {
       return next;
     });
   const back = () => navigate(`/courses/${courseId}`);
+  const backToChapter = () => navigate(`/courses/${courseId}#chapter-${chapterId}`);
   const openKanji = (
     view: "content" | "flashcards" | "test" | null,
     kanjiId?: number,
@@ -236,7 +253,6 @@ export function ChapterPage() {
           />
         );
       else if (selected.skillType === "KANJI") {
-        const overview = () => openKanji(null);
         const view = params.get("kanjiView");
         if (view === "content")
           content = (
@@ -245,7 +261,7 @@ export function ChapterPage() {
               lesson={selected}
               kanjiId={params.get("kanjiId")}
               documentIndex={params.get("document")}
-              onBack={overview}
+              onBack={() => openChapterKanji(null)}
             />
           );
         else
@@ -254,7 +270,7 @@ export function ChapterPage() {
               key={selected.id}
               lesson={selected}
               {...context}
-              onBack={() => openChapterKanji(null)}
+              onBack={backToChapter}
               onOpen={openKanji}
             />
           );
@@ -288,9 +304,9 @@ export function ChapterPage() {
           chapterId={data.id}
           chapterNo={data.chapterNo}
           lessons={data.lessons}
-          onLesson={selectLesson}
+          onDocument={openDocument}
           onOpen={openChapterKanji}
-          onBack={() => selectSkill(null)}
+          onBack={backToChapter}
         />
       );
     else if (active)

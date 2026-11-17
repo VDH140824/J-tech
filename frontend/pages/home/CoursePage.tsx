@@ -1,7 +1,7 @@
 import { useAuthStore } from "../../store/authStore";
 import { checkIsModerator } from "../../utils/auth";
 import { useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import {
   getStudentChapters,
   type StudentChapterList,
@@ -9,6 +9,7 @@ import {
   type StudentLesson,
 } from "../../api/studentChapterApi";
 import "./CoursePage.css";
+import { parseLessonDocuments } from "../../utils/lessonDocuments";
 const skills: Record<string, string> = {
   KANJI: "Chữ Hán",
   VOCABULARY: "Từ vựng",
@@ -16,6 +17,18 @@ const skills: Record<string, string> = {
   LISTENING: "Nghe hiểu",
   READING: "Đọc hiểu",
 };
+type StudyItem = StudentLesson & { documentIndex?: number };
+
+function studyItems(lessons: StudentLesson[]): StudyItem[] {
+  return lessons.flatMap(lesson => {
+    if (lesson.skillType !== "KANJI") return [lesson];
+    return parseLessonDocuments(lesson.documents).map((document, index) => ({
+      ...lesson,
+      title: document.name,
+      documentIndex: index,
+    }));
+  });
+}
 function Progress({ lessons }: { lessons: StudentLesson[] }) {
   const done = lessons.filter((l) => l.completed).length;
   return (
@@ -38,24 +51,26 @@ function Progress({ lessons }: { lessons: StudentLesson[] }) {
 }
 function ChapterCard({
   chapter,
-  first,
+  expanded,
   courseId,
 }: {
   chapter: StudentChapter;
-  first: boolean;
+  expanded: boolean;
   courseId: number;
 }) {
+  const items = studyItems(chapter.lessons);
+  const sources = Array.from(new Map(items.map(item => [item.id, item])).values());
   const sum = (field: "videoCount" | "exerciseCount" | "testCount") =>
-    chapter.lessons.reduce((n, l) => n + l[field], 0);
+    sources.reduce((n, l) => n + l[field], 0);
   const groups = new Map<number, StudentLesson[]>();
-  chapter.lessons.forEach((l) =>
+  items.filter(item => item.skillType !== "KANJI").forEach((l) =>
     groups.set(l.lessonNo, [...(groups.get(l.lessonNo) ?? []), l]),
   );
   return (
     <details
       className="student-chapter-card"
       id={`chapter-${chapter.id}`}
-      open={first || window.location.hash === `#chapter-${chapter.id}`}
+      open={expanded}
     >
       <summary className="chapter-heading">
         <span className="chapter-number" aria-hidden="true">
@@ -69,24 +84,14 @@ function ChapterCard({
             {sum("videoCount")} video · {sum("exerciseCount")} bài tập ·{" "}
             {chapter.testCount + sum("testCount")} bài kiểm tra
           </p>
-          <Progress lessons={chapter.lessons} />
+          <Progress lessons={items} />
         </div>
         <span aria-hidden="true">⌄</span>
       </summary>
       <div className="chapter-body">
         {chapter.description && <p>{chapter.description}</p>}
-        {chapter.lessons.some((l) => l.skillType === "KANJI") && (
-          <p>
-            <Link
-              className="chapter-back"
-              to={`/courses/${courseId}/chapters/${chapter.id}?skill=KANJI`}
-            >
-              Chữ Hán chương {chapter.chapterNo} · Bài học, Flashcard và Test →
-            </Link>
-          </p>
-        )}
-        {!chapter.lessons.length && (
-          <p>Chưa có bài học được xuất bản trong chương này.</p>
+        {!items.length && (
+          <p>Chưa có tài liệu hoặc bài học được xuất bản trong chương này.</p>
         )}
         {Array.from(groups)
           .sort(([a], [b]) => a - b)
@@ -131,17 +136,31 @@ function ChapterCard({
               </ul>
             </details>
           ))}
+        {chapter.lessons.some(lesson => lesson.skillType === "KANJI") && (
+          <Link className="chapter-kanji-link" to={`/courses/${courseId}/chapters/${chapter.id}?skill=KANJI`}>
+            <span className="chapter-kanji-play" aria-hidden="true">▷</span>
+            <span>Chữ Hán</span>
+          </Link>
+        )}
       </div>
     </details>
   );
 }
 export function CoursePage() {
   const { courseId } = useParams();
+  const { hash } = useLocation();
   const user = useAuthStore((state) => state.user);
   const isModerator = checkIsModerator(user);
   const [course, setCourse] = useState<StudentChapterList>();
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const targetChapter = course?.chapters.find(chapter => hash === `#chapter-${chapter.id}`);
+  useEffect(() => {
+    if (!targetChapter) return;
+    const element = document.getElementById(`chapter-${targetChapter.id}`);
+    element?.setAttribute("open", "");
+    element?.scrollIntoView({ block: "start" });
+  }, [targetChapter]);
   useEffect(() => {
     const controller = new AbortController();
     setCourse(undefined);
@@ -168,6 +187,13 @@ export function CoursePage() {
       });
     return () => controller.abort();
   }, [courseId, attempt, isModerator]);
+  useEffect(() => {
+    if (isModerator) return;
+    const refresh = () => setAttempt(value => value + 1);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [isModerator]);
+  const learningItems = course?.chapters.flatMap(chapter => studyItems(chapter.lessons)) ?? [];
   if (
     isModerator &&
     Number.isSafeInteger(Number(courseId)) &&
@@ -203,11 +229,11 @@ export function CoursePage() {
               <h2>Tiến độ khóa học</h2>
               <p>
                 {course.chapters.length} chương ·{" "}
-                {course.chapters.reduce((n, c) => n + c.lessons.length, 0)} phần
+                {learningItems.length} phần
                 học
               </p>
             </div>
-            <Progress lessons={course.chapters.flatMap((c) => c.lessons)} />
+            <Progress lessons={learningItems} />
           </section>
           <section aria-label="Danh sách chương">
             {!course.chapters.length ? (
@@ -220,7 +246,7 @@ export function CoursePage() {
                   key={chapter.id}
                   chapter={chapter}
                   courseId={Number(courseId)}
-                  first={i === 0}
+                  expanded={targetChapter ? targetChapter.id === chapter.id : i === 0}
                 />
               ))
             )}
