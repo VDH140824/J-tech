@@ -315,6 +315,15 @@
 @keyframes campus-fortune-progress { to { transform: translateX(125%); } }
 @media (max-width: 640px) { .campus-fortune-panel { bottom: 115px; max-height: calc(100% - 12rem); padding: .8rem; } }
 @media (prefers-reduced-motion: reduce) { .campus-fortune-progress-track i { animation: none; } }
+.campus-computer-surface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  pointer-events: auto;
+  overflow: hidden;
+}
+.campus-computer-surface > .campus-computer { width: 100%; height: 100%; border: 0; border-radius: 0; }
 .campus-computer {
   --computer-font: 22px;
   display: flex;
@@ -380,6 +389,7 @@
   padding: clamp(8px, 2vw, 24px);
   background: #0c1928f5;
   outline: none;
+  pointer-events: auto;
 }
 .campus-computer-overlay:fullscreen { width: 100vw; height: 100vh; }
 .campus-computer-expanded { --computer-font: 17px; width: min(1100px, 100%); height: 100%; max-height: 1000px; border-radius: 12px; box-shadow: 0 10px 70px #0005; }

@@ -1,6 +1,7 @@
-import { Box3, Group, Mesh, Quaternion, Vector3, type Object3D } from "three";
+import { Box3, BoxGeometry, Group, Material, Mesh, MeshStandardMaterial, Quaternion, Vector3, type Object3D } from "three";
 import type * as Rapier from "@dimforge/rapier3d-compat";
 import { extractCampusSeats, isSolidFurniture, type CampusSeat } from "./campusSeating";
+import { applyRealisticMaterials } from "./campusMaterials";
 
 export const PLAYER_RADIUS = 0.28;
 export const PLAYER_HALF_SEGMENT = 0.56;
@@ -111,11 +112,89 @@ export function doorSweepBlocked(door: CampusDoor, from: number, to: number, pla
   return false;
 }
 
+function createRoadBlock(
+  minX: number, maxX: number,
+  minY: number, maxY: number,
+  minZ: number, maxZ: number,
+  material: Material,
+  uvTileScale = 0.625,
+): Mesh {
+  const width = Math.max(0.01, maxX - minX);
+  const height = Math.max(0.01, maxY - minY);
+  const depth = Math.max(0.01, maxZ - minZ);
+  const geometry = new BoxGeometry(width, height, depth);
+  const uvs = geometry.getAttribute("uv");
+  if (uvs) {
+    const uMin = minX * uvTileScale;
+    const uMax = maxX * uvTileScale;
+    const vMin = minZ * uvTileScale;
+    const vMax = maxZ * uvTileScale;
+    uvs.setXY(8, uMin, vMin);
+    uvs.setXY(9, uMax, vMin);
+    uvs.setXY(10, uMin, vMax);
+    uvs.setXY(11, uMax, vMax);
+    uvs.needsUpdate = true;
+  }
+  const mesh = new Mesh(geometry, material);
+  mesh.name = `ROAD_BLOCK_${Math.round(minX)}_${Math.round(minZ)}`;
+  mesh.position.set((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
+  return mesh;
+}
+
+function widenCampusRoad(object: Group) {
+  let redMat: Material | undefined;
+  let greyMat: Material | undefined;
+  let curbMat: Material | undefined;
+  let earthMat: Material | undefined;
+
+  object.traverse((child) => {
+    if (!(child instanceof Mesh)) return;
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.forEach((mat) => {
+      const name = mat.name.toLowerCase();
+      if (!redMat && name.includes("red interlocking")) redMat = mat;
+      if (!greyMat && name.includes("grey interlocking")) greyMat = mat;
+      if (!curbMat && name.includes("curb")) curbMat = mat;
+      if (!earthMat && name.includes("earth")) earthMat = mat;
+    });
+  });
+
+  const fallbackRed = redMat || new MeshStandardMaterial({ color: "#8b2518", roughness: 0.85 });
+  const fallbackGrey = greyMat || new MeshStandardMaterial({ color: "#787672", roughness: 0.85 });
+  const fallbackCurb = curbMat || new MeshStandardMaterial({ color: "#a8a5a0", roughness: 0.7 });
+  const fallbackEarth = earthMat || new MeshStandardMaterial({ color: "#423b32", roughness: 0.95 });
+
+  const extensions = new Group();
+  extensions.name = "CAMPUS_ROAD_EXTENSIONS";
+
+  // 1. Red paver avenue extensions (widened to 25.5m and lengthened past the 2 trees to -88m)
+  extensions.add(createRoadBlock(26.15, 33.5, -0.088, 0.012, -88.0, -18.5, fallbackRed));
+  extensions.add(createRoadBlock(8.0, 16.15, -0.088, 0.012, -88.0, -18.5, fallbackRed));
+  extensions.add(createRoadBlock(16.15, 26.15, -0.088, 0.012, -88.0, -70.5, fallbackRed));
+
+  // 2. Sidewalks along both flanks and terminating end
+  extensions.add(createRoadBlock(33.5, 36.5, -0.068, 0.032, -88.0, -18.5, fallbackGrey));
+  extensions.add(createRoadBlock(5.5, 8.0, -0.068, 0.032, -88.0, -18.5, fallbackGrey));
+  extensions.add(createRoadBlock(5.5, 36.5, -0.068, 0.032, -88.0, -85.5, fallbackGrey));
+
+  // 3. Concrete curbs protecting the sidewalk edges
+  extensions.add(createRoadBlock(36.5, 36.8, -0.08, 0.05, -88.4, -18.5, fallbackCurb));
+  extensions.add(createRoadBlock(5.2, 5.5, -0.08, 0.05, -88.4, -18.5, fallbackCurb));
+  extensions.add(createRoadBlock(5.2, 36.8, -0.08, 0.05, -88.4, -88.0, fallbackCurb));
+
+  // 4. Solid foundation/earth base underneath to seal any abyss/void
+  extensions.add(createRoadBlock(5.0, 37.0, -0.60, -0.08, -89.0, -18.0, fallbackEarth));
+
+  object.add(extensions);
+}
+
 export function prepareCampusWorld(scene: Object3D): CampusWorld {
   const object = new Group();
   object.add(scene.clone(true));
+  applyRealisticMaterials(object);
   const sourceBounds = new Box3().setFromObject(object);
   const center = sourceBounds.getCenter(new Vector3());
+  widenCampusRoad(object);
   // Preserve the GLB's original meter scale so stairs match the avatar's size.
   object.position.set(-center.x, 0, -center.z);
   object.updateMatrixWorld(true);

@@ -98,9 +98,12 @@ export function CampusEnvironment({ time, campus, player }: {
   const night = time === "night";
   return (
     <>
-      <color attach="background" args={[night ? "#070e24" : "#e8eff2"]} />
-      <hemisphereLight args={[night ? "#94b6ef" : "#ffffff", night ? "#26324c" : "#9aaf9c", night ? 0.4 : 2]} />
-      <directionalLight position={[70, 100, 50]} color={night ? "#bacfff" : "#ffffff"} intensity={night ? 0.65 : 2.5} castShadow={false} />
+      <color attach="background" args={[night ? "#080d1a" : "#c9e2f5"]} />
+      <hemisphereLight args={[night ? "#7899d4" : "#e2f0fc", night ? "#111827" : "#a3b899", night ? 0.45 : 1.2]} />
+      <directionalLight position={[75, 110, 55]} color={night ? "#b0caff" : "#fffaf0"} intensity={night ? 0.75 : 2.0} castShadow={false} />
+      {!night && (
+        <directionalLight position={[-60, 45, -45]} color="#bdd7ee" intensity={0.5} castShadow={false} />
+      )}
       {night && <>
         <NightSky />
         <NearbyLights anchors={anchors} player={player} />

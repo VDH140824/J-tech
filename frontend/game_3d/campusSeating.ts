@@ -29,6 +29,8 @@ export function isSolidFurniture(name: string) {
 
 interface DisplaySurface { bounds: Box3; normal: Vector3 }
 
+const SEAT_MARKER = /^(?:ALPHA_OCCUPANTS_Player[ _]workstation_|BETA_Player[ _]seat[ _])([LRB]\d+)(?:_desk_(\d+))?$/;
+
 function displaySurfaces(mesh: Mesh): DisplaySurface[] {
   const geometry = mesh.geometry;
   const positions = geometry.getAttribute("position");
@@ -96,35 +98,50 @@ export function extractCampusSeats(object: Object3D): CampusSeat[] {
   const markers: Object3D[] = [];
   const displays: DisplaySurface[] = [];
   object.traverseVisible((child) => {
-    if (/ALPHA_OCCUPANTS_Player_workstation_[LR]\d+|ALPHA_OCCUPANTS_Player workstation_[LR]\d+|BETA_Player[ _]seat[ _]B\d+/.test(child.name)) markers.push(child);
+    if (SEAT_MARKER.test(child.name)) markers.push(child);
     if (child instanceof Mesh) displays.push(...displaySurfaces(child));
   });
   const up = new Vector3(0, 1, 0);
   return markers.flatMap((marker) => {
     const position = marker.getWorldPosition(new Vector3());
-    const eye = position.clone().add(new Vector3(0, 0.78, 0));
-    const nearby = displays.filter(({ bounds }) => {
-      const center = bounds.getCenter(new Vector3());
-      return center.y > position.y + 0.05 && center.y < eye.y + 0.15
-        && Math.hypot(center.x - position.x, center.z - position.z) < 1.4;
-    }).sort((a, b) => a.bounds.getCenter(new Vector3()).distanceToSquared(position) - b.bounds.getCenter(new Vector3()).distanceToSquared(position));
-    const display = nearby[0];
+    const [, room, desk] = marker.name.match(SEAT_MARKER)!;
+    const floorY = position.y - (room.startsWith("B") ? 0.46 : 0.5);
+
+    // The GLB marks only vacant chairs. Bind each one to its closest screen,
+    // rather than offering desks that still have an NPC or belong to another room.
+    const display = displays
+      .map((surface) => {
+        const center = surface.bounds.getCenter(new Vector3());
+        return { surface, center, distance: Math.hypot(center.x - position.x, center.z - position.z) };
+      })
+      .filter(({ center, distance }) => Math.abs(center.y - position.y) < 1.0 && distance < 1.4)
+      .sort((a, b) => a.distance - b.distance)[0]?.surface;
     if (!display) return [];
+
     const center = display.bounds.getCenter(new Vector3());
     const normal = display.normal.clone();
+    const eye = position.clone().add(new Vector3(0, 0.78, 0));
     if (normal.dot(eye.clone().sub(center)) < 0) normal.negate();
     const right = up.clone().cross(normal).normalize();
     const screenUp = normal.clone().cross(right).normalize();
     const rotation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(right, screenUp, normal));
     const size = display.bounds.getSize(new Vector3());
     const forward = center.clone().sub(position).setY(0).normalize();
-    const room = marker.name.match(/([LRB]\d+)$/)?.[1] ?? "";
+    const label = `${room.startsWith("B") ? "Beta" : "Alpha"} · Phòng ${room}${desk ? ` (Bàn ${Number(desk) + 1})` : ""}`;
+
     return [{
-      id: marker.name, label: `${room.startsWith("B") ? "Beta" : "Alpha"} · Phòng ${room}`,
-      position, floorY: position.y - (room.startsWith("B") ? 0.46 : 0.5), forward, eye,
-      screen: { position: center.addScaledVector(normal, 0.008), rotation,
+      id: marker.name,
+      label,
+      position,
+      floorY,
+      forward,
+      eye,
+      screen: {
+        position: center.addScaledVector(normal, 0.008),
+        rotation,
         width: Math.max(0.18, Math.abs(right.x) * size.x + Math.abs(right.z) * size.z) * 0.94,
-        height: Math.max(0.1, size.y) * 0.94 },
+        height: Math.max(0.1, size.y) * 0.94,
+      },
     }];
   });
 }

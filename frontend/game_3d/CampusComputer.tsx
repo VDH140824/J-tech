@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState, type MutableRefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { createPortal } from "react-dom";
 import { Html } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+import { Matrix4, Vector3 } from "three";
 import type { CampusSeat, SeatingControl } from "./campusSeating";
+
+const screenOrigin = () => [0, 0];
 
 export const CAMPUS_DEMO_QUESTIONS = [
   { id: "greeting", content: "「こんにちは」 có nghĩa là gì?", options: ["Xin chào", "Cảm ơn", "Tạm biệt"], correct: 0, explanation: "こんにちは là lời chào thường dùng vào ban ngày." },
@@ -32,8 +35,31 @@ export function CampusComputer({ seat, control, onQuizCompleted }: {
   const expandRequest = useRef(control.current.expandRequest);
   const width = 720;
   const height = width * seat.screen.height / seat.screen.width;
+  const { camera, gl, size } = useThree();
+  const screenSurface = useRef<HTMLDivElement>(null);
+  const screenPortal = useMemo(() => ({ current: gl.domElement.parentElement! }), [gl]);
+  const surfaceMatrix = useMemo(() => {
+    const scale = seat.screen.width / width;
+    // CSS starts at the top-left; the model's screen position is its center.
+    return new Matrix4()
+      .compose(seat.screen.position, seat.screen.rotation, new Vector3(scale, -scale, 1))
+      .multiply(new Matrix4().makeTranslation(-width / 2, -height / 2, 0));
+  }, [seat, width, height]);
+  const projection = useMemo(() => new Matrix4(), []);
 
   useFrame(() => {
+    if (screenSurface.current && !expanded) {
+      camera.updateMatrixWorld();
+      // Project the actual screen plane into canvas pixels. Keep perspective
+      // in the matrix so all four edges stay attached to a tilted laptop.
+      projection.set(
+        size.width / 2, 0, 0, size.width / 2,
+        0, -size.height / 2, 0, size.height / 2,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+      ).multiply(camera.projectionMatrix).multiply(camera.matrixWorldInverse).multiply(surfaceMatrix);
+      screenSurface.current.style.transform = `matrix3d(${projection.elements.join(",")})`;
+    }
     if (expandRequest.current === control.current.expandRequest) return;
     expandRequest.current = control.current.expandRequest;
     control.current.screenExpanded = true;
@@ -101,7 +127,7 @@ export function CampusComputer({ seat, control, onQuizCompleted }: {
     setSubmitted(true);
   };
   const content = (
-    <div className={`campus-computer ${expanded ? "campus-computer-expanded" : ""}`} style={expanded ? undefined : { width, height }}>
+    <div className={`campus-computer ${expanded ? "campus-computer-expanded" : ""}`}>
       <header className="campus-computer-bar">
         <span>J-Tech · {seat.label}</span>
         <div>
@@ -157,8 +183,8 @@ export function CampusComputer({ seat, control, onQuizCompleted }: {
   );
 
   return (
-    <Html position={seat.screen.position} quaternion={seat.screen.rotation} transform
-      distanceFactor={seat.screen.width * 400 / width} zIndexRange={[35, 30]}>
+    <Html position={seat.screen.position} portal={screenPortal} calculatePosition={screenOrigin}
+      style={{ pointerEvents: "none" }} zIndexRange={[35, 30]}>
       {expanded ? createPortal(
         <div ref={overlay} className="campus-computer-overlay" role="dialog" aria-modal="true" aria-label="Màn hình máy tính" tabIndex={-1}
           onKeyDown={(event) => {
@@ -169,7 +195,7 @@ export function CampusComputer({ seat, control, onQuizCompleted }: {
             if (event.shiftKey && (document.activeElement === first || document.activeElement === overlay.current)) { event.preventDefault(); last.focus(); }
             else if (!event.shiftKey && (document.activeElement === last || document.activeElement === overlay.current)) { event.preventDefault(); first.focus(); }
           }}>{content}</div>, document.body,
-      ) : content}
+      ) : <div ref={screenSurface} className="campus-computer-surface" style={{ width, height }}>{content}</div>}
     </Html>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
 import { Html, useGLTF, useProgress } from "@react-three/drei";
 import { CuboidCollider, Physics, RigidBody, TrimeshCollider } from "@react-three/rapier";
+import { ACESFilmicToneMapping } from "three";
 import { useAuthStore } from "../store/authStore";
 import { CampusPlayer, type CampusInput } from "./CampusPlayer";
 import { CampusDoors, type DoorInteraction, type DoorPrompt } from "./CampusDoors";
@@ -231,7 +232,12 @@ export default function Campus3DPage() {
             <Canvas
               dpr={[1, 1.5]}
               camera={{ position: [0, 5, 10], fov: 55, near: 0.05, far: 500 }}
-              gl={{ antialias: true, powerPreference: "high-performance" }}
+              gl={{
+                antialias: true,
+                powerPreference: "high-performance",
+                toneMapping: ACESFilmicToneMapping,
+                toneMappingExposure: 1.05,
+              }}
               fallback={<MapNotice />}
             >
               <Suspense fallback={<LoadingMap />}>

@@ -1,6 +1,6 @@
 import type { AvatarMotion } from "./CampusAvatar";
 
-export const CAMPUS_MAP_ID = "e29aac358137686a12e9777652c293602812783eb6535ed75a370734e53fda32";
+export const CAMPUS_MAP_ID = "55fd442b15008443b281ea92dc5ec6ef2e978b2364c715c9d7e2f9d1db400abe";
 export interface CampusPose {
   x: number; y: number; z: number; yaw: number; speed: number; running: boolean;
   seatId: string | null;
