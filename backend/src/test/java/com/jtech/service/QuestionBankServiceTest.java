@@ -71,7 +71,7 @@ class QuestionBankServiceTest {
 
     private static QuestionBankRequest mcq(Question.Skill skill, List<String> options, String correct) {
         return new QuestionBankRequest(skill, Question.QuestionType.MCQ, 10L, 20L, "  学生 nghĩa là gì?  ", " giải thích ",
-                Question.Difficulty.EASY, null, options, correct, null, null);
+                Question.Difficulty.EASY, null, options, correct, null);
     }
 
     private static QuestionBankRequest vocabMcq() {
@@ -80,7 +80,7 @@ class QuestionBankServiceTest {
 
     private static QuestionBankRequest withContent(QuestionBankRequest r, String content) {
         return new QuestionBankRequest(r.skill(), r.questionType(), r.lessonId(), r.grammarId(), content,
-                r.explanation(), r.difficulty(), r.isExerciseQuestion(), r.options(), r.correctAnswer(), r.matches(), r.testIds());
+                r.explanation(), r.difficulty(), r.isExerciseQuestion(), r.options(), r.correctAnswer(), r.matches());
     }
 
     private Question existing(Question.Skill skill, String answerData) {
@@ -181,35 +181,35 @@ class QuestionBankServiceTest {
     @Test
     void QB01_UTCID08_matchingNeedsTwoPairs() {
         QuestionBankRequest r = new QuestionBankRequest(Question.Skill.KANJI, Question.QuestionType.MATCHING, 11L, null,
-                "Nối", null, Question.Difficulty.MEDIUM, null, null, null, Map.of("山", "núi"), null);
+                "Nối", null, Question.Difficulty.MEDIUM, null, null, null, Map.of("山", "núi"));
         assertStatus(HttpStatus.BAD_REQUEST, () -> service.create(r, EMAIL));
     }
 
     @Test
     void QB01_UTCID09_fillInWithoutAnswer_rejected() {
         QuestionBankRequest r = new QuestionBankRequest(Question.Skill.VOCABULARY, Question.QuestionType.FILL_IN, 10L,
-                null, "Điền nghĩa", null, Question.Difficulty.HARD, null, null, "  ", null, null);
+                null, "Điền nghĩa", null, Question.Difficulty.HARD, null, null, "  ", null);
         assertStatus(HttpStatus.BAD_REQUEST, () -> service.create(r, EMAIL));
     }
 
     @Test
     void QB01_UTCID10_createKanjiFillIn_trimsAnswer() throws Exception {
         QuestionBankRequest r = new QuestionBankRequest(Question.Skill.KANJI, Question.QuestionType.FILL_IN, 11L,
-                null, "Cách đọc của 駅?", null, Question.Difficulty.HARD, false, null, " えき ", null, null);
+                null, "Cách đọc của 駅?", null, Question.Difficulty.HARD, false, null, " えき ", null);
         service.create(r, EMAIL);
 
         assertEquals(11L, stored.getLessonId());
-        assertTrue(stored.getIsExerciseQuestion()); // Kanji luôn TRUE dù request gửi false
+        assertFalse(stored.getIsExerciseQuestion()); // câu ngân hàng là câu kiểm tra
         assertEquals("えき", json.readTree(stored.getAnswerData()).path("correctAnswer").asText());
     }
 
     @Test
-    void QB01_UTCID11_grammarAlwaysExercise() {
+    void QB01_UTCID11_grammarIsTestQuestion() {
         QuestionBankRequest r = new QuestionBankRequest(Question.Skill.GRAMMAR, Question.QuestionType.FILL_IN, null,
-                20L, "あの かたは どなた（　）。", null, Question.Difficulty.MEDIUM, false, null, "ですか", null, null);
+                20L, "あの かたは どなた（　）。", null, Question.Difficulty.MEDIUM, false, null, "ですか", null);
         service.create(r, EMAIL);
 
-        assertTrue(stored.getIsExerciseQuestion());
+        assertFalse(stored.getIsExerciseQuestion());
         assertEquals(20L, stored.getGrammarId());
     }
 
@@ -366,63 +366,5 @@ class QuestionBankServiceTest {
         var a = new QuestionBankService.Answer(List.of("ＡＢＣ", " x "), "ＡＢＣ", Map.of());
         var b = new QuestionBankService.Answer(List.of("abc", "X"), "abc", Map.of());
         assertTrue(QuestionBankService.sameAnswer(a, b));
-    }
-
-    // ===================== QB-05 gắn vào mini test / test chương =====================
-
-    private static QuestionBankResponse.TestItem testItem(long id, String type, boolean locked) {
-        return new QuestionBankResponse.TestItem(id, type, "VOCABULARY", "Đề " + id, "DRAFT", locked);
-    }
-
-    private static QuestionBankRequest withTests(QuestionBankRequest r, List<Long> testIds) {
-        return new QuestionBankRequest(r.skill(), r.questionType(), r.lessonId(), r.grammarId(), r.content(),
-                r.explanation(), r.difficulty(), r.isExerciseQuestion(), r.options(), r.correctAnswer(), r.matches(), testIds);
-    }
-
-    @Test
-    void QB05_UTCID01_createLinksSelectedTests() {
-        when(queries.availableTests(10L, "VOCABULARY"))
-                .thenReturn(List.of(testItem(1L, "MINI_TEST", false), testItem(2L, "CHAPTER_TEST", false)));
-        service.create(withTests(vocabMcq(), List.of(1L, 2L)), EMAIL);
-
-        verify(queries).linkTest(1L, 50L, "VOCABULARY");
-        verify(queries).linkTest(2L, 50L, "VOCABULARY");
-    }
-
-    @Test
-    void QB05_UTCID02_testOfOtherLesson_rejected() {
-        when(queries.availableTests(10L, "VOCABULARY")).thenReturn(List.of(testItem(1L, "MINI_TEST", false)));
-        ResponseStatusException ex = assertStatus(HttpStatus.BAD_REQUEST,
-                () -> service.create(withTests(vocabMcq(), List.of(99L)), EMAIL));
-        assertEquals(QuestionBankService.TEST_NOT_AVAILABLE, ex.getReason());
-        verify(queries, never()).linkTest(anyLong(), anyLong(), any());
-    }
-
-    @Test
-    void QB05_UTCID03_testWithAttempts_locked() {
-        when(queries.availableTests(10L, "VOCABULARY")).thenReturn(List.of(testItem(1L, "MINI_TEST", true)));
-        assertStatus(HttpStatus.CONFLICT, () -> service.create(withTests(vocabMcq(), List.of(1L)), EMAIL));
-        verify(queries, never()).linkTest(anyLong(), anyLong(), any());
-    }
-
-    @Test
-    void QB05_UTCID04_updateUnticksOnlyManagedTests() {
-        existing(Question.Skill.VOCABULARY, VOCAB_DATA);
-        when(queries.availableTests(10L, "VOCABULARY")).thenReturn(List.of(testItem(1L, "MINI_TEST", false)));
-        // 1 = mini test của bài; 7 = test chương riêng của Từ vựng (màn khác quản lý) → giữ nguyên
-        when(queries.linkedTests(50L)).thenReturn(List.of(testItem(1L, "MINI_TEST", false), testItem(7L, "CHAPTER_TEST", false)));
-        service.update(50L, withTests(withContent(vocabMcq(), "mới"), List.of()), EMAIL);
-
-        verify(queries).unlinkTest(1L, 50L);
-        verify(queries, never()).unlinkTest(7L, 50L);
-    }
-
-    @Test
-    void QB05_UTCID05_updateWithoutTestIds_keepsLinks() {
-        existing(Question.Skill.VOCABULARY, VOCAB_DATA);
-        service.update(50L, withContent(vocabMcq(), "mới"), EMAIL);
-
-        verify(queries, never()).linkTest(anyLong(), anyLong(), any());
-        verify(queries, never()).unlinkTest(anyLong(), anyLong());
     }
 }

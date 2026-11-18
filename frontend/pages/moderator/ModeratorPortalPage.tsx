@@ -15,6 +15,7 @@ import { ModeratorLayout } from "../../layouts/ModeratorLayout";
 import { ModeratorKanjiManagementPage } from "./kanji/ModeratorKanjiManagementPage";
 import { ModeratorConjugationTab } from "./ModeratorConjugationTab";
 import { QuestionBankTab } from "./QuestionBankTab";
+import { TestManagementTab } from "./TestManagementTab";
 import { FeedbackPage } from "../feedback/FeedbackPage";
 import { SECTIONS } from "./sectionConfig";
 import type { ChapterDetail } from "../../api/courseApi";
@@ -28,7 +29,8 @@ export type ModeratorTab =
   | "classes"
   | "feedback"
   | "conjugations"
-  | "question-bank";
+  | "question-bank"
+  | "tests";
 
 export interface ModeratorNavState {
   courseId: number;
@@ -53,6 +55,7 @@ export function ModeratorPortalPage() {
   const matchClassStudents = useMatch("/moderator/classes/:classId/students");
   const matchConjugations = useMatch("/moderator/conjugation-forms");
   const matchQuestionBank = useMatch("/moderator/question-bank");
+  const matchTests = useMatch("/moderator/tests");
 
   const [chapterInfo, setChapterInfo] = useState<ChapterDetail | null>(null);
 
@@ -83,7 +86,9 @@ export function ModeratorPortalPage() {
               ? "conjugations"
               : matchQuestionBank
                 ? "question-bank"
-                : "courses";
+                : matchTests
+                  ? "tests"
+                  : "courses";
 
   const handleSelectTab = (tab: string) => {
     if (tab === "kanji") {
@@ -104,6 +109,11 @@ export function ModeratorPortalPage() {
     if (tab === "question-bank") {
       setChapterInfo(null);
       navigate("/moderator/question-bank");
+      return;
+    }
+    if (tab === "tests") {
+      setChapterInfo(null);
+      navigate("/moderator/tests");
       return;
     }
     if (tab === "feedback") navigate("/moderator/feedback");
@@ -156,6 +166,7 @@ export function ModeratorPortalPage() {
   if (activeTab === "conjugations") breadcrumb = "Trang chủ / Quản lý thể chia";
   if (activeTab === "question-bank")
     breadcrumb = "Trang chủ / Ngân hàng câu hỏi";
+  if (activeTab === "tests") breadcrumb = "Trang chủ / Bài kiểm tra";
   const chapterId = matchChapter?.params.chapterId
     ? Number(matchChapter.params.chapterId)
     : null;
@@ -186,6 +197,7 @@ export function ModeratorPortalPage() {
       )}
       {activeTab === "conjugations" && <ModeratorConjugationTab />}
       {activeTab === "question-bank" && <QuestionBankTab />}
+      {activeTab === "tests" && <TestManagementTab />}
       {activeTab === "feedback" && <FeedbackPage portal="moderator" />}
       {activeTab === "courses" && (
         <ModeratorCoursesTab

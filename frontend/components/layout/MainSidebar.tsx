@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { checkIsAdmin, checkIsModerator } from "../../utils/auth";
 import { useAuthStore } from "../../store/authStore";
@@ -58,14 +57,10 @@ export function MainSidebar({
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
 
-  const [activeTab, setActiveTab] = useState("trang-chu");
-
   const normalizedRole = user?.role?.trim().toUpperCase();
   const normalizedRoleId = String(user?.roleId ?? "");
   const isAdmin = checkIsAdmin(user);
   const isModerator = checkIsModerator(user);
-
-  const isHomeActive = location.pathname === "/home";
 
   return (
     <aside className="dekiru-sidebar">
@@ -145,72 +140,6 @@ export function MainSidebar({
             <span className="nav-link-text">Phản hồi & Báo lỗi</span>
           </button>
         )}
-        <button
-          type="button"
-          className={`nav-link-btn ${isHomeActive ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("trang-chu");
-            navigate("/home");
-          }}
-        >
-          <span className="nav-link-icon">🌸</span>
-          <span className="nav-link-text">Trang chủ</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-link-btn ${activeTab === "bai-hoc" && location.pathname !== "/home" ? "active" : ""}`}
-          onClick={() => setActiveTab("bai-hoc")}
-        >
-          <span className="nav-link-icon">📖</span>
-          <span className="nav-link-text">Bài học</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-link-btn ${activeTab === "tu-vung" && location.pathname !== "/home" ? "active" : ""}`}
-          onClick={() => setActiveTab("tu-vung")}
-        >
-          <span className="nav-link-icon">🎴</span>
-          <span className="nav-link-text">Từ vựng</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-link-btn ${activeTab === "ngu-phap" && location.pathname !== "/home" ? "active" : ""}`}
-          onClick={() => setActiveTab("ngu-phap")}
-        >
-          <span className="nav-link-icon">📑</span>
-          <span className="nav-link-text">Ngữ pháp</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-link-btn ${activeTab === "luyen-de" && location.pathname !== "/home" ? "active" : ""}`}
-          onClick={() => setActiveTab("luyen-de")}
-        >
-          <span className="nav-link-icon">📝</span>
-          <span className="nav-link-text">Luyện đề</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-link-btn ${activeTab === "thong-ke" && location.pathname !== "/home" ? "active" : ""}`}
-          onClick={() => setActiveTab("thong-ke")}
-        >
-          <span className="nav-link-icon">📊</span>
-          <span className="nav-link-text">Thống kê</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-link-btn ${activeTab === "cai-dat" && location.pathname !== "/home" ? "active" : ""}`}
-          onClick={() => setActiveTab("cai-dat")}
-        >
-          <span className="nav-link-icon">⚙️</span>
-          <span className="nav-link-text">Cài đặt</span>
-        </button>
-
         {/* MODERATOR PORTAL SPECIAL ITEM (Only visible if user has MODERATOR privileges) */}
         {isModerator && (
           <div className="moderator-nav-wrapper">

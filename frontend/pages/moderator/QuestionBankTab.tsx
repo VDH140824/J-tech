@@ -7,7 +7,6 @@ import {
   STATE_LABEL,
   TEST_KIND_LABEL,
   chapterLabel,
-  chapterOfLesson,
   chaptersOf,
   courseOfChapter,
   lessonLabel,
@@ -116,7 +115,11 @@ export function QuestionBankTab() {
   }, []);
 
   const chapters = useMemo(() => chaptersOf(targets, courseId), [targets, courseId]);
-  const lessons = useMemo(() => lessonsOf(targets, courseId, chapterId, skill), [targets, courseId, chapterId, skill]);
+  // Bài học: chỉ hiện tên bài của chương đã chọn, đúng kỹ năng đang lọc
+  const lessons = useMemo(
+    () => (chapterId === "" ? [] : lessonsOf(targets, courseId, chapterId, skill)),
+    [targets, courseId, chapterId, skill],
+  );
   // Bài test theo chương / bài học đang chọn
   const tests = useMemo(() => {
     const chapterIds = new Set(chapters.map((c) => c.id));
@@ -298,21 +301,17 @@ export function QuestionBankTab() {
             ))}
           </select>
           <select className="admin-filter-select" aria-label="Lọc theo bài học" value={lessonId}
+            disabled={chapterId === ""} title={chapterId === "" ? "Chọn chương trước" : undefined}
             onChange={(e) => {
-              const next = toNumber(e.target.value);
-              setLessonId(next);
-              if (next !== "") {
-                const chapter = chapterOfLesson(targets, next);
-                setChapterId(chapter);
-                setCourseId(courseOfChapter(targets, chapter));
-              }
+              setLessonId(toNumber(e.target.value));
               setTestId("");
               resetPage();
             }}>
-            <option value="">Tất cả bài học</option>
+            <option value="">{chapterId === "" ? "Chọn chương để lọc bài học" : "Tất cả bài học"}</option>
             {lessons.map((l) => (
               <option key={l.id} value={l.id}>
-                {lessonLabel(targets, l, chapterId === "")}
+                {skill ? "" : `${SKILL_LABEL[l.skillType as QuestionSkill] ?? l.skillType} · `}
+                {lessonLabel(targets, l, false)}
               </option>
             ))}
           </select>
@@ -485,7 +484,7 @@ export function QuestionBankTab() {
                 </span>
               </div>
               <div className="qb-detail-row">
-                <span>Loại test</span>
+                <span>Thuộc bài test</span>
                 <span>
                   {viewing.tests.length === 0
                     ? "Chưa gắn vào đề nào"

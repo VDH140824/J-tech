@@ -163,7 +163,7 @@ public class QuestionBankQueryRepository {
                 .stream().findFirst();
     }
 
-    // ===== Gắn câu hỏi vào đề kiểm tra (test_question, không thêm bảng / cột) =====
+    // ===== Đề kiểm tra đang chứa câu hỏi (chỉ đọc test_question) =====
     private static final String TEST_COLUMNS = """
             SELECT t.id, t.test_type, t.skill, t.title, t.status,
                    EXISTS(SELECT 1 FROM test_attempt ta WHERE ta.test_id = t.id) AS locked
@@ -174,21 +174,6 @@ public class QuestionBankQueryRepository {
                 rs.getString("title"), rs.getString("status"), rs.getBoolean("locked"));
     }
 
-    /**
-     * Đề có thể gắn câu hỏi của bài học: mini test của chính bài học (cùng kỹ năng)
-     * và test chương tổng hợp (skill = ALL) của chương chứa bài học. Bỏ qua đề đã lưu trữ.
-     */
-    public List<QuestionBankResponse.TestItem> availableTests(long lessonId, String skill) {
-        return db.query(TEST_COLUMNS + """
-                FROM test t JOIN lesson l ON l.id = ?
-                WHERE t.status <> 'ARCHIVED'
-                  AND ((t.test_type = 'MINI_TEST' AND t.lesson_id = l.id AND t.skill IN (?, 'ALL'))
-                    OR (t.test_type = 'CHAPTER_TEST' AND t.chapter_id = l.chapter_id AND t.lesson_id IS NULL
-                        AND t.skill = 'ALL'))
-                ORDER BY FIELD(t.test_type, 'MINI_TEST', 'CHAPTER_TEST'), t.id
-                """, (rs, i) -> testItem(rs), lessonId, skill);
-    }
-
     /** Các đề đang chứa câu hỏi. */
     public List<QuestionBankResponse.TestItem> linkedTests(long questionId) {
         return db.query(TEST_COLUMNS + """
@@ -196,15 +181,6 @@ public class QuestionBankQueryRepository {
                 WHERE tq.question_id = ?
                 ORDER BY FIELD(t.test_type, 'MINI_TEST', 'LESSON_TEST', 'CHAPTER_TEST'), t.id
                 """, (rs, i) -> testItem(rs), questionId);
-    }
-
-    public void linkTest(long testId, long questionId, String partType) {
-        db.update("INSERT IGNORE INTO test_question (test_id, question_id, part_type) VALUES (?, ?, ?)",
-                testId, questionId, partType);
-    }
-
-    public void unlinkTest(long testId, long questionId) {
-        db.update("DELETE FROM test_question WHERE test_id = ? AND question_id = ?", testId, questionId);
     }
 
     // ===== BR-29 / BR-13 =====

@@ -110,14 +110,3 @@
     max-width: 200px;
   }
 }
-
-/* Loại test: danh sách mini test / test chương để gắn câu hỏi */
-.qb-test-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.qb-test-group .qb-check {
-  margin: 0;
-}
