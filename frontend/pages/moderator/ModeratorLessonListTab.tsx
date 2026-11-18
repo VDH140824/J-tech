@@ -264,13 +264,14 @@ export function ModeratorLessonListTab({
           {["vocabulary","kanji"].includes(activeConfig.key) && onOpenChapterFlashcards && (
             <button
               type="button"
-              className="mod-btn-back"
+              className={activeConfig.key === "vocabulary" ? "mod-btn-add" : "mod-btn-back"}
+              style={activeConfig.key === "vocabulary" ? { backgroundColor: activeConfig.color, padding: "11px 22px", fontSize: "0.92rem" } : undefined}
               onClick={onOpenChapterFlashcards}
             >
               Flashcard tổng hợp chương
             </button>
           )}
-          {["vocabulary","kanji"].includes(activeConfig.key) && onOpenChapterTest && (
+          {activeConfig.key === "kanji" && onOpenChapterTest && (
             <button
               type="button"
               className="mod-btn-back"
@@ -455,7 +456,7 @@ export function ModeratorLessonListTab({
                     </td>
                     <td>
                       <div
-                        className="row-actions-group"
+                        className={`row-actions-group ${activeConfig.key === "vocabulary" ? "mod-vocab-lesson-actions" : ""}`}
                         style={{ justifyContent: "flex-end", gap: "8px" }}
                       >
                         <button
@@ -472,7 +473,7 @@ export function ModeratorLessonListTab({
                           <span>{activeConfig.icon}</span>
                           <span>
                             {activeConfig.key === "vocabulary"
-                              ? "Mở bài học"
+                              ? "Chi tiết bài học"
                               : activeConfig.itemButtonLabel}
                           </span>
                         </button>
@@ -485,7 +486,7 @@ export function ModeratorLessonListTab({
                               title="Chỉnh sửa bài học"
                               onClick={() => handleOpenEditModal(lesson)}
                             >
-                              {activeConfig.key === "vocabulary" ? "Sửa" : "✏️"}
+                              ✏️
                             </button>
                             <button
                               type="button"
@@ -493,7 +494,7 @@ export function ModeratorLessonListTab({
                               title="Xóa bài học"
                               onClick={() => setDeletingLesson(lesson)}
                             >
-                              {activeConfig.key === "vocabulary" ? "Xóa" : "🗑️"}
+                              🗑️
                             </button>
                           </>
                         )}

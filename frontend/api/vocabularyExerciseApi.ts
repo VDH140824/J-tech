@@ -85,6 +85,11 @@ export async function saveExercise(
   return (await apiClient.post<VocabularyExercise>(`${base}/lessons/${lessonId}/mini-tests`, input))
     .data;
 }
+export async function importExerciseQuestions(lessonId: number, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  return (await apiClient.post<VocabularyExercise>(`${base}/lessons/${lessonId}/mini-tests/import`, form)).data;
+}
 export function exerciseError(error: unknown): string {
   if (isAxiosError(error)) {
     if (error.response?.status === 404)

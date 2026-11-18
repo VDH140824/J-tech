@@ -9,14 +9,20 @@ import com.jtech.dto.response.VocabularyTestResponse;
 import com.jtech.dto.response.StudentVocabularyExercise;
 import com.jtech.entity.*;
 import com.jtech.repository.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.Normalizer;
 import java.util.*;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -177,27 +183,120 @@ public class VocabularyExerciseService {
             VocabularyTest.Type.EXERCISE,
             VocabularyTest.Skill.VOCABULARY
         );
-        if (existing.size() > 1) throw new IllegalStateException(
-            "Bài học có nhiều exercise. Không thể xác định exercise cần cập nhật."
+        if (existing.isEmpty()) return create(lessonId, request, authentication);
+
+        VocabularyTest latest = existing.getFirst();
+        if (tests.countActiveAttempts(latest.getId()) > 0) {
+            throw new IllegalStateException("Có học sinh đang làm exercise. Vui lòng chờ các lượt làm kết thúc rồi thử lại.");
+        }
+        if (tests.countAttempts(latest.getId()) > 0) {
+            validate(request);
+            latest.setStatus(VocabularyTest.Status.ARCHIVED);
+            tests.saveAndFlush(latest);
+
+            VocabularyTest nextVersion = new VocabularyTest();
+            nextVersion.setLessonId(lessonId);
+            apply(nextVersion, request);
+            tests.saveAndFlush(nextVersion);
+            saveQuestions(nextVersion, request.questions());
+            return response(nextVersion, true);
+        }
+        return update(latest.getId(), request);
+    }
+
+    @Transactional
+    public VocabularyTestResponse importQuestions(Long lessonId, MultipartFile file, Authentication authentication) {
+        if (file == null || file.isEmpty() || file.getSize() > 5L * 1024 * 1024) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chọn file Excel có dữ liệu và không quá 5 MB.");
+        }
+        vocabulary.checkLesson(lessonId, authentication);
+        List<VocabularyExerciseRequest.Question> imported = readVocabularyQuestions(file);
+        var existing = tests.findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
+            lessonId, VocabularyTest.Type.EXERCISE, VocabularyTest.Skill.VOCABULARY
         );
-        Set<Long> sourceIds = request.questions().stream()
-            .map(VocabularyExerciseRequest.Question::sourceVocabularyId)
-            .filter(Objects::nonNull)
-            .collect(java.util.stream.Collectors.toSet());
-        if (sourceIds.size() != request.questions().size()) {
-            throw new IllegalArgumentException("Mỗi câu hỏi cần gắn với một từ vựng đã chọn.");
+        // The repository orders newest first. Import into the newest exercise without
+        // deleting legacy exercise records or their attempt history.
+        VocabularyTest current = existing.isEmpty() ? null : existing.getFirst();
+        var request = new VocabularyExerciseRequest(
+            current == null ? "Exercise từ vựng" : current.getTitle(),
+            current == null ? "Chọn đáp án đúng cho mỗi câu hỏi." : current.getDescription(),
+            current == null ? 10 : current.getDurationMinutes(),
+            current == null ? BigDecimal.valueOf(70) : current.getPassingScore(),
+            current == null ? VocabularyTest.Status.DRAFT : current.getStatus(),
+            imported
+        );
+        return saveReviewed(lessonId, request, authentication);
+    }
+
+    private List<VocabularyExerciseRequest.Question> readVocabularyQuestions(MultipartFile file) {
+        List<String> expected = List.of("STT", "Nội dung câu hỏi", "A", "B", "C", "D", "Đáp án đúng", "Giải thích", "Độ khó");
+        try (var workbook = new XSSFWorkbook(file.getInputStream())) {
+            if (workbook.getNumberOfSheets() == 0) throw importError("File Excel không có sheet câu hỏi.");
+            var sheet = workbook.getSheetAt(0);
+            if (sheet.getLastRowNum() >= 10_000) throw importError("Sheet không được vượt quá 10.000 dòng.");
+            DataFormatter formatter = new DataFormatter(Locale.ROOT);
+            Row header = sheet.getRow(1);
+            if (header == null) throw importError("Không tìm thấy dòng tiêu đề ở dòng 2 của mẫu.");
+            for (int column = 0; column < expected.size(); column++) {
+                if (!normalize(formatter.formatCellValue(header.getCell(column))).equals(normalize(expected.get(column)))) {
+                    throw importError("Cột " + expected.get(column) + " không đúng mẫu Form_question.xlsx.");
+                }
+            }
+            var result = new ArrayList<VocabularyExerciseRequest.Question>();
+            for (int rowIndex = 2; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+                if (row == null) continue;
+                String[] value = new String[9];
+                boolean hasData = false;
+                for (int column = 0; column < value.length; column++) {
+                    var cell = row.getCell(column);
+                    if (cell != null && (cell.getCellType() == CellType.FORMULA || cell.getCellType() == CellType.ERROR)) {
+                        throw importError("Dòng " + (rowIndex + 1) + " không được chứa công thức hoặc ô lỗi.");
+                    }
+                    value[column] = cell == null ? "" : formatter.formatCellValue(cell).trim();
+                    if (column > 0 && !value[column].isBlank()) hasData = true;
+                }
+                for (int column = value.length; column < row.getLastCellNum(); column++) {
+                    if (!formatter.formatCellValue(row.getCell(column)).isBlank()) {
+                        throw importError("Dòng " + (rowIndex + 1) + " có dữ liệu ngoài 9 cột của mẫu.");
+                    }
+                }
+                if (!hasData) continue;
+                if (result.size() >= 500) throw importError("Mỗi lần chỉ nhập tối đa 500 câu hỏi.");
+                for (int column = 1; column <= 5; column++) {
+                    if (value[column].isBlank() || value[column].length() > 100) {
+                        throw importError("Dòng " + (rowIndex + 1) + ": nội dung và các đáp án A–D phải có tối đa 100 ký tự.");
+                    }
+                }
+                if (value[7].length() > 10000) throw importError("Dòng " + (rowIndex + 1) + ": giải thích quá dài.");
+                int answerIndex = switch (value[6].trim().toUpperCase(Locale.ROOT)) {
+                    case "A" -> 0; case "B" -> 1; case "C" -> 2; case "D" -> 3;
+                    default -> throw importError("Dòng " + (rowIndex + 1) + ": đáp án đúng phải là A, B, C hoặc D.");
+                };
+                VocabularyTestQuestion.Difficulty difficulty = switch (normalize(value[8])) {
+                    case "dễ", "easy" -> VocabularyTestQuestion.Difficulty.EASY;
+                    case "trung bình", "medium" -> VocabularyTestQuestion.Difficulty.MEDIUM;
+                    case "khó", "hard" -> VocabularyTestQuestion.Difficulty.HARD;
+                    default -> throw importError("Dòng " + (rowIndex + 1) + ": độ khó phải là Dễ, Trung bình hoặc Khó.");
+                };
+                String answer = value[2 + answerIndex];
+                result.add(new VocabularyExerciseRequest.Question(
+                    VocabularyTestQuestion.Type.MCQ, value[1], value[7], difficulty,
+                    List.of(value[2], value[3], value[4], value[5]), answer, Map.of(), null
+                ));
+            }
+            if (result.isEmpty()) throw importError("File Excel chưa có câu hỏi để nhập.");
+            return List.copyOf(result);
+        } catch (ResponseStatusException exception) {
+            throw exception;
+        } catch (IOException | RuntimeException exception) {
+            if (exception instanceof ResponseStatusException response) throw response;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không đọc được file .xlsx theo mẫu Form_question.xlsx.", exception);
         }
-        var sourceWords = words.findByLessonIdOrderByDisplayOrderAscIdAsc(lessonId).stream()
-            .filter(word -> sourceIds.contains(word.getId()))
-            .toList();
-        if (sourceWords.size() != sourceIds.size() || sourceWords.stream().anyMatch(word ->
-            word.getStatus() != Course.Status.PUBLISHED && word.getStatus() != Course.Status.DRAFT
-        )) {
-            throw new IllegalArgumentException("Từ vựng được chọn không còn thuộc bài học.");
-        }
-        return existing.isEmpty()
-            ? create(lessonId, request, authentication)
-            : update(existing.getFirst().getId(), request);
+    }
+
+    private ResponseStatusException importError(String message) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }
 
     @Transactional
@@ -375,7 +474,7 @@ public class VocabularyExerciseService {
         if (
             request.questions() == null || request.questions().isEmpty()
         ) throw new IllegalArgumentException(
-            "Exercise phải có câu hỏi từ danh sách từ vựng của bài."
+            "Exercise phải có ít nhất một câu hỏi."
         );
         for (var question : request.questions()) validateAnswer(question);
     }

@@ -60,6 +60,16 @@ public class UserStreakRepository {
             time.toLocalDate(), time, time, time);
     }
 
+    public void saveCompletedStandaloneSession(long studentId, String type, String activityKey, LocalDateTime time) {
+        String key = type + ":" + activityKey + ":" + time.toLocalDate();
+        db.update("""
+            INSERT INTO study_session(user_id,activity_key,activity_type,section_type,study_date,
+                started_at,ended_at,completed_at,is_qualified,status)
+            VALUES (?,?,?, ?,?,?,?,?,TRUE,'COMPLETED')
+            ON DUPLICATE KEY UPDATE activity_key=activity_key
+            """, studentId, key, type, type, time.toLocalDate(), time, time, time);
+    }
+
     public void updateStreak(long studentId, int current, int longest, LocalDate studyDate) {
         db.update("""
             UPDATE user_account

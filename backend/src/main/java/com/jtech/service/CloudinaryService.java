@@ -20,6 +20,7 @@ public class CloudinaryService {
     private static final String AVATAR_FOLDER = "Jtech/Users/Avatar";
     private static final String POST_FOLDER = "Jtech/Moderator/Classroom/Post";
     private static final String COMMENT_FOLDER = "Jtech/Classroom/Comment";
+    private static final String VOCABULARY_DOCUMENT_FOLDER = "vocab";
     private static final long COMMENT_FILE_MAX_BYTES = 15L * 1024 * 1024;
     private static final long POST_FILE_MAX_BYTES = 25L * 1024 * 1024;
     private static final Set<String> ALLOWED_VIDEO_CONTENT_TYPES = Set.of(
@@ -45,6 +46,37 @@ public class CloudinaryService {
             return Map.of("name", name, "url", url, "publicId", id);
         } catch (IOException exception) { throw new IllegalStateException("Không thể tải tài liệu lên Cloudinary", exception); }
     }
+
+    public Map<String, String> uploadVocabularyPdf(MultipartFile file, String requestedName) {
+        if (file == null || file.isEmpty() || file.getSize() > 10L * 1024 * 1024) {
+            throw new IllegalArgumentException("Tệp PDF phải có dữ liệu và không quá 10 MB.");
+        }
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
+            throw new IllegalArgumentException("Chỉ chấp nhận tài liệu PDF.");
+        }
+        try {
+            byte[] bytes = file.getBytes();
+            if (bytes.length < 5 || !new String(bytes, 0, 5, java.nio.charset.StandardCharsets.US_ASCII).equals("%PDF-")) {
+                throw new IllegalArgumentException("Tệp tải lên không phải PDF hợp lệ.");
+            }
+            String publicId = VOCABULARY_DOCUMENT_FOLDER + "/" + java.util.UUID.randomUUID() + ".pdf";
+            Map result = cloudinary.uploader().upload(bytes, ObjectUtils.asMap(
+                "resource_type", "raw", "public_id", publicId,
+                "asset_folder", VOCABULARY_DOCUMENT_FOLDER, "overwrite", false
+            ));
+            Object url = result.get("secure_url");
+            Object actualId = result.get("public_id");
+            if (!(url instanceof String secureUrl) || !secureUrl.startsWith("https://")
+                || !(actualId instanceof String id) || !id.startsWith(VOCABULARY_DOCUMENT_FOLDER + "/")) {
+                throw new IllegalStateException("Cloudinary không trả về thông tin PDF hợp lệ.");
+            }
+            return Map.of("name", requestedName.trim(), "url", secureUrl, "publicId", id,
+                "resourceType", "raw", "assetFolder", VOCABULARY_DOCUMENT_FOLDER);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể tải PDF lên Cloudinary.", exception);
+        }
+    }
     public void deleteDocument(String id) {
         if (id == null || !id.startsWith("Jtech/Lessons/Documents/")) return;
         try { cloudinary.uploader().destroy(id, ObjectUtils.asMap("resource_type", "raw")); }
@@ -52,8 +84,8 @@ public class CloudinaryService {
     }
 
     public void deleteVocabularyPdf(String publicId) {
-        if (publicId == null || !publicId.startsWith("Jtech/Lessons/Documents/")
-                || !publicId.endsWith(".pdf")) {
+        if (publicId == null || !(publicId.startsWith("Jtech/Lessons/Documents/")
+                || publicId.startsWith(VOCABULARY_DOCUMENT_FOLDER + "/")) || !publicId.endsWith(".pdf")) {
             return;
         }
         try {

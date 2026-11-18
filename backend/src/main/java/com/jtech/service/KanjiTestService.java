@@ -25,17 +25,20 @@ public class KanjiTestService {
   private final FeedbackService access;
   private final ObjectMapper mapper;
   private final KanjiExerciseService exercise;
+  private final LearningActivityService activities;
 
   public KanjiTestService(
     JdbcTemplate db,
     FeedbackService access,
     ObjectMapper mapper,
-    KanjiExerciseService exercise
+    KanjiExerciseService exercise,
+    LearningActivityService activities
   ) {
     this.db = db;
     this.access = access;
     this.mapper = mapper;
     this.exercise = exercise;
+    this.activities = activities;
   }
 
   public record Snapshot(
@@ -565,7 +568,10 @@ public class KanjiTestService {
       row.submitted(),
       data
     );
-    return view(submit ? finish(row, "SUBMITTED") : row);
+    if (!submit) return view(row);
+    AttemptRow completed = finish(row, "SUBMITTED");
+    activities.recordKanjiTestCompletion(user, id, completed.submitted());
+    return view(completed);
   }
 
   @Transactional

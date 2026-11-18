@@ -16,10 +16,13 @@ public class StoreItemRepository {
     public List<Map<String, Object>> findPublishedItems(long userId) {
         var rows = db.queryForList(
             """
-            SELECT s.*, EXISTS(
+            SELECT s.*
+            FROM store_item s
+            WHERE s.status='ACTIVE'
+              AND NOT EXISTS (
                 SELECT 1 FROM user_inventory i WHERE i.user_id=? AND i.store_item_id=s.id
-            ) AS owned
-            FROM store_item s WHERE s.status='ACTIVE' ORDER BY s.item_type, s.id
+              )
+            ORDER BY s.item_type, s.id
             """, userId
         );
         rows.forEach(row -> row.remove("material_url"));

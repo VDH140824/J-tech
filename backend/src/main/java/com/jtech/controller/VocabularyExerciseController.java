@@ -10,6 +10,7 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/moderator/vocabulary")
@@ -42,6 +43,15 @@ public class VocabularyExerciseController {
         Authentication authentication
     ) {
         return ResponseEntity.ok(service.saveReviewed(lessonId, request, authentication));
+    }
+
+    @PostMapping(value = "/lessons/{lessonId}/mini-tests/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<VocabularyTestResponse> importQuestions(
+        @PathVariable Long lessonId,
+        @RequestPart("file") MultipartFile file,
+        Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.importQuestions(lessonId, file, authentication));
     }
 
     @DeleteMapping("/mini-tests/{id}")

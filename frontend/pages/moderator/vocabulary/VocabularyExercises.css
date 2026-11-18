@@ -12,6 +12,202 @@
 .mod-vocab-header-actions > button {
   white-space: nowrap;
 }
+.mod-lesson-table .mod-vocab-lesson-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(36px, auto));
+  justify-content: center;
+  align-items: center;
+  gap: 4px 8px;
+}
+.mod-lesson-table .mod-vocab-lesson-actions .lesson-items-action {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+.mod-vocab-lesson-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mod-vocab-lesson-header-actions > button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  white-space: nowrap;
+}
+.mod-vocab-document-upload,
+.mod-vocab-document-rename {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  margin: 0 0 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+}
+.mod-vocab-document-upload label,
+.mod-vocab-document-rename label {
+  color: #334155;
+  font-weight: 650;
+}
+.mod-vocab-document-upload-actions,
+.mod-vocab-document-rename {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mod-vocab-document-admin-list {
+  padding: 16px;
+  margin: 0 0 16px;
+  border: 1px solid #dbe4ef;
+  border-radius: 12px;
+  background: #fff;
+}
+.mod-vocab-document-admin-list > strong { color: #0f766e; }
+.mod-vocab-document-admin-list ul {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 12px 0 0;
+  list-style: none;
+}
+.mod-vocab-document-admin-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mod-vocab-document-select {
+  flex: 1 1 220px;
+  padding: 9px 12px;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mod-vocab-document-rename { margin-top: 14px; }
+.mod-vocab-exercise-status {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 260px);
+  align-items: center;
+  gap: 8px 14px;
+  margin: 18px 0;
+  color: #334155;
+  font-weight: 650;
+}
+.mod-vocab-exercise-status > span {
+  grid-column: 2;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+.mod-vocab-question-list {
+  margin: 18px 0;
+}
+.mod-vocab-question-list td {
+  min-width: 100px;
+  max-width: 320px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.mod-vocab-question-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mod-vocab-question-actions > button {
+  white-space: nowrap;
+}
+.mod-vocab-question-header {
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.mod-vocab-question-header-actions,
+.mod-vocab-question-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mod-vocab-question-toolbar {
+  margin-top: 10px;
+}
+.mod-vocab-upload-submit {
+  background: #7c3aed !important;
+}
+.mod-vocab-upload-submit:hover:not(:disabled) {
+  background: #6d28d9 !important;
+}
+.mod-vocab-question-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.56);
+}
+.mod-vocab-question-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(720px, 100%);
+  max-height: min(92vh, 900px);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+}
+.mod-vocab-question-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.mod-vocab-question-modal-header h3 {
+  margin: 0;
+  color: #0f172a;
+}
+.mod-vocab-question-modal-body {
+  display: grid;
+  gap: 16px;
+  overflow-y: auto;
+  padding: 20px 22px;
+}
+.mod-vocab-question-modal-body > p {
+  margin: 0;
+  color: #64748b;
+}
+.mod-vocab-question-modal-answers {
+  display: grid;
+  gap: 12px;
+}
+.mod-vocab-question-modal-answers > strong {
+  color: #334155;
+}
+.mod-vocab-question-modal-answers .mod-assessment-option {
+  display: grid;
+  grid-template-columns: 100px 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+.mod-vocab-question-modal > .modal-actions-row {
+  padding: 14px 22px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
 .mod-assessment-heading {
   display: flex;
   justify-content: space-between;
@@ -76,6 +272,18 @@
 .mod-assessment-preview .btn-modal-submit,
 .mod-assessment-tab .mod-btn-add {
   background: #0d9488;
+}
+.mod-assessment-tab .mod-btn-add.mod-question-btn--primary {
+  background: #0d9488;
+}
+.mod-assessment-tab .mod-btn-add.mod-question-btn--primary:hover {
+  background: #0f766e;
+}
+.mod-assessment-tab .mod-btn-add.mod-question-btn--secondary {
+  background: #2563eb;
+}
+.mod-assessment-tab .mod-btn-add.mod-question-btn--secondary:hover {
+  background: #1d4ed8;
 }
 .mod-assessment-error,
 .mod-assessment-success {
@@ -594,6 +802,12 @@
   line-height: 1.55;
 }
 @media (max-width: 640px) {
+  .mod-vocab-exercise-status {
+    grid-template-columns: 1fr;
+  }
+  .mod-vocab-exercise-status > span {
+    grid-column: 1;
+  }
   .mod-vocab-flashcard-groups {
     grid-template-columns: 1fr;
   }

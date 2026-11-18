@@ -330,9 +330,7 @@ function RewardView({ inventoryMode }: { inventoryMode: boolean }) {
                                 ? item.is_equipped
                                   ? "✓ Đang sử dụng"
                                   : "Đã sở hữu"
-                                : item.owned
-                                  ? "Đã sở hữu"
-                                  : `🪙 ${item.coin_price.toLocaleString("vi-VN")} xu`}
+                                : `🪙 ${item.coin_price.toLocaleString("vi-VN")} xu`}
                             </span>
                             {inventoryMode && item.status !== "ACTIVE" && (
                               <small>Đã ẩn khỏi cửa hàng</small>

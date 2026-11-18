@@ -327,7 +327,7 @@ export function LessonFormModal({
           </div>
 
           {/* Row 4: status & documents */}
-          <div className={isGrammar ? undefined : "modal-grid-2"}>
+          <div className={isGrammar || isVocabulary ? undefined : "modal-grid-2"}>
             <div className="modal-field-group">
               <label className="modal-label">
                 {vietnameseOnly ? "Trạng thái phát hành" : "Trạng thái phát hành (status)"}
@@ -353,7 +353,7 @@ export function LessonFormModal({
               </select>
             </div>
 
-            {!isGrammar && (
+            {!isGrammar && !isVocabulary && (
               <div className="modal-field-group">
               <label className="modal-label">
                 {vietnameseOnly ? "Tài liệu đính kèm" : "Tài liệu đính kèm (documents) *"}

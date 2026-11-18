@@ -317,6 +317,80 @@ public class LessonService {
         }
     }
 
+    @Transactional
+    public LessonResponse uploadVocabularyPdf(Long lessonId, MultipartFile file, String requestedName) {
+        Lesson lesson = requireVocabularyLessonForUpdate(lessonId);
+        String name = requestedName == null ? "" : requestedName.trim();
+        if (name.isBlank() || name.length() > 200) {
+            throw new IllegalArgumentException("Tên tài liệu là bắt buộc và không vượt quá 200 ký tự.");
+        }
+        var uploaded = cloudinary.uploadVocabularyPdf(file, name);
+        String publicId = uploaded.get("publicId");
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == STATUS_ROLLED_BACK) cleanupVocabularyPdf(publicId);
+            }
+        });
+        ArrayNode documents = documentEntries(lesson.getDocuments());
+        documents.add(mapper.valueToTree(uploaded));
+        lesson.setDocuments(documents.toString());
+        return mapToResponse(lessonRepository.save(lesson));
+    }
+
+    @Transactional
+    public LessonResponse renameVocabularyPdf(Long lessonId, String url, String requestedName) {
+        Lesson lesson = requireVocabularyLessonForUpdate(lessonId);
+        String name = requestedName == null ? "" : requestedName.trim();
+        if (name.isBlank() || name.length() > 200) {
+            throw new IllegalArgumentException("Tên tài liệu là bắt buộc và không vượt quá 200 ký tự.");
+        }
+        ArrayNode documents = documentEntries(lesson.getDocuments());
+        boolean found = false;
+        for (JsonNode entry : documents) {
+            if (entry instanceof ObjectNode document && url.equals(document.path("url").asText())) {
+                document.put("name", name);
+                found = true;
+                break;
+            }
+        }
+        if (!found) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài liệu PDF.");
+        lesson.setDocuments(documents.toString());
+        return mapToResponse(lessonRepository.save(lesson));
+    }
+
+    @Transactional
+    public LessonResponse deleteVocabularyPdf(Long lessonId, String url) {
+        Lesson lesson = requireVocabularyLessonForUpdate(lessonId);
+        ArrayNode documents = documentEntries(lesson.getDocuments());
+        ArrayNode remaining = mapper.createArrayNode();
+        String publicId = null;
+        boolean found = false;
+        for (JsonNode entry : documents) {
+            String documentUrl = entry.isTextual() ? entry.asText() : entry.path("url").asText();
+            if (!found && url.equals(documentUrl)) {
+                found = true;
+                publicId = entry.path("publicId").asText(null);
+            } else {
+                remaining.add(entry);
+            }
+        }
+        if (!found) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài liệu PDF.");
+        // Only server-stored Cloudinary IDs are used; the client supplies the URL only as a selector.
+        if (publicId != null && !publicId.isBlank()) cloudinary.deleteVocabularyPdf(publicId);
+        lesson.setDocuments(remaining.isEmpty() ? null : remaining.toString());
+        return mapToResponse(lessonRepository.save(lesson));
+    }
+
+    private Lesson requireVocabularyLessonForUpdate(Long lessonId) {
+        Lesson lesson = lessonRepository.findForUpdate(lessonId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bài học."));
+        if (lesson.getSkillType() != Lesson.SkillType.VOCABULARY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tài liệu này chỉ dùng cho bài học từ vựng.");
+        }
+        return lesson;
+    }
+
     private String uploadDocument(
         org.springframework.web.multipart.MultipartFile file,
         String previous

@@ -11,6 +11,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import java.time.LocalDateTime;
 
 @Service
 public class StudentGameResultService {
@@ -20,11 +21,14 @@ public class StudentGameResultService {
     private final JdbcTemplate db;
     private final UserRewardBalanceRepository balances;
     private final CoinRewardService coins;
+    private final LearningActivityService activities;
 
-    public StudentGameResultService(JdbcTemplate db, UserRewardBalanceRepository balances, CoinRewardService coins) {
+    public StudentGameResultService(JdbcTemplate db, UserRewardBalanceRepository balances, CoinRewardService coins,
+            LearningActivityService activities) {
         this.db = db;
         this.balances = balances;
         this.coins = coins;
+        this.activities = activities;
     }
 
     @Transactional
@@ -77,6 +81,8 @@ public class StudentGameResultService {
         Number generatedId = keys.getKey();
         if (generatedId == null) throw new IllegalStateException("Không thể lưu thành tích trò chơi.");
         long resultId = generatedId.longValue();
+
+        activities.recordGameCompletion(studentId, sessionKey, LocalDateTime.now(StreakService.LEARNING_ZONE));
 
         if (coinAwarded > 0) {
             coins.awardCoins(studentId,
