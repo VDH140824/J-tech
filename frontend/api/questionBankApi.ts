@@ -99,8 +99,6 @@ export interface QuestionBankInput {
   options?: string[];
   correctAnswer?: string;
   matches?: Record<string, string>;
-  /** Đề mini test / test chương gắn câu hỏi; bỏ trống = giữ nguyên */
-  testIds?: number[];
 }
 
 export interface QuestionDeleteResult {
@@ -117,12 +115,6 @@ export async function getQuestionBank(query: QuestionBankQuery): Promise<Questio
 
 export async function getQuestionBankTargets(): Promise<QuestionBankTargets> {
   const { data } = await apiClient.get<QuestionBankTargets>("/moderator/question-bank/targets");
-  return data;
-}
-
-/** Đề có thể gắn câu hỏi: mini test của bài học và test chương của chương chứa bài học. */
-export async function getAvailableTests(lessonId: number, skill: QuestionSkill): Promise<QuestionTest[]> {
-  const { data } = await apiClient.get<QuestionTest[]>("/moderator/question-bank/tests", { params: { lessonId, skill } });
   return data;
 }
 

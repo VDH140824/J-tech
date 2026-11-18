@@ -4,13 +4,11 @@ import {
   FORMAT_LABEL,
   LEVEL_LABEL,
   SKILL_LABEL,
-  TEST_KIND_LABEL,
   chapterLabel,
   chapterOfLesson,
   chaptersOf,
   courseOfChapter,
   createBankQuestion,
-  getAvailableTests,
   lessonLabel,
   lessonsOf,
   updateBankQuestion,
@@ -20,7 +18,6 @@ import {
   type QuestionFormat,
   type QuestionLevel,
   type QuestionSkill,
-  type QuestionTest,
 } from "../../api/questionBankApi";
 import "./QuestionBank.css";
 
@@ -68,9 +65,6 @@ export function QuestionBankFormModal({ open, detail, targets, onClose, onSaved 
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
   const [fillAnswer, setFillAnswer] = useState("");
   const [pairs, setPairs] = useState<Pair[]>([{ left: "", right: "" }, { left: "", right: "" }]);
-  const [tests, setTests] = useState<QuestionTest[]>([]);
-  const [testsLoading, setTestsLoading] = useState(false);
-  const [testIds, setTestIds] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,10 +86,8 @@ export function QuestionBankFormModal({ open, detail, targets, onClose, onSaved 
       setCorrectIndex(null);
       setFillAnswer("");
       setPairs([{ left: "", right: "" }, { left: "", right: "" }]);
-      setTestIds([]);
       return;
     }
-    setTestIds(detail.tests.map((t) => t.id));
     const s = detail.summary;
     setSkill(s.skill);
     setQuestionType(s.questionType);
@@ -114,29 +106,6 @@ export function QuestionBankFormModal({ open, detail, targets, onClose, onSaved 
     const entries = Object.entries(detail.matches ?? {});
     setPairs(entries.length > 0 ? entries.map(([left, right]) => ({ left, right })) : [{ left: "", right: "" }, { left: "", right: "" }]);
   }, [open, detail]);
-
-  // Loại test: mini test của bài học và test chương của chương chứa bài học
-  useEffect(() => {
-    if (!open || lessonId === "") {
-      setTests([]);
-      return;
-    }
-    let cancelled = false;
-    setTestsLoading(true);
-    getAvailableTests(lessonId, skill)
-      .then((list) => {
-        if (!cancelled) setTests(list);
-      })
-      .catch(() => {
-        if (!cancelled) setTests([]);
-      })
-      .finally(() => {
-        if (!cancelled) setTestsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, lessonId, skill]);
 
   const chapters = useMemo(() => chaptersOf(targets, courseId), [targets, courseId]);
   const lessons = useMemo(() => lessonsOf(targets, courseId, chapterId, skill), [targets, courseId, chapterId, skill]);
@@ -206,7 +175,6 @@ export function QuestionBankFormModal({ open, detail, targets, onClose, onSaved 
       correctAnswer:
         questionType === "MCQ" ? (correctIndex === null ? "" : options[correctIndex].trim()) : questionType === "FILL_IN" ? fillAnswer.trim() : "",
       matches: questionType === "MATCHING" ? Object.fromEntries(pairs.map((p) => [p.left.trim(), p.right.trim()])) : {},
-      testIds: testIds.filter((id) => tests.some((t) => t.id === id)),
     };
     setSaving(true);
     setError(null);
@@ -219,34 +187,6 @@ export function QuestionBankFormModal({ open, detail, targets, onClose, onSaved 
     } finally {
       setSaving(false);
     }
-  };
-
-  const toggleTest = (id: number) =>
-    setTestIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-
-  const renderTests = (kind: "MINI_TEST" | "CHAPTER_TEST", emptyText: string) => {
-    const list = tests.filter((t) => t.testType === kind);
-    return (
-      <div className="qb-test-group">
-        <span className="modal-label">{TEST_KIND_LABEL[kind]}</span>
-        {lessonId === "" ? (
-          <p className="cell-email">Chọn bài học trước.</p>
-        ) : testsLoading ? (
-          <p className="cell-email">Đang tải...</p>
-        ) : list.length === 0 ? (
-          <p className="cell-email">{emptyText}</p>
-        ) : (
-          list.map((t) => (
-            <label key={t.id} className="qb-check">
-              <input type="checkbox" checked={testIds.includes(t.id)} disabled={busy || t.locked} onChange={() => toggleTest(t.id)} />
-              {t.title}
-              {t.status === "DRAFT" ? " (nháp)" : ""}
-              {t.locked ? " — đã có lượt làm" : ""}
-            </label>
-          ))
-        )}
-      </div>
-    );
   };
 
   const setOption = (index: number, value: string) => setOptions((prev) => prev.map((o, i) => (i === index ? value : o)));
@@ -467,14 +407,6 @@ export function QuestionBankFormModal({ open, detail, targets, onClose, onSaved 
                   onChange={(e) => setExplanation(e.target.value)} />
               </label>
 
-              {/* Loại test: gắn câu hỏi vào mini test của bài học / test chương */}
-              <fieldset className="qb-answer">
-                <legend className="modal-label">Loại test</legend>
-                <div className="qb-grid">
-                  {renderTests("MINI_TEST", "Bài học chưa có mini test.")}
-                  {renderTests("CHAPTER_TEST", "Chương chưa có test chương.")}
-                </div>
-              </fieldset>
 
           </>
 
