@@ -3,41 +3,51 @@ import { useCallback, useSyncExternalStore } from "react";
 const STORAGE_PREFIX = "jtech-campus-prayers:v1:";
 const counts = new Map<string, number>();
 const listeners = new Map<string, Set<() => void>>();
-const unsaved = new Set<string>();
 
-function parseCount(value: string | null) {
-  const count = Number(value);
-  return Number.isSafeInteger(count) && count >= 0 ? count : 0;
+interface PrayerState {
+  count: number;
+  rewardedSessions: string[];
 }
 
-function readStoredCount(key: string): number | undefined {
-  try { return parseCount(window.localStorage.getItem(key)); }
+function parseState(value: string | null): PrayerState {
+  try {
+    const stored = value === null ? 0 : JSON.parse(value);
+    // The demo stored a bare number at this key.
+    if (Number.isSafeInteger(stored) && stored >= 0) {
+      return { count: stored, rewardedSessions: [] };
+    }
+    if (Number.isSafeInteger(stored?.count) && stored.count >= 0 && Array.isArray(stored.rewardedSessions)) {
+      return {
+        count: stored.count,
+        rewardedSessions: stored.rewardedSessions.filter((session: unknown) => typeof session === "string"),
+      };
+    }
+  } catch {
+    // Ignore unreadable progress.
+  }
+  return { count: 0, rewardedSessions: [] };
+}
+
+function readState(key: string): PrayerState | undefined {
+  try { return parseState(window.localStorage.getItem(key)); }
   catch { return undefined; }
 }
 
 function getCount(key: string | null) {
   if (!key) return 0;
-  if (!counts.has(key)) counts.set(key, readStoredCount(key) ?? 0);
+  if (!counts.has(key)) counts.set(key, readState(key)?.count ?? 0);
   return counts.get(key)!;
 }
 
-function latestCount(key: string) {
-  return unsaved.has(key) ? getCount(key) : readStoredCount(key) ?? getCount(key);
-}
-
-function saveCount(key: string, count: number) {
-  counts.set(key, count);
-  try { window.localStorage.setItem(key, String(count)); unsaved.delete(key); }
-  catch { unsaved.add(key); }
+function saveState(key: string, state: PrayerState) {
+  try { window.localStorage.setItem(key, JSON.stringify(state)); }
+  catch { return false; }
+  counts.set(key, state.count);
   listeners.get(key)?.forEach((notify) => notify());
+  return true;
 }
 
-export function earnsCampusPrayer(correct: number, total: number) {
-  return Number.isSafeInteger(correct) && Number.isSafeInteger(total)
-    && total > 0 && correct >= 0 && correct <= total && correct * 2 >= total;
-}
-
-// Local demo progress belongs to the signed-in account on this browser.
+// Fortune turns belong to the signed-in account on this browser.
 export function useCampusPrayer(accountId: number | undefined) {
   const key = accountId !== undefined && Number.isSafeInteger(accountId) && accountId > 0
     ? `${STORAGE_PREFIX}${accountId}` : null;
@@ -47,12 +57,11 @@ export function useCampusPrayer(accountId: number | undefined) {
     const subscribers = listeners.get(key) ?? new Set<() => void>();
     listeners.set(key, subscribers);
     subscribers.add(notify);
-    const stored = readStoredCount(key);
-    if (stored !== undefined && !unsaved.has(key)) counts.set(key, stored);
+    const stored = readState(key);
+    if (stored) counts.set(key, stored.count);
     const storageChanged = (event: StorageEvent) => {
-      if (event.storageArea !== window.localStorage || (event.key !== key && event.key !== null)) return;
-      counts.set(key, parseCount(event.key === null ? null : event.newValue));
-      unsaved.delete(key);
+      if ((event.key !== key && event.key !== null) || event.storageArea !== window.localStorage) return;
+      counts.set(key, parseState(event.key === null ? null : event.newValue).count);
       subscribers.forEach((listener) => listener());
     };
     window.addEventListener("storage", storageChanged);
@@ -63,19 +72,22 @@ export function useCampusPrayer(accountId: number | undefined) {
     };
   }, [key]);
   const prayerCount = useSyncExternalStore(subscribe, snapshot, () => 0);
-  const awardPrayer = useCallback((correct: number, total: number) => {
-    if (!key || !earnsCampusPrayer(correct, total)) return false;
-    const current = latestCount(key);
-    if (current >= Number.MAX_SAFE_INTEGER) return false;
-    saveCount(key, current + 1);
-    return true;
+  const awardPrayerOnce = useCallback((sessionId: string) => {
+    if (!key) return false;
+    const state = readState(key);
+    if (!state) return false;
+    if (state.rewardedSessions.includes(sessionId)) return true;
+    if (state.count >= Number.MAX_SAFE_INTEGER) return false;
+    return saveState(key, {
+      count: state.count + 1,
+      rewardedSessions: [...state.rewardedSessions, sessionId],
+    });
   }, [key]);
   const spendPrayer = useCallback(() => {
     if (!key) return false;
-    const current = latestCount(key);
-    if (current < 1) return false;
-    saveCount(key, current - 1);
-    return true;
+    const state = readState(key);
+    if (!state || state.count < 1) return false;
+    return saveState(key, { ...state, count: state.count - 1 });
   }, [key]);
-  return { prayerCount, awardPrayer, spendPrayer };
+  return { prayerCount, awardPrayerOnce, spendPrayer };
 }
