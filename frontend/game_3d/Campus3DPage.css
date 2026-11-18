@@ -358,14 +358,43 @@
 .campus-computer-bar button { min-height: 34px; border-color: #ffffff55; background: #ffffff15; color: white; font-size: .7em; }
 .campus-computer-bar button:hover:not(:disabled) { background: #ffffff30; }
 .campus-computer button:disabled { background: #e4e9ee; color: #718096; cursor: default; }
-.campus-computer :is(button, input):focus-visible { outline: 3px solid #d78621; outline-offset: 3px; }
+.campus-computer :is(button, input, select, a, legend):focus-visible { outline: 3px solid #d78621; outline-offset: 3px; }
 .campus-computer-content { flex: 1; min-height: 0; overflow: auto; padding: 24px; overscroll-behavior: contain; }
 .campus-computer-content h2 { margin: 0 0 .5em; font-size: 1.5em; }
 .campus-computer-content > p { margin: 0 0 1em; color: #607183; }
-.campus-computer-welcome { display: grid; align-content: center; justify-items: center; gap: 12px; min-height: 100%; text-align: center; }
-.campus-computer-welcome > span { font-size: 1.8em; font-weight: 800; color: #a52e56; }
-.campus-computer-welcome :is(h2, p) { margin: 0; }
-.campus-computer-welcome small { font-size: .7em; color: #607183; }
+.campus-computer-course { display: grid; gap: 12px; max-width: 570px; }
+.campus-computer-course p { margin: 0; }
+.campus-computer-course label { display: grid; gap: 6px; font-weight: 650; }
+.campus-computer-course select {
+  width: 100%;
+  min-height: 40px;
+  padding: .45em .65em;
+  border: 1px solid #91a4b7;
+  border-radius: 7px;
+  background: white;
+  color: #1d3045;
+  font: inherit;
+}
+.campus-computer-course button { justify-self: start; }
+.campus-computer-timer {
+  --timer-color: #197348;
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.campus-computer-timer[data-low-time="true"] { --timer-color: #b4232d; }
+.campus-computer-timer-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.campus-computer-timer-label strong { color: var(--timer-color); font-variant-numeric: tabular-nums; }
+.campus-computer-timer-track { height: 8px; overflow: hidden; border-radius: 999px; background: #d9e3ee; }
+.campus-computer-timer-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--timer-color);
+  transition: width 250ms linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .campus-computer-timer-fill { transition: none; }
+}
 .campus-computer .campus-computer-primary { border: 0; background: #a52e56; color: white; }
 .campus-computer .campus-computer-primary:hover:not(:disabled) { background: #852344; }
 .campus-computer .campus-computer-primary:disabled { background: #e4e9ee; color: #718096; }
@@ -376,9 +405,15 @@
 .campus-computer-question p { margin: .7em 0 0; font-size: .85em; }
 .campus-computer-question p[data-correct="true"] { color: #21694c; }
 .campus-computer-question p[data-correct="false"] { color: #9c3349; }
-.campus-computer-result { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1rem; border-radius: 8px; background: #e7f1eb; }
-.campus-computer-prayer-hint { font-size: .85em; color: #315942; }
-.campus-computer-prayer-result { flex-basis: 100%; font-size: .9em; color: #315942; }
+.campus-computer-nav, .campus-computer-question-nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.campus-computer-question-nav { margin-top: 16px; }
+.campus-computer-question-nav button { min-width: 40px; padding: .3em .5em; }
+.campus-computer-question-nav button[data-answered="true"] { border-color: #62977d; background: #e7f1eb; }
+.campus-computer-question-nav button[aria-current="step"] { border-color: #18334e; background: #18334e; color: white; }
+.campus-computer .campus-computer-error { color: #9c3349; }
+.campus-computer .campus-computer-correct { margin-inline-start: auto; color: #21694c; font-size: .8em; }
+.campus-computer-result { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 16px; padding: 1rem; border-radius: 8px; background: #e7f1eb; }
+.campus-computer-rewards { display: grid; gap: 4px; margin-inline-end: auto; }
 .campus-computer-overlay {
   position: fixed;
   inset: 0;

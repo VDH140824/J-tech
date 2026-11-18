@@ -61,7 +61,7 @@ function LoadingMap() {
   );
 }
 
-function CampusScene({ name, resetVersion, input, onControlFocus, doorInteraction, onDoorPrompt, time, seating, activeSeat, onNearbySeat, onSeatedChange, onQuizCompleted, fortuneInteraction, spendPrayer, onFortuneStatus, toadInteraction, onToadStatus, network, roster }: {
+function CampusScene({ name, resetVersion, input, onControlFocus, doorInteraction, onDoorPrompt, time, seating, activeSeat, onNearbySeat, onSeatedChange, awardPrayerOnce, fortuneInteraction, spendPrayer, onFortuneStatus, toadInteraction, onToadStatus, network, roster }: {
   name: string;
   resetVersion: number;
   input: MutableRefObject<CampusInput>;
@@ -73,7 +73,7 @@ function CampusScene({ name, resetVersion, input, onControlFocus, doorInteractio
   activeSeat: CampusSeat | null;
   onNearbySeat: (seat: CampusSeat | null) => void;
   onSeatedChange: (seat: CampusSeat | null, message?: string) => void;
-  onQuizCompleted: (correct: number, total: number) => boolean;
+  awardPrayerOnce: (sessionId: string) => boolean;
   fortuneInteraction: MutableRefObject<FortuneInteraction>;
   spendPrayer: () => boolean;
   onFortuneStatus: (status: FortuneStatus) => void;
@@ -109,7 +109,7 @@ function CampusScene({ name, resetVersion, input, onControlFocus, doorInteractio
       <CampusGoose campus={campus} player={doorInteraction} />
       <CampusFortuneTable campus={campus} player={doorInteraction} seating={seating} interaction={fortuneInteraction} spendPrayer={spendPrayer} onStatus={onFortuneStatus} />
       <CampusToadInteraction site={toadSite} player={doorInteraction} seating={seating} interaction={toadInteraction} onStatus={onToadStatus} />
-      {activeSeat && <CampusComputer key={activeSeat.id} seat={activeSeat} control={seating} onQuizCompleted={onQuizCompleted} />}
+      {activeSeat && <CampusComputer key={activeSeat.id} seat={activeSeat} control={seating} awardPrayerOnce={awardPrayerOnce} />}
     </Physics>
   );
 }
@@ -117,7 +117,7 @@ function CampusScene({ name, resetVersion, input, onControlFocus, doorInteractio
 export default function Campus3DPage() {
   const user = useAuthStore((state) => state.user);
   const multiplayer = useCampusMultiplayer(user?.id);
-  const { prayerCount, awardPrayer, spendPrayer } = useCampusPrayer(user?.id);
+  const { prayerCount, awardPrayerOnce, spendPrayer } = useCampusPrayer(user?.id);
   // Match the account name displayed in the main navigation, never a game alias.
   const playerName = multiplayer.selfName || user?.fullName?.trim() || user?.displayName?.trim() || user?.email || "Học viên";
   const [resetVersion, setResetVersion] = useState(0);
@@ -241,7 +241,7 @@ export default function Campus3DPage() {
               fallback={<MapNotice />}
             >
               <Suspense fallback={<LoadingMap />}>
-                <CampusScene key={user?.id} name={playerName} resetVersion={resetVersion} input={input} onControlFocus={setControlFocused} doorInteraction={doorInteraction} onDoorPrompt={setDoorPrompt} time={time} seating={seating} activeSeat={activeSeat} onNearbySeat={setNearbySeat} onSeatedChange={seatedChange} onQuizCompleted={awardPrayer} fortuneInteraction={fortuneInteraction} spendPrayer={spendPrayer} onFortuneStatus={setFortuneStatus} toadInteraction={toadInteraction} onToadStatus={setToadStatus} network={multiplayer.network} roster={multiplayer.roster} />
+                <CampusScene key={user?.id} name={playerName} resetVersion={resetVersion} input={input} onControlFocus={setControlFocused} doorInteraction={doorInteraction} onDoorPrompt={setDoorPrompt} time={time} seating={seating} activeSeat={activeSeat} onNearbySeat={setNearbySeat} onSeatedChange={seatedChange} awardPrayerOnce={awardPrayerOnce} fortuneInteraction={fortuneInteraction} spendPrayer={spendPrayer} onFortuneStatus={setFortuneStatus} toadInteraction={toadInteraction} onToadStatus={setToadStatus} network={multiplayer.network} roster={multiplayer.roster} />
               </Suspense>
             </Canvas>
           </MapErrorBoundary>
