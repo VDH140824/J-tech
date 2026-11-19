@@ -1,0 +1,207 @@
+/* Màn Ngữ pháp của học viên — dùng lại giao diện Chữ Hán (StudentKanjiFlashcards.css), chỉ thêm phần riêng */
+
+.grammar-banner-lesson {
+  background-color: #ede4ff;
+}
+
+.grammar-banner-lesson > small {
+  color: #6d28d9;
+}
+
+.grammar-banner-lesson > strong {
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+}
+
+.grammar-lesson-description {
+  color: #475569;
+  margin-top: -4px;
+}
+
+.student-kanji-page a.kanji-tile {
+  color: inherit;
+  text-decoration: none;
+}
+
+.grammar-point header {
+  margin-bottom: 8px;
+}
+
+.grammar-point-no {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #6d28d9;
+  text-transform: uppercase;
+}
+
+.grammar-structure {
+  font-size: 1.6rem;
+  margin: 4px 0;
+}
+
+.grammar-meaning {
+  font-weight: 600;
+  color: #0f766e;
+}
+
+.grammar-video {
+  width: 100%;
+  max-width: 720px;
+  border-radius: 12px;
+  background: #000;
+}
+
+.grammar-question-tag {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ede4ff;
+  color: #6d28d9;
+  font-size: 0.75rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.grammar-timer-warning strong {
+  color: #dc2626;
+}
+
+.grammar-result.is-passed {
+  border-left: 6px solid #16a34a;
+}
+
+.grammar-result.is-failed {
+  border-left: 6px solid #dc2626;
+}
+
+.grammar-history {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grammar-history li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.grammar-pass {
+  color: #16a34a;
+}
+
+.grammar-fail {
+  color: #dc2626;
+}
+
+.grammar-history li button {
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  background: #eef2f4;
+  color: #0f3d3a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.grammar-history li button:hover {
+  background: #e2e8f0;
+}
+
+.student-kanji-page .kanji-tile:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Trang bài ngữ pháp: tab Tài liệu | Bài tập | Mini test (giống trang bài Từ vựng) */
+.grammar-lesson-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.grammar-lesson-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.grammar-lesson-tabs button.active {
+  border-bottom-color: #0d9488;
+  border-radius: 10px 10px 0 0;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.grammar-tab-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.grammar-lesson-tabs button.active .grammar-tab-badge {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.grammar-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.grammar-documents {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  color: #475569;
+}
+
+.grammar-documents a {
+  color: #0f766e;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.grammar-documents a:hover {
+  text-decoration: underline;
+}
+
+.grammar-empty {
+  color: #64748b;
+}
+
+/* Nút "Hoàn thành tài liệu" chung ở cuối tab Tài liệu */
+.grammar-completion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+}

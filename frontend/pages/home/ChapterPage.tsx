@@ -1,5 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Navigate,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { getChapterStudy } from "../../api/courseApi";
 import { SECTIONS, type LessonSection } from "../moderator/sectionConfig";
 import { ModeratorLessonListTab } from "../moderator/ModeratorLessonListTab";
@@ -12,6 +17,11 @@ import { StudentKanjiContentPage } from "./StudentKanjiContentPage";
 import { StudentKanjiFlashcardPage } from "./StudentKanjiFlashcardPage";
 import { StudentKanjiTestPage } from "./StudentKanjiTestPage";
 import { StudentKanjiChapterPage } from "./StudentKanjiChapterPage";
+import { StudentGrammarChapterPage } from "./StudentGrammarChapterPage";
+import {
+  StudentGrammarLessonPage,
+  type GrammarView,
+} from "./StudentGrammarLessonPage";
 import { StudentVocabularyChapterPage } from "./StudentVocabularyChapterPage";
 import { StudentVocabularyChapterTestPage } from "./StudentVocabularyChapterTestPage";
 import { VocabularyChapterFlashcards } from "../moderator/vocabulary/VocabularyChapterFlashcards";
@@ -53,13 +63,14 @@ export function ChapterPage() {
       next.delete("vocabChapterView");
       next.delete("kanjiId");
       next.delete("document");
+      next.delete("grammarView");
       if (skill) next.set("skill", skill);
       else next.delete("skill");
       return next;
     });
   };
   const openDocument = (lessonId: number, documentIndex: number) =>
-    setParams(previous => {
+    setParams((previous) => {
       const next = new URLSearchParams(previous);
       next.set("skill", "KANJI");
       next.set("lessonId", String(lessonId));
@@ -79,12 +90,14 @@ export function ChapterPage() {
       next.delete("vocabChapterView");
       next.delete("kanjiId");
       next.delete("document");
+      next.delete("grammarView");
       if (id) next.set("lessonId", String(id));
       else next.delete("lessonId");
       return next;
     });
   const back = () => navigate(`/courses/${courseId}`);
-  const backToChapter = () => navigate(`/courses/${courseId}#chapter-${chapterId}`);
+  const backToChapter = () =>
+    navigate(`/courses/${courseId}#chapter-${chapterId}`);
   const openKanji = (
     view: "content" | "flashcards" | "test" | null,
     kanjiId?: number,
@@ -115,6 +128,14 @@ export function ChapterPage() {
       ])
         next.delete(key);
       if (view) next.set("kanjiChapterView", view);
+      return next;
+    });
+
+  const openGrammar = (view: GrammarView | null) =>
+    setParams((previous) => {
+      const next = new URLSearchParams(previous);
+      if (view) next.set("grammarView", view);
+      else next.delete("grammarView");
       return next;
     });
 
@@ -242,16 +263,25 @@ export function ChapterPage() {
             onBack={lessonBack}
           />
         );
-      else if (selected.skillType === "GRAMMAR")
+      else if (selected.skillType === "GRAMMAR") {
+        const grammarView = params.get("grammarView");
         content = (
-          <ModeratorGrammarListPage
-            readOnly
-            {...context}
+          <StudentGrammarLessonPage
+            key={selected.id}
             lesson={selected}
-            onBack={lessonBack}
+            chapterNo={data.chapterNo}
+            view={
+              grammarView === "material" ||
+              grammarView === "exercise" ||
+              grammarView === "test"
+                ? grammarView
+                : null
+            }
+            onOpen={openGrammar}
+            onBack={backToChapter}
           />
         );
-      else if (selected.skillType === "KANJI") {
+      } else if (selected.skillType === "KANJI") {
         const view = params.get("kanjiView");
         if (view === "content")
           content = (
@@ -308,6 +338,16 @@ export function ChapterPage() {
           onBack={backToChapter}
         />
       );
+    else if (active?.key === "grammar")
+      content = (
+        <StudentGrammarChapterPage
+          chapterId={data.id}
+          chapterNo={data.chapterNo}
+          lessons={data.lessons}
+          onLesson={selectLesson}
+          onBack={backToChapter}
+        />
+      );
     else if (active)
       content = (
         <ModeratorLessonListTab
@@ -322,7 +362,10 @@ export function ChapterPage() {
           onViewLessonItems={(lesson) => selectLesson(lesson.id)}
         />
       );
-    else content = <Navigate to={`/courses/${courseId}#chapter-${chapterId}`} replace />;
+    else
+      content = (
+        <Navigate to={`/courses/${courseId}#chapter-${chapterId}`} replace />
+      );
   }
   return <div className="student-learning-page">{content}</div>;
 }
