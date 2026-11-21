@@ -6,6 +6,7 @@ import { CuboidCollider, Physics, RigidBody, TrimeshCollider } from "@react-thre
 import { ACESFilmicToneMapping, type Vector3 } from "three";
 import { useAuthStore } from "../store/authStore";
 import type { CampusCharacter } from "./CampusAvatar";
+import type { CharacterCustomization } from "./campusCharacterStyles";
 import { CampusCharacterSelect } from "./CampusCharacterSelect";
 import { CampusPlayer, type CampusInput } from "./CampusPlayer";
 import { CampusDoors, type DoorInteraction, type DoorPrompt } from "./CampusDoors";
@@ -64,9 +65,10 @@ function LoadingMap() {
   );
 }
 
-function CampusScene({ name, character, resetVersion, input, onControlFocus, doorInteraction, onDoorPrompt, time, seating, activeSeat, onNearbySeat, onSeatedChange, awardPrayerOnce, fortuneInteraction, spendPrayer, onFortuneStatus, toadInteraction, onToadStatus, network, roster }: {
+function CampusScene({ name, character, customization, resetVersion, input, onControlFocus, doorInteraction, onDoorPrompt, time, seating, activeSeat, onNearbySeat, onSeatedChange, awardPrayerOnce, fortuneInteraction, spendPrayer, onFortuneStatus, toadInteraction, onToadStatus, network, roster }: {
   name: string;
   character: CampusCharacter;
+  customization?: CharacterCustomization;
   resetVersion: number;
   input: MutableRefObject<CampusInput>;
   onControlFocus: (active: boolean) => void;
@@ -106,7 +108,7 @@ function CampusScene({ name, character, resetVersion, input, onControlFocus, doo
         <CuboidCollider args={[halfWidth + 1, 30, 0.5]} position={[middleX, 10, min.z - 0.5]} />
         <CuboidCollider args={[halfWidth + 1, 30, 0.5]} position={[middleX, 10, max.z + 0.5]} />
       </RigidBody>
-      <CampusPlayer campus={campus} name={name} character={character} resetVersion={resetVersion} input={input} onControlFocus={onControlFocus} doorInteraction={doorInteraction} seating={seating} onSeatedChange={onSeatedChange} toadSite={toadSite} toadInteraction={toadInteraction} network={network} />
+      <CampusPlayer campus={campus} name={name} character={character} customization={customization} resetVersion={resetVersion} input={input} onControlFocus={onControlFocus} doorInteraction={doorInteraction} seating={seating} onSeatedChange={onSeatedChange} toadSite={toadSite} toadInteraction={toadInteraction} network={network} />
       <CampusRemotePlayers roster={roster} network={network} />
       <CampusDoors doors={campus.doors} interaction={doorInteraction} onPrompt={onDoorPrompt} network={network} />
       <CampusSeatInteraction seats={campus.seats} player={doorInteraction} control={seating} onNearby={onNearbySeat} network={network} />
@@ -122,12 +124,27 @@ function CampusScene({ name, character, resetVersion, input, onControlFocus, doo
 
 export default function Campus3DPage() {
   const [character, setCharacter] = useState<CampusCharacter | null>(null);
-  return character
-    ? <CampusMap character={character} />
-    : <CampusCharacterSelect onEnter={setCharacter} />;
+  const [customization, setCustomization] = useState<CharacterCustomization | null>(null);
+
+  return character ? (
+    <CampusMap character={character} customization={customization ?? undefined} />
+  ) : (
+    <CampusCharacterSelect
+      onEnter={(char, custom) => {
+        setCharacter(char);
+        setCustomization(custom);
+      }}
+    />
+  );
 }
 
-function CampusMap({ character }: { character: CampusCharacter }) {
+function CampusMap({
+  character,
+  customization,
+}: {
+  character: CampusCharacter;
+  customization?: CharacterCustomization;
+}) {
   const user = useAuthStore((state) => state.user);
   const multiplayer = useCampusMultiplayer(user?.id, character);
   const { prayerCount, awardPrayerOnce, spendPrayer } = useCampusPrayer(user?.id);
@@ -259,7 +276,7 @@ function CampusMap({ character }: { character: CampusCharacter }) {
               fallback={<MapNotice />}
             >
               <Suspense fallback={<LoadingMap />}>
-                <CampusScene key={user?.id} name={playerName} character={character} resetVersion={resetVersion} input={input} onControlFocus={setControlFocused} doorInteraction={doorInteraction} onDoorPrompt={setDoorPrompt} time={time} seating={seating} activeSeat={activeSeat} onNearbySeat={setNearbySeat} onSeatedChange={seatedChange} awardPrayerOnce={awardPrayerOnce} fortuneInteraction={fortuneInteraction} spendPrayer={spendPrayer} onFortuneStatus={setFortuneStatus} toadInteraction={toadInteraction} onToadStatus={setToadStatus} network={multiplayer.network} roster={multiplayer.roster} />
+                <CampusScene key={user?.id} name={playerName} character={character} customization={customization} resetVersion={resetVersion} input={input} onControlFocus={setControlFocused} doorInteraction={doorInteraction} onDoorPrompt={setDoorPrompt} time={time} seating={seating} activeSeat={activeSeat} onNearbySeat={setNearbySeat} onSeatedChange={seatedChange} awardPrayerOnce={awardPrayerOnce} fortuneInteraction={fortuneInteraction} spendPrayer={spendPrayer} onFortuneStatus={setFortuneStatus} toadInteraction={toadInteraction} onToadStatus={setToadStatus} network={multiplayer.network} roster={multiplayer.roster} />
               </Suspense>
             </Canvas>
           </MapErrorBoundary>
