@@ -4,6 +4,8 @@ import { Html } from "@react-three/drei";
 import { Group, MathUtils } from "three";
 import type { ToadAction } from "./CampusToadInteraction";
 
+export type CampusCharacter = "male" | "female";
+
 export interface AvatarMotion {
   speed: number;
   running: boolean;
@@ -11,7 +13,14 @@ export interface AvatarMotion {
   gesture?: { action: ToadAction; progress: number };
 }
 
-export function CampusAvatar({ name, motion }: { name: string; motion: MutableRefObject<AvatarMotion> }) {
+export function CampusAvatar({ character, name, motion }: {
+  character: CampusCharacter;
+  name?: string;
+  motion: MutableRefObject<AvatarMotion>;
+}) {
+  const female = character === "female";
+  const jacketColor = female ? "#a53d5c" : "#ea5b0c";
+  const hairColor = female ? "#382732" : "#221e25";
   const leftArm = useRef<Group>(null);
   const rightArm = useRef<Group>(null);
   const leftForearm = useRef<Group>(null);
@@ -54,15 +63,17 @@ export function CampusAvatar({ name, motion }: { name: string; motion: MutableRe
 
   return (
     <group>
-      <Html position={[0, 2.05, 0]} center distanceFactor={7} zIndexRange={[20, 0]}>
-        <div className="campus-player-name" title={name}>{name}</div>
-      </Html>
+      {name && (
+        <Html position={[0, 2.05, 0]} center distanceFactor={7} zIndexRange={[20, 0]}>
+          <div className="campus-player-name" title={name}>{name}</div>
+        </Html>
+      )}
       <group ref={upperBody} position={[0, 0.74, 0]}>
         <group ref={torso} position={[0, -0.74, 0]}>
-          {/* Main FPT signature orange jacket */}
+          {/* Jacket */}
           <mesh position={[0, 1.02, 0]} scale={[1, 1, 0.68]}>
             <capsuleGeometry args={[0.23, 0.25, 4, 16]} />
-            <meshStandardMaterial color="#ea5b0c" roughness={0.78} />
+            <meshStandardMaterial color={jacketColor} roughness={0.78} />
           </mesh>
 
           {/* Jacket lower navy hem */}
@@ -115,13 +126,39 @@ export function CampusAvatar({ name, motion }: { name: string; motion: MutableRe
           {/* Layered Modern Hair */}
           <mesh position={[0, 1.56, -0.02]} scale={[0.98, 1.08, 0.96]}>
             <sphereGeometry args={[0.218, 18, 14, 0, Math.PI * 2, 0, Math.PI * 0.58]} />
-            <meshStandardMaterial color="#221e25" roughness={0.75} />
+            <meshStandardMaterial color={hairColor} roughness={0.75} />
           </mesh>
-          {/* Hair fringe / bangs */}
-          <mesh position={[0, 1.63, 0.13]} rotation={[0.3, 0, 0]}>
-            <boxGeometry args={[0.24, 0.07, 0.08]} />
-            <meshStandardMaterial color="#221e25" roughness={0.75} />
-          </mesh>
+          {female ? (
+            <>
+              <mesh position={[-0.067, 1.655, 0.133]} rotation={[-0.25, 0, 0.36]} scale={[1.4, 0.48, 0.8]}>
+                <sphereGeometry args={[0.103, 16, 12]} />
+                <meshStandardMaterial color={hairColor} roughness={0.75} />
+              </mesh>
+              <mesh position={[0.137, 1.615, 0.118]} rotation={[0, 0, 0.65]} scale={[0.48, 1, 0.58]}>
+                <sphereGeometry args={[0.088, 12, 10]} />
+                <meshStandardMaterial color={hairColor} roughness={0.75} />
+              </mesh>
+              <mesh position={[0.105, 1.61, -0.216]} rotation={[Math.PI / 2, 0, 0.2]}>
+                <cylinderGeometry args={[0.065, 0.065, 0.047, 12]} />
+                <meshStandardMaterial color="#f6b05e" roughness={0.75} />
+              </mesh>
+              <mesh position={[0.179, 1.442, -0.257]} rotation={[-0.26, 0, 0.46]} scale={[0.83, 1, 0.84]}>
+                <capsuleGeometry args={[0.088, 0.24, 6, 12]} />
+                <meshStandardMaterial color={hairColor} roughness={0.75} />
+              </mesh>
+              {[-1, 1].map((side) => (
+                <mesh key={side} position={[side * 0.213, 1.483, 0.014]}>
+                  <sphereGeometry args={[0.013, 8, 6]} />
+                  <meshStandardMaterial color="#e8ad55" roughness={0.42} metalness={0.4} />
+                </mesh>
+              ))}
+            </>
+          ) : (
+            <mesh position={[0, 1.63, 0.13]} rotation={[0.3, 0, 0]}>
+              <boxGeometry args={[0.24, 0.07, 0.08]} />
+              <meshStandardMaterial color={hairColor} roughness={0.75} />
+            </mesh>
+          )}
 
           {/* Eyes with lifelike highlights */}
           {[-1, 1].map((side) => (
@@ -159,7 +196,7 @@ export function CampusAvatar({ name, motion }: { name: string; motion: MutableRe
               {/* Upper arm with jacket sleeve */}
               <mesh position={[0, -0.125, 0]}>
                 <capsuleGeometry args={[0.075, 0.11, 4, 10]} />
-                <meshStandardMaterial color="#ea5b0c" roughness={0.78} />
+                <meshStandardMaterial color={jacketColor} roughness={0.78} />
               </mesh>
               {/* Sleeve dark navy cuff */}
               <mesh position={[0, -0.21, 0]}>
@@ -238,10 +275,10 @@ export function CampusAvatar({ name, motion }: { name: string; motion: MutableRe
                 <boxGeometry args={[0.14, 0.065, 0.06]} />
                 <meshStandardMaterial color="#f8fafc" roughness={0.45} />
               </mesh>
-              {/* Orange athletic stripe accent */}
+              {/* Athletic stripe accent */}
               <mesh position={[side * 0.078, 0.01, -0.01]}>
                 <boxGeometry args={[0.005, 0.04, 0.14]} />
-                <meshStandardMaterial color="#ea5b0c" roughness={0.6} />
+                <meshStandardMaterial color={jacketColor} roughness={0.6} />
               </mesh>
             </group>
           </group>

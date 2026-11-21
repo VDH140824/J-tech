@@ -16,7 +16,7 @@ public final class CampusMessages {
     public record Gesture(String action, double progress) {}
     public record Pose(double x, double y, double z, double yaw, double speed, boolean running,
                        String seatId, Gesture gesture, boolean teleport) {}
-    public record Player(long id, String name, Pose state, long updatedAt) {}
+    public record Player(long id, String name, String character, Pose state, long updatedAt) {}
     public record Chat(long id, String clientId, long userId, String name, String text, long time) {}
     public record Door(String id, double[] hinge, double[] center, double[] halfExtents) {}
     public record Seat(String id, double[] position, double floorY) {}

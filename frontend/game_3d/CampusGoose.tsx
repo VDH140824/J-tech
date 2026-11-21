@@ -60,14 +60,24 @@ export function createCampusGuideTexture() {
   return texture;
 }
 
-function GooseModel() {
+export function GooseModel({ walkTime, strideOffset = 0 }: {
+  walkTime?: MutableRefObject<number>;
+  strideOffset?: number;
+}) {
   const head = useRef<Group>(null);
+  const leftLeg = useRef<Group>(null);
+  const rightLeg = useRef<Group>(null);
   const neck = useMemo(() => new CatmullRomCurve3([
     new Vector3(0, 0.53, 0.22), new Vector3(0, 0.78, 0.27),
     new Vector3(0, 1.02, 0.18), new Vector3(0, 1.23, 0.28), new Vector3(0, 1.29, 0.4),
   ]), []);
   useFrame(({ clock }) => {
-    if (head.current) head.current.rotation.y = Math.sin(clock.elapsedTime * 0.8) * 0.07;
+    const time = walkTime?.current ?? clock.elapsedTime;
+    if (head.current) head.current.rotation.y = Math.sin(time * 0.8 + strideOffset) * 0.07;
+    if (!walkTime) return;
+    const stride = Math.sin(time * 13 + strideOffset);
+    if (leftLeg.current) leftLeg.current.rotation.x = stride * 0.62;
+    if (rightLeg.current) rightLeg.current.rotation.x = -stride * 0.62;
   });
   return (
     <group rotation={[0, Math.PI / 2, 0]}>
@@ -91,14 +101,16 @@ function GooseModel() {
               <meshStandardMaterial color={feather === 1 ? "#c4c1b6" : "#b6b4aa"} roughness={1} flatShading />
             </mesh>
           ))}
-          <mesh position={[side * 0.13, 0.16, 0.01]}>
-            <cylinderGeometry args={[0.026, 0.034, 0.25, 8]} />
-            <meshStandardMaterial color="#dc8735" roughness={0.9} />
-          </mesh>
-          <mesh position={[side * 0.13, 0.035, 0.09]} scale={[0.095, 0.035, 0.155]}>
-            <sphereGeometry args={[1, 8, 6]} />
-            <meshStandardMaterial color="#e69b45" roughness={0.9} flatShading />
-          </mesh>
+          <group ref={side < 0 ? leftLeg : rightLeg} position={[side * 0.13, 0.285, 0.01]}>
+            <mesh position={[0, -0.125, 0]}>
+              <cylinderGeometry args={[0.026, 0.034, 0.25, 8]} />
+              <meshStandardMaterial color="#dc8735" roughness={0.9} />
+            </mesh>
+            <mesh position={[0, -0.25, 0.08]} scale={[0.095, 0.035, 0.155]}>
+              <sphereGeometry args={[1, 8, 6]} />
+              <meshStandardMaterial color="#e69b45" roughness={0.9} flatShading />
+            </mesh>
+          </group>
         </group>
       ))}
       <mesh>

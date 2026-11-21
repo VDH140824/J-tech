@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
 import { Html, useGLTF, useProgress } from "@react-three/drei";
 import { CuboidCollider, Physics, RigidBody, TrimeshCollider } from "@react-three/rapier";
-import { ACESFilmicToneMapping } from "three";
+import { ACESFilmicToneMapping, type Vector3 } from "three";
 import { useAuthStore } from "../store/authStore";
+import type { CampusCharacter } from "./CampusAvatar";
+import { CampusCharacterSelect } from "./CampusCharacterSelect";
 import { CampusPlayer, type CampusInput } from "./CampusPlayer";
 import { CampusDoors, type DoorInteraction, type DoorPrompt } from "./CampusDoors";
 import { CampusEnvironment } from "./CampusEnvironment";
@@ -12,6 +14,7 @@ import type { CampusTime } from "./campusLighting";
 import { CampusSeatInteraction } from "./CampusSeatInteraction";
 import { CampusComputer } from "./CampusComputer";
 import { CampusGoose } from "./CampusGoose";
+import { CampusGooseFlock } from "./CampusGooseFlock";
 import { CampusFortuneTable, EMPTY_FORTUNE_STATUS, type FortuneInteraction, type FortuneStatus } from "./CampusFortuneTable";
 import { CampusToadInteraction, EMPTY_TOAD_STATUS, getCampusToadSite, type ToadInteraction, type ToadStatus } from "./CampusToadInteraction";
 import { useCampusPrayer } from "./campusPrayer";
@@ -61,8 +64,9 @@ function LoadingMap() {
   );
 }
 
-function CampusScene({ name, resetVersion, input, onControlFocus, doorInteraction, onDoorPrompt, time, seating, activeSeat, onNearbySeat, onSeatedChange, awardPrayerOnce, fortuneInteraction, spendPrayer, onFortuneStatus, toadInteraction, onToadStatus, network, roster }: {
+function CampusScene({ name, character, resetVersion, input, onControlFocus, doorInteraction, onDoorPrompt, time, seating, activeSeat, onNearbySeat, onSeatedChange, awardPrayerOnce, fortuneInteraction, spendPrayer, onFortuneStatus, toadInteraction, onToadStatus, network, roster }: {
   name: string;
+  character: CampusCharacter;
   resetVersion: number;
   input: MutableRefObject<CampusInput>;
   onControlFocus: (active: boolean) => void;
@@ -85,6 +89,7 @@ function CampusScene({ name, resetVersion, input, onControlFocus, doorInteractio
   const { scene } = useGLTF(campusUrl);
   const campus = useMemo(() => prepareCampusWorld(scene), [scene]);
   const toadSite = useMemo(() => getCampusToadSite(campus), [campus]);
+  const goosePositions = useRef<Vector3[]>([]);
   const { min, max } = campus.bounds;
   const halfWidth = (max.x - min.x) / 2;
   const halfDepth = (max.z - min.z) / 2;
@@ -101,12 +106,13 @@ function CampusScene({ name, resetVersion, input, onControlFocus, doorInteractio
         <CuboidCollider args={[halfWidth + 1, 30, 0.5]} position={[middleX, 10, min.z - 0.5]} />
         <CuboidCollider args={[halfWidth + 1, 30, 0.5]} position={[middleX, 10, max.z + 0.5]} />
       </RigidBody>
-      <CampusPlayer campus={campus} name={name} resetVersion={resetVersion} input={input} onControlFocus={onControlFocus} doorInteraction={doorInteraction} seating={seating} onSeatedChange={onSeatedChange} toadSite={toadSite} toadInteraction={toadInteraction} network={network} />
+      <CampusPlayer campus={campus} name={name} character={character} resetVersion={resetVersion} input={input} onControlFocus={onControlFocus} doorInteraction={doorInteraction} seating={seating} onSeatedChange={onSeatedChange} toadSite={toadSite} toadInteraction={toadInteraction} network={network} />
       <CampusRemotePlayers roster={roster} network={network} />
       <CampusDoors doors={campus.doors} interaction={doorInteraction} onPrompt={onDoorPrompt} network={network} />
       <CampusSeatInteraction seats={campus.seats} player={doorInteraction} control={seating} onNearby={onNearbySeat} network={network} />
-      <CampusEnvironment time={time} campus={campus} player={doorInteraction} />
+      <CampusEnvironment time={time} campus={campus} player={doorInteraction} goosePositions={goosePositions} />
       <CampusGoose campus={campus} player={doorInteraction} />
+      <CampusGooseFlock campus={campus} network={network} positions={goosePositions} />
       <CampusFortuneTable campus={campus} player={doorInteraction} seating={seating} interaction={fortuneInteraction} spendPrayer={spendPrayer} onStatus={onFortuneStatus} />
       <CampusToadInteraction site={toadSite} player={doorInteraction} seating={seating} interaction={toadInteraction} onStatus={onToadStatus} />
       {activeSeat && <CampusComputer key={activeSeat.id} seat={activeSeat} control={seating} awardPrayerOnce={awardPrayerOnce} />}
@@ -115,12 +121,20 @@ function CampusScene({ name, resetVersion, input, onControlFocus, doorInteractio
 }
 
 export default function Campus3DPage() {
+  const [character, setCharacter] = useState<CampusCharacter | null>(null);
+  return character
+    ? <CampusMap character={character} />
+    : <CampusCharacterSelect onEnter={setCharacter} />;
+}
+
+function CampusMap({ character }: { character: CampusCharacter }) {
   const user = useAuthStore((state) => state.user);
-  const multiplayer = useCampusMultiplayer(user?.id);
+  const multiplayer = useCampusMultiplayer(user?.id, character);
   const { prayerCount, awardPrayerOnce, spendPrayer } = useCampusPrayer(user?.id);
   // Match the account name displayed in the main navigation, never a game alias.
   const playerName = multiplayer.selfName || user?.fullName?.trim() || user?.displayName?.trim() || user?.email || "Học viên";
   const [resetVersion, setResetVersion] = useState(0);
+  const heading = useRef<HTMLHeadingElement>(null);
   const [controlFocused, setControlFocused] = useState(false);
   const [time, setTime] = useState<CampusTime>("day");
   const input = useRef<CampusInput>({ buttons: new Set() });
@@ -160,6 +174,10 @@ export default function Campus3DPage() {
 
   const focusMap = useCallback(() => {
     viewport.current?.querySelector("canvas")?.focus({ preventScroll: true });
+  }, []);
+
+  useEffect(() => {
+    heading.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -205,7 +223,7 @@ export default function Campus3DPage() {
       <Link className="campus-3d-back" to="/games">← Danh sách trò chơi</Link>
       <header className="campus-3d-header">
         <div>
-          <h1 id="campus-3d-title">FPTU Campus 3D</h1>
+          <h1 id="campus-3d-title" ref={heading} tabIndex={-1}>FPTU Campus 3D</h1>
           <p>Nhập vai vào khuôn viên cùng nhân vật của bạn.</p>
         </div>
         <div className="campus-3d-toolbar">
@@ -241,7 +259,7 @@ export default function Campus3DPage() {
               fallback={<MapNotice />}
             >
               <Suspense fallback={<LoadingMap />}>
-                <CampusScene key={user?.id} name={playerName} resetVersion={resetVersion} input={input} onControlFocus={setControlFocused} doorInteraction={doorInteraction} onDoorPrompt={setDoorPrompt} time={time} seating={seating} activeSeat={activeSeat} onNearbySeat={setNearbySeat} onSeatedChange={seatedChange} awardPrayerOnce={awardPrayerOnce} fortuneInteraction={fortuneInteraction} spendPrayer={spendPrayer} onFortuneStatus={setFortuneStatus} toadInteraction={toadInteraction} onToadStatus={setToadStatus} network={multiplayer.network} roster={multiplayer.roster} />
+                <CampusScene key={user?.id} name={playerName} character={character} resetVersion={resetVersion} input={input} onControlFocus={setControlFocused} doorInteraction={doorInteraction} onDoorPrompt={setDoorPrompt} time={time} seating={seating} activeSeat={activeSeat} onNearbySeat={setNearbySeat} onSeatedChange={seatedChange} awardPrayerOnce={awardPrayerOnce} fortuneInteraction={fortuneInteraction} spendPrayer={spendPrayer} onFortuneStatus={setFortuneStatus} toadInteraction={toadInteraction} onToadStatus={setToadStatus} network={multiplayer.network} roster={multiplayer.roster} />
               </Suspense>
             </Canvas>
           </MapErrorBoundary>

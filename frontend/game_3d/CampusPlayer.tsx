@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierCollider, type RapierRigidBody } from "@react-three/rapier";
 import { Group, MathUtils, Vector3 } from "three";
-import { CampusAvatar, type AvatarMotion } from "./CampusAvatar";
+import { CampusAvatar, type AvatarMotion, type CampusCharacter } from "./CampusAvatar";
 import type { DoorInteraction } from "./CampusDoors";
 import { findSeatStandingPosition, type CampusSeat, type SeatingControl } from "./campusSeating";
 import { canInteractWithToad, TOAD_GESTURE_SECONDS, type ToadInteraction, type ToadSite } from "./CampusToadInteraction";
@@ -20,6 +20,7 @@ export interface CampusInput {
 interface CampusPlayerProps {
   campus: CampusWorld;
   name: string;
+  character: CampusCharacter;
   resetVersion: number;
   input: MutableRefObject<CampusInput>;
   onControlFocus: (active: boolean) => void;
@@ -33,7 +34,7 @@ interface CampusPlayerProps {
 
 const MOVEMENT_KEYS = new Set(["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight", "ShiftLeft", "ShiftRight"]);
 
-export function CampusPlayer({ campus, name, resetVersion, input, onControlFocus, doorInteraction, seating, onSeatedChange, toadSite, toadInteraction, network }: CampusPlayerProps) {
+export function CampusPlayer({ campus, name, character, resetVersion, input, onControlFocus, doorInteraction, seating, onSeatedChange, toadSite, toadInteraction, network }: CampusPlayerProps) {
   const body = useRef<RapierRigidBody>(null);
   const collider = useRef<RapierCollider>(null);
   const visual = useRef<Group>(null);
@@ -487,7 +488,7 @@ export function CampusPlayer({ campus, name, resetVersion, input, onControlFocus
     <RigidBody ref={body} type="kinematicPosition" colliders={false} position={initialPosition} enabledRotations={[false, false, false]}>
       <CapsuleCollider ref={collider} args={[PLAYER_HALF_SEGMENT, PLAYER_RADIUS]} />
       <group ref={visual} position={[0, -PLAYER_HALF_HEIGHT, 0]}>
-        <CampusAvatar name={name} motion={motion} />
+        <CampusAvatar character={character} name={name} motion={motion} />
       </group>
     </RigidBody>
   );

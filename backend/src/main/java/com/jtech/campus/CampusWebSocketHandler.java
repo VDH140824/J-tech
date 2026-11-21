@@ -76,7 +76,8 @@ public class CampusWebSocketHandler extends TextWebSocketHandler {
             if (packet == null || !packet.isObject()) { connection.close(1007, "invalid_message"); return; }
             if (!connection.authenticated) {
                 if (!"auth".equals(packet.path("type").asText())) { connection.close(4401, "auth_required"); return; }
-                connection.authenticated = room.join(connection, packet.path("token").asText(""), packet.path("mapId").asText(""));
+                connection.authenticated = room.join(connection, packet.path("token").asText(""),
+                    packet.path("mapId").asText(""), packet.path("character").asText(""));
             } else room.receive(connection, packet);
         } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
             connection.close(1007, "invalid_message");

@@ -163,15 +163,24 @@ export function createCampusLighting(objects: Object3D[]): CampusLighting {
   };
 }
 
-export function nearbyCampusLights(anchors: CampusLightAnchor[], position: { x: number; y: number; z: number }, limit = 6) {
-  const distanceSquared = (anchor: CampusLightAnchor) => (anchor.position.x - position.x) ** 2
-    + (anchor.position.y - position.y) ** 2 + (anchor.position.z - position.z) ** 2;
-  return anchors
-    .filter((anchor) => {
+export function nearbyCampusLights(anchors: CampusLightAnchor[], positions: readonly Pick<Vector3, "x" | "y" | "z">[], limit: number) {
+  const selected: { anchor: CampusLightAnchor; distanceSquared: number }[] = [];
+  for (const anchor of anchors) {
+    let closest = (anchor.distance + 5) ** 2;
+    let inRange = false;
+    for (const position of positions) {
       const dy = anchor.position.y - position.y;
-      return (!anchor.indoor || (dy > 0.2 && dy < 4.5))
-        && distanceSquared(anchor) < (anchor.distance + 5) ** 2;
-    })
-    .sort((a, b) => distanceSquared(a) - distanceSquared(b))
-    .slice(0, Math.max(0, limit));
+      if (anchor.indoor && (dy <= 0.2 || dy >= 4.5)) continue;
+      const distanceSquared = (anchor.position.x - position.x) ** 2 + dy ** 2 + (anchor.position.z - position.z) ** 2;
+      if (distanceSquared < closest) {
+        closest = distanceSquared;
+        inRange = true;
+      }
+    }
+    if (inRange) selected.push({ anchor, distanceSquared: closest });
+  }
+  return selected
+    .sort((a, b) => a.distanceSquared - b.distanceSquared)
+    .slice(0, Math.max(0, limit))
+    .map(({ anchor }) => anchor);
 }
