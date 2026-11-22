@@ -10,7 +10,7 @@ import "./StudentGrammar.css";
 
 export type GrammarView = "material" | "exercise" | "test";
 
-// Bài ngữ pháp: ngoài cùng là ô bài học + ô Mini test; bấm ô bài học → tab Tài liệu | Bài tập
+// Open lesson content directly; mini tests remain available as a separate screen.
 export function StudentGrammarLessonPage({
   lesson,
   chapterNo,
@@ -38,7 +38,7 @@ export function StudentGrammarLessonPage({
       <StudentGrammarMiniTest
         lesson={data}
         onBack={() => {
-          onOpen(null);
+          onOpen("material");
           void query.refetch();
         }}
       />
@@ -76,121 +76,81 @@ export function StudentGrammarLessonPage({
     );
   }
 
-  // Bấm vào bài: một bên Tài liệu, một bên Bài tập (giống trang bài Từ vựng)
-  if (view === "material" || view === "exercise") {
-    const tab: GrammarView = view;
-    const tabs: ReadonlyArray<{ key: GrammarView; label: string; badge?: string }> = [
-      { key: "material", label: "📄 Tài liệu" },
-      { key: "exercise", label: "✎ Bài tập", badge: `${data.exerciseCount} câu` },
-    ];
-    return (
-      <section className="student-kanji-page">
-        <button
-          type="button"
-          className="kanji-text-button"
-          onClick={() => {
-            onOpen(null);
-            void query.refetch();
-          }}
-        >
-          ← Quay lại {lesson.title}
-        </button>
-        {header}
-        <div
-          className="grammar-lesson-tabs"
-          role="tablist"
-          aria-label="Nội dung bài học"
-          onKeyDown={(event) => {
-            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-            event.preventDefault();
-            const next = tab === "material" ? "exercise" : "material";
-            onOpen(next);
-            window.document.getElementById(`grammar-${next}-tab`)?.focus();
-          }}
-        >
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              id={`grammar-${t.key}-tab`}
-              type="button"
-              role="tab"
-              tabIndex={tab === t.key ? 0 : -1}
-              aria-selected={tab === t.key}
-              aria-controls="grammar-lesson-panel"
-              className={tab === t.key ? "active" : ""}
-              onClick={() => onOpen(t.key)}
-            >
-              {t.label}
-              {t.badge && <span className="grammar-tab-badge">{t.badge}</span>}
-            </button>
-          ))}
-        </div>
-
-        <div id="grammar-lesson-panel" role="tabpanel" aria-labelledby={`grammar-${tab}-tab`}>
-          {tab === "material" ? (
-            <>
-              {documents.length > 0 && (
-                <div className="grammar-documents">
-                  <span>Tài liệu đính kèm:</span>
-                  {documents.map((document) => (
-                    <a key={document.url} href={document.url} target="_blank" rel="noopener noreferrer">
-                      📄 {document.name} ↗
-                    </a>
-                  ))}
-                </div>
-              )}
-              <StudentGrammarMaterial lesson={data} embedded />
-            </>
-          ) : data.exerciseCount > 0 ? (
-            <StudentGrammarExercise key={data.id} lesson={data} embedded />
-          ) : (
-            <p role="status" className="grammar-empty">
-              Bài học chưa có câu luyện tập.
-            </p>
-          )}
-        </div>
-      </section>
-    );
-  }
-
-  // Ngoài cùng: ô bài học (Tài liệu + Bài tập) và ô Mini test, như cũ
+  const tab: GrammarView = view === "exercise" ? "exercise" : "material";
+  const tabs: ReadonlyArray<{ key: GrammarView; label: string; badge?: string }> = [
+    { key: "material", label: "📄 Tài liệu" },
+    { key: "exercise", label: "✎ Bài tập", badge: `${data.exerciseCount} câu` },
+  ];
   return (
     <section className="student-kanji-page">
       <button type="button" className="kanji-text-button" onClick={onBack}>
-        ← Quay lại
+        ← Quay lại ngữ pháp · Bài {lesson.lessonNo}
       </button>
       {header}
-      <div className="kanji-content-grid">
-        <button type="button" className="kanji-tile" onClick={() => onOpen("material")}>
-          <div className="kanji-tile-banner kanji-banner-document">
-            <small>NGỮ PHÁP · BÀI {lesson.lessonNo}</small>
-            <strong>TÀI LIỆU &amp; BÀI TẬP</strong>
-            <span className="kanji-banner-symbol" aria-hidden="true">
-              文
-            </span>
-          </div>
-          <div className="kanji-tile-body">
-            <h4>{lesson.title}</h4>
-            <small>
-              {data.grammars.length} mẫu ngữ pháp · {data.exerciseCount} câu bài tập
-            </small>
-          </div>
-        </button>
-
-        {data.miniTest && (
-          <button type="button" className="kanji-tile" onClick={() => onOpen("test")}>
-            <div className="kanji-tile-banner kanji-banner-test">
-              <strong>MINI TEST</strong>
-              <span className="kanji-tile-tag">{data.miniTest.durationMinutes} PHÚT</span>
-            </div>
-            <div className="kanji-tile-body">
-              <h4>{data.miniTest.title}</h4>
-              <small>
-                {data.miniTest.questionCount} câu · Điểm đạt {Number(data.miniTest.passingScore)}%
-                {data.miniTest.inProgressAttemptId ? " · Đang làm dở" : ""}
-              </small>
-            </div>
+      {data.miniTest && (
+        <p>
+          <button
+            type="button"
+            className="kanji-primary"
+            title={data.miniTest.title}
+            onClick={() => onOpen("test")}
+          >
+            Mini test · {data.miniTest.questionCount} câu · {data.miniTest.durationMinutes} phút
+            {data.miniTest.inProgressAttemptId ? " · Đang làm dở" : ""}
           </button>
+        </p>
+      )}
+      <div
+        className="grammar-lesson-tabs"
+        role="tablist"
+        aria-label="Nội dung bài học"
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+          event.preventDefault();
+          const next = tab === "material" ? "exercise" : "material";
+          onOpen(next);
+          window.document.getElementById(`grammar-${next}-tab`)?.focus();
+        }}
+      >
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            id={`grammar-${t.key}-tab`}
+            type="button"
+            role="tab"
+            tabIndex={tab === t.key ? 0 : -1}
+            aria-selected={tab === t.key}
+            aria-controls="grammar-lesson-panel"
+            className={tab === t.key ? "active" : ""}
+            onClick={() => onOpen(t.key)}
+          >
+            {t.label}
+            {t.badge && <span className="grammar-tab-badge">{t.badge}</span>}
+          </button>
+        ))}
+      </div>
+
+      <div id="grammar-lesson-panel" role="tabpanel" aria-labelledby={`grammar-${tab}-tab`}>
+        {tab === "material" ? (
+          <>
+            {documents.length > 0 && (
+              <div className="grammar-documents">
+                <span>Tài liệu đính kèm:</span>
+                {documents.map((document) => (
+                  <a key={document.url} href={document.url} target="_blank" rel="noopener noreferrer">
+                    📄 {document.name} ↗
+                  </a>
+                ))}
+              </div>
+            )}
+            <StudentGrammarMaterial lesson={data} embedded />
+          </>
+        ) : data.exerciseCount > 0 ? (
+          <StudentGrammarExercise key={data.id} lesson={data} embedded />
+        ) : (
+          <p role="status" className="grammar-empty">
+            Bài học chưa có câu luyện tập.
+          </p>
         )}
       </div>
     </section>

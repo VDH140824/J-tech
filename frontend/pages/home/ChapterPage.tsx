@@ -156,6 +156,7 @@ export function ChapterPage() {
         skill: "GRAMMAR",
         lessonNo: String(lesson.lessonNo),
         lessonId: String(lesson.id),
+        grammarView: "material",
       });
   };
 
@@ -307,7 +308,7 @@ export function ChapterPage() {
               grammarView === "exercise" ||
               grammarView === "test"
                 ? grammarView
-                : null
+                : "material"
             }
             onOpen={openGrammar}
             onBack={() => openGrammarGroup(selected.lessonNo)}
