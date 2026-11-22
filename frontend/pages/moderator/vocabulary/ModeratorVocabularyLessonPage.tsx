@@ -6,7 +6,6 @@ import { deleteVocabularyDocument, renameVocabularyDocument, uploadVocabularyDoc
 import { ModeratorVocabularyListPage } from "./ModeratorVocabularyListPage";
 import { VocabularyExerciseTab } from "./VocabularyExerciseTab";
 import { StudentVocabularyExerciseTab } from "../../home/StudentVocabularyExerciseTab";
-import { StudentVocabularyList } from "../../home/StudentVocabularyList";
 import "../ModeratorContent.css";
 
 interface Props {
@@ -47,9 +46,9 @@ export function ModeratorVocabularyLessonPage({
   const documentInputRef = useRef<HTMLInputElement>(null);
   const selectedTab = searchParams.get("vocabTab");
   const tab = readOnly
-    ? selectedTab === "document" || selectedTab === "questions" || selectedTab === "exercise"
-      ? selectedTab === "exercise" ? "questions" : selectedTab
-      : "words"
+    ? selectedTab === "questions" || selectedTab === "exercise"
+      ? "questions"
+      : "document"
     : selectedTab === "questions" || selectedTab === "exercise"
       ? "questions"
       : selectedTab === "words" ? "words" : "document";
@@ -251,29 +250,17 @@ export function ModeratorVocabularyLessonPage({
         onKeyDown={(event) => {
           if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
           event.preventDefault();
-          const tabOrder = ["words", "document", "questions"] as const;
+          const tabOrder = ["document", "questions"] as const;
           const tabIndex = tabOrder.indexOf(tab as typeof tabOrder[number]);
           const next = event.key === "Home"
             ? tabOrder[0]
             : event.key === "End"
-              ? tabOrder[2]
+              ? tabOrder[1]
               : tabOrder[(tabIndex + (event.key === "ArrowRight" ? 1 : tabOrder.length - 1)) % tabOrder.length];
           selectTab(next);
           window.document.getElementById(`vocab-${next}-tab`)?.focus();
         }}
       >
-        <button
-          id="vocab-words-tab"
-          type="button"
-          role="tab"
-          tabIndex={tab === "words" ? 0 : -1}
-          aria-selected={tab === "words"}
-          aria-controls="vocab-lesson-panel"
-          className={tab === "words" ? "active" : ""}
-          onClick={() => selectTab("words")}
-        >
-          📕 Từ vựng
-        </button>
         <button
           id="vocab-document-tab"
           type="button"
@@ -329,11 +316,10 @@ export function ModeratorVocabularyLessonPage({
             </div>
           </form>
         )}
-        {tab === "words" && readOnly ? (
-          <StudentVocabularyList lessonId={lesson.id} />
-        ) : tab === "document" ? (
-          document ? (
-            <>
+        {tab === "document" ? (
+          <>
+            {document ? (
+              <>
               {!readOnly && documents.length > 0 && (
                 <div className="mod-vocab-document-admin-list">
                   <strong>Tài liệu của bài học</strong>
@@ -404,17 +390,18 @@ export function ModeratorVocabularyLessonPage({
                 Nếu PDF không hiển thị, hãy mở trong tab mới và kiểm tra quyền truy cập file trên
                 Cloudinary.
               </p>
-            </>
-          ) : (
-            <div className="admin-empty-state">
-              <h3 className="admin-empty-title">Chưa có tài liệu PDF</h3>
-              <p className="admin-empty-desc">
-                {readOnly
-                  ? "Bài học này chưa có tài liệu PDF được cung cấp."
-                  : "Bấm “Thêm tài liệu PDF” để tải tài liệu lên bài học này."}
-              </p>
-            </div>
-          )
+              </>
+            ) : (
+              <div className="admin-empty-state">
+                <h3 className="admin-empty-title">Chưa có tài liệu PDF</h3>
+                <p className="admin-empty-desc">
+                  {readOnly
+                    ? "Bài học này chưa có tài liệu PDF được cung cấp."
+                    : "Bấm “Thêm tài liệu PDF” để tải tài liệu lên bài học này."}
+                </p>
+              </div>
+            )}
+          </>
         ) : readOnly ? (
           <StudentVocabularyExerciseTab
             key={lesson.id}
