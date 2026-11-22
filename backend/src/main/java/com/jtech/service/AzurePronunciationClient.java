@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Scores Japanese speech with Azure Speech pronunciation assessment (REST, short audio).
@@ -64,8 +65,17 @@ public class AzurePronunciationClient {
         JsonNode root = send(wav, null);
         if (!"Success".equals(root.path("RecognitionStatus").asText())) return null;
         String text = root.path("DisplayText").asText("").trim();
+        // The display form turns spoken numbers into digits (ふたり → 2人), which loses the reading:
+        // assessing against "2人" then expects に-にん. The lexical form keeps what was actually said.
+        if (DIGIT.matcher(text).find()) {
+            String lexical = WHITESPACE.matcher(root.path("NBest").path(0).path("Lexical").asText("")).replaceAll("");
+            if (!lexical.isEmpty()) return lexical;
+        }
         return text.isEmpty() ? null : text;
     }
+
+    private static final Pattern DIGIT = Pattern.compile("[0-9０-９]");
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     /** Assesses {@code wav} against {@code referenceText}. Returns null when no speech was recognised. */
     public Assessment assess(byte[] wav, String referenceText) {
@@ -88,8 +98,11 @@ public class AzurePronunciationClient {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                     "Chức năng chấm phát âm chưa được cấu hình trên máy chủ.");
         try {
+            // profanity=raw keeps swear words in the transcript (the default masks them as ***),
+            // so the AI review can recognise rude speech.
             var uri = URI.create("https://" + region + ".stt.speech.microsoft.com/speech/recognition/conversation/"
-                    + "cognitiveservices/v1?format=detailed&language=" + URLEncoder.encode(language, StandardCharsets.UTF_8));
+                    + "cognitiveservices/v1?format=detailed&profanity=raw&language="
+                    + URLEncoder.encode(language, StandardCharsets.UTF_8));
             var builder = HttpRequest.newBuilder(uri)
                     .timeout(Duration.ofSeconds(30))
                     .header("Ocp-Apim-Subscription-Key", key)

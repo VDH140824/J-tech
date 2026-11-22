@@ -33,7 +33,14 @@ import java.util.stream.IntStream;
 @Component
 public class SpeakingFeedbackClient {
     private static final Logger log = LoggerFactory.getLogger(SpeakingFeedbackClient.class);
-    private static final Set<String> VERDICTS = Set.of("FOLLOWS_SCRIPT", "FITS_SITUATION", "UNNATURAL");
+    /** Verdict for rude or abusive speech; such a turn is rejected instead of scored. */
+    public static final String INAPPROPRIATE = "INAPPROPRIATE";
+    /** Verdict for curt or provocative but not abusive speech; the turn is kept and the learner must say it again. */
+    public static final String IMPOLITE = "IMPOLITE";
+    /** Verdict for a reply that does not answer the line before it; the learner must answer again. */
+    public static final String OFF_TOPIC = "OFF_TOPIC";
+    private static final Set<String> VERDICTS =
+            Set.of("FOLLOWS_SCRIPT", "FITS_SITUATION", "UNNATURAL", OFF_TOPIC, IMPOLITE, INAPPROPRIATE);
 
     /** Scenario details the prompts need. */
     public record Context(String title, String situation, String aiRole, String studentRole, List<ScriptLine> script) {}
@@ -66,16 +73,28 @@ public class SpeakingFeedbackClient {
         String prompt = """
                 Bạn là giáo viên tiếng Nhật khó tính nhưng tận tâm, chữa một câu nói của học viên người Việt trong bài luyện hội thoại nhập vai.
                 %s
+                Câu người đối thoại vừa nói ngay trước lượt này: %s
                 Câu học viên cần nói (dòng %d): %s
                 Phần trong [ ] là phần học viên được phép thay bằng từ khác hợp tình huống. Gợi ý: %s
                 Học viên thực tế nói (nhận dạng giọng nói): %s
+                Lưu ý: đây là bản chép tự động, số đếm có thể bị viết thành chữ số (ふたり → 2人). Không được suy ra học viên đọc sai chỉ vì chữ số hay chữ Hán có nhiều cách đọc; chỉ nêu lỗi đọc khi điểm từ đó thấp.
                 Điểm phát âm (/100): chính xác %d, trôi chảy %d, đầy đủ %d.
                 Điểm chính xác từng từ: %s
 
+                Trước khi chọn verdict, tự hỏi: câu học viên có đáp đúng ý câu người đối thoại vừa nói (trả lời đúng câu hỏi, đáp lại đúng lời mời/yêu cầu) và mang cùng mục đích với câu mẫu không? Câu đúng ngữ pháp, lịch sự nhưng trả lời lạc đề (ví dụ được hỏi "mấy người" mà lại hỏi "làm gì") vẫn là KHÔNG hợp tình huống mà là OFF_TOPIC.
+
+                verdict chỉ chấm NỘI DUNG (đáp đúng ý, ngữ pháp, từ vựng, mức lịch sự), không chấm phát âm: điểm phát âm thấp không làm câu thành UNNATURAL, điểm cao không làm câu thành FOLLOWS_SCRIPT/FITS_SITUATION. Phát âm chỉ nêu trong comment và tips.
+                Từ đệm (えっと, あの, その), ngập ngừng hoặc tự sửa trong câu không phải lỗi nội dung: chấm theo câu học viên chốt lại cuối cùng. Câu ngắn mà đủ ý trong tình huống (ví dụ 二人です) không bị coi là thiếu ý.
+
                 Chọn verdict:
                 - FOLLOWS_SCRIPT: nói đúng câu mẫu (có thể thay phần [ ] một cách hợp lý).
-                - FITS_SITUATION: khác câu mẫu nhưng vẫn đúng ngữ pháp, lịch sự và hợp tình huống.
-                - UNNATURAL: sai ngữ pháp, sai mức lịch sự, không hợp tình huống, thiếu ý hoặc không tự nhiên.
+                - FITS_SITUATION: khác câu mẫu nhưng đáp đúng ý câu người đối thoại vừa nói, cùng mục đích với câu mẫu, đúng ngữ pháp và lịch sự. Kể cả khi học viên chọn thứ ngoài các lựa chọn được hỏi nhưng vẫn hợp lý (được hỏi cà phê hay trà mà xin nước).
+                - UNNATURAL: đáp đúng ý câu người đối thoại vừa nói nhưng sai ngữ pháp, kính ngữ chưa chuẩn, thiếu ý hoặc không tự nhiên, thái độ vẫn bình thường.
+                - OFF_TOPIC: không đáp đúng ý câu người đối thoại vừa nói (trả lời sang chuyện khác, hỏi ngược điều không liên quan, nói câu không dính tới tình huống), dù ngữ pháp và mức lịch sự đều đúng. Khi chọn mức này, comment nói rõ người đối thoại vừa hỏi/nói gì và câu học viên lệch ở đâu; suggestion BẮT BUỘC là một câu trả lời đúng ý, ngắn gọn.
+                - IMPOLITE: không có từ chửi nhưng thái độ thiếu lịch sự rõ rệt với người nghe: cộc lốc, khiêu khích, mỉa mai, ra lệnh, trách móc hoặc dùng thể thường suồng sã với người lạ/khách (ví dụ 見えないか, 早くしろ, 水, 何だよ). Khi chọn mức này, comment nói rõ vì sao câu thiếu lịch sự và suggestion BẮT BUỘC là câu lịch sự thay thế.
+                - INAPPROPRIATE: câu có từ chửi bới, thô tục, xúc phạm hoặc giọng gắt gỏng, thù địch với người nghe (ví dụ ばかやろう, てめえ, うるさい, 何見てんだ, đuôi 〜やろう/〜野郎 dùng để mắng). Câu nói được nhận dạng giọng nói chép lại nên từ chửi có thể bị nghe nhầm thành từ phát âm gần giống (ばかやろう → 真っ赤やろう): chỉ chọn INAPPROPRIATE khi câu vừa lạc đề VỪA có cách đọc gần một từ chửi đã biết (ばか, あほ, くそ, てめえ, đuôi やろう...). Câu chỉ lạc đề mà không nghe giống từ chửi thì là OFF_TOPIC. Không chọn nếu từ đó vốn nằm trong câu mẫu, hoặc học viên chỉ nhắc/trích từ đó (ví dụ hỏi nghĩa) chứ không dùng để mắng người nghe.
+
+                Câu mắc nhiều lỗi thì chọn mức nặng nhất theo thứ tự: INAPPROPRIATE > IMPOLITE > OFF_TOPIC > UNNATURAL.
 
                 comment: 1-2 câu tiếng Việt về điểm quan trọng nhất của câu này.
                 - KHÔNG mở đầu bằng lời khen chung ("Em làm rất tốt", "Tuyệt vời"...) và KHÔNG khuyên chung chung ("hãy luyện tập thêm").
@@ -88,11 +107,13 @@ public class SpeakingFeedbackClient {
                 - word: từ đó (viết như trong câu).
                 - issue: vấn đề cụ thể bằng tiếng Việt, kèm cách đọc kana, ví dụ "ジュース (じゅーす): dễ đọc thiếu trường âm ー".
                 - fix: cách sửa có thể làm ngay, ví dụ "kéo dài じゅ thành 2 nhịp: じゅ-ー-す", "ngắt 1 nhịp ở っ", "ん trước m/b/p đọc như m".
-                Chỉ nêu lỗi phát âm thường gặp của người Việt khi điểm từ đó thấp (trường âm, âm ngắt っ, ん, つ/す, ざ/じゃ, ら行, cao độ); không bịa lỗi cho từ điểm cao.
+                Chỉ nêu lỗi phát âm thường gặp của người Việt khi điểm từ đó thấp (trường âm, âm ngắt っ, ん, つ/す, ざ/じゃ, ら行); không bịa lỗi cho từ điểm cao. Không nhận xét cao độ/ngữ điệu vì không có dữ liệu đo. Không cố tạo đủ 3 mục: không xác định được lỗi cụ thể thì bỏ qua từ đó.
 
                 Ví dụ comment TỆ: "Em làm rất tốt, cố gắng luyện thêm từ ジュース nhé."
                 Ví dụ comment TỐT: "Thay お水 bằng オレンジジュース là hợp tình huống; ～をください vẫn đúng và đủ lịch sự khi gọi món."
-                """.formatted(describe(context), lineIndex, marked(line),
+
+                verdict phải khớp với comment và suggestion: nếu comment nói câu sai, lạc đề hoặc không phù hợp, hoặc suggestion đổi hẳn ý câu học viên, thì KHÔNG được chọn FOLLOWS_SCRIPT hay FITS_SITUATION; nếu comment nói câu lạc đề thì verdict là OFF_TOPIC.
+                """.formatted(describe(context), previousLine(context, lineIndex), lineIndex, marked(line),
                 line.hint() == null ? "không có" : line.hint(), turn.recognizedText(),
                 Math.round(turn.accuracy()), Math.round(turn.fluency()), Math.round(turn.completeness()),
                 wordScores.isEmpty() ? "không có" : wordScores);
@@ -108,7 +129,9 @@ public class SpeakingFeedbackClient {
                         "comment", Map.of("type", "STRING"),
                         "suggestion", Map.of("type", "STRING"),
                         "tips", Map.of("type", "ARRAY", "items", tip)),
-                "required", List.of("verdict", "comment", "suggestion", "tips"));
+                "required", List.of("verdict", "comment", "suggestion", "tips"),
+                // The verdict comes last so the model settles it after writing its review, not before.
+                "propertyOrdering", List.of("comment", "suggestion", "tips", "verdict"));
         Reply<JsonNode> reply = generate(prompt, schema);
         if (reply == null) return null;
         String verdict = reply.value().path("verdict").asText();
@@ -118,12 +141,15 @@ public class SpeakingFeedbackClient {
         // The model sometimes repeats the learner's own sentence as the "better" one; that is no suggestion.
         if (SpeakingService.normalize(suggestion).equals(SpeakingService.normalize(turn.recognizedText())))
             suggestion = "";
+        // A tip must point at a word the learner actually said and say how to fix it; anything else is noise.
+        String said = SpeakingService.normalize(turn.recognizedText());
         List<Tip> tips = new ArrayList<>();
         for (JsonNode node : reply.value().path("tips")) {
             String word = node.path("word").asText("").trim();
             String issue = node.path("issue").asText("").trim();
             String fix = node.path("fix").asText("").trim();
-            if (!word.isEmpty() && !issue.isEmpty() && tips.size() < 3) tips.add(new Tip(word, issue, fix));
+            boolean spoken = !word.isEmpty() && said.contains(SpeakingService.normalize(word));
+            if (spoken && !issue.isEmpty() && !fix.isEmpty() && tips.size() < 3) tips.add(new Tip(word, issue, fix));
         }
         return new Reply<>(new TurnFeedback(verdict, comment, suggestion.isEmpty() ? null : suggestion, tips),
                 reply.inputTokens(), reply.outputTokens());
@@ -141,7 +167,11 @@ public class SpeakingFeedbackClient {
                 %s
                 Điểm phát âm trung bình: %d/100.
 
-                Viết 2-3 câu tiếng Việt: điểm làm tốt, điểm cần cải thiện nhất (ngữ pháp, cách nói hoặc âm cụ thể), và một lời khuyên luyện tập.
+                Viết bằng tiếng Việt đúng 3 dòng, mỗi dòng một câu ngắn và bắt đầu bằng ký hiệu sau:
+                ✓ điểm làm tốt
+                △ điểm cần cải thiện nhất (ngữ pháp, cách nói hoặc âm cụ thể)
+                💡 một lời khuyên luyện tập
+                Khi trích tiếng Nhật, đặt trong 「」.
                 """.formatted(describe(context), spoken, Math.round(pronScore));
         Map<String, Object> schema = Map.of("type", "OBJECT",
                 "properties", Map.of("feedback", Map.of("type", "STRING")),
@@ -165,6 +195,15 @@ public class SpeakingFeedbackClient {
                 Kịch bản mẫu:
                 %s
                 """.formatted(context.title(), context.situation(), context.aiRole(), context.studentRole(), script);
+    }
+
+    /** The other speaker's line the learner is answering, so the review can judge whether the reply fits it. */
+    static String previousLine(Context context, int lineIndex) {
+        for (int i = lineIndex - 1; i >= 0; i--) {
+            ScriptLine line = context.script().get(i);
+            if ("AI".equals(line.speaker())) return marked(line).replace("[", "").replace("]", "");
+        }
+        return "không có (học viên mở đầu hội thoại)";
     }
 
     /** The line's text with replaceable parts wrapped in [ ]. */

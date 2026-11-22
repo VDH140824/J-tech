@@ -137,7 +137,7 @@
 
 .speaking-scn footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
@@ -167,30 +167,40 @@
   color: var(--speak);
 }
 
-.speaking-tags {
-  display: flex;
-  flex-wrap: wrap;
+/* Role swap in the conversation header: shows only the other role's kanji. */
+.speaking-swap {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
-}
-
-.speaking-tag {
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: var(--bg-subtle);
-  color: var(--text-body);
-  font-size: 0.78rem;
+  background: #ffffff;
+  margin-left: auto;
+  padding: 6px 14px;
+  min-height: 34px;
+  font-family: var(--speak-font-jp);
+  font-size: 0.95rem;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  color: var(--speak);
+  border-color: var(--speak-border);
 }
 
-.speaking-tag.slot {
-  background: var(--speak-mid-bg);
-  color: var(--speak-mid);
+.speaking-swap:hover:not(:disabled) {
+  background: var(--speak-bg);
 }
 
-.speaking-tag.done {
-  background: var(--speak-good-bg);
-  color: var(--speak-good);
+.speaking-retry,
+.speaking-cancel {
+  background: #ffffff;
+  padding: 4px 12px;
+  min-height: 30px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--speak);
+  border-color: var(--speak-border);
+}
+
+.speaking-retry:hover:not(:disabled),
+.speaking-cancel:hover:not(:disabled) {
+  background: var(--speak-bg);
 }
 
 /* Conversation session */
@@ -536,6 +546,15 @@
   color: var(--speak-mid);
 }
 
+.speaking-fb.rude {
+  border-left-color: var(--speak-low);
+}
+
+.speaking-fb.rude .speaking-fb-h b {
+  background: var(--speak-low-bg);
+  color: var(--speak-low);
+}
+
 .speaking-fb p {
   margin: 0;
   color: var(--text-body);
@@ -677,13 +696,18 @@
   border: 1.5px solid var(--border-light);
   border-radius: 20px;
   padding: 18px 20px;
+  /* Follows the learner while the chat scrolls; 80px clears the 64px top bar. */
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
 }
 
-.speaking-panel summary {
+.speaking-panel-title {
+  margin: 0;
   font-weight: 800;
   color: var(--text-main);
   font-size: 0.95rem;
-  cursor: pointer;
 }
 
 .speaking-panel-in {
@@ -711,7 +735,8 @@
 
 .speaking-script li {
   display: grid;
-  grid-template-columns: 34px 1fr;
+  /* Wide enough for a three-kanji role label such as 案内係. */
+  grid-template-columns: 3.6em 1fr;
   gap: 8px;
   padding: 5px 8px;
   border-radius: 8px;
@@ -720,9 +745,9 @@
 }
 
 .speaking-script li b {
-  font-family: var(--font-sans);
   font-size: 0.75rem;
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 .speaking-script li.cur {
@@ -799,6 +824,77 @@
   line-height: 1.6;
 }
 
+.speaking-review {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.speaking-review-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border-left: 4px solid var(--border-light);
+  border-radius: 10px;
+  background: var(--bg-surface);
+}
+
+.speaking-review-item.good {
+  border-left-color: var(--speak-good);
+  background: var(--speak-good-bg);
+}
+
+.speaking-review-item.mid {
+  border-left-color: var(--speak-mid);
+  background: var(--speak-mid-bg);
+}
+
+.speaking-review-item.tip {
+  border-left-color: var(--speak);
+  background: var(--speak-bg);
+}
+
+.speaking-review-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-body);
+}
+
+.speaking-review-item.good .speaking-review-label {
+  color: var(--speak-good);
+}
+
+.speaking-review-item.mid .speaking-review-label {
+  color: var(--speak-mid);
+}
+
+.speaking-review-item.tip .speaking-review-label {
+  color: var(--speak);
+}
+
+.speaking-review-item strong {
+  font-weight: 800;
+  color: var(--text-heading, inherit);
+}
+
+.speaking-review-ja {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid var(--speak-border);
+  font-family: var(--speak-font-jp);
+  font-weight: 600;
+  color: var(--speak);
+}
+
 .speaking-fix {
   display: flex;
   justify-content: space-between;
@@ -828,6 +924,9 @@
   }
   .speaking-sess .speaking-panel {
     order: -1;
+    /* Stacked above the chat here, so sticking would cover the conversation. */
+    position: static;
+    max-height: none;
   }
   .speaking-hero {
     grid-template-columns: repeat(2, minmax(0, 1fr));

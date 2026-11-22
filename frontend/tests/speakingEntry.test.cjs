@@ -31,7 +31,7 @@ function load(relative) {
     if (name.includes('/api/studentChapterApi')) return { getStudentChapters: unexpected };
     if (name.includes('/api/courseApi')) return { getChapterStudy: unexpected };
     if (name.includes('/services/api')) return { apiClient: { get: unexpected } };
-    if (name === './SpeakingSessionPage') return { DemoBanner: () => null };
+    if (name === './SpeakingSessionPage') return { ...load('../pages/speaking/SpeakingSessionPage.tsx'), DemoBanner: () => null };
     if (name.startsWith('.')) {
       const base = path.resolve(path.dirname(file), name);
       const target = [base + '.ts', base + '.tsx'].find(candidate => fs.existsSync(candidate));
@@ -57,7 +57,7 @@ function render(Component, route, url, seed) {
 
 const line = (speaker, text) => ({ speaker, segments: [{ text, free: false }], meaning: '', note: null });
 const scenario = (id, title, script) => ({
-  id, chapterId: 2, title, situation: 'Ở nhà hàng', aiRole: 'Nhân viên', studentRole: 'Khách',
+  id, chapterId: 2, title, situation: 'Ở nhà hàng', aiRole: 'nhân viên 店員', studentRole: 'khách 客',
   script, completedCount: 0,
 });
 const dialogue = scenario(7, 'Gọi món', [line('AI', 'いらっしゃいませ。'), line('STUDENT', 'お水をください。')]);
@@ -89,7 +89,7 @@ test('course chapter card hides speaking practice when there is nothing to pract
   }
 });
 
-test('scenario list offers the swapped role only for scenarios with an AI line', () => {
+test('scenario list shows roles in kanji only and leaves role swapping to the session screen', () => {
   const html = render(SpeakingScenarioListPage, '/courses/:courseId/chapters/:chapterId/speaking',
     '/courses/1/chapters/2/speaking', client => {
       client.setQueryData(['chapter-study', 1, 2], { id: 2, chapterNo: 1, courseName: 'Nhật 1', lessons: [] });
@@ -99,8 +99,11 @@ test('scenario list offers the swapped role only for scenarios with an AI line',
   const cards = html.split('<article').slice(1);
   assert.equal(cards.length, 2);
   assert.match(cards[0], /Gọi món/);
-  assert.match(cards[0], /Đóng vai Nhân viên/);
   assert.match(cards[1], /Tự giới thiệu/);
-  assert.doesNotMatch(cards[1], /Đóng vai/);
+  for (const card of cards) {
+    assert.match(card, />店員</);
+    assert.match(card, />客</);
+    assert.doesNotMatch(card, /nhân viên|khách|Đóng vai|🤖/);
+  }
   assert.equal((html.match(/Bắt đầu →/g) || []).length, 2);
 });

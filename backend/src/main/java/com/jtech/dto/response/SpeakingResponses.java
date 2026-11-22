@@ -33,7 +33,8 @@ public final class SpeakingResponses {
     public record Tip(String word, String issue, String fix) {}
 
     /**
-     * verdict is FOLLOWS_SCRIPT, FITS_SITUATION or UNNATURAL. suggestion is a better Japanese sentence,
+     * verdict is FOLLOWS_SCRIPT, FITS_SITUATION, UNNATURAL, OFF_TOPIC (does not answer the line before it)
+     * or IMPOLITE; OFF_TOPIC and IMPOLITE make the learner say the line again. suggestion is a better Japanese sentence,
      * or null when the learner's sentence is already right. Results saved before these two fields
      * existed read back with them null.
      */

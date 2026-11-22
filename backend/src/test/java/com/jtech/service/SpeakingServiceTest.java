@@ -308,6 +308,21 @@ class SpeakingServiceTest {
         assertEquals(List.of(1, 0, 0, SESSION_ID), List.of(args).subList(2, 6));
     }
 
+    @Test
+    void inappropriateSpeechIsRejectedAndNotSaved() {
+        givenSession(sessionRow("IN_PROGRESS", false, null, null));
+        givenSpokenLine1();
+        var review = new TurnFeedback(SpeakingFeedbackClient.INAPPROPRIATE, "Câu mắng khách.", null, List.of());
+        when(feedback.reviewTurn(any(), eq(1), any())).thenReturn(new SpeakingFeedbackClient.Reply<>(review, 120, 30));
+
+        assertStatus(422, "Câu vừa nói có từ ngữ không phù hợp với tình huống. Hãy nói lại một cách lịch sự.",
+                () -> service.submitTurn(SESSION_ID, 1, WAV, EMAIL));
+
+        assertTrue(updates("UPDATE speaking_session SET turns_data").isEmpty());
+        Object[] args = singleUpdate("UPDATE speaking_session SET input_tokens");
+        assertEquals(List.of(120, 30, SESSION_ID), List.of(args).subList(1, 4));
+    }
+
     // ---- Saving turns ----
 
     @Test
@@ -325,6 +340,21 @@ class SpeakingServiceTest {
         List<TurnResult> saved = turns((String) args[1]);
         assertEquals(List.of(turn), saved);
         assertEquals(List.of(1, 120, 30, SESSION_ID), List.of(args).subList(2, 6));
+    }
+
+    @Test
+    void impoliteTurnIsStillSavedWithItsFeedback() throws Exception {
+        givenSession(sessionRow("IN_PROGRESS", false, null, null));
+        givenLockedSession("IN_PROGRESS", null);
+        givenSpokenLine1();
+        var review = new TurnFeedback(SpeakingFeedbackClient.IMPOLITE, "Câu cộc lốc với nhân viên.", "お水をください。", List.of());
+        when(feedback.reviewTurn(any(), eq(1), any())).thenReturn(new SpeakingFeedbackClient.Reply<>(review, 120, 30));
+
+        TurnResult turn = service.submitTurn(SESSION_ID, 1, WAV, EMAIL);
+
+        assertEquals(review, turn.feedback());
+        Object[] args = singleUpdate("UPDATE speaking_session SET turns_data");
+        assertEquals(List.of(turn), turns((String) args[1]));
     }
 
     @Test

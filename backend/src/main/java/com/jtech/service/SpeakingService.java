@@ -128,6 +128,13 @@ public class SpeakingService {
                 assessment.fluency(), assessment.completeness(), assessment.pronScore(), null);
 
         var review = feedback.reviewTurn(session.context(), lineIndex, scored);
+        if (review != null && SpeakingFeedbackClient.INAPPROPRIATE.equals(review.value().verdict())) {
+            // Rude speech earns no score and is not saved; only the Gemini usage is recorded.
+            jdbc.update("UPDATE speaking_session SET input_tokens = input_tokens + ?, output_tokens = output_tokens + ? WHERE id = ?",
+                    review.inputTokens(), review.outputTokens(), sessionId);
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Câu vừa nói có từ ngữ không phù hợp với tình huống. Hãy nói lại một cách lịch sự.");
+        }
         TurnResult turn = review == null ? scored : new TurnResult(lineIndex, scored.recognizedText(), words,
                 scored.accuracy(), scored.fluency(), scored.completeness(), scored.pronScore(), review.value());
 

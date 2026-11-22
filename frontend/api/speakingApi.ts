@@ -48,7 +48,7 @@ export interface SpeakingWordScore {
   free?: boolean;
 }
 
-export type SpeakingVerdict = "FOLLOWS_SCRIPT" | "FITS_SITUATION" | "UNNATURAL";
+export type SpeakingVerdict = "FOLLOWS_SCRIPT" | "FITS_SITUATION" | "UNNATURAL" | "OFF_TOPIC" | "IMPOLITE";
 
 /** One concrete correction for a word the learner said. */
 export interface SpeakingTip {

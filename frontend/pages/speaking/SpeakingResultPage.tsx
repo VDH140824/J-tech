@@ -10,6 +10,56 @@ import {
 import "../home/StudentLearningPage.css";
 import "./SpeakingPage.css";
 
+const FEEDBACK_KINDS = [
+  { mark: "✓", label: "Làm tốt", tone: "good" },
+  { mark: "△", label: "Cần cải thiện", tone: "mid" },
+  { mark: "💡", label: "Lời khuyên", tone: "tip" },
+];
+
+type FeedbackItem = { text: string; mark?: string; label?: string; tone?: string };
+
+/** Drops a short "điểm làm tốt:"-style lead-in the AI copies from the prompt, since the label already says it. */
+function stripEchoedLabel(text: string) {
+  const rest = text.replace(/^[^:：「"“]{1,40}[:：]\s*/, "");
+  return rest ? rest.charAt(0).toUpperCase() + rest.slice(1) : text;
+}
+
+/** Splits the AI review into labelled lines; older free-text reviews fall back to one sentence per line. */
+function parseFeedback(feedback: string): FeedbackItem[] {
+  const lines = feedback.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  const tagged = lines.map((line) => {
+    const kind = FEEDBACK_KINDS.find((candidate) => line.startsWith(candidate.mark));
+    return kind ? { ...kind, text: stripEchoedLabel(line.slice(kind.mark.length).trim()) } : null;
+  });
+  if (tagged.length > 0 && tagged.every((item) => item !== null)) return tagged as FeedbackItem[];
+  return lines
+    .flatMap((line) => line.split(/(?<=[.!?])\s+/))
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+    .map((text) => ({ text }));
+}
+
+const JAPANESE = /[぀-ヿ一-龯]/;
+
+/** Marks quoted Japanese as chips and NN/100 scores as bold inside one feedback line. */
+function highlightFeedback(text: string) {
+  return text.split(/(「[^」]+」|"[^"]+"|“[^”]+”|\d+(?:[.,]\d+)?\/100)/g).map((part, index) => {
+    if (/^\d/.test(part)) return <strong key={index}>{part}</strong>;
+    const quoted = part.slice(1, -1);
+    if (/^[「"“]/.test(part) && JAPANESE.test(quoted))
+      return (
+        <span
+          key={index}
+          className="speaking-review-ja"
+          lang="ja"
+        >
+          {quoted}
+        </span>
+      );
+    return part;
+  });
+}
+
 export function SpeakingResultPage() {
   const { courseId, chapterId, scenarioId, sessionId } = useParams();
   const navigate = useNavigate();
@@ -100,9 +150,25 @@ export function SpeakingResultPage() {
         <div className="speaking-cols">
           <section className="speaking-card">
             <h3 className="speaking-h2">💬 Nhận xét của AI</h3>
-            <p>
-              {result.overallFeedback ?? "Chưa có nhận xét tổng kết."}
-            </p>
+            {result.overallFeedback ? (
+              <ul className="speaking-review">
+                {parseFeedback(result.overallFeedback).map((item, index) => (
+                  <li
+                    key={index}
+                    className={`speaking-review-item ${item.tone ?? ""}`}
+                  >
+                    {item.label && (
+                      <span className="speaking-review-label">
+                        {item.label}
+                      </span>
+                    )}
+                    <p>{highlightFeedback(item.text)}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Chưa có nhận xét tổng kết.</p>
+            )}
             <div className="speaking-actions">
               <button
                 type="button"

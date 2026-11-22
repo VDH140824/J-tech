@@ -99,6 +99,46 @@ class SpeakingFeedbackClientTest {
         assertNull(client("test-key").reviewSession(CONTEXT, TURNS, 88));
     }
 
+    @Test
+    void turnReviewIsGivenTheLineBeingAnsweredAndDecidesTheVerdictLast() throws Exception {
+        doReturn(response(200, """
+                {"candidates":[{"content":{"parts":[{"text":"{\\"comment\\":\\"Lạc đề\\",\\"suggestion\\":\\"一人です。\\",\\"tips\\":[],\\"verdict\\":\\"OFF_TOPIC\\"}"}]}}]}
+                """)).when(http).send(any(), any());
+        var context = new SpeakingFeedbackClient.Context("Gọi món", "Ở quán ramen", "Nhân viên", "Khách", List.of(
+                new ScriptLine("AI", List.of(new ScriptSegment("いらっしゃいませ。何名様ですか？", null)), "Mấy người ạ?", null),
+                new ScriptLine("STUDENT", List.of(new ScriptSegment("一人", true), new ScriptSegment("です。", null)), "Một người.", null)));
+        var turn = new TurnResult(1, "ああ何をしますか", List.of(new WordScore("何", 68, null)), 87, 99, 100, 92, null);
+
+        var reply = client("test-key").reviewTurn(context, 1, turn);
+
+        assertEquals(SpeakingFeedbackClient.OFF_TOPIC, reply.value().verdict());
+        var request = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(http).send(request.capture(), any());
+        String body = body(request.getValue());
+        assertTrue(body.contains("vừa nói ngay trước lượt này: いらっしゃいませ。何名様ですか？"));
+        assertTrue(body.contains("\"propertyOrdering\":[\"comment\",\"suggestion\",\"tips\",\"verdict\"]"));
+        assertTrue(body.contains("\"OFF_TOPIC\""), "the schema offers the off-topic verdict");
+    }
+
+    @Test
+    void tipsForWordsNotSpokenOrWithoutAFixAreDropped() throws Exception {
+        String tips = "[{\\\"word\\\":\\\"お水\\\",\\\"issue\\\":\\\"thiếu trường âm\\\",\\\"fix\\\":\\\"kéo dài\\\"},"
+                + "{\\\"word\\\":\\\"ジュース\\\",\\\"issue\\\":\\\"không có trong câu\\\",\\\"fix\\\":\\\"x\\\"},"
+                + "{\\\"word\\\":\\\"ください\\\",\\\"issue\\\":\\\"đọc nhanh\\\",\\\"fix\\\":\\\"\\\"}]";
+        doReturn(response(200, """
+                {"candidates":[{"content":{"parts":[{"text":"{\\"comment\\":\\"Đúng mẫu\\",\\"suggestion\\":\\"\\",\\"tips\\":%s,\\"verdict\\":\\"FOLLOWS_SCRIPT\\"}"}]}}]}
+                """.formatted(tips))).when(http).send(any(), any());
+
+        var reply = client("test-key").reviewTurn(CONTEXT, 0, TURNS.get(0));
+
+        assertEquals(List.of("お水"), reply.value().tips().stream().map(t -> t.word()).toList());
+    }
+
+    @Test
+    void openingLearnerLineHasNoPreviousLine() {
+        assertEquals("không có (học viên mở đầu hội thoại)", SpeakingFeedbackClient.previousLine(CONTEXT, 0));
+    }
+
     private SpeakingFeedbackClient client(String apiKey) throws Exception {
         var client = new SpeakingFeedbackClient(new ObjectMapper(), apiKey, "test-model", 5);
         Field field = SpeakingFeedbackClient.class.getDeclaredField("http");
