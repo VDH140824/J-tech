@@ -167,7 +167,13 @@ function ChapterCard({
                     <div className="lesson-content">
                       <h3>
                         <Link
-                          to={`/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`}
+                          to={
+                            l.skillType === "LISTENING"
+                              ? `/listening/${l.id}`
+                              : l.skillType === "READING"
+                                ? `/ai-reading?lessonId=${l.id}`
+                                : `/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`
+                          }
                         >
                           {skills[l.skillType] ?? l.skillType}
                         </Link>

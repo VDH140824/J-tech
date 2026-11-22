@@ -1,0 +1,121 @@
+﻿.reading-q-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.reading-q-item fieldset {
+  border: 1px solid #f3d6e2;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 0;
+  background: #fff;
+  min-width: 0;
+}
+
+.reading-q-item legend {
+  padding: 0 4px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.reading-q-number {
+  color: #db2777;
+}
+
+.reading-q-options {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.reading-q-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.reading-q-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reading-q-option:focus-within {
+  outline: 2px solid #db2777;
+  outline-offset: 2px;
+}
+
+.reading-q-letter {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f3f4f6;
+  font-weight: 700;
+}
+
+.reading-q-option.chosen {
+  border-color: #db2777;
+  background: #fdf2f8;
+}
+
+.reading-q-option.chosen .reading-q-letter {
+  background: #db2777;
+  color: #fff;
+}
+
+.reading-q-option.correct {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+
+.reading-q-option.correct .reading-q-letter {
+  background: #16a34a;
+  color: #fff;
+}
+
+.reading-q-option.wrong {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.reading-q-option.wrong .reading-q-letter {
+  background: #dc2626;
+  color: #fff;
+}
+
+fieldset:disabled .reading-q-option {
+  cursor: default;
+}
+
+.reading-q-feedback {
+  margin: 10px 0 0;
+  font-weight: 600;
+}
+
+.reading-q-feedback.correct {
+  color: #15803d;
+}
+
+.reading-q-feedback.wrong {
+  color: #b91c1c;
+}
+
+.reading-q-explanation {
+  display: block;
+  margin-top: 4px;
+  font-weight: 400;
+  color: #4b5563;
+}

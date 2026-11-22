@@ -33,6 +33,9 @@ import { StudentPostListPage } from "../pages/classroom/StudentPostListPage";
 import { PostDetailPage } from "../pages/classroom/PostDetailPage";
 import { ConjugationListPage } from "../pages/home/ConjugationListPage";
 import { ConjugationPracticePage } from "../pages/home/ConjugationPracticePage";
+import { ListeningIndexPage, ListeningPage } from "../pages/listening/ListeningPage";
+import { AiReadingPage } from "../pages/reading/AiReadingPage";
+import { AiReadingHistoryPage } from "../pages/reading/AiReadingHistoryPage";
 
 const Campus3DPage = lazy(() => import("../game_3d/Campus3DPage"));
 
@@ -140,6 +143,38 @@ export function AppRouter() {
             element={
               <StudentProtectedRoute>
                 <PostDetailPage portal="student" />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/listening"
+            element={
+              <StudentProtectedRoute>
+                <ListeningIndexPage />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/listening/:lessonId"
+            element={
+              <StudentProtectedRoute>
+                <ListeningPage />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/ai-reading"
+            element={
+              <StudentProtectedRoute>
+                <AiReadingPage />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/ai-reading/history"
+            element={
+              <StudentProtectedRoute>
+                <AiReadingHistoryPage />
               </StudentProtectedRoute>
             }
           />

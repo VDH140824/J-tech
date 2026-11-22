@@ -309,9 +309,10 @@ CREATE TABLE reading_passage (
 CREATE TABLE listening_exercise (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   chapter_id BIGINT UNSIGNED NOT NULL,
+  lesson_id BIGINT UNSIGNED NULL,
   title VARCHAR(200) NOT NULL,
-  video_url VARCHAR(500) NOT NULL,
-  video_public_id VARCHAR(255) NOT NULL,
+  video_url VARCHAR(500) NULL,
+  video_public_id VARCHAR(255) NULL,
   video_duration_sec INT UNSIGNED NULL,
   script_jp MEDIUMTEXT NOT NULL,
   script_vi MEDIUMTEXT NULL,
@@ -322,7 +323,9 @@ CREATE TABLE listening_exercise (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (id),
+  UNIQUE KEY uq_listening_exercise_lesson (lesson_id),
   FOREIGN KEY (chapter_id) REFERENCES chapter (id),
+  CONSTRAINT fk_listening_exercise_lesson FOREIGN KEY (lesson_id) REFERENCES lesson (id),
   FOREIGN KEY (created_by) REFERENCES user_account (id),
   FOREIGN KEY (updated_by) REFERENCES user_account (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -478,7 +481,7 @@ CREATE TABLE lesson_section_progress (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id BIGINT UNSIGNED NOT NULL,
   lesson_id BIGINT UNSIGNED NOT NULL,
-  section_type ENUM('VOCABULARY','KANJI','GRAMMAR') NOT NULL,
+  section_type ENUM('VOCABULARY','KANJI','GRAMMAR','LISTENING','READING') NOT NULL,
   document_viewed_at DATETIME NULL DEFAULT NULL,
   video_completed_at DATETIME NULL DEFAULT NULL,
   exercise_completed_at DATETIME NULL DEFAULT NULL,
@@ -495,19 +498,27 @@ CREATE TABLE lesson_section_progress (
 CREATE TABLE reading_session (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id BIGINT UNSIGNED NOT NULL,
-  reading_passage_id BIGINT UNSIGNED NOT NULL,
+  reading_passage_id BIGINT UNSIGNED NULL,
+  course_id BIGINT UNSIGNED NULL,
+  chapter_id BIGINT UNSIGNED NULL,
+  lesson_id BIGINT UNSIGNED NULL,
   status ENUM('GENERATED','SUBMITTED','FAILED') NOT NULL DEFAULT 'GENERATED',
   total_questions SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   correct_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   questions_data JSON NOT NULL,
+  passage_data JSON NULL,
   input_tokens INT UNSIGNED NOT NULL DEFAULT 0,
   output_tokens INT UNSIGNED NOT NULL DEFAULT 0,
   coin_awarded INT UNSIGNED NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   submitted_at DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (id),
+  KEY idx_reading_session_user_created (user_id, created_at),
   FOREIGN KEY (user_id) REFERENCES user_account (id),
-  FOREIGN KEY (reading_passage_id) REFERENCES reading_passage (id)
+  FOREIGN KEY (reading_passage_id) REFERENCES reading_passage (id),
+  CONSTRAINT fk_reading_session_course FOREIGN KEY (course_id) REFERENCES course (id),
+  CONSTRAINT fk_reading_session_chapter FOREIGN KEY (chapter_id) REFERENCES chapter (id),
+  CONSTRAINT fk_reading_session_lesson FOREIGN KEY (lesson_id) REFERENCES lesson (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE speaking_session (

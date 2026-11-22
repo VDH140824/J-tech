@@ -49,6 +49,13 @@ public class LearningActivityService {
         return recordDay(studentId, submitted, "TEST", "test_attempt_id", attemptId);
     }
 
+    /** Bài đọc AI đã được chấm ở server; caller giữ khóa reading_session trong cùng transaction. */
+    @Transactional
+    public CompletionResult recordReadingCompletion(long studentId, long sessionId, LocalDateTime submitted) {
+        balances.lockAccount(studentId);
+        return recordDay(studentId, submitted, "READING", "reading_session_id", sessionId);
+    }
+
     @Transactional
     public CompletionResult recordGameCompletion(long studentId, String sessionId, LocalDateTime completed) {
         balances.lockAccount(studentId);
