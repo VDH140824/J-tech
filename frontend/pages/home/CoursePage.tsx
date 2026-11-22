@@ -1,7 +1,9 @@
 import { useAuthStore } from "../../store/authStore";
 import { checkIsModerator } from "../../utils/auth";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, Navigate, useLocation, useParams } from "react-router-dom";
+import { getSpeakingScenarios } from "../../api/speakingApi";
 import {
   getStudentChapters,
   type StudentChapterList,
@@ -93,6 +95,11 @@ function ChapterCard({
   items.filter(item => item.skillType !== "KANJI").forEach((l) =>
     groups.set(l.lessonNo, [...(groups.get(l.lessonNo) ?? []), l]),
   );
+  const speaking = useQuery({
+    queryKey: ["speaking-scenarios", chapter.id],
+    queryFn: () => getSpeakingScenarios(chapter.id),
+  });
+  const hasSpeaking = (speaking.data?.length ?? 0) > 0;
   return (
     <details
       className="student-chapter-card"
@@ -117,6 +124,25 @@ function ChapterCard({
       </summary>
       <div className="chapter-body">
         {chapter.description && <p>{chapter.description}</p>}
+        {/* Shown only for chapters that have speaking scenarios; independent of published lessons. */}
+        {hasSpeaking && (
+          <Link
+            to={`/courses/${courseId}/chapters/${chapter.id}/speaking`}
+            style={{
+              display: "inline-block",
+              margin: "4px 0 12px",
+              padding: "8px 14px",
+              borderRadius: "10px",
+              background: "#fdf2f8",
+              border: "1.5px solid #fbcfe8",
+              color: "#db2777",
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            🗣️ Luyện nói với AI →
+          </Link>
+        )}
         {!items.length && (
           <p>Chưa có tài liệu hoặc bài học được xuất bản trong chương này.</p>
         )}
@@ -141,7 +167,13 @@ function ChapterCard({
                     <div className="lesson-content">
                       <h3>
                         <Link
-                          to={`/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`}
+                          to={
+                            l.skillType === "LISTENING"
+                              ? `/listening/${l.id}`
+                              : l.skillType === "READING"
+                                ? `/ai-reading?lessonId=${l.id}`
+                                : `/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`
+                          }
                         >
                           {skills[l.skillType] ?? l.skillType}
                         </Link>
