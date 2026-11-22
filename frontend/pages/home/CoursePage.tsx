@@ -29,6 +29,33 @@ function studyItems(lessons: StudentLesson[]): StudyItem[] {
     }));
   });
 }
+
+// Each grammar row represents one lesson number within the current chapter.
+function groupGrammarLessons(lessons: StudentLesson[]): StudentLesson[] {
+  const rows: StudentLesson[] = [];
+  const grammarGroups = new Map<number, StudentLesson>();
+  for (const lesson of lessons) {
+    if (lesson.skillType !== "GRAMMAR") {
+      rows.push(lesson);
+      continue;
+    }
+    const group = grammarGroups.get(lesson.lessonNo);
+    if (group) {
+      group.itemCount += lesson.itemCount;
+      group.videoCount += lesson.videoCount;
+      group.durationSeconds += lesson.durationSeconds;
+      group.exerciseCount += lesson.exerciseCount;
+      group.testCount += lesson.testCount;
+      group.completed = group.completed && lesson.completed;
+    } else {
+      const row = { ...lesson, title: `Ngữ pháp bài ${lesson.lessonNo}` };
+      grammarGroups.set(lesson.lessonNo, row);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
 function Progress({ lessons }: { lessons: StudentLesson[] }) {
   const done = lessons.filter((l) => l.completed).length;
   return (
@@ -106,7 +133,7 @@ function ChapterCard({
                 <span aria-hidden="true">⌄</span>
               </summary>
               <ul>
-                {lessons.map((l) => (
+                {groupGrammarLessons(lessons).map((l) => (
                   <li key={l.id}>
                     <span className="lesson-icon" aria-hidden="true">
                       {l.completed ? "✓" : "▷"}
@@ -114,7 +141,7 @@ function ChapterCard({
                     <div className="lesson-content">
                       <h3>
                         <Link
-                          to={`/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`}
+                          to={`/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`}
                         >
                           {skills[l.skillType] ?? l.skillType}
                         </Link>

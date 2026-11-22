@@ -9,7 +9,6 @@ import { getChapterStudy } from "../../api/courseApi";
 import { SECTIONS, type LessonSection } from "../moderator/sectionConfig";
 import { ModeratorLessonListTab } from "../moderator/ModeratorLessonListTab";
 import { ModeratorVocabularyLessonPage } from "../moderator/vocabulary/ModeratorVocabularyLessonPage";
-import { ModeratorGrammarListPage } from "../moderator/ModeratorGrammarListPage";
 import { ModeratorSkillItemListPage } from "../moderator/ModeratorSkillItemListPage";
 import "./StudentLearningPage.css";
 import { StudentKanjiLessonPage } from "./StudentKanjiLessonPage";
@@ -46,6 +45,9 @@ export function ChapterPage() {
     refetchOnWindowFocus: active?.key === "kanji" ? "always" : false,
   });
   const selectedId = Number(params.get("lessonId"));
+  const grammarLessonNo = params.has("lessonNo")
+    ? Number(params.get("lessonNo"))
+    : undefined;
   const selected = chapter.data?.lessons.find(
     (lesson) =>
       lesson.id === selectedId &&
@@ -64,6 +66,7 @@ export function ChapterPage() {
       next.delete("kanjiId");
       next.delete("document");
       next.delete("grammarView");
+      next.delete("lessonNo");
       if (skill) next.set("skill", skill);
       else next.delete("skill");
       return next;
@@ -91,6 +94,7 @@ export function ChapterPage() {
       next.delete("kanjiId");
       next.delete("document");
       next.delete("grammarView");
+      next.delete("lessonNo");
       if (id) next.set("lessonId", String(id));
       else next.delete("lessonId");
       return next;
@@ -139,6 +143,22 @@ export function ChapterPage() {
       return next;
     });
 
+  const openGrammarGroup = (lessonNo: number) =>
+    setParams({ skill: "GRAMMAR", lessonNo: String(lessonNo) });
+
+  const selectGrammarLesson = (id: number) => {
+    const lesson = chapter.data?.lessons.find(
+      (item) => item.id === id && item.skillType === "GRAMMAR" &&
+        item.status === "PUBLISHED" && item.chapterId === Number(chapterId),
+    );
+    if (lesson)
+      setParams({
+        skill: "GRAMMAR",
+        lessonNo: String(lesson.lessonNo),
+        lessonId: String(lesson.id),
+      });
+  };
+
   const openChapterVocabulary = (view: "flashcards" | "test" | null) =>
     setParams((previous) => {
       const next = new URLSearchParams(previous);
@@ -175,6 +195,18 @@ export function ChapterPage() {
         </button>
         <button className="mod-btn-back" onClick={() => chapter.refetch()}>
           Thử lại
+        </button>
+      </div>
+    );
+  else if (
+    active?.key === "grammar" && grammarLessonNo !== undefined &&
+    (!Number.isSafeInteger(grammarLessonNo) || grammarLessonNo <= 0)
+  )
+    content = (
+      <div className="admin-empty-state" role="alert">
+        <p>Số bài ngữ pháp không hợp lệ.</p>
+        <button className="mod-btn-back" onClick={backToChapter}>
+          ← Quay lại chương
         </button>
       </div>
     );
@@ -278,7 +310,7 @@ export function ChapterPage() {
                 : null
             }
             onOpen={openGrammar}
-            onBack={backToChapter}
+            onBack={() => openGrammarGroup(selected.lessonNo)}
           />
         );
       } else if (selected.skillType === "KANJI") {
@@ -343,8 +375,11 @@ export function ChapterPage() {
         <StudentGrammarChapterPage
           chapterId={data.id}
           chapterNo={data.chapterNo}
+          courseName={data.courseName}
           lessons={data.lessons}
-          onLesson={selectLesson}
+          lessonNo={grammarLessonNo}
+          onLessonNo={openGrammarGroup}
+          onLesson={selectGrammarLesson}
           onBack={backToChapter}
         />
       );
