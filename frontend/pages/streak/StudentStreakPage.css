@@ -34,7 +34,9 @@
 .streak-day.active { background: #fff7ed; color: #9a3412; }
 .streak-day[aria-current="date"] { outline: 2px solid #e11d48; outline-offset: -2px; }
 .streak-milestones { display: grid; grid-template-columns: repeat(auto-fit,minmax(130px,1fr)); gap: 10px; margin-top: 14px; }
-.streak-milestones > div { display: grid; gap: 5px; background: #f1f5f9; border-radius: 12px; padding: 12px; text-align: center; }
+.streak-milestones > div { display: grid; gap: 5px; background: linear-gradient(145deg, #eff6ff, #eef2ff); border: 1px solid #c7d2fe; border-radius: 12px; padding: 12px; text-align: center; }
+.streak-milestones > div.learned { background: linear-gradient(145deg, #ecfdf5, #d1fae5); border-color: #6ee7b7; }
 .streak-milestones span { font-size: 13px; }
+.streak-next:has(progress) { background: linear-gradient(135deg, #fff7ed, #fff1f2); border-color: #fdba74; }
 .streak-next progress { display: block; width: min(100%, 420px); margin-top: 10px; accent-color: #e11d48; }
 @media(max-width:600px) { .streak-hero { padding: 14px 8px; gap: 6px; } .streak-hero span { display: block; margin: 0; } .streak-hero p { font-size: 12px; } .streak-next { padding: 14px; } }

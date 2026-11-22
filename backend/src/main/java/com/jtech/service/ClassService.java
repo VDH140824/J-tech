@@ -11,7 +11,14 @@ import java.time.LocalDateTime;
 import org.springframework.dao.DataIntegrityViolationException;
 import com.jtech.entity.UserStatus;
 import com.jtech.repository.ClassRepository;
+import com.jtech.repository.ClassMemberRepository;
 import com.jtech.repository.UserRepository;
+import com.jtech.dto.response.StudentResponse;
+import com.jtech.dto.response.AddStudentsResponse;
+import com.jtech.dto.response.SkippedEmail;
+import com.jtech.entity.ClassroomMember;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -19,17 +26,132 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class ClassService {
     private final EntityManager entityManager;
     private final ClassRepository classRepository;
+    private final ClassMemberRepository classMemberRepository;
     private final UserRepository userRepository;
 
-    public ClassService(ClassRepository classRepository, UserRepository userRepository, EntityManager entityManager) {
+    public ClassService(ClassRepository classRepository, ClassMemberRepository classMemberRepository,
+            UserRepository userRepository, EntityManager entityManager) {
         this.classRepository = classRepository;
+        this.classMemberRepository = classMemberRepository;
         this.userRepository = userRepository;
         this.entityManager = entityManager;
+    }
+
+    @Transactional
+    public AddStudentsResponse addStudents(Long classId, List<String> emails) {
+        if (classId == null || classId <= 0) {
+            throw new IllegalArgumentException("Mã lớp không hợp lệ.");
+        }
+        var moderator = getCurrentModerator();
+        var classroom = classRepository.findByIdForUpdate(classId)
+                .orElseThrow(() -> new EntityNotFoundException("Lớp học không tồn tại."));
+        if (!moderator.getUserId().equals(classroom.getModeratorId())) {
+            throw new AccessDeniedException("Bạn không có quyền thêm học viên vào lớp này.");
+        }
+        if (emails == null || emails.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập ít nhất một email.");
+        }
+
+        var uniqueEmails = new LinkedHashSet<String>();
+        var skipped = new ArrayList<SkippedEmail>();
+        for (String rawEmail : emails) {
+            String email = rawEmail == null ? "" : rawEmail.trim().toLowerCase(Locale.ROOT);
+            if (email.isEmpty()) {
+                skipped.add(new SkippedEmail(email, "ACCOUNT_NOT_FOUND"));
+            } else if (!uniqueEmails.add(email)) {
+                skipped.add(new SkippedEmail(email, "DUPLICATE_EMAIL"));
+            }
+        }
+        if (uniqueEmails.isEmpty()) {
+            return new AddStudentsResponse(0, skipped.size(), List.copyOf(skipped));
+        }
+
+        Map<String, User> usersByEmail = new HashMap<>();
+        for (User user : userRepository.findByNormalizedEmails(new ArrayList<>(uniqueEmails))) {
+            usersByEmail.put(user.getEmail().toLowerCase(Locale.ROOT), user);
+        }
+        Set<Long> eligibleIds = new LinkedHashSet<>();
+        for (String email : uniqueEmails) {
+            User user = usersByEmail.get(email);
+            if (user != null && user.getStatus() == UserStatus.ACTIVE && user.getRole() != null
+                    && "STUDENT".equals(user.getRole().getRoleName())) {
+                eligibleIds.add(user.getUserId());
+            }
+        }
+        Set<Long> existingIds = eligibleIds.isEmpty() ? Set.of()
+                : classMemberRepository.findExistingStudentIds(classId, eligibleIds);
+
+        var membersToAdd = new ArrayList<ClassroomMember>();
+        for (String email : uniqueEmails) {
+            User user = usersByEmail.get(email);
+            if (user == null) {
+                skipped.add(new SkippedEmail(email, "ACCOUNT_NOT_FOUND"));
+            } else if (user.getStatus() != UserStatus.ACTIVE || user.getRole() == null
+                    || !"STUDENT".equals(user.getRole().getRoleName())) {
+                skipped.add(new SkippedEmail(email, "INVALID_STUDENT_ACCOUNT"));
+            } else if (existingIds.contains(user.getUserId())) {
+                skipped.add(new SkippedEmail(email, "ALREADY_IN_CLASSROOM"));
+            } else {
+                membersToAdd.add(new ClassroomMember(classroom, user));
+            }
+        }
+        if (!membersToAdd.isEmpty()) {
+            classMemberRepository.saveAllAndFlush(membersToAdd);
+        }
+        return new AddStudentsResponse(membersToAdd.size(), skipped.size(), List.copyOf(skipped));
+    }
+
+    @Transactional
+    public void removeStudent(Long classId, Long studentId) {
+        if (classId == null || classId <= 0 || studentId == null || studentId <= 0) {
+            throw new IllegalArgumentException("Thông tin lớp hoặc học viên không hợp lệ.");
+        }
+        var moderator = getCurrentModerator();
+        var classroom = classRepository.findById(classId)
+                .orElseThrow(() -> new EntityNotFoundException("Lớp học không tồn tại."));
+        if (!moderator.getUserId().equals(classroom.getModeratorId())) {
+            throw new AccessDeniedException("Bạn không có quyền gỡ học viên khỏi lớp này.");
+        }
+        var member = classMemberRepository.findByClassroom_IdAndStudent_UserId(classId, studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Học viên không tồn tại trong lớp."));
+        classMemberRepository.delete(member);
+        classMemberRepository.flush();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<StudentResponse> getClassStudents(Long classId, String search, String status,
+            int page, int size) {
+        if (classId == null || classId <= 0 || page < 0 || size < 1 || size > 100) {
+            throw new IllegalArgumentException("Tham số danh sách học viên không hợp lệ.");
+        }
+        var moderator = getCurrentModerator();
+        var classroom = classRepository.findById(classId)
+                .orElseThrow(() -> new EntityNotFoundException("Lớp học không tồn tại."));
+        if (!moderator.getUserId().equals(classroom.getModeratorId())) {
+            throw new AccessDeniedException("Bạn không có quyền xem học viên của lớp này.");
+        }
+        UserStatus studentStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                studentStatus = UserStatus.valueOf(status.trim().toUpperCase(java.util.Locale.ROOT));
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalArgumentException("Trạng thái học viên không hợp lệ.");
+            }
+        }
+        String normalizedSearch = search == null ? "" : search.trim();
+        return classMemberRepository.findStudentsByClassId(classId, normalizedSearch,
+                studentStatus, PageRequest.of(page, size));
     }
 
     @Transactional(readOnly = true)
@@ -38,6 +160,20 @@ public class ClassService {
         return classRepository.findByModeratorId(user.getUserId()).stream()
                 .map(ClassResponse::fromQueryRow)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClassResponse> getClassesByCurrentStudent() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated())
+            throw new AuthenticationCredentialsNotFoundException("Vui lòng đăng nhập.");
+        var user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Tài khoản không tồn tại."));
+        if (user.getStatus() != UserStatus.ACTIVE || user.getRole() == null
+                || !"STUDENT".equals(user.getRole().getRoleName()))
+            throw new AccessDeniedException("Bạn không có quyền xem danh sách lớp.");
+        return classMemberRepository.findStudentClasses(user.getUserId()).stream()
+                .map(ClassResponse::fromQueryRow).toList();
     }
 
     @Transactional

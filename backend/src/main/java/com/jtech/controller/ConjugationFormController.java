@@ -1,9 +1,12 @@
 package com.jtech.controller;
 
 import com.jtech.dto.request.ConjugationFormRequest;
+import com.jtech.dto.request.ConjugationQuestionRequest;
 import com.jtech.dto.response.ConjugationFormResponse;
 import com.jtech.dto.response.DeleteResultResponse;
+import com.jtech.dto.response.PracticeQuestionResponse;
 import com.jtech.entity.Course;
+import com.jtech.entity.Question;
 import com.jtech.service.ConjugationFormService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -11,6 +14,7 @@ import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 
 
 @RestController
@@ -79,5 +84,56 @@ public class ConjugationFormController {
     @DeleteMapping("/{id}")
     public ResponseEntity<DeleteResultResponse> delete(@PathVariable Long id, Principal principal) {
         return ResponseEntity.ok(conjugationFormService.delete(id, principal.getName()));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @GetMapping("/{id}/practice-questions")
+    public ResponseEntity<List<PracticeQuestionResponse>> getPracticeQuestions(
+            @PathVariable Long id,
+            @RequestParam(required = false) Question.Difficulty difficulty,
+            @RequestParam(required = false) Integer verbGroup) {
+        return ResponseEntity.ok(conjugationFormService.getPracticeQuestions(id, difficulty, verbGroup));
+    }
+
+    /** UC-47 bước 5: thêm câu hỏi thủ công. */
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @PostMapping("/{id}/questions")
+    public ResponseEntity<PracticeQuestionResponse> createQuestion(
+            @PathVariable Long id,
+            @Valid @RequestBody ConjugationQuestionRequest request,
+            Principal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(conjugationFormService.createQuestion(id, request, principal.getName()));
+    }
+
+    /** UC-47 bước 5: sửa câu hỏi. */
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @PutMapping("/{id}/questions/{questionId}")
+    public ResponseEntity<PracticeQuestionResponse> updateQuestion(
+            @PathVariable Long id,
+            @PathVariable Long questionId,
+            @Valid @RequestBody ConjugationQuestionRequest request,
+            Principal principal) {
+        return ResponseEntity.ok(conjugationFormService.updateQuestion(id, questionId, request, principal.getName()));
+    }
+
+    /** UC-47 bước 5: xóa mềm câu hỏi. */
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @DeleteMapping("/{id}/questions/{questionId}")
+    public ResponseEntity<Void> deleteQuestion(
+            @PathVariable Long id,
+            @PathVariable Long questionId,
+            Principal principal) {
+        conjugationFormService.deleteQuestion(id, questionId, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @PutMapping("/{id}/practice-questions")
+    public ResponseEntity<ConjugationFormResponse> updatePracticeQuestions(
+            @PathVariable Long id,
+            @RequestBody List<Long> questionIds,
+            Principal principal) {
+        return ResponseEntity.ok(conjugationFormService.updatePracticeQuestions(id, questionIds, principal.getName()));
     }
 }

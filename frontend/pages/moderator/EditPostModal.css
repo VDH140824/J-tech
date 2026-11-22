@@ -1,0 +1,7 @@
+.edit-post-type-note { margin: -3px 0 3px; color: #64748b; font-size: 12px; }
+.edit-post-file-picker { align-items: flex-start; }
+.edit-post-file-current { display: flex; flex: 1 1 auto; flex-direction: column; gap: 5px; min-width: 0; }
+.edit-post-file-current span { font-size: 12px; overflow-wrap: anywhere; }
+.edit-post-file-current audio { width: min(100%, 290px); height: 36px; }
+.edit-post-file-current a { width: fit-content; color: #0f766e; font-size: 12px; font-weight: 600; }
+.edit-post-file-current a:hover { color: #115e59; }

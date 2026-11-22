@@ -1,6 +1,13 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { isAxiosError } from "axios";
 import { ConjugationFormModal } from "./ConjugationFormModal";
+import { PracticeQuestionsModal } from "./PracticeQuestionsModal";
 import {
   deleteConjugationForm,
   getConjugationForms,
@@ -20,14 +27,20 @@ const MOD_COLOR = "#0d9488";
 const MESSAGES = {
   MSG20: "Lỗi truy vấn cơ sở dữ liệu, vui lòng thử lại.",
   MSG31: "Cập nhật thành công!",
-  MSG33: "Thể chia đã có dữ liệu học tập nên không thể xóa, hệ thống đã chuyển sang trạng thái Lưu trữ.",
+  MSG33:
+    "Thể chia đã có dữ liệu học tập nên không thể xóa, hệ thống đã chuyển sang trạng thái Lưu trữ.",
   MSG34: "Xóa thể chia thành công!",
 } as const;
 const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 400;
 const DESCRIPTION_PREVIEW_LENGTH = 80;
 
-const STATUS_OPTIONS: ContentStatus[] = ["DRAFT", "PUBLISHED", "HIDDEN", "ARCHIVED"];
+const STATUS_OPTIONS: ContentStatus[] = [
+  "DRAFT",
+  "PUBLISHED",
+  "HIDDEN",
+  "ARCHIVED",
+];
 
 const STATUS_LABEL: Record<ContentStatus, string> = {
   DRAFT: "Nháp",
@@ -45,23 +58,39 @@ const STATUS_PILL_CLASS: Record<ContentStatus, string> = {
 
 function summarize(text?: string | null) {
   if (!text) return "—";
-  return text.length > DESCRIPTION_PREVIEW_LENGTH ? `${text.slice(0, DESCRIPTION_PREVIEW_LENGTH).trimEnd()}…` : text;
+  return text.length > DESCRIPTION_PREVIEW_LENGTH
+    ? `${text.slice(0, DESCRIPTION_PREVIEW_LENGTH).trimEnd()}…`
+    : text;
 }
 
 export function ModeratorConjugationTab() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingForm, setEditingForm] = useState<ConjugationFormSummary | null>(null);
-  const [lastSaved, setLastSaved] = useState<{ form: ConjugationFormSummary; isEdit: boolean } | null>(null);
+  const [editingForm, setEditingForm] = useState<ConjugationFormSummary | null>(
+    null,
+  );
+  const [lastSaved, setLastSaved] = useState<{
+    form: ConjugationFormSummary;
+    isEdit: boolean;
+  } | null>(null);
 
   // sd Delete / Archive Conjugation Form
-  const [deletingForm, setDeletingForm] = useState<ConjugationFormSummary | null>(null);
+  const [deletingForm, setDeletingForm] =
+    useState<ConjugationFormSummary | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [deleteNotice, setDeleteNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  // SD-29.5: thể chia đang thiết lập câu hỏi luyện tập
+  const [practiceForm, setPracticeForm] =
+    useState<ConjugationFormSummary | null>(null);
+  const [deleteNotice, setDeleteNotice] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // keyword đang gõ (searchInput) tách với keyword đã áp dụng (sau debounce hoặc Enter) để không gọi API ở mỗi phím
   const [searchInput, setSearchInput] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ContentStatus | "ALL">("ALL");
+  const [statusFilter, setStatusFilter] = useState<ContentStatus | "ALL">(
+    "ALL",
+  );
   const [page, setPage] = useState(0);
 
   const [forms, setForms] = useState<ConjugationFormSummary[]>([]);
@@ -183,7 +212,9 @@ export function ModeratorConjugationTab() {
       }
     } catch (error) {
       // 3.2: showError(message) — 404 khi thể chia không còn tồn tại, hoặc lỗi khác từ server
-      const serverMessage = isAxiosError(error) ? (error.response?.data as { message?: string } | undefined)?.message : undefined;
+      const serverMessage = isAxiosError(error)
+        ? (error.response?.data as { message?: string } | undefined)?.message
+        : undefined;
       setDeleteNotice({ type: "error", text: serverMessage || MESSAGES.MSG20 });
       setDeletingForm(null);
       if (isAxiosError(error) && error.response?.status === 404) fetchForms();
@@ -199,7 +230,9 @@ export function ModeratorConjugationTab() {
       <div className="admin-page-header">
         <div className="admin-header-titles">
           <h2 className="admin-main-title">Quản lý thể chia</h2>
-          <p className="admin-main-subtitle">Các thể chia động từ dùng cho phần luyện chia động từ của học viên.</p>
+          <p className="admin-main-subtitle">
+            Các thể chia động từ dùng cho phần luyện chia động từ của học viên.
+          </p>
         </div>
         <button
           type="button"
@@ -221,7 +254,10 @@ export function ModeratorConjugationTab() {
       )}
 
       {deleteNotice && (
-        <div className={`admin-alert-banner ${deleteNotice.type}`} role={deleteNotice.type === "error" ? "alert" : "status"}>
+        <div
+          className={`admin-alert-banner ${deleteNotice.type}`}
+          role={deleteNotice.type === "error" ? "alert" : "status"}
+        >
           {deleteNotice.type === "success" ? "✅" : "⚠️"} {deleteNotice.text}
         </div>
       )}
@@ -254,13 +290,14 @@ export function ModeratorConjugationTab() {
               </option>
             ))}
           </select>
-
         </form>
 
         {!hasError && (
           <div className="admin-quick-stats-row">
             <span className="quick-stats-label">Tổng quan:</span>
-            <span className="stat-pill pill-total">{totalElements} Thể chia</span>
+            <span className="stat-pill pill-total">
+              {totalElements} Thể chia
+            </span>
           </div>
         )}
       </div>
@@ -274,9 +311,16 @@ export function ModeratorConjugationTab() {
         ) : hasError ? (
           // 1.4: showError("MSG20") kèm nút "Thử lại"
           <div className="admin-table-empty">
-            <div className="admin-alert-banner error mod-error-banner" role="alert">
+            <div
+              className="admin-alert-banner error mod-error-banner"
+              role="alert"
+            >
               <span>⚠️ {MESSAGES.MSG20}</span>
-              <button type="button" className="mod-btn-retry" onClick={fetchForms}>
+              <button
+                type="button"
+                className="mod-btn-retry"
+                onClick={fetchForms}
+              >
                 Thử lại
               </button>
             </div>
@@ -286,9 +330,13 @@ export function ModeratorConjugationTab() {
           <div className="admin-table-empty">
             <span style={{ fontSize: "2rem" }}>📭</span>
             <p style={{ marginTop: "8px", fontWeight: 700, color: "#0f172a" }}>
-              {isFiltering ? "Không tìm thấy thể chia phù hợp" : "Chưa có thể chia nào"}
+              {isFiltering
+                ? "Không tìm thấy thể chia phù hợp"
+                : "Chưa có thể chia nào"}
             </p>
-            {!isFiltering && <p>Bấm "+ Thêm thể chia" để tạo thể chia đầu tiên.</p>}
+            {!isFiltering && (
+              <p>Bấm "+ Thêm thể chia" để tạo thể chia đầu tiên.</p>
+            )}
           </div>
         ) : (
           // 1.3: displayList(forms)
@@ -299,10 +347,17 @@ export function ModeratorConjugationTab() {
                   <th style={{ width: "70px" }}>STT</th>
                   <th>TÊN THỂ CHIA</th>
                   <th>MÔ TẢ</th>
-                  <th style={{ textAlign: "center", width: "110px" }}>SỐ CÂU/LƯỢT</th>
-                  <th style={{ textAlign: "center", width: "120px" }}>SỐ CÂU ĐÃ GẮN</th>
+                  <th style={{ textAlign: "center", width: "110px" }}>
+                    SỐ CÂU/LƯỢT
+                  </th>
+                  <th style={{ width: "150px" }}>LÝ THUYẾT</th>
+                  <th style={{ textAlign: "center", width: "150px" }}>
+                    CÂU LUYỆN TẬP / ĐÃ GẮN
+                  </th>
                   <th style={{ width: "140px" }}>TRẠNG THÁI</th>
-                  <th style={{ textAlign: "center", width: "150px" }}>THAO TÁC</th>
+                  <th style={{ textAlign: "center", width: "200px" }}>
+                    THAO TÁC
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -314,16 +369,32 @@ export function ModeratorConjugationTab() {
                       </span>
                     </td>
                     <td>
-                      <div style={{ fontWeight: 700, color: "#0f172a" }}>{form.nameJp}</div>
+                      <div style={{ fontWeight: 700, color: "#0f172a" }}>
+                        {form.nameJp}
+                      </div>
                       <div className="cell-email">{form.nameVi}</div>
                     </td>
-                    <td className="cell-email" title={form.description ?? undefined}>
+                    <td
+                      className="cell-email"
+                      title={form.description ?? undefined}
+                    >
                       {summarize(form.description)}
                     </td>
-                    <td style={{ textAlign: "center" }}>{form.questionsPerPractice}</td>
-                    <td style={{ textAlign: "center" }}>{form.linkedQuestionCount}</td>
+                    <td style={{ textAlign: "center" }}>
+                      {form.questionsPerPractice}
+                    </td>
+                    <td className="cell-email">
+                      {form.missingTheoryGroups.length === 0
+                        ? "Đã đủ"
+                        : `Thiếu ${form.missingTheoryGroups.join(", ")}`}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {form.practiceQuestionCount} / {form.linkedQuestionCount}
+                    </td>
                     <td>
-                      <span className={`status-badge-pill ${STATUS_PILL_CLASS[form.status]}`}>
+                      <span
+                        className={`status-badge-pill ${STATUS_PILL_CLASS[form.status]}`}
+                      >
                         <span className="pill-dot" />
                         {STATUS_LABEL[form.status]}
                       </span>
@@ -338,6 +409,16 @@ export function ModeratorConjugationTab() {
                           onClick={() => openEditForm(form)}
                         >
                           Sửa
+                        </button>
+                        {/* SD-29.5, 1: openPracticeQuestions(form) */}
+                        <button
+                          type="button"
+                          className="mod-btn-text-action edit"
+                          title="Thiết lập câu hỏi luyện tập"
+                          aria-label={`Câu hỏi luyện tập của ${form.code}`}
+                          onClick={() => setPracticeForm(form)}
+                        >
+                          Câu hỏi
                         </button>
                         <button
                           type="button"
@@ -360,10 +441,16 @@ export function ModeratorConjugationTab() {
         {!loading && !hasError && totalPages > 1 && (
           <div className="admin-pagination-footer">
             <span className="pagination-info">
-              Hiển thị trang <strong>{page + 1}</strong> / <strong>{totalPages}</strong> ({totalElements} thể chia)
+              Hiển thị trang <strong>{page + 1}</strong> /{" "}
+              <strong>{totalPages}</strong> ({totalElements} thể chia)
             </span>
             <div className="pagination-buttons">
-              <button type="button" className="btn-page" disabled={page <= 0} onClick={() => setPage((p) => p - 1)}>
+              <button
+                type="button"
+                className="btn-page"
+                disabled={page <= 0}
+                onClick={() => setPage((p) => p - 1)}
+              >
                 ← Trang trước
               </button>
               <button
@@ -386,13 +473,36 @@ export function ModeratorConjugationTab() {
         onSaved={handleSaved}
       />
 
+      <PracticeQuestionsModal
+        form={practiceForm}
+        onClose={() => setPracticeForm(null)}
+        onSaved={(updated) => {
+          // SD-29.5, 3.4: showMessage + ref SD-29.2 làm mới danh sách
+          setPracticeForm(null);
+          setDeleteNotice({
+            type: "success",
+            text: `Cập nhật câu hỏi luyện tập thành công (${updated.nameJp} - ${updated.code}).`,
+          });
+          fetchForms();
+        }}
+      />
+
       {/* 1.1: showConfirmDialog() */}
       {deletingForm && (
         <div className="modal-overlay" onClick={closeDeleteDialog}>
-          <div className="modal-card" style={{ maxWidth: "480px" }} onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-card"
+            style={{ maxWidth: "480px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h3 className="modal-title">Xác nhận xóa thể chia</h3>
-              <button type="button" className="modal-btn-close" disabled={deleting} onClick={closeDeleteDialog}>
+              <button
+                type="button"
+                className="modal-btn-close"
+                disabled={deleting}
+                onClick={closeDeleteDialog}
+              >
                 ✕
               </button>
             </div>
@@ -405,16 +515,28 @@ export function ModeratorConjugationTab() {
                 không?
               </p>
               <p className="modal-description">
-                Nếu học viên đã luyện tập thể chia này, hệ thống sẽ không xóa mà chuyển sang trạng thái{" "}
-                <strong>Lưu trữ</strong>. Nếu chưa, thể chia cùng các câu hỏi đã gắn sẽ bị xóa vĩnh viễn.
+                Nếu học viên đã luyện tập thể chia này, hệ thống sẽ không xóa mà
+                chuyển sang trạng thái <strong>Lưu trữ</strong>. Nếu chưa, thể
+                chia sẽ bị xóa vĩnh viễn; các câu hỏi đã gắn chỉ được gỡ liên
+                kết, không bị xóa khỏi ngân hàng câu hỏi.
               </p>
               <div className="modal-actions-row">
                 {/* 2: clickCancel() */}
-                <button type="button" className="btn-modal-cancel" disabled={deleting} onClick={closeDeleteDialog}>
+                <button
+                  type="button"
+                  className="btn-modal-cancel"
+                  disabled={deleting}
+                  onClick={closeDeleteDialog}
+                >
                   Hủy bỏ
                 </button>
                 {/* 3: clickConfirm() */}
-                <button type="button" className="btn-modal-delete" disabled={deleting} onClick={handleConfirmDelete}>
+                <button
+                  type="button"
+                  className="btn-modal-delete"
+                  disabled={deleting}
+                  onClick={handleConfirmDelete}
+                >
                   {deleting ? "Đang xóa..." : "Xác nhận xóa"}
                 </button>
               </div>

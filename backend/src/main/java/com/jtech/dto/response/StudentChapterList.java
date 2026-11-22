@@ -7,5 +7,12 @@ public record StudentChapterList(Long id, String name, String description, List<
                           int testCount, List<Lesson> lessons) {}
     public record Lesson(Long id, int lessonNo, String title, String skillType,
                          int itemCount, int videoCount, long durationSeconds,
-                         int exerciseCount, int testCount, boolean completed) {}
+                         int exerciseCount, int testCount, boolean completed, String documents) {
+        public Lesson(Long id, int lessonNo, String title, String skillType,
+                      int itemCount, int videoCount, long durationSeconds,
+                      int exerciseCount, int testCount, boolean completed) {
+            this(id, lessonNo, title, skillType, itemCount, videoCount, durationSeconds,
+                exerciseCount, testCount, completed, null);
+        }
+    }
 }

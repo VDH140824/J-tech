@@ -1,0 +1,3756 @@
+{
+  "mapId": "55fd442b15008443b281ea92dc5ec6ef2e978b2364c715c9d7e2f9d1db400abe",
+  "boundsMin": [
+    -66.916415,
+    -1.33,
+    -57.5
+  ],
+  "boundsMax": [
+    66.916415,
+    22.655001,
+    57.5
+  ],
+  "spawn": [
+    -2.516414,
+    0.915,
+    51
+  ],
+  "spawns": [
+    [
+      -2.516414,
+      0.915,
+      51
+    ],
+    [
+      -4.216414,
+      0.915,
+      51
+    ],
+    [
+      -2.516414,
+      0.915,
+      49.3
+    ],
+    [
+      -2.516414,
+      0.915,
+      52.7
+    ],
+    [
+      -0.816414,
+      0.915,
+      51
+    ],
+    [
+      -4.216414,
+      0.915,
+      49.3
+    ],
+    [
+      -4.216414,
+      0.915,
+      52.7
+    ],
+    [
+      -0.816414,
+      0.915,
+      49.3
+    ],
+    [
+      -0.816414,
+      0.915,
+      52.7
+    ],
+    [
+      -5.916414,
+      0.915,
+      51
+    ],
+    [
+      -2.516414,
+      0.915,
+      47.6
+    ],
+    [
+      -2.516414,
+      0.915,
+      54.4
+    ],
+    [
+      0.883586,
+      0.915,
+      51
+    ],
+    [
+      -5.916414,
+      1.27,
+      49.3
+    ],
+    [
+      -5.916414,
+      0.915,
+      52.7
+    ],
+    [
+      -4.216414,
+      0.915,
+      47.6
+    ],
+    [
+      -4.216414,
+      0.915,
+      54.4
+    ],
+    [
+      -0.816414,
+      0.915,
+      47.6
+    ],
+    [
+      -0.816414,
+      0.915,
+      54.4
+    ],
+    [
+      0.883586,
+      1.27,
+      49.3
+    ],
+    [
+      0.883586,
+      0.915,
+      52.7
+    ],
+    [
+      -5.916414,
+      0.915,
+      47.6
+    ],
+    [
+      -5.916414,
+      0.915,
+      54.4
+    ],
+    [
+      0.883586,
+      0.915,
+      47.6
+    ],
+    [
+      0.883586,
+      0.915,
+      54.4
+    ],
+    [
+      -7.616414,
+      0.915,
+      51
+    ],
+    [
+      -2.516414,
+      0.915,
+      56.1
+    ],
+    [
+      2.583586,
+      0.915,
+      51
+    ],
+    [
+      -7.616414,
+      0.915,
+      49.3
+    ],
+    [
+      -7.616414,
+      0.915,
+      52.7
+    ]
+  ],
+  "doors": [
+    {
+      "id": "ALPHA_DOOR_L101",
+      "hinge": [
+        6.205586,
+        0.352,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_L102",
+      "hinge": [
+        -3.194414,
+        0.352,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_L103",
+      "hinge": [
+        -12.594414,
+        0.352,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_L104",
+      "hinge": [
+        -21.994415,
+        0.352,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_L201",
+      "hinge": [
+        6.205586,
+        4.002,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_L202",
+      "hinge": [
+        -3.194414,
+        4.002,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_L203",
+      "hinge": [
+        -12.594414,
+        4.002,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_L204",
+      "hinge": [
+        -21.994415,
+        4.002,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_R101",
+      "hinge": [
+        39.105588,
+        0.352,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_R102",
+      "hinge": [
+        48.505585,
+        0.352,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_R201",
+      "hinge": [
+        28.590586,
+        4.002,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_R202",
+      "hinge": [
+        35.610585,
+        4.002,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_R203",
+      "hinge": [
+        42.600587,
+        4.002,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "ALPHA_DOOR_R204",
+      "hinge": [
+        49.620587,
+        4.002,
+        37.25
+      ],
+      "center": [
+        0.678,
+        1.219,
+        0
+      ],
+      "halfExtents": [
+        0.678,
+        1.219,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B101",
+      "hinge": [
+        36.283586,
+        0.195,
+        -45.599996
+      ],
+      "center": [
+        0,
+        1.06,
+        0.590003
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B102",
+      "hinge": [
+        37.433587,
+        0.195,
+        -47.150007
+      ],
+      "center": [
+        0.59,
+        1.06,
+        0.000003
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B103",
+      "hinge": [
+        50.483585,
+        0.195,
+        -47.150001
+      ],
+      "center": [
+        0.59,
+        1.06,
+        -0.000004
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B104",
+      "hinge": [
+        56.883588,
+        0.195,
+        -37.310006
+      ],
+      "center": [
+        0,
+        1.06,
+        -0.59
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B105",
+      "hinge": [
+        56.883589,
+        0.195,
+        -35.690003
+      ],
+      "center": [
+        0,
+        1.06,
+        0.590003
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B106",
+      "hinge": [
+        50.48359,
+        0.195,
+        -25.849999
+      ],
+      "center": [
+        0.59,
+        1.06,
+        -0.000004
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B107",
+      "hinge": [
+        37.43359,
+        0.195,
+        -25.849997
+      ],
+      "center": [
+        0.59,
+        1.06,
+        0.000003
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B108",
+      "hinge": [
+        36.283588,
+        0.195,
+        -27.4
+      ],
+      "center": [
+        0,
+        1.06,
+        -0.59
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B201",
+      "hinge": [
+        36.283586,
+        3.845,
+        -45.599996
+      ],
+      "center": [
+        0,
+        1.06,
+        0.590003
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B202",
+      "hinge": [
+        37.433587,
+        3.845,
+        -47.150007
+      ],
+      "center": [
+        0.59,
+        1.06,
+        0.000003
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B203",
+      "hinge": [
+        50.483585,
+        3.845,
+        -47.150001
+      ],
+      "center": [
+        0.59,
+        1.06,
+        -0.000004
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B204",
+      "hinge": [
+        56.883588,
+        3.845,
+        -37.310006
+      ],
+      "center": [
+        0,
+        1.06,
+        -0.59
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B205",
+      "hinge": [
+        56.883589,
+        3.845,
+        -35.690003
+      ],
+      "center": [
+        0,
+        1.06,
+        0.590003
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B206",
+      "hinge": [
+        50.48359,
+        3.845,
+        -25.849999
+      ],
+      "center": [
+        0.59,
+        1.06,
+        -0.000004
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B207",
+      "hinge": [
+        37.43359,
+        3.845,
+        -25.849997
+      ],
+      "center": [
+        0.59,
+        1.06,
+        0.000003
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B208",
+      "hinge": [
+        36.283588,
+        3.845,
+        -27.4
+      ],
+      "center": [
+        0,
+        1.06,
+        -0.59
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B301",
+      "hinge": [
+        36.283586,
+        7.495,
+        -45.599996
+      ],
+      "center": [
+        0,
+        1.06,
+        0.590003
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B302",
+      "hinge": [
+        37.433587,
+        7.495,
+        -47.150007
+      ],
+      "center": [
+        0.59,
+        1.06,
+        0.000003
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B303",
+      "hinge": [
+        50.483585,
+        7.495,
+        -47.150001
+      ],
+      "center": [
+        0.59,
+        1.06,
+        -0.000004
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B304",
+      "hinge": [
+        56.883588,
+        7.495,
+        -37.310006
+      ],
+      "center": [
+        0,
+        1.06,
+        -0.59
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B305",
+      "hinge": [
+        56.883589,
+        7.495,
+        -35.690003
+      ],
+      "center": [
+        0,
+        1.06,
+        0.590003
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B306",
+      "hinge": [
+        50.48359,
+        7.495,
+        -25.849999
+      ],
+      "center": [
+        0.59,
+        1.06,
+        -0.000004
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B307",
+      "hinge": [
+        37.43359,
+        7.495,
+        -25.849997
+      ],
+      "center": [
+        0.59,
+        1.06,
+        0.000003
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B308",
+      "hinge": [
+        36.283588,
+        7.495,
+        -27.4
+      ],
+      "center": [
+        0,
+        1.06,
+        -0.59
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B401",
+      "hinge": [
+        36.283586,
+        11.145,
+        -45.599996
+      ],
+      "center": [
+        0,
+        1.06,
+        0.590003
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B402",
+      "hinge": [
+        37.433587,
+        11.145,
+        -47.150007
+      ],
+      "center": [
+        0.59,
+        1.06,
+        0.000003
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B403",
+      "hinge": [
+        50.483585,
+        11.145,
+        -47.150001
+      ],
+      "center": [
+        0.59,
+        1.06,
+        -0.000004
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B404",
+      "hinge": [
+        56.883588,
+        11.145,
+        -37.310006
+      ],
+      "center": [
+        0,
+        1.06,
+        -0.59
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B405",
+      "hinge": [
+        56.883589,
+        11.145,
+        -35.690003
+      ],
+      "center": [
+        0,
+        1.06,
+        0.590003
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B406",
+      "hinge": [
+        50.48359,
+        11.145,
+        -25.849999
+      ],
+      "center": [
+        0.59,
+        1.06,
+        -0.000004
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B407",
+      "hinge": [
+        37.43359,
+        11.145,
+        -25.849997
+      ],
+      "center": [
+        0.59,
+        1.06,
+        0.000003
+      ],
+      "halfExtents": [
+        0.6125,
+        1.06,
+        0.03
+      ]
+    },
+    {
+      "id": "BETA_DOOR_B408",
+      "hinge": [
+        36.283588,
+        11.145,
+        -27.4
+      ],
+      "center": [
+        0,
+        1.06,
+        -0.59
+      ],
+      "halfExtents": [
+        0.03,
+        1.06,
+        0.6125
+      ]
+    }
+  ],
+  "seats": [
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101",
+      "position": [
+        6.083586,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102",
+      "position": [
+        -3.316414,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103",
+      "position": [
+        -12.716414,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104",
+      "position": [
+        -22.116414,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201",
+      "position": [
+        6.083586,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202",
+      "position": [
+        -3.316414,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203",
+      "position": [
+        -12.716414,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204",
+      "position": [
+        -22.116414,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101",
+      "position": [
+        38.983586,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102",
+      "position": [
+        48.383588,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R201",
+      "position": [
+        29.233586,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R202",
+      "position": [
+        36.283585,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R203",
+      "position": [
+        43.273587,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R204",
+      "position": [
+        50.583585,
+        4.5,
+        38.31
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "BETA_Player_seat_B101",
+      "position": [
+        35.473584,
+        0.66,
+        -46.169996
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B102",
+      "position": [
+        39.913587,
+        0.66,
+        -48.28501
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B103",
+      "position": [
+        52.963584,
+        0.66,
+        -48.285004
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B104",
+      "position": [
+        58.103586,
+        0.66,
+        -38.220002
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B105",
+      "position": [
+        58.103586,
+        0.66,
+        -34.78
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B106",
+      "position": [
+        52.963589,
+        0.66,
+        -24.715005
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B107",
+      "position": [
+        39.913589,
+        0.66,
+        -24.714999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B108",
+      "position": [
+        35.473591,
+        0.66,
+        -26.83
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B201",
+      "position": [
+        35.473584,
+        4.31,
+        -46.169996
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B202",
+      "position": [
+        39.913587,
+        4.31,
+        -48.28501
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B203",
+      "position": [
+        52.963584,
+        4.31,
+        -48.285004
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B204",
+      "position": [
+        58.103586,
+        4.31,
+        -38.220002
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B205",
+      "position": [
+        58.103586,
+        4.31,
+        -34.78
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B206",
+      "position": [
+        52.963589,
+        4.31,
+        -24.715005
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B207",
+      "position": [
+        39.913589,
+        4.31,
+        -24.714999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B208",
+      "position": [
+        35.473591,
+        4.31,
+        -26.83
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B301",
+      "position": [
+        35.473584,
+        7.96,
+        -46.169996
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B302",
+      "position": [
+        39.913587,
+        7.96,
+        -48.28501
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B303",
+      "position": [
+        52.963584,
+        7.96,
+        -48.285004
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B304",
+      "position": [
+        58.103586,
+        7.96,
+        -38.220002
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B305",
+      "position": [
+        58.103586,
+        7.96,
+        -34.78
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B306",
+      "position": [
+        52.963589,
+        7.96,
+        -24.715005
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B307",
+      "position": [
+        39.913589,
+        7.96,
+        -24.714999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B308",
+      "position": [
+        35.473591,
+        7.96,
+        -26.83
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B401",
+      "position": [
+        35.473584,
+        11.61,
+        -46.169996
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B402",
+      "position": [
+        39.913587,
+        11.61,
+        -48.28501
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B403",
+      "position": [
+        52.963584,
+        11.61,
+        -48.285004
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B404",
+      "position": [
+        58.103586,
+        11.61,
+        -38.220002
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B405",
+      "position": [
+        58.103586,
+        11.61,
+        -34.78
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B406",
+      "position": [
+        52.963589,
+        11.61,
+        -24.715005
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B407",
+      "position": [
+        39.913589,
+        11.61,
+        -24.714999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B408",
+      "position": [
+        35.473591,
+        11.61,
+        -26.83
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B101_desk_1",
+      "position": [
+        33.273591,
+        0.66,
+        -46.195002
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B101_desk_2",
+      "position": [
+        35.473589,
+        0.66,
+        -48.995002
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B101_desk_3",
+      "position": [
+        33.273589,
+        0.66,
+        -48.995001
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B101_desk_4",
+      "position": [
+        35.473587,
+        0.66,
+        -51.795002
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B101_desk_5",
+      "position": [
+        33.273588,
+        0.66,
+        -51.795001
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B102_desk_1",
+      "position": [
+        41.888583,
+        0.66,
+        -53.385005
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B102_desk_2",
+      "position": [
+        41.888584,
+        0.66,
+        -50.835005
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B102_desk_3",
+      "position": [
+        41.888585,
+        0.66,
+        -48.285005
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B102_desk_4",
+      "position": [
+        39.888584,
+        0.66,
+        -53.385004
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B102_desk_5",
+      "position": [
+        39.888584,
+        0.66,
+        -50.835004
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B103_desk_1",
+      "position": [
+        54.938587,
+        0.66,
+        -53.384999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B103_desk_2",
+      "position": [
+        54.938588,
+        0.66,
+        -50.834999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B103_desk_3",
+      "position": [
+        54.938588,
+        0.66,
+        -48.284999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B103_desk_4",
+      "position": [
+        52.938587,
+        0.66,
+        -53.384999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B103_desk_5",
+      "position": [
+        52.938588,
+        0.66,
+        -50.834999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B104_desk_1",
+      "position": [
+        58.128589,
+        0.66,
+        -41.370003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B104_desk_2",
+      "position": [
+        58.128589,
+        0.66,
+        -44.520003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B104_desk_3",
+      "position": [
+        60.078589,
+        0.66,
+        -38.220004
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B104_desk_4",
+      "position": [
+        60.078589,
+        0.66,
+        -41.370003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B104_desk_5",
+      "position": [
+        60.078589,
+        0.66,
+        -44.520003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B105_desk_1",
+      "position": [
+        58.128591,
+        0.66,
+        -28.48
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B105_desk_2",
+      "position": [
+        58.128591,
+        0.66,
+        -31.629999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B105_desk_3",
+      "position": [
+        60.078591,
+        0.66,
+        -27.7
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B105_desk_4",
+      "position": [
+        60.078591,
+        0.66,
+        -30.85
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B105_desk_5",
+      "position": [
+        60.078591,
+        0.66,
+        -33.999999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B106_desk_1",
+      "position": [
+        54.938589,
+        0.66,
+        -23.935003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B106_desk_2",
+      "position": [
+        54.93859,
+        0.66,
+        -21.385003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B106_desk_3",
+      "position": [
+        54.93859,
+        0.66,
+        -18.835003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B106_desk_4",
+      "position": [
+        52.93859,
+        0.66,
+        -22.165003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B106_desk_5",
+      "position": [
+        52.93859,
+        0.66,
+        -19.615003
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B107_desk_1",
+      "position": [
+        41.888588,
+        0.66,
+        -23.935001
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B107_desk_2",
+      "position": [
+        41.888588,
+        0.66,
+        -21.385001
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B107_desk_3",
+      "position": [
+        41.888589,
+        0.66,
+        -18.835001
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B107_desk_4",
+      "position": [
+        39.888588,
+        0.66,
+        -22.165001
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B107_desk_5",
+      "position": [
+        39.888589,
+        0.66,
+        -19.615001
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B108_desk_1",
+      "position": [
+        33.273592,
+        0.66,
+        -26.804999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B108_desk_2",
+      "position": [
+        32.493591,
+        0.66,
+        -24.005
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B108_desk_3",
+      "position": [
+        34.693591,
+        0.66,
+        -24.004999
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B108_desk_4",
+      "position": [
+        32.493591,
+        0.66,
+        -21.205
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B108_desk_5",
+      "position": [
+        34.693591,
+        0.66,
+        -21.205
+      ],
+      "floorY": 0.2
+    },
+    {
+      "id": "BETA_Player_seat_B201_desk_1",
+      "position": [
+        33.273591,
+        4.31,
+        -46.195002
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B201_desk_2",
+      "position": [
+        35.473589,
+        4.31,
+        -48.995002
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B201_desk_3",
+      "position": [
+        33.273589,
+        4.31,
+        -48.995001
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B201_desk_4",
+      "position": [
+        35.473587,
+        4.31,
+        -51.795002
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B201_desk_5",
+      "position": [
+        33.273588,
+        4.31,
+        -51.795001
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B202_desk_1",
+      "position": [
+        41.888583,
+        4.31,
+        -53.385005
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B202_desk_2",
+      "position": [
+        41.888584,
+        4.31,
+        -50.835005
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B202_desk_3",
+      "position": [
+        41.888585,
+        4.31,
+        -48.285005
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B202_desk_4",
+      "position": [
+        39.888584,
+        4.31,
+        -53.385004
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B202_desk_5",
+      "position": [
+        39.888584,
+        4.31,
+        -50.835004
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B203_desk_1",
+      "position": [
+        54.938587,
+        4.31,
+        -53.384999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B203_desk_2",
+      "position": [
+        54.938588,
+        4.31,
+        -50.834999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B203_desk_3",
+      "position": [
+        54.938588,
+        4.31,
+        -48.284999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B203_desk_4",
+      "position": [
+        52.938587,
+        4.31,
+        -53.384999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B203_desk_5",
+      "position": [
+        52.938588,
+        4.31,
+        -50.834999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B204_desk_1",
+      "position": [
+        58.128589,
+        4.31,
+        -41.370003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B204_desk_2",
+      "position": [
+        58.128589,
+        4.31,
+        -44.520003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B204_desk_3",
+      "position": [
+        60.078589,
+        4.31,
+        -38.220004
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B204_desk_4",
+      "position": [
+        60.078589,
+        4.31,
+        -41.370003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B204_desk_5",
+      "position": [
+        60.078589,
+        4.31,
+        -44.520003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B205_desk_1",
+      "position": [
+        58.128591,
+        4.31,
+        -28.48
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B205_desk_2",
+      "position": [
+        58.128591,
+        4.31,
+        -31.629999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B205_desk_3",
+      "position": [
+        60.078591,
+        4.31,
+        -27.7
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B205_desk_4",
+      "position": [
+        60.078591,
+        4.31,
+        -30.85
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B205_desk_5",
+      "position": [
+        60.078591,
+        4.31,
+        -33.999999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B206_desk_1",
+      "position": [
+        54.938589,
+        4.31,
+        -23.935003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B206_desk_2",
+      "position": [
+        54.93859,
+        4.31,
+        -21.385003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B206_desk_3",
+      "position": [
+        54.93859,
+        4.31,
+        -18.835003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B206_desk_4",
+      "position": [
+        52.93859,
+        4.31,
+        -22.165003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B206_desk_5",
+      "position": [
+        52.93859,
+        4.31,
+        -19.615003
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B207_desk_1",
+      "position": [
+        41.888588,
+        4.31,
+        -23.935001
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B207_desk_2",
+      "position": [
+        41.888588,
+        4.31,
+        -21.385001
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B207_desk_3",
+      "position": [
+        41.888589,
+        4.31,
+        -18.835001
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B207_desk_4",
+      "position": [
+        39.888588,
+        4.31,
+        -22.165001
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B207_desk_5",
+      "position": [
+        39.888589,
+        4.31,
+        -19.615001
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B208_desk_1",
+      "position": [
+        33.273592,
+        4.31,
+        -26.804999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B208_desk_2",
+      "position": [
+        32.493591,
+        4.31,
+        -24.005
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B208_desk_3",
+      "position": [
+        34.693591,
+        4.31,
+        -24.004999
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B208_desk_4",
+      "position": [
+        32.493591,
+        4.31,
+        -21.205
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B208_desk_5",
+      "position": [
+        34.693591,
+        4.31,
+        -21.205
+      ],
+      "floorY": 3.85
+    },
+    {
+      "id": "BETA_Player_seat_B301_desk_1",
+      "position": [
+        33.273591,
+        7.96,
+        -46.195002
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B301_desk_2",
+      "position": [
+        35.473589,
+        7.96,
+        -48.995002
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B301_desk_3",
+      "position": [
+        33.273589,
+        7.96,
+        -48.995001
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B301_desk_4",
+      "position": [
+        35.473587,
+        7.96,
+        -51.795002
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B301_desk_5",
+      "position": [
+        33.273588,
+        7.96,
+        -51.795001
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B302_desk_1",
+      "position": [
+        41.888583,
+        7.96,
+        -53.385005
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B302_desk_2",
+      "position": [
+        41.888584,
+        7.96,
+        -50.835005
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B302_desk_3",
+      "position": [
+        41.888585,
+        7.96,
+        -48.285005
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B302_desk_4",
+      "position": [
+        39.888584,
+        7.96,
+        -53.385004
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B302_desk_5",
+      "position": [
+        39.888584,
+        7.96,
+        -50.835004
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B303_desk_1",
+      "position": [
+        54.938587,
+        7.96,
+        -53.384999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B303_desk_2",
+      "position": [
+        54.938588,
+        7.96,
+        -50.834999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B303_desk_3",
+      "position": [
+        54.938588,
+        7.96,
+        -48.284999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B303_desk_4",
+      "position": [
+        52.938587,
+        7.96,
+        -53.384999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B303_desk_5",
+      "position": [
+        52.938588,
+        7.96,
+        -50.834999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B304_desk_1",
+      "position": [
+        58.128589,
+        7.96,
+        -41.370003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B304_desk_2",
+      "position": [
+        58.128589,
+        7.96,
+        -44.520003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B304_desk_3",
+      "position": [
+        60.078589,
+        7.96,
+        -38.220004
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B304_desk_4",
+      "position": [
+        60.078589,
+        7.96,
+        -41.370003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B304_desk_5",
+      "position": [
+        60.078589,
+        7.96,
+        -44.520003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B305_desk_1",
+      "position": [
+        58.128591,
+        7.96,
+        -28.48
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B305_desk_2",
+      "position": [
+        58.128591,
+        7.96,
+        -31.629999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B305_desk_3",
+      "position": [
+        60.078591,
+        7.96,
+        -27.7
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B305_desk_4",
+      "position": [
+        60.078591,
+        7.96,
+        -30.85
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B305_desk_5",
+      "position": [
+        60.078591,
+        7.96,
+        -33.999999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B306_desk_1",
+      "position": [
+        54.938589,
+        7.96,
+        -23.935003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B306_desk_2",
+      "position": [
+        54.93859,
+        7.96,
+        -21.385003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B306_desk_3",
+      "position": [
+        54.93859,
+        7.96,
+        -18.835003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B306_desk_4",
+      "position": [
+        52.93859,
+        7.96,
+        -22.165003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B306_desk_5",
+      "position": [
+        52.93859,
+        7.96,
+        -19.615003
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B307_desk_1",
+      "position": [
+        41.888588,
+        7.96,
+        -23.935001
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B307_desk_2",
+      "position": [
+        41.888588,
+        7.96,
+        -21.385001
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B307_desk_3",
+      "position": [
+        41.888589,
+        7.96,
+        -18.835001
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B307_desk_4",
+      "position": [
+        39.888588,
+        7.96,
+        -22.165001
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B307_desk_5",
+      "position": [
+        39.888589,
+        7.96,
+        -19.615001
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B308_desk_1",
+      "position": [
+        33.273592,
+        7.96,
+        -26.804999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B308_desk_2",
+      "position": [
+        32.493591,
+        7.96,
+        -24.005
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B308_desk_3",
+      "position": [
+        34.693591,
+        7.96,
+        -24.004999
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B308_desk_4",
+      "position": [
+        32.493591,
+        7.96,
+        -21.205
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B308_desk_5",
+      "position": [
+        34.693591,
+        7.96,
+        -21.205
+      ],
+      "floorY": 7.5
+    },
+    {
+      "id": "BETA_Player_seat_B401_desk_1",
+      "position": [
+        33.273591,
+        11.61,
+        -46.195002
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B401_desk_2",
+      "position": [
+        35.473589,
+        11.61,
+        -48.995002
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B401_desk_3",
+      "position": [
+        33.273589,
+        11.61,
+        -48.995001
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B401_desk_4",
+      "position": [
+        35.473587,
+        11.61,
+        -51.795002
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B401_desk_5",
+      "position": [
+        33.273588,
+        11.61,
+        -51.795001
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B402_desk_1",
+      "position": [
+        41.888583,
+        11.61,
+        -53.385005
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B402_desk_2",
+      "position": [
+        41.888584,
+        11.61,
+        -50.835005
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B402_desk_3",
+      "position": [
+        41.888585,
+        11.61,
+        -48.285005
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B402_desk_4",
+      "position": [
+        39.888584,
+        11.61,
+        -53.385004
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B402_desk_5",
+      "position": [
+        39.888584,
+        11.61,
+        -50.835004
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B403_desk_1",
+      "position": [
+        54.938587,
+        11.61,
+        -53.384999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B403_desk_2",
+      "position": [
+        54.938588,
+        11.61,
+        -50.834999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B403_desk_3",
+      "position": [
+        54.938588,
+        11.61,
+        -48.284999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B403_desk_4",
+      "position": [
+        52.938587,
+        11.61,
+        -53.384999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B403_desk_5",
+      "position": [
+        52.938588,
+        11.61,
+        -50.834999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B404_desk_1",
+      "position": [
+        58.128589,
+        11.61,
+        -41.370003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B404_desk_2",
+      "position": [
+        58.128589,
+        11.61,
+        -44.520003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B404_desk_3",
+      "position": [
+        60.078589,
+        11.61,
+        -38.220004
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B404_desk_4",
+      "position": [
+        60.078589,
+        11.61,
+        -41.370003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B404_desk_5",
+      "position": [
+        60.078589,
+        11.61,
+        -44.520003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B405_desk_1",
+      "position": [
+        58.128591,
+        11.61,
+        -28.48
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B405_desk_2",
+      "position": [
+        58.128591,
+        11.61,
+        -31.629999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B405_desk_3",
+      "position": [
+        60.078591,
+        11.61,
+        -27.7
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B405_desk_4",
+      "position": [
+        60.078591,
+        11.61,
+        -30.85
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B405_desk_5",
+      "position": [
+        60.078591,
+        11.61,
+        -33.999999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B406_desk_1",
+      "position": [
+        54.938589,
+        11.61,
+        -23.935003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B406_desk_2",
+      "position": [
+        54.93859,
+        11.61,
+        -21.385003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B406_desk_3",
+      "position": [
+        54.93859,
+        11.61,
+        -18.835003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B406_desk_4",
+      "position": [
+        52.93859,
+        11.61,
+        -22.165003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B406_desk_5",
+      "position": [
+        52.93859,
+        11.61,
+        -19.615003
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B407_desk_1",
+      "position": [
+        41.888588,
+        11.61,
+        -23.935001
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B407_desk_2",
+      "position": [
+        41.888588,
+        11.61,
+        -21.385001
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B407_desk_3",
+      "position": [
+        41.888589,
+        11.61,
+        -18.835001
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B407_desk_4",
+      "position": [
+        39.888588,
+        11.61,
+        -22.165001
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B407_desk_5",
+      "position": [
+        39.888589,
+        11.61,
+        -19.615001
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B408_desk_1",
+      "position": [
+        33.273592,
+        11.61,
+        -26.804999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B408_desk_2",
+      "position": [
+        32.493591,
+        11.61,
+        -24.005
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B408_desk_3",
+      "position": [
+        34.693591,
+        11.61,
+        -24.004999
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B408_desk_4",
+      "position": [
+        32.493591,
+        11.61,
+        -21.205
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "BETA_Player_seat_B408_desk_5",
+      "position": [
+        34.693591,
+        11.61,
+        -21.205
+      ],
+      "floorY": 11.15
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101_desk_1",
+      "position": [
+        9.758586,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101_desk_2",
+      "position": [
+        7.908586,
+        0.85,
+        39.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101_desk_3",
+      "position": [
+        6.058586,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101_desk_4",
+      "position": [
+        9.758586,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101_desk_5",
+      "position": [
+        7.908586,
+        0.85,
+        41.91
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101_desk_6",
+      "position": [
+        6.058586,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101_desk_7",
+      "position": [
+        9.758586,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L101_desk_8",
+      "position": [
+        7.908586,
+        0.85,
+        44.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102_desk_1",
+      "position": [
+        0.358586,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102_desk_2",
+      "position": [
+        -1.491414,
+        0.85,
+        39.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102_desk_3",
+      "position": [
+        -3.341414,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102_desk_4",
+      "position": [
+        0.358586,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102_desk_5",
+      "position": [
+        -1.491414,
+        0.85,
+        41.91
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102_desk_6",
+      "position": [
+        -3.341414,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102_desk_7",
+      "position": [
+        0.358586,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L102_desk_8",
+      "position": [
+        -1.491414,
+        0.85,
+        44.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103_desk_1",
+      "position": [
+        -9.041414,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103_desk_2",
+      "position": [
+        -10.891414,
+        0.85,
+        39.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103_desk_3",
+      "position": [
+        -12.741414,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103_desk_4",
+      "position": [
+        -9.041414,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103_desk_5",
+      "position": [
+        -10.891414,
+        0.85,
+        41.91
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103_desk_6",
+      "position": [
+        -12.741414,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103_desk_7",
+      "position": [
+        -9.041414,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L103_desk_8",
+      "position": [
+        -10.891414,
+        0.85,
+        44.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104_desk_1",
+      "position": [
+        -18.441414,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104_desk_2",
+      "position": [
+        -20.291414,
+        0.85,
+        39.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104_desk_3",
+      "position": [
+        -22.141414,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104_desk_4",
+      "position": [
+        -18.441414,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104_desk_5",
+      "position": [
+        -20.291414,
+        0.85,
+        41.91
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104_desk_6",
+      "position": [
+        -22.141414,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104_desk_7",
+      "position": [
+        -18.441414,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L104_desk_8",
+      "position": [
+        -20.291414,
+        0.85,
+        44.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201_desk_1",
+      "position": [
+        9.758586,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201_desk_2",
+      "position": [
+        7.908586,
+        4.5,
+        39.01
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201_desk_3",
+      "position": [
+        6.058586,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201_desk_4",
+      "position": [
+        9.758586,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201_desk_5",
+      "position": [
+        7.908586,
+        4.5,
+        41.26
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201_desk_6",
+      "position": [
+        6.058586,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201_desk_7",
+      "position": [
+        9.758586,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L201_desk_8",
+      "position": [
+        7.908586,
+        4.5,
+        43.46
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202_desk_1",
+      "position": [
+        0.358586,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202_desk_2",
+      "position": [
+        -1.491414,
+        4.5,
+        39.01
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202_desk_3",
+      "position": [
+        -3.341414,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202_desk_4",
+      "position": [
+        0.358586,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202_desk_5",
+      "position": [
+        -1.491414,
+        4.5,
+        41.26
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202_desk_6",
+      "position": [
+        -3.341414,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202_desk_7",
+      "position": [
+        0.358586,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L202_desk_8",
+      "position": [
+        -1.491414,
+        4.5,
+        43.46
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203_desk_1",
+      "position": [
+        -9.041414,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203_desk_2",
+      "position": [
+        -10.891414,
+        4.5,
+        39.01
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203_desk_3",
+      "position": [
+        -12.741414,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203_desk_4",
+      "position": [
+        -9.041414,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203_desk_5",
+      "position": [
+        -10.891414,
+        4.5,
+        41.26
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203_desk_6",
+      "position": [
+        -12.741414,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203_desk_7",
+      "position": [
+        -9.041414,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L203_desk_8",
+      "position": [
+        -10.891414,
+        4.5,
+        43.46
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204_desk_1",
+      "position": [
+        -18.441414,
+        4.5,
+        38.29
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204_desk_2",
+      "position": [
+        -20.291414,
+        4.5,
+        39.01
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204_desk_3",
+      "position": [
+        -22.141414,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204_desk_4",
+      "position": [
+        -18.441414,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204_desk_5",
+      "position": [
+        -20.291414,
+        4.5,
+        41.26
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204_desk_6",
+      "position": [
+        -22.141414,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204_desk_7",
+      "position": [
+        -18.441414,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_L204_desk_8",
+      "position": [
+        -20.291414,
+        4.5,
+        43.46
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101_desk_1",
+      "position": [
+        42.658587,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101_desk_2",
+      "position": [
+        40.808585,
+        0.85,
+        39.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101_desk_3",
+      "position": [
+        38.958586,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101_desk_4",
+      "position": [
+        42.658587,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101_desk_5",
+      "position": [
+        40.808585,
+        0.85,
+        41.91
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101_desk_6",
+      "position": [
+        38.958586,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101_desk_7",
+      "position": [
+        42.658587,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R101_desk_8",
+      "position": [
+        40.808585,
+        0.85,
+        44.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102_desk_1",
+      "position": [
+        52.058585,
+        0.85,
+        38.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102_desk_2",
+      "position": [
+        50.208586,
+        0.85,
+        39.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102_desk_3",
+      "position": [
+        48.358586,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102_desk_4",
+      "position": [
+        52.058585,
+        0.85,
+        41.19
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102_desk_5",
+      "position": [
+        50.208586,
+        0.85,
+        41.91
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102_desk_6",
+      "position": [
+        48.358586,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102_desk_7",
+      "position": [
+        52.058585,
+        0.85,
+        43.69
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R102_desk_8",
+      "position": [
+        50.208586,
+        0.85,
+        44.41
+      ],
+      "floorY": 0.35
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R201_desk_1",
+      "position": [
+        29.208586,
+        4.5,
+        39.01
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R201_desk_2",
+      "position": [
+        29.208586,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R201_desk_3",
+      "position": [
+        29.208586,
+        4.5,
+        41.26
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R201_desk_4",
+      "position": [
+        29.208586,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R201_desk_5",
+      "position": [
+        29.208586,
+        4.5,
+        43.46
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R202_desk_1",
+      "position": [
+        36.258586,
+        4.5,
+        39.01
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R202_desk_2",
+      "position": [
+        36.258586,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R202_desk_3",
+      "position": [
+        36.258586,
+        4.5,
+        41.26
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R202_desk_4",
+      "position": [
+        36.258586,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R202_desk_5",
+      "position": [
+        36.258586,
+        4.5,
+        43.46
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R203_desk_1",
+      "position": [
+        43.248587,
+        4.5,
+        39.01
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R203_desk_2",
+      "position": [
+        43.248587,
+        4.5,
+        40.54
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R203_desk_3",
+      "position": [
+        43.248587,
+        4.5,
+        41.26
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R203_desk_4",
+      "position": [
+        43.248587,
+        4.5,
+        42.74
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R203_desk_5",
+      "position": [
+        43.248587,
+        4.5,
+        43.46
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R204_desk_1",
+      "position": [
+        51.733586,
+        4.5,
+        38.215
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R204_desk_2",
+      "position": [
+        50.583585,
+        4.5,
+        39.965
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R204_desk_3",
+      "position": [
+        49.433587,
+        4.5,
+        41.175
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R204_desk_4",
+      "position": [
+        51.733586,
+        4.5,
+        41.175
+      ],
+      "floorY": 4
+    },
+    {
+      "id": "ALPHA_OCCUPANTS_Player_workstation_R204_desk_5",
+      "position": [
+        50.583585,
+        4.5,
+        42.925
+      ],
+      "floorY": 4
+    }
+  ]
+}

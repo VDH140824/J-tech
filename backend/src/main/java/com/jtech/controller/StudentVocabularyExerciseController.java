@@ -1,8 +1,8 @@
 package com.jtech.controller;
 
 import com.jtech.dto.response.StudentVocabularyExercise;
-import com.jtech.dto.response.VocabularyMiniTestResponse;
-import com.jtech.service.VocabularyMiniTestService;
+import com.jtech.dto.response.VocabularyTestResponse;
+import com.jtech.service.VocabularyExerciseService;
 import com.jtech.service.FeedbackService;
 import com.jtech.service.LearningActivityService;
 import jakarta.validation.Valid;
@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @PreAuthorize("hasAnyAuthority('ROLE_STUDENT', 'STUDENT')")
 public class StudentVocabularyExerciseController {
-    private final VocabularyMiniTestService service;
+    private final VocabularyExerciseService service;
     private final FeedbackService access;
     private final LearningActivityService activities;
 
     public StudentVocabularyExerciseController(
-        VocabularyMiniTestService service, FeedbackService access, LearningActivityService activities
+        VocabularyExerciseService service, FeedbackService access, LearningActivityService activities
     ) {
         this.service = service;
         this.access = access;
@@ -35,7 +35,7 @@ public class StudentVocabularyExerciseController {
     }
 
     @PostMapping("/vocabulary-exercises/{id}/submit")
-    public VocabularyMiniTestResponse.Result submit(
+    public VocabularyTestResponse.Result submit(
         @PathVariable Long id,
         @Valid @RequestBody Submission submission,
         Authentication authentication

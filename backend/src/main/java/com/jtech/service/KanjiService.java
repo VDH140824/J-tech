@@ -14,6 +14,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.ZipInputStream;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.EntityManager;
@@ -33,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service @RequiredArgsConstructor
 public class KanjiService {
     private static final Logger log = LoggerFactory.getLogger(KanjiService.class);
+    static final String DOCUMENT_FOLDER = "Jtech/Moderator/Kanji/Tai Lieu";
     private final KanjiRepository kanjiRepository;
     private final LessonRepository lessonRepository;
     private final Cloudinary cloudinary;
@@ -218,24 +220,30 @@ public class KanjiService {
         }
         if (file == null) return documents.isEmpty() ? null : documents.toString();
         validateDocument(file);
-        String publicId = "kanji/documents/" + UUID.randomUUID() + extension(file.getOriginalFilename());
+        String publicId = DOCUMENT_FOLDER + "/" + UUID.randomUUID() + extension(file.getOriginalFilename());
+        AtomicReference<String> uploadedPublicId = new AtomicReference<>(publicId);
         // Register cleanup before the remote request, including a failed/uncertain upload.
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void afterCompletion(int status) {
                 if (status == STATUS_ROLLED_BACK) {
-                    try { cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", "raw")); }
-                    catch (Exception e) { LoggerFactory.getLogger(KanjiService.class).warn("Could not clean up document {}", publicId, e); }
+                    try { cloudinary.uploader().destroy(uploadedPublicId.get(), ObjectUtils.asMap("resource_type", "raw")); }
+                    catch (Exception e) { log.warn("Could not clean up document {}", uploadedPublicId.get(), e); }
                 }
             }
         });
         try {
             var uploaded = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                    "resource_type", "raw", "public_id", publicId, "overwrite", false));
+                    "resource_type", "raw", "public_id", publicId, "asset_folder", DOCUMENT_FOLDER, "overwrite", false));
+            if (!(uploaded.get("public_id") instanceof String actualId) || actualId.isBlank()) {
+                throw new IOException("Missing document public ID");
+            }
+            uploadedPublicId.set(actualId);
             String url = (String) uploaded.get("secure_url");
             if (url == null || !url.startsWith("https://")) throw new IOException("Missing document URL");
             String name = Optional.ofNullable(file.getOriginalFilename()).orElse("Tài liệu").replace('\\', '/');
             name = name.substring(name.lastIndexOf('/') + 1).replaceAll("[\\p{Cntrl}]", "");
-            documents.addObject().put("name", name).put("url", url).put("publicId", publicId);
+            documents.addObject().put("name", name).put("url", url).put("publicId", actualId)
+                .put("resourceType", "raw").put("assetFolder", DOCUMENT_FOLDER);
             return documents.toString();
         } catch (IOException e) {
             throw bad("Không thể tải tài liệu lên. Vui lòng thử lại.");

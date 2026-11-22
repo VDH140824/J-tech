@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 /** CD-17: SRS UC-48/49/50/63/64; BR59/113/115. Resolution note validation. */
+@Tag("unit-test-report")
 @DisplayName("CD-17 Feedback Handling — SRS UC-48 / 49 / 50 / 63 / 64")
 class FeedbackHandlingSrsUnitTest {
     private final JdbcTemplate db = mock(JdbcTemplate.class);

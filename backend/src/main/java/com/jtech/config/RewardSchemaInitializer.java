@@ -32,6 +32,8 @@ public class RewardSchemaInitializer implements ApplicationRunner {
             ScriptUtils.executeSqlScript(connection, migration("20261104_feedback_roles.sql"));
             ScriptUtils.executeSqlScript(connection, migration("20261105_correct_reward_frames.sql"));
             ScriptUtils.executeSqlScript(connection, migration("20261105_correct_reward_avatars.sql"));
+            ScriptUtils.executeSqlScript(connection, migration("20261116_game_results.sql"));
+            ScriptUtils.executeSqlScript(connection, migration("20261117_learning_reminder.sql"));
         }
     }
 

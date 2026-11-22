@@ -27,7 +27,7 @@ public class StudentChapterController {
                         rs.getString("description"), List.of()), courseId);
         if (courses.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found");
         var lessons = jdbc.query("""
-                SELECT l.id, l.chapter_id, l.lesson_no, l.title, l.skill_type,
+                SELECT l.id, l.chapter_id, l.lesson_no, l.title, l.skill_type, l.documents,
                   (SELECT COUNT(*) FROM grammar g WHERE g.lesson_id=l.id AND g.status='PUBLISHED') +
                   (SELECT COUNT(*) FROM kanji k WHERE k.lesson_id=l.id AND k.status='PUBLISHED') +
                   (SELECT COUNT(*) FROM vocabulary v WHERE v.lesson_id=l.id AND v.status='PUBLISHED') AS item_count,
@@ -47,7 +47,7 @@ public class StudentChapterController {
                 """, (rs, row) -> new ChapterLesson(rs.getLong("chapter_id"), new StudentChapterList.Lesson(
                 rs.getLong("id"), rs.getInt("lesson_no"), rs.getString("title"), rs.getString("skill_type"),
                 rs.getInt("item_count"), rs.getInt("video_count"), rs.getLong("duration_seconds"),
-                rs.getInt("exercise_count"), rs.getInt("test_count"), rs.getBoolean("completed"))), principal.getName(), courseId);
+                rs.getInt("exercise_count"), rs.getInt("test_count"), rs.getBoolean("completed"), rs.getString("documents"))), principal.getName(), courseId);
         var chapters = jdbc.query("""
                 SELECT c.id, c.chapter_no, c.title, c.description,
                   (SELECT COUNT(*) FROM test t WHERE t.chapter_id=c.id AND t.lesson_id IS NULL

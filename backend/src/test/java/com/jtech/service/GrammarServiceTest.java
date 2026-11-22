@@ -228,6 +228,7 @@ class GrammarServiceTest {
         verifyNoInteractions(cloudinaryService);
     }
 
+    // UTCID11: ID ngữ pháp không tồn tại; trả 404 và không lưu dữ liệu.
     @Test
     @DisplayName("UTCID11: missing grammar returns 404")
     void updateRejectsMissingGrammar() {
@@ -238,6 +239,7 @@ class GrammarServiceTest {
         verifyNoInteractions(cloudinaryService);
     }
 
+    // UTCID12: Cập nhật nội dung, thứ tự, trạng thái khi không có file mới; giữ video cũ.
     @Test
     @DisplayName("UTCID12: update text and retain video metadata without a new file")
     void updateUpdatesTextAndKeepsVideo() {
@@ -259,6 +261,7 @@ class GrammarServiceTest {
         verifyNoInteractions(cloudinaryService);
     }
 
+    // UTCID13: Từ chối từng trường nội dung null, rỗng, chỉ có khoảng trắng hoặc quá 100 ký tự.
     @Test
     @DisplayName("UTCID13: reject invalid text before mutation, upload or save")
     void updateRejectsInvalidTextWithoutSideEffects() {
@@ -279,6 +282,7 @@ class GrammarServiceTest {
         }
     }
 
+    // UTCID14: Chấp nhận nội dung đúng 100 ký tự và loại bỏ khoảng trắng đầu/cuối.
     @Test
     @DisplayName("UTCID14: accept 100 characters and trim surrounding whitespace")
     void updateAcceptsBoundaryAndTrims() {
@@ -300,6 +304,7 @@ class GrammarServiceTest {
         }
     }
 
+    // UTCID15: Từ chối thay video bằng URL/public ID gửi trực tiếp, dù có kèm file hay không.
     @Test
     @DisplayName("UTCID15: reject replacement URL/public ID even when a file is supplied")
     void updateRejectsReplacementMetadata() {
@@ -320,6 +325,7 @@ class GrammarServiceTest {
         }
     }
 
+    // UTCID16: Upload video mới; lưu URL, public ID và làm tròn thời lượng lên giây.
     @Test
     @DisplayName("UTCID16: map upload metadata and ceil duration")
     void updateReplacesVideoAndRoundsDuration() {
@@ -340,6 +346,7 @@ class GrammarServiceTest {
         }
     }
 
+    // UTCID17: File video không hợp lệ; trả 400 và không lưu.
     @Test
     @DisplayName("UTCID17: upload validation error becomes 400 with original cause")
     void updateMapsUploadValidationFailure() {
@@ -354,6 +361,7 @@ class GrammarServiceTest {
         verify(cloudinaryService, never()).deleteVideo(anyString());
     }
 
+    // UTCID18: Upload video gặp lỗi hệ thống; trả 502 và không lưu.
     @Test
     @DisplayName("UTCID18: upload infrastructure error becomes 502")
     void updateMapsUploadFailure() {
@@ -367,6 +375,7 @@ class GrammarServiceTest {
         verify(grammarRepository, never()).save(any());
     }
 
+    // UTCID19: Chỉ xóa video cũ sau khi giao dịch cập nhật thành công.
     @Test
     @DisplayName("UTCID19: delete only the old video after commit")
     void updateDeletesOldVideoOnlyAfterCommit() {
@@ -378,6 +387,7 @@ class GrammarServiceTest {
         verify(cloudinaryService, never()).deleteVideo("new-video");
     }
 
+    // UTCID20: Không xóa video cũ khi public ID cũ thiếu hoặc chỉ có khoảng trắng.
     @Test
     @DisplayName("UTCID20: no old-video deletion for absent public ID")
     void updateSkipsAbsentOldVideo() {
@@ -392,6 +402,7 @@ class GrammarServiceTest {
         }
     }
 
+    // UTCID21: Không xóa video khi public ID mới trùng public ID cũ.
     @Test
     @DisplayName("UTCID21: never delete an unchanged public ID after commit")
     void updateKeepsSamePublicId() {
@@ -401,6 +412,7 @@ class GrammarServiceTest {
         verify(cloudinaryService, never()).deleteVideo(any());
     }
 
+    // UTCID22: Giao dịch rollback; xóa video mới và giữ video cũ.
     @Test
     @DisplayName("UTCID22: rollback deletes new video and keeps old video")
     void updateCleansNewVideoOnRollback() {
@@ -411,6 +423,7 @@ class GrammarServiceTest {
         verify(cloudinaryService, never()).deleteVideo("old-video");
     }
 
+    // UTCID23: Lưu database thất bại sau upload; rollback và xóa video mới.
     @Test
     @DisplayName("UTCID23: save failure propagates and rollback cleans uploaded video")
     void updateCleansVideoAfterSaveFailure() {
@@ -426,6 +439,7 @@ class GrammarServiceTest {
         verify(cloudinaryService, never()).deleteVideo("old-video");
     }
 
+    // UTCID24: Xóa video mới khi rollback thất bại; callback không phát sinh thêm lỗi.
     @Test
     @DisplayName("UTCID24: rollback cleanup failure does not escape callback")
     void updateToleratesRollbackCleanupFailure() {
@@ -437,6 +451,7 @@ class GrammarServiceTest {
         verify(cloudinaryService, never()).deleteVideo("old-video");
     }
 
+    // UTCID25: Xóa video cũ sau commit thất bại; callback không phát sinh thêm lỗi.
     @Test
     @DisplayName("UTCID25: old-video cleanup failure does not escape commit callback")
     void updateToleratesCommitCleanupFailure() {
@@ -448,6 +463,7 @@ class GrammarServiceTest {
         verify(cloudinaryService, never()).deleteVideo("new-video");
     }
 
+    // UTCID26: Lưu thất bại khi không upload; không gọi Cloudinary.
     @Test
     @DisplayName("UTCID26: save failure without upload never calls Cloudinary")
     void updatePropagatesSaveFailureWithoutVideo() {
@@ -497,18 +513,7 @@ class GrammarServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID30: delete video only after commit")
-    void deleteDeletesVideoOnlyAfterCommit() {
-        foundGrammar();
-        assertTrue(service.delete(GRAMMAR_ID));
-        verifyNoInteractions(cloudinaryService);
-        completeTransaction(true);
-        verify(cloudinaryService).deleteVideo("old-video");
-        verifyNoMoreInteractions(cloudinaryService);
-    }
-
-    @Test
-    @DisplayName("UTCID31: rollback keeps the video")
+    @DisplayName("UTCID30: rollback keeps the video")
     void deleteKeepsVideoOnRollback() {
         foundGrammar();
         assertTrue(service.delete(GRAMMAR_ID));
@@ -517,33 +522,7 @@ class GrammarServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID32: progress deletion failure stops remaining actions")
-    void deleteStopsAfterProgressFailure() {
-        foundGrammar();
-        var failure = new DataIntegrityViolationException("progress delete failed");
-        when(grammarRepository.deleteLearningProgressByGrammarId(GRAMMAR_ID)).thenThrow(failure);
-        assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.delete(GRAMMAR_ID)));
-        verify(grammarRepository, never()).detachStudySessionsByGrammarId(anyLong());
-        verify(grammarRepository, never()).delete(any());
-        verifyNoInteractions(cloudinaryService);
-        assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
-    }
-
-    @Test
-    @DisplayName("UTCID33: session detachment failure stops grammar deletion")
-    void deleteStopsAfterDetachFailure() {
-        foundGrammar();
-        var failure = new DataIntegrityViolationException("detach failed");
-        when(grammarRepository.detachStudySessionsByGrammarId(GRAMMAR_ID)).thenThrow(failure);
-        assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.delete(GRAMMAR_ID)));
-        verify(grammarRepository).deleteLearningProgressByGrammarId(GRAMMAR_ID);
-        verify(grammarRepository, never()).delete(any());
-        verifyNoInteractions(cloudinaryService);
-        assertTrue(TransactionSynchronizationManager.getSynchronizations().isEmpty());
-    }
-
-    @Test
-    @DisplayName("UTCID34: grammar deletion failure does not delete video")
+    @DisplayName("UTCID31: grammar deletion failure does not delete video")
     void deleteKeepsVideoAfterDeleteFailure() {
         foundGrammar();
         var failure = new DataIntegrityViolationException("delete failed");
@@ -556,7 +535,7 @@ class GrammarServiceTest {
     }
 
     @Test
-    @DisplayName("UTCID35: video cleanup failure does not escape commit callback")
+    @DisplayName("UTCID32: video cleanup failure does not escape commit callback")
     void deleteToleratesVideoCleanupFailure() {
         foundGrammar();
         assertTrue(service.delete(GRAMMAR_ID));

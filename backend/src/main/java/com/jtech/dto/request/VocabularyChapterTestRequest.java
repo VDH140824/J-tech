@@ -1,6 +1,6 @@
 package com.jtech.dto.request;
 
-import com.jtech.entity.VocabularyMiniTest;
+import com.jtech.entity.VocabularyTest;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,6 +14,6 @@ public record VocabularyChapterTestRequest(
     @DecimalMax("100")
     @Digits(integer = 3, fraction = 2)
     BigDecimal passingScore,
-    @NotNull VocabularyMiniTest.Status status,
+    @NotNull VocabularyTest.Status status,
     @NotEmpty @Size(max = 200) List<@NotNull @Positive Long> questionIds
 ) {}

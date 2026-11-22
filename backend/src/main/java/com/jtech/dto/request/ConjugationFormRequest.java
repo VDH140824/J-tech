@@ -33,7 +33,7 @@ public record ConjugationFormRequest(
         String materialContent,
 
         @NotNull(message = "Nội dung * là bắt buộc, không được để trống.")
-        @Min(value = 1, message = "Số câu hỏi mỗi lượt phải lớn hơn 0.")
+        @Min(value = 5, message = "Số câu hỏi mỗi lượt phải tối thiểu là 5.")
         Integer questionsPerPractice,
 
         @Min(value = 0, message = "Thứ tự hiển thị phải từ 0 trở lên.")

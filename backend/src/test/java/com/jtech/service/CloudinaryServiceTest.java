@@ -3,6 +3,7 @@ package com.jtech.service;
 import com.cloudinary.Cloudinary;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockMultipartFile;
 import java.io.IOException;
@@ -76,5 +77,25 @@ class CloudinaryServiceTest {
         service.deleteDocument(null);
         service.deleteDocument("other-folder/file.pdf");
         verifyNoInteractions(cloudinary);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ok", "not found"})
+    void deleteVocabularyPdf_acceptsDeletedOrAbsentAsset(String result) throws Exception {
+        String publicId = "Jtech/Lessons/Documents/file.pdf";
+        when(cloudinary.uploader().destroy(eq(publicId), anyMap())).thenReturn(Map.of("result", result));
+
+        service.deleteVocabularyPdf(publicId);
+
+        verify(cloudinary.uploader()).destroy(eq(publicId), argThat(options ->
+                "raw".equals(options.get("resource_type")) && Boolean.TRUE.equals(options.get("invalidate"))));
+    }
+
+    @Test
+    void deleteVocabularyPdf_rejectsUnconfirmedDeletion() throws Exception {
+        String publicId = "Jtech/Lessons/Documents/file.pdf";
+        when(cloudinary.uploader().destroy(eq(publicId), anyMap())).thenReturn(Map.of("result", "error"));
+
+        assertThrows(IllegalStateException.class, () -> service.deleteVocabularyPdf(publicId));
     }
 }

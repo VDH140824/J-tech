@@ -20,9 +20,21 @@ import org.springframework.web.server.ResponseStatusException;
 class VocabularyCrudUnitTest {
 
     private final VocabularyRepository repository = mock(VocabularyRepository.class);
-    private final VocabularyService service = new VocabularyService(mock(LessonRepository.class));
+    private final LessonRepository lessons = mock(LessonRepository.class);
+    private final VocabularyService service = new VocabularyService(lessons);
     private final VocabularyService access = mock(VocabularyService.class);
     private final VocabularyController controller = new VocabularyController(repository, access);
+
+    @BeforeEach
+    void useRealCreateAndUpdate() {
+        doCallRealMethod().when(access).create(eq(repository), anyLong(), any(), any());
+        doCallRealMethod().when(access).update(
+            eq(repository), anyLong(), anyLong(), any(), isNull()
+        );
+        doCallRealMethod().when(access).archive(
+            eq(repository), anyLong(), anyLong(), isNull()
+        );
+    }
 
     private VocabularyRequest request(String word, Integer order) {
         return new VocabularyRequest(
@@ -94,7 +106,7 @@ class VocabularyCrudUnitTest {
         word.setLessonId(12L);
         when(access.require(repository, 5L)).thenReturn(word);
         when(repository.save(word)).thenReturn(word);
-        var result = controller.update(5L, request(" Revised ", 2));
+        var result = controller.update(12L, 5L, request(" Revised ", 2), null);
         assertEquals(5L, result.getId());
         assertEquals(12L, result.getLessonId());
         assertEquals("Revised", result.getWord());
@@ -113,7 +125,7 @@ class VocabularyCrudUnitTest {
             true
         );
         assertThrows(IllegalStateException.class, () ->
-            controller.update(5L, request("Japanese", 1))
+            controller.update(12L, 5L, request("Japanese", 1), null)
         );
         assertEquals("Original", word.getWord());
         verify(repository, never()).save(any());
@@ -123,8 +135,9 @@ class VocabularyCrudUnitTest {
     @DisplayName("CRUD Vocab/UTC006: Archive vocabulary")
     void utc006() throws Exception {
         var word = new Vocabulary();
+        word.setLessonId(12L);
         when(access.require(repository, 5L)).thenReturn(word);
-        assertEquals(204, controller.archive(5L).getStatusCode().value());
+        assertEquals(204, controller.archive(12L, 5L, null).getStatusCode().value());
         assertEquals(Course.Status.ARCHIVED, word.getStatus());
         verify(repository).save(word);
         verify(repository, never()).deleteById(anyLong());
@@ -133,9 +146,20 @@ class VocabularyCrudUnitTest {
     @Test
     @DisplayName("CRUD Vocab/UTC007: Archive missing vocabulary")
     void utc007() throws Exception {
+        var lesson = new Lesson();
+        lesson.setSkillType(Lesson.SkillType.VOCABULARY);
+        when(lessons.findById(12L)).thenReturn(Optional.of(lesson));
         when(repository.findById(404L)).thenReturn(Optional.empty());
         var realController = new VocabularyController(repository, service);
-        var ex = assertThrows(ResponseStatusException.class, () -> realController.archive(404L));
+        var moderator = new UsernamePasswordAuthenticationToken(
+            "moderator",
+            "",
+            List.of(new SimpleGrantedAuthority("ROLE_MODERATOR"))
+        );
+        var ex = assertThrows(
+            ResponseStatusException.class,
+            () -> realController.archive(12L, 404L, moderator)
+        );
         assertEquals(404, ex.getStatusCode().value());
         verify(repository, never()).save(any());
     }

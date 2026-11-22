@@ -117,8 +117,8 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new IllegalArgumentException("Lý do thay đổi trạng thái không được để trống");
         }
         String reason = value.trim();
-        if (reason.length() > 100) {
-            throw new IllegalArgumentException("Lý do không được vượt quá 100 ký tự");
+        if (reason.length() > 500) {
+            throw new IllegalArgumentException("Lý do không được vượt quá 500 ký tự");
         }
         return reason;
     }

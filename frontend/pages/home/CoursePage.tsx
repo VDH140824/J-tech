@@ -2,7 +2,7 @@ import { useAuthStore } from "../../store/authStore";
 import { checkIsModerator } from "../../utils/auth";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { getSpeakingScenarios } from "../../api/speakingApi";
 import {
   getStudentChapters,
@@ -11,6 +11,7 @@ import {
   type StudentLesson,
 } from "../../api/studentChapterApi";
 import "./CoursePage.css";
+import { parseLessonDocuments } from "../../utils/lessonDocuments";
 const skills: Record<string, string> = {
   KANJI: "Chữ Hán",
   VOCABULARY: "Từ vựng",
@@ -18,6 +19,45 @@ const skills: Record<string, string> = {
   LISTENING: "Nghe hiểu",
   READING: "Đọc hiểu",
 };
+type StudyItem = StudentLesson & { documentIndex?: number };
+
+function studyItems(lessons: StudentLesson[]): StudyItem[] {
+  return lessons.flatMap(lesson => {
+    if (lesson.skillType !== "KANJI") return [lesson];
+    return parseLessonDocuments(lesson.documents).map((document, index) => ({
+      ...lesson,
+      title: document.name,
+      documentIndex: index,
+    }));
+  });
+}
+
+// Each grammar row represents one lesson number within the current chapter.
+function groupGrammarLessons(lessons: StudentLesson[]): StudentLesson[] {
+  const rows: StudentLesson[] = [];
+  const grammarGroups = new Map<number, StudentLesson>();
+  for (const lesson of lessons) {
+    if (lesson.skillType !== "GRAMMAR") {
+      rows.push(lesson);
+      continue;
+    }
+    const group = grammarGroups.get(lesson.lessonNo);
+    if (group) {
+      group.itemCount += lesson.itemCount;
+      group.videoCount += lesson.videoCount;
+      group.durationSeconds += lesson.durationSeconds;
+      group.exerciseCount += lesson.exerciseCount;
+      group.testCount += lesson.testCount;
+      group.completed = group.completed && lesson.completed;
+    } else {
+      const row = { ...lesson, title: `Ngữ pháp bài ${lesson.lessonNo}` };
+      grammarGroups.set(lesson.lessonNo, row);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
 function Progress({ lessons }: { lessons: StudentLesson[] }) {
   const done = lessons.filter((l) => l.completed).length;
   return (
@@ -26,7 +66,9 @@ function Progress({ lessons }: { lessons: StudentLesson[] }) {
         <span>
           {done}/{lessons.length} phần học hoàn thành
         </span>
-        <strong>{lessons.length ? Math.round((done / lessons.length) * 100) : 0}%</strong>
+        <strong>
+          {lessons.length ? Math.round((done / lessons.length) * 100) : 0}%
+        </strong>
       </div>
       <progress
         aria-label="Tiến độ hoàn thành"
@@ -38,17 +80,21 @@ function Progress({ lessons }: { lessons: StudentLesson[] }) {
 }
 function ChapterCard({
   chapter,
-  first,
+  expanded,
   courseId,
 }: {
   chapter: StudentChapter;
-  first: boolean;
+  expanded: boolean;
   courseId: number;
 }) {
+  const items = studyItems(chapter.lessons);
+  const sources = Array.from(new Map(items.map(item => [item.id, item])).values());
   const sum = (field: "videoCount" | "exerciseCount" | "testCount") =>
-    chapter.lessons.reduce((n, l) => n + l[field], 0);
+    sources.reduce((n, l) => n + l[field], 0);
   const groups = new Map<number, StudentLesson[]>();
-  chapter.lessons.forEach((l) => groups.set(l.lessonNo, [...(groups.get(l.lessonNo) ?? []), l]));
+  items.filter(item => item.skillType !== "KANJI").forEach((l) =>
+    groups.set(l.lessonNo, [...(groups.get(l.lessonNo) ?? []), l]),
+  );
   const speaking = useQuery({
     queryKey: ["speaking-scenarios", chapter.id],
     queryFn: () => getSpeakingScenarios(chapter.id),
@@ -57,13 +103,11 @@ function ChapterCard({
   return (
     <details
       className="student-chapter-card"
-      open={first}
+      id={`chapter-${chapter.id}`}
+      open={expanded}
     >
       <summary className="chapter-heading">
-        <span
-          className="chapter-number"
-          aria-hidden="true"
-        >
+        <span className="chapter-number" aria-hidden="true">
           {String(chapter.chapterNo).padStart(2, "0")}
         </span>
         <div className="chapter-heading-content">
@@ -74,7 +118,7 @@ function ChapterCard({
             {sum("videoCount")} video · {sum("exerciseCount")} bài tập ·{" "}
             {chapter.testCount + sum("testCount")} bài kiểm tra
           </p>
-          <Progress lessons={chapter.lessons} />
+          <Progress lessons={items} />
         </div>
         <span aria-hidden="true">⌄</span>
       </summary>
@@ -99,63 +143,77 @@ function ChapterCard({
             🗣️ Luyện nói với AI →
           </Link>
         )}
-        {!chapter.lessons.length && <p>Chưa có bài học được xuất bản trong chương này.</p>}
-        {Array.from(groups, ([number, lessons]) => (
-          <details
-            className="chapter-lesson"
-            key={number}
-            open
-          >
-            <summary>
-              <strong>Bài {number}</strong>
-              <span>
-                {lessons.filter((l) => l.completed).length}/{lessons.length} hoàn thành
-              </span>
-              <span aria-hidden="true">⌄</span>
-            </summary>
-            <ul>
-              {lessons.map((l) => (
-                <li key={l.id}>
-                  <span
-                    className="lesson-icon"
-                    aria-hidden="true"
-                  >
-                    {l.completed ? "✓" : "▷"}
-                  </span>
-                  <div className="lesson-content">
-                    <h3>
-                      <Link
-                        to={`/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}&lessonId=${l.id}`}
-                      >
-                        {skills[l.skillType] ?? l.skillType}
-                      </Link>
-                    </h3>
-                    <p>{l.title}</p>
-                    <small>
-                      {l.itemCount} nội dung · {l.videoCount} video ·{" "}
-                      {Math.ceil(l.durationSeconds / 60)} phút video · {l.exerciseCount} bài tập ·{" "}
-                      {l.testCount} bài kiểm tra
-                    </small>
-                  </div>
-                  <span className={`lesson-status ${l.completed ? "completed" : ""}`}>
-                    {l.completed ? "Hoàn thành" : "Chưa hoàn thành"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </details>
-        ))}
+        {!items.length && (
+          <p>Chưa có tài liệu hoặc bài học được xuất bản trong chương này.</p>
+        )}
+        {Array.from(groups)
+          .sort(([a], [b]) => a - b)
+          .map(([number, lessons]) => (
+            <details className="chapter-lesson" key={number} open>
+              <summary>
+                <strong>Bài {number}</strong>
+                <span>
+                  {lessons.filter((l) => l.completed).length}/{lessons.length}{" "}
+                  hoàn thành
+                </span>
+                <span aria-hidden="true">⌄</span>
+              </summary>
+              <ul>
+                {groupGrammarLessons(lessons).map((l) => (
+                  <li key={l.id}>
+                    <span className="lesson-icon" aria-hidden="true">
+                      {l.completed ? "✓" : "▷"}
+                    </span>
+                    <div className="lesson-content">
+                      <h3>
+                        <Link
+                          to={`/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`}
+                        >
+                          {skills[l.skillType] ?? l.skillType}
+                        </Link>
+                      </h3>
+                      <p>{l.title}</p>
+                      <small>
+                        {l.itemCount} nội dung · {l.videoCount} video ·{" "}
+                        {Math.ceil(l.durationSeconds / 60)} phút video ·{" "}
+                        {l.exerciseCount} bài tập · {l.testCount} bài kiểm tra
+                      </small>
+                    </div>
+                    <span
+                      className={`lesson-status ${l.completed ? "completed" : ""}`}
+                    >
+                      {l.completed ? "Hoàn thành" : "Chưa hoàn thành"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        {chapter.lessons.some(lesson => lesson.skillType === "KANJI") && (
+          <Link className="chapter-kanji-link" to={`/courses/${courseId}/chapters/${chapter.id}?skill=KANJI`}>
+            <span className="chapter-kanji-play" aria-hidden="true">▷</span>
+            <span>Chữ Hán</span>
+          </Link>
+        )}
       </div>
     </details>
   );
 }
 export function CoursePage() {
   const { courseId } = useParams();
+  const { hash } = useLocation();
   const user = useAuthStore((state) => state.user);
   const isModerator = checkIsModerator(user);
   const [course, setCourse] = useState<StudentChapterList>();
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const targetChapter = course?.chapters.find(chapter => hash === `#chapter-${chapter.id}`);
+  useEffect(() => {
+    if (!targetChapter) return;
+    const element = document.getElementById(`chapter-${targetChapter.id}`);
+    element?.setAttribute("open", "");
+    element?.scrollIntoView({ block: "start" });
+  }, [targetChapter]);
   useEffect(() => {
     const controller = new AbortController();
     setCourse(undefined);
@@ -182,34 +240,31 @@ export function CoursePage() {
       });
     return () => controller.abort();
   }, [courseId, attempt, isModerator]);
-  if (isModerator && Number.isSafeInteger(Number(courseId)) && Number(courseId) > 0)
-    return (
-      <Navigate
-        to={`/moderator/courses?courseId=${courseId}`}
-        replace
-      />
-    );
+  useEffect(() => {
+    if (isModerator) return;
+    const refresh = () => setAttempt(value => value + 1);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [isModerator]);
+  const learningItems = course?.chapters.flatMap(chapter => studyItems(chapter.lessons)) ?? [];
+  if (
+    isModerator &&
+    Number.isSafeInteger(Number(courseId)) &&
+    Number(courseId) > 0
+  )
+    return <Navigate to={`/moderator/courses?courseId=${courseId}`} replace />;
   return (
     <main className="student-course-page">
-      <Link
-        className="chapter-back"
-        to="/home"
-      >
+      <Link className="chapter-back" to="/home">
         ← Lộ trình học
       </Link>
       {error ? (
-        <div
-          className="chapter-state"
-          role="alert"
-        >
+        <div className="chapter-state" role="alert">
           <p>{error}</p>
           <button onClick={() => setAttempt((a) => a + 1)}>Thử lại</button>
         </div>
       ) : !course ? (
-        <div
-          className="chapter-state"
-          role="status"
-        >
+        <div className="chapter-state" role="status">
           Đang tải danh sách chương…
         </div>
       ) : (
@@ -227,21 +282,24 @@ export function CoursePage() {
               <h2>Tiến độ khóa học</h2>
               <p>
                 {course.chapters.length} chương ·{" "}
-                {course.chapters.reduce((n, c) => n + c.lessons.length, 0)} phần học
+                {learningItems.length} phần
+                học
               </p>
             </div>
-            <Progress lessons={course.chapters.flatMap((c) => c.lessons)} />
+            <Progress lessons={learningItems} />
           </section>
           <section aria-label="Danh sách chương">
             {!course.chapters.length ? (
-              <div className="chapter-state">Khóa học chưa có chương được xuất bản.</div>
+              <div className="chapter-state">
+                Khóa học chưa có chương được xuất bản.
+              </div>
             ) : (
               course.chapters.map((chapter, i) => (
                 <ChapterCard
                   key={chapter.id}
                   chapter={chapter}
                   courseId={Number(courseId)}
-                  first={i === 0}
+                  expanded={targetChapter ? targetChapter.id === chapter.id : i === 0}
                 />
               ))
             )}

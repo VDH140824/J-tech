@@ -44,10 +44,10 @@ public class StreakService {
             if (day.isAfter(today)) break;
             if (previous != null && day.equals(previous.plusDays(1))) run++;
             else { run = 1; start = day; }
-            longest = Math.max(longest, run);
+            if (run >= 2) longest = Math.max(longest, run);
             previous = day;
         }
-        if (previous == null || previous.isBefore(today.minusDays(1))) return new State(0, longest, null);
+        if (previous == null || previous.isBefore(today.minusDays(1)) || run < 2) return new State(0, longest, null);
         return new State(run, longest, start);
     }
 }

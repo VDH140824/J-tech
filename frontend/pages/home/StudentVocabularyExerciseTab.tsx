@@ -3,12 +3,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
   getStudentVocabularyExercise,
-  miniTestError,
+  exerciseError,
   submitStudentVocabularyExercise,
   type StudentVocabularyExercise,
-} from "../../api/vocabularyMiniTestApi";
-import { VocabularyMiniTestPreview } from "../moderator/VocabularyMiniTestPreview";
-import "../moderator/VocabularyMiniTests.css";
+} from "../../api/vocabularyExerciseApi";
+import { VocabularyExercisePreview } from "../moderator/vocabulary/VocabularyExercisePreview";
+import "../moderator/vocabulary/VocabularyExercises.css";
 
 export function StudentVocabularyExerciseTab({ lessonId, onBack }: {
   lessonId: number;
@@ -30,7 +30,7 @@ export function StudentVocabularyExerciseTab({ lessonId, onBack }: {
         if (request.signal.aborted) return;
         setExercise(null);
         if (!isAxiosError(failure) || failure.response?.status !== 404) {
-          setError(miniTestError(failure));
+          setError(exerciseError(failure));
         }
       })
       .finally(() => {
@@ -50,7 +50,7 @@ export function StudentVocabularyExerciseTab({ lessonId, onBack }: {
     <div className="admin-empty-state">Bài học này chưa có exercise được xuất bản.</div>
   );
   return (
-    <VocabularyMiniTestPreview
+    <VocabularyExercisePreview
       test={exercise}
       student
       onBack={onBack}
