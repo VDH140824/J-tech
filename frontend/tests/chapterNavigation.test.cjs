@@ -196,7 +196,7 @@ test('invalid grammar lesson numbers cannot display a different group', () => {
   }
 });
 
-function grammarNavigation(url) {
+function grammarNavigation(url, lessonOverrides = {}) {
   let location = new URL(url, 'http://localhost');
   const buttons = [];
   const runtime = require('react/jsx-runtime');
@@ -215,10 +215,18 @@ function grammarNavigation(url) {
     },
     'react/jsx-runtime': { ...runtime, jsx: capture('jsx'), jsxs: capture('jsxs') },
   });
-  const cachedQueries = grammarLessons.map(lesson => [['student-grammar-lesson', lesson.id], {
-    ...lesson, courseName: 'Nhật 1', chapterNo: 1, grammars: [], exerciseCount: 0,
-    miniTest: { id: 71, title: 'Mini test danh từ', questionCount: 2, durationMinutes: 5, passingScore: 70 },
-  }]);
+  const cachedQueries = grammarLessons.flatMap(lesson => [
+    [['student-grammar-lesson', lesson.id], {
+      ...lesson, courseName: 'Nhật 1', chapterNo: 1, exerciseCount: 1,
+      grammars: [{ id: lesson.id * 10, structureName: `Cấu trúc ${lesson.id}`, meaningVi: lesson.title }],
+      miniTest: { id: 71, title: 'Mini test danh từ', questionCount: 2, durationMinutes: 5, passingScore: 70, attempts: [], inProgressAttemptId: null },
+      ...lessonOverrides,
+    }],
+    [['student-grammar-exercise', lesson.id], {
+      lessonId: lesson.id,
+      questions: [{ id: lesson.id * 100, questionType: 'FILL_IN', content: `Bài tập của ${lesson.title}` }],
+    }],
+  ]);
   const text = children => Array.isArray(children) ? children.map(text).join('')
     : React.isValidElement(children) ? text(children.props.children) : String(children ?? '');
   return {
@@ -235,7 +243,8 @@ function grammarNavigation(url) {
   };
 }
 
-test('grammar navigation opens the selected member and returns to its group and course chapter', () => {
+test('grammar cards open material directly and content returns to the group in one click', () => {
+  currentUser = { role: 'STUDENT', roleId: 1, status: 'ACTIVE' };
   const page = grammarNavigation('/courses/1/chapters/2?skill=GRAMMAR');
   page.render();
   page.click('Ngữ pháp bài 1');
@@ -243,19 +252,28 @@ test('grammar navigation opens the selected member and returns to its group and 
   assert.equal((page.render().match(/class="kanji-tile"/g) || []).length, 2);
   page.click('Hỏi quốc gia, quê quán');
   assert.equal(page.location.searchParams.get('lessonId'), '32');
+  assert.equal(page.location.searchParams.get('grammarView'), 'material');
   let html = page.render();
   assert.match(html, /<h2>Hỏi quốc gia, quê quán<\/h2>/);
-  assert.match(html, /MINI TEST/);
-  page.click('TÀI LIỆU & BÀI TẬP');
-  assert.equal(page.location.searchParams.get('grammarView'), 'material');
-  html = page.render();
+  assert.match(html, /Cấu trúc 32/);
+  assert.match(html, /Hoàn thành tài liệu/);
+  assert.doesNotMatch(html, /Cấu trúc 31|class="kanji-tile"|TÀI LIỆU &amp; BÀI TẬP/);
   assert.match(html, /role="tabpanel"/);
   page.click('Bài tập');
   assert.equal(page.location.searchParams.get('grammarView'), 'exercise');
-  page.render();
+  html = page.render();
+  assert.match(html, /Bài tập của Hỏi quốc gia, quê quán/);
+  assert.doesNotMatch(html, /Bài tập của Câu khẳng định danh từ/);
   page.click('Quay lại');
+  assert.equal(page.location.search, '?skill=GRAMMAR&lessonNo=1');
+  assert.equal(page.location.searchParams.has('lessonId'), false);
   assert.equal(page.location.searchParams.has('grammarView'), false);
-  page.render();
+  assert.equal((page.render().match(/class="kanji-tile"/g) || []).length, 2);
+  page.click('Câu khẳng định danh từ');
+  assert.equal(page.location.searchParams.get('lessonId'), '31');
+  html = page.render();
+  assert.match(html, /Cấu trúc 31/);
+  assert.doesNotMatch(html, /Cấu trúc 32|class="kanji-tile"/);
   page.click('Quay lại');
   assert.equal(page.location.search, '?skill=GRAMMAR&lessonNo=1');
   page.render();
@@ -263,10 +281,52 @@ test('grammar navigation opens the selected member and returns to its group and 
   assert.equal(page.location.pathname + page.location.hash, '/courses/1#chapter-2');
 });
 
-test('existing grammar lesson links still open and return to the correct lesson-number group', () => {
-  const page = grammarNavigation('/courses/1/chapters/2?skill=GRAMMAR&lessonId=33');
-  assert.match(page.render(), /<h2>Câu nghi vấn danh từ<\/h2>/);
+test('old grammar links default to material and return to the correct lesson-number group', () => {
+  for (const suffix of ['', '&grammarView=unknown']) {
+    const page = grammarNavigation('/courses/1/chapters/2?skill=GRAMMAR&lessonId=33' + suffix);
+    const html = page.render();
+    assert.match(html, /<h2>Câu nghi vấn danh từ<\/h2>/);
+    assert.match(html, /Cấu trúc 33/);
+    assert.match(html, /aria-labelledby="grammar-material-tab"/);
+    assert.doesNotMatch(html, /class="kanji-tile"/);
+    page.click('Quay lại');
+    assert.equal(page.location.search, '?skill=GRAMMAR&lessonNo=2');
+    assert.equal((page.render().match(/class="kanji-tile"/g) || []).length, 1);
+  }
+});
+
+test('mini test is accessible from content and returns directly to material', () => {
+  const page = grammarNavigation('/courses/1/chapters/2?skill=GRAMMAR&lessonNo=1&lessonId=32&grammarView=material');
+  let html = page.render();
+  assert.match(html, /Mini test · 2 câu · 5 phút/);
+  page.click('Mini test');
+  assert.equal(page.location.searchParams.get('grammarView'), 'test');
+  html = page.render();
+  assert.match(html, /<h2>Mini test danh từ<\/h2>/);
+  assert.match(html, /Bắt đầu làm bài/);
+  assert.match(html, /Lịch sử làm bài/);
+  page.click('Quay lại Hỏi quốc gia, quê quán');
+  assert.equal(page.location.searchParams.get('grammarView'), 'material');
+  html = page.render();
+  assert.match(html, /Cấu trúc 32/);
+  assert.doesNotMatch(html, /class="kanji-tile"/);
   page.click('Quay lại');
-  assert.equal(page.location.search, '?skill=GRAMMAR&lessonNo=2');
-  assert.equal((page.render().match(/class="kanji-tile"/g) || []).length, 1);
+  assert.equal(page.location.search, '?skill=GRAMMAR&lessonNo=1');
+});
+
+test('lessons without a mini test still open material without a test button or intermediate card', () => {
+  for (const suffix of ['', '&grammarView=test']) {
+    const page = grammarNavigation('/courses/1/chapters/2?skill=GRAMMAR&lessonNo=1&lessonId=32' + suffix, { miniTest: null });
+    const html = page.render();
+    assert.match(html, /Cấu trúc 32/);
+    assert.match(html, /aria-labelledby="grammar-material-tab"/);
+    assert.doesNotMatch(html, /Mini test|class="kanji-tile"/);
+  }
+});
+
+test('existing exercise links still open exercises and return directly to the group', () => {
+  const page = grammarNavigation('/courses/1/chapters/2?skill=GRAMMAR&lessonNo=1&lessonId=32&grammarView=exercise');
+  assert.match(page.render(), /Bài tập của Hỏi quốc gia, quê quán/);
+  page.click('Quay lại');
+  assert.equal(page.location.search, '?skill=GRAMMAR&lessonNo=1');
 });
