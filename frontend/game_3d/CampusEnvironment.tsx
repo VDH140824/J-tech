@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Billboard, Stars } from "@react-three/drei";
-import { Group, PointLight, Points } from "three";
+import { Group, PointLight, Points, type Vector3 } from "three";
 import type { CampusWorld } from "./campusWorld";
 import type { DoorInteraction } from "./CampusDoors";
 import { createCampusLighting, nearbyCampusLights, type CampusLightAnchor, type CampusLighting, type CampusTime } from "./campusLighting";
@@ -47,7 +47,14 @@ function NightSky() {
   );
 }
 
-function NearbyLights({ anchors, player }: { anchors: CampusLightAnchor[]; player: MutableRefObject<DoorInteraction> }) {
+const PLAYER_LIGHT_LIMIT = 6;
+const FLOCK_LIGHT_LIMIT = 3;
+
+function NearbyLights({ anchors, player, goosePositions }: {
+  anchors: CampusLightAnchor[];
+  player: MutableRefObject<DoorInteraction>;
+  goosePositions: MutableRefObject<Vector3[]>;
+}) {
   const lights = useRef<(PointLight | null)[]>([]);
   const elapsed = useRef(1);
   useFrame(({ camera }, delta) => {
@@ -55,7 +62,11 @@ function NearbyLights({ anchors, player }: { anchors: CampusLightAnchor[]; playe
     if (elapsed.current < 0.15) return;
     elapsed.current = 0;
     const position = player.current.body?.translation() ?? camera.position;
-    const selected = nearbyCampusLights(anchors, position);
+    const selected = nearbyCampusLights(anchors, [position], PLAYER_LIGHT_LIMIT);
+    if (goosePositions.current.length) {
+      const available = anchors.filter((anchor) => !anchor.indoor && !selected.includes(anchor));
+      selected.push(...nearbyCampusLights(available, goosePositions.current, FLOCK_LIGHT_LIMIT));
+    }
     lights.current.forEach((light, index) => {
       if (!light) return;
       const anchor = selected[index];
@@ -66,16 +77,17 @@ function NearbyLights({ anchors, player }: { anchors: CampusLightAnchor[]; playe
       light.color.set(anchor.indoor ? "#ffe4ba" : "#ffd392");
     });
   });
-  // A fixed pool avoids compiling a new lighting shader as the player walks.
-  return <>{Array.from({ length: 6 }, (_, index) => (
+  // Keep the number of light sources constant to avoid recompiling lighting shaders.
+  return <>{Array.from({ length: PLAYER_LIGHT_LIMIT + FLOCK_LIGHT_LIMIT }, (_, index) => (
     <pointLight key={index} ref={(light) => { lights.current[index] = light; }} intensity={0} distance={15} decay={2} castShadow={false} />
   ))}</>;
 }
 
-export function CampusEnvironment({ time, campus, player }: {
+export function CampusEnvironment({ time, campus, player, goosePositions }: {
   time: CampusTime;
   campus: CampusWorld;
   player: MutableRefObject<DoorInteraction>;
+  goosePositions: MutableRefObject<Vector3[]>;
 }) {
   const lighting = useRef<CampusLighting>();
   const [anchors, setAnchors] = useState<CampusLightAnchor[]>([]);
@@ -106,7 +118,7 @@ export function CampusEnvironment({ time, campus, player }: {
       )}
       {night && <>
         <NightSky />
-        <NearbyLights anchors={anchors} player={player} />
+        <NearbyLights anchors={anchors} player={player} goosePositions={goosePositions} />
       </>}
     </>
   );

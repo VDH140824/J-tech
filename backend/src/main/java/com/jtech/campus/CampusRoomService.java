@@ -42,6 +42,7 @@ public class CampusRoomService {
         final Channel channel;
         final long id;
         final String email;
+        final String character;
         String token;
         String name;
         Pose pose;
@@ -55,11 +56,12 @@ public class CampusRoomService {
         boolean dirty = true;
         int spawnIndex;
         final LinkedHashSet<String> chatIds = new LinkedHashSet<>();
-        Member(Channel channel, User user, String token, Pose pose) {
+        Member(Channel channel, User user, String token, String character, Pose pose) {
             this.channel = channel; this.id = user.getUserId(); this.email = user.getEmail();
+            this.character = "female".equals(character) ? "female" : "male";
             this.token = token; this.name = publicName(user); this.pose = pose; this.updatedAt = System.currentTimeMillis();
         }
-        Player view() { return new Player(id, name, pose, updatedAt); }
+        Player view() { return new Player(id, name, character, pose, updatedAt); }
     }
 
     public CampusRoomService(ObjectMapper json, JwtService jwt, UserRepository users,
@@ -100,7 +102,7 @@ public class CampusRoomService {
         return members.values().stream().filter(member -> member.channel.id().equals(channel.id())).findFirst().orElse(null);
     }
 
-    public boolean join(Channel channel, String token, String mapId) {
+    public boolean join(Channel channel, String token, String mapId, String character) {
         if (!Objects.equals(map.mapId(), mapId)) { channel.close(4410, "map_mismatch"); return false; }
         User user = authenticate(token);
         if (user == null) { channel.close(4401, "auth_required"); return false; }
@@ -120,7 +122,8 @@ public class CampusRoomService {
                 if (members.values().stream().noneMatch(player -> player.spawnIndex == candidate)) break;
             }
             double[] spawn = map.spawns() != null && slot < map.spawns().size() ? map.spawns().get(slot) : map.spawn();
-            Member member = new Member(channel, user, token, new Pose(spawn[0], spawn[1], spawn[2], Math.PI, 0, false, null, null, true));
+            Member member = new Member(channel, user, token, character,
+                new Pose(spawn[0], spawn[1], spawn[2], Math.PI, 0, false, null, null, true));
             member.spawnIndex = slot;
             members.put(member.id, member);
             send(channel, event("welcome", "selfId", member.id, "name", member.name, "capacity", capacity, "mapId", map.mapId(),
