@@ -1,5 +1,26 @@
 import { apiClient } from "../services/api";
 
+export interface StudentKanjiExerciseQuestion {
+  id: number;
+  questionType: "MCQ" | "FILL_IN" | "MATCHING";
+  content: string;
+  options: string[];
+  leftItems: string[];
+  rightItems: string[];
+}
+export interface StudentKanjiExerciseAnswer { value?: string; matches?: Record<string, string> }
+export interface StudentKanjiExerciseResult {
+  correctCount: number;
+  total: number;
+  questions: { id: number; correct: boolean; correctAnswer: string; matches: Record<string, string>; explanation: string }[];
+}
+export async function getStudentKanjiExercises(lessonId: number, signal?: AbortSignal) {
+  return (await apiClient.get<StudentKanjiExerciseQuestion[]>(`/student/lessons/${lessonId}/kanji-exercises`, { signal })).data;
+}
+export async function submitStudentKanjiExercises(lessonId: number, questionIds: number[], answers: Record<number, StudentKanjiExerciseAnswer>) {
+  return (await apiClient.post<StudentKanjiExerciseResult>(`/student/lessons/${lessonId}/kanji-exercises/submit`, { questionIds, answers })).data;
+}
+
 export interface StudentKanjiTest {
   id: number;
   title: string;

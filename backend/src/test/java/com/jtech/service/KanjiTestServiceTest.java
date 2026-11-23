@@ -42,7 +42,7 @@ class KanjiTestServiceTest {
 
   @BeforeEach
   void setup() {
-    service = new KanjiTestService(db, access, mapper, exercise);
+    service = new KanjiTestService(db, access, mapper, exercise, null);
   }
 
   private KanjiExerciseRequest question(QuestionType type) {

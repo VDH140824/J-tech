@@ -9,6 +9,7 @@ import { ModeratorSkillItemListPage } from "../moderator/ModeratorSkillItemListP
 import "./StudentLearningPage.css";
 import { StudentKanjiLessonPage } from "./StudentKanjiLessonPage";
 import { StudentKanjiContentPage } from "./StudentKanjiContentPage";
+import { StudentKanjiExercisePage } from "./StudentKanjiExercisePage";
 import { StudentKanjiFlashcardPage } from "./StudentKanjiFlashcardPage";
 import { StudentKanjiTestPage } from "./StudentKanjiTestPage";
 import { StudentKanjiChapterPage } from "./StudentKanjiChapterPage";
@@ -86,7 +87,7 @@ export function ChapterPage() {
   const back = () => navigate(`/courses/${courseId}`);
   const backToChapter = () => navigate(`/courses/${courseId}#chapter-${chapterId}`);
   const openKanji = (
-    view: "content" | "flashcards" | "test" | null,
+    view: "content" | "exercise" | "flashcards" | "test" | null,
     kanjiId?: number,
     document?: number,
   ) =>
@@ -261,8 +262,14 @@ export function ChapterPage() {
               kanjiId={params.get("kanjiId")}
               documentIndex={params.get("document")}
               onBack={() => openChapterKanji(null)}
+              onExercise={() => openKanji("exercise", undefined, Number(params.get("document")))}
             />
           );
+        else if (view === "exercise")
+          content = <StudentKanjiExercisePage key={`${selected.id}-${params.get("document")}`}
+            lesson={selected} documentIndex={params.get("document")}
+            onBackToChapter={() => openChapterKanji(null)}
+            onBack={() => openKanji("content", undefined, Number(params.get("document")))} />;
         else
           content = (
             <StudentKanjiLessonPage
