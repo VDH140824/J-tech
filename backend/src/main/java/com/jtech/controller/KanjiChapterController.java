@@ -5,6 +5,7 @@ import com.jtech.dto.response.*;
 import com.jtech.entity.Kanji;
 import com.jtech.entity.Question;
 import com.jtech.service.KanjiChapterService;
+import com.jtech.service.KanjiExerciseExcelService;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.Map;
@@ -21,6 +22,35 @@ import org.springframework.web.multipart.MultipartFile;
 @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR','MODERATOR')")
 public class KanjiChapterController {
     private final KanjiChapterService service;
+    private final KanjiExerciseExcelService excel;
+
+    @GetMapping("/exercises/template")
+    public ResponseEntity<byte[]> exerciseTemplate(Principal p, @PathVariable long chapterId) {
+        return excelDownload(excel.template(p, chapterId), "Kanji_template.xlsx");
+    }
+
+    @GetMapping("/exercises/export")
+    public ResponseEntity<byte[]> exportExercises(Principal p, @PathVariable long chapterId,
+        @RequestParam long documentLessonId, @RequestParam(required = false) Question.QuestionStatus status) {
+        return excelDownload(excel.exportFile(p, chapterId, documentLessonId, status), "Kanji_exercises.xlsx");
+    }
+
+    @PostMapping(value = "/exercises/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public KanjiExerciseExcelService.ImportResult importExercises(Principal p, @PathVariable long chapterId,
+        @RequestParam long documentLessonId, @RequestParam("file") MultipartFile file) {
+        return excel.importFile(p, chapterId, documentLessonId, file);
+    }
+
+    private ResponseEntity<byte[]> excelDownload(byte[] body, String filename) {
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"").body(body);
+    }
+
+    @ExceptionHandler(KanjiExerciseExcelService.InvalidExcel.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> invalidExcel(KanjiExerciseExcelService.InvalidExcel error) {
+        return Map.of("message", error.getMessage(), "errors", error.errors);
+    }
 
     @GetMapping
     public KanjiChapterService.Content content(Principal p, @PathVariable long chapterId) {

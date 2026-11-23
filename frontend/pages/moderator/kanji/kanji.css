@@ -98,3 +98,13 @@
 .kanji-dialog{position:relative;background:white;border-radius:16px;padding:28px;width:640px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px #0003}
 .kanji-dialog fieldset{border:0;padding:0}.kanji-dialog label{display:flex;flex-direction:column;gap:6px;margin:14px 0}.kanji-dialog textarea{min-height:90px;resize:vertical}
 .kanji-image{max-width:100%;max-height:220px;object-fit:contain}.kanji-dialog .kanji-check{flex-direction:row}.kanji-dialog dt{font-weight:700;margin-top:14px}.kanji-dialog dd{margin:6px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.kanji-exercise-modal,.kanji-excel-dialog{width:min(760px,calc(100vw - 32px));max-height:90vh;overflow:auto}
+.kanji-exercise-modal .kanji-exercise-editor{border:0;margin:0;border-radius:0}
+.kanji-exercises .mod-section-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.kanji-exercises .mod-section-toolbar h3{flex-basis:100%;font-size:24px}
+.kanji-exercise-table{overflow-x:auto}
+.kanji-exercise-table td{min-width:100px;max-width:320px;overflow-wrap:anywhere}
+.kanji-exercise-modal input:not([type="radio"]),.kanji-exercise-modal select,.kanji-exercise-modal textarea{padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;box-sizing:border-box;max-width:100%}
+.kanji-excel-dialog .modal-form-body{display:flex;flex-direction:column;gap:12px}
+.kanji-excel-dialog p{margin:0;line-height:1.6}

@@ -46,7 +46,7 @@ export function AdminSystemSettingsPage() {
   return <section className="admin-page-container system-settings">
     <div className="admin-page-header"><div>
       <h2 className="admin-main-title">Cấu hình hệ thống</h2>
-      <p className="admin-main-subtitle">Quản lý thông báo và email của nền tảng.</p>
+      <p className="admin-main-subtitle">Quản lý thông báo của nền tảng.</p>
     </div></div>
     {query.isLoading && <p role="status">Đang tải cấu hình…</p>}
     {query.isError && <p role="alert">Không tải được cấu hình. <button type="button" onClick={() => query.refetch()}>Thử lại</button></p>}
@@ -64,15 +64,6 @@ export function AdminSystemSettingsPage() {
           value={draft.announcementContent} onChange={event => change("announcementContent", event.target.value)} /></label>
         <span className="settings-hint">{draft.announcementContent.length}/2000 ký tự</span>
         {draft.announcementEnabled && <aside className="settings-preview"><strong>{draft.announcementTitle || "Tiêu đề thông báo"}</strong><p>{draft.announcementContent || "Nội dung thông báo"}</p></aside>}
-      </fieldset>
-      <fieldset disabled={busy} className="admin-table-card settings-group">
-        <legend>Email hệ thống</legend>
-        <label className="settings-toggle"><input type="checkbox" checked={draft.learningReminderEnabled}
-          onChange={event => change("learningReminderEnabled", event.target.checked)} />Bật email nhắc học</label>
-        <p>Khi bật, hệ thống gửi theo lựa chọn và giờ nhắc của từng người học. Khi tắt, các lượt nhắc tiếp theo sẽ dừng.</p>
-        <label className="settings-toggle"><input type="checkbox" checked={draft.feedbackEmailEnabled}
-          onChange={event => change("feedbackEmailEnabled", event.target.checked)} />Bật email kết quả xử lý phản hồi</label>
-        <p>Thông báo trong ứng dụng vẫn được tạo khi xử lý phản hồi.</p>
       </fieldset>
       <div className="settings-actions"><button type="submit" disabled={busy || !changed}>{busy ? "Đang lưu…" : "Lưu cấu hình"}</button>
         <button type="button" disabled={busy || !changed} onClick={() => { if (query.data) setDraft({ ...query.data.settings }); setError(""); setSuccess(""); }}>Hủy thay đổi</button>
