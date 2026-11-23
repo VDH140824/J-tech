@@ -111,6 +111,24 @@ export function MainSidebar({
 
             <button
               type="button"
+              className={`nav-link-btn ${location.pathname.startsWith("/ai-reading") ? "active" : ""}`}
+              onClick={() => navigate("/ai-reading")}
+            >
+              <span className="nav-link-icon">📖</span>
+              <span className="nav-link-text">Đọc hiểu</span>
+            </button>
+
+            <button
+              type="button"
+              className={`nav-link-btn ${location.pathname.startsWith("/listening") ? "active" : ""}`}
+              onClick={() => navigate("/listening")}
+            >
+              <span className="nav-link-icon">🎧</span>
+              <span className="nav-link-text">Nghe hiểu</span>
+            </button>
+
+            <button
+              type="button"
               className={`nav-link-btn ${location.pathname === "/streak" ? "active" : ""}`}
               onClick={() => navigate("/streak")}
             >

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../store/authStore";
 import { apiClient } from "../services/api";
 import { CAMPUS_MAP_ID, emptyCampusNetwork, isCampusPose, type CampusConnectionStatus, type CampusMessage, type CampusPeer, type CampusPose, type SeatReply } from "./campusMultiplayer";
+import type { CampusCharacter } from "./CampusAvatar";
 
 function socketUrl() {
   const explicit = import.meta.env.VITE_CAMPUS_WS_URL;
@@ -18,7 +19,7 @@ function numberRecord(value: unknown): Record<string, number> {
   return Object.fromEntries(Object.entries(value).filter(([, item]) => typeof item === "number" && Number.isFinite(item)));
 }
 
-export function useCampusMultiplayer(accountId: number | undefined) {
+export function useCampusMultiplayer(accountId: number | undefined, character: CampusCharacter) {
   const token = useAuthStore((state) => state.accessToken);
   const hasToken = !!token;
   const network = useRef(emptyCampusNetwork());
@@ -41,6 +42,7 @@ export function useCampusMultiplayer(accountId: number | undefined) {
     let attempts = 0;
     let lastReceived = Date.now();
     let lastSent = "";
+    let heartbeatSentAt: number | null = null;
     let current: WebSocket | null = null;
     latestPose.current = null;
     net.selfId = accountId ?? null;
@@ -52,6 +54,15 @@ export function useCampusMultiplayer(accountId: number | undefined) {
       try { current.send(JSON.stringify(packet)); return true; } catch { return false; }
     };
     const send = (packet: unknown) => net.connected && rawSend(packet);
+    const sendHeartbeat = () => {
+      const sentAt = performance.now();
+      if (send({ type: "heartbeat" })) heartbeatSentAt = sentAt;
+    };
+    const applyServerTime = (time: unknown, receivedAt: number, delay = 0) => {
+      if (typeof time === "number" && Number.isSafeInteger(time) && time > 0) {
+        net.serverClock = { time: time + delay, receivedAt };
+      }
+    };
     net.publish = (pose) => {
       const previous = latestPose.current;
       if (previous && Math.hypot(pose.x - previous.x, pose.y - previous.y, pose.z - previous.z) > 8) teleport.current = true;
@@ -80,8 +91,9 @@ export function useCampusMultiplayer(accountId: number | undefined) {
       if (!peer || !Number.isSafeInteger(peer.id) || typeof peer.name !== "string" || !isCampusPose(peer.state)) return;
       if (peer.id === net.selfId) { setSelfName((previous) => previous === peer.name ? previous : peer.name); return; }
       const previous = net.peers.get(peer.id);
-      net.peers.set(peer.id, { ...peer, receivedAt: performance.now() });
-      if (!previous || previous.name !== peer.name) updateRoster();
+      const peerCharacter = peer.character === "female" ? "female" : "male";
+      net.peers.set(peer.id, { ...peer, character: peerCharacter, receivedAt: performance.now() });
+      if (!previous || previous.name !== peer.name || previous.character !== peerCharacter) updateRoster();
     }
     function retry() {
       if (disposed) return;
@@ -94,9 +106,10 @@ export function useCampusMultiplayer(accountId: number | undefined) {
       if (!accountId || !accessToken) { setStatus("unauthorized"); return; }
       setStatus(attempts ? "reconnecting" : "connecting");
       try { current = new WebSocket(socketUrl()); } catch { setNotice("Không thể kết nối phòng chung. Kiểm tra địa chỉ server."); retry(); return; }
+      heartbeatSentAt = null;
       socket.current = current;
       const connection = current;
-      connection.onopen = () => { if (!disposed) rawSend({ type: "auth", token: useAuthStore.getState().accessToken, mapId: CAMPUS_MAP_ID }); };
+      connection.onopen = () => { if (!disposed) rawSend({ type: "auth", token: useAuthStore.getState().accessToken, mapId: CAMPUS_MAP_ID, character }); };
       connection.onmessage = (event) => {
         if (disposed || current !== connection) return;
         lastReceived = Date.now();
@@ -106,12 +119,21 @@ export function useCampusMultiplayer(accountId: number | undefined) {
             case "welcome":
               if (packet.mapId !== CAMPUS_MAP_ID || packet.selfId !== accountId) { connection.close(4410, "map_mismatch"); setStatus("map-mismatch"); return; }
               net.connected = true; net.selfId = packet.selfId; net.peers.clear(); net.doors = numberRecord(packet.doors); applySeats(packet.seats);
+              applyServerTime(packet.time, performance.now());
+              sendHeartbeat();
               const ownPlayer = Array.isArray(packet.players) ? packet.players.find((player: CampusPeer) => player.id === net.selfId) : null;
               if (ownPlayer && isCampusPose(ownPlayer.state)) net.spawn = { x: ownPlayer.state.x, y: ownPlayer.state.y, z: ownPlayer.state.z };
               if (Array.isArray(packet.players)) packet.players.forEach(applyPlayer);
               updateRoster(); setSelfName(String(packet.name)); setCapacity(Number(packet.capacity) || 30);
               setMessages(Array.isArray(packet.messages) ? packet.messages.slice(-100) : []);
               setStatus("online"); setNotice(""); attempts = 0; lastSent = ""; teleport.current = true;
+              break;
+            case "pong":
+              if (heartbeatSentAt !== null && net.connected) {
+                const receivedAt = performance.now();
+                applyServerTime(packet.time, receivedAt, (receivedAt - heartbeatSentAt) / 2);
+                heartbeatSentAt = null;
+              }
               break;
             case "joined": applyPlayer(packet.player); break;
             case "left": net.peers.delete(packet.id); updateRoster(); break;
@@ -164,7 +186,7 @@ export function useCampusMultiplayer(accountId: number | undefined) {
     const heartbeat = window.setInterval(() => {
       if (!net.connected) return;
       if (Date.now() - lastReceived > 30000) current?.close(4000, "heartbeat_timeout");
-      else send({ type: "heartbeat" });
+      else sendHeartbeat();
     }, 10000);
     return () => {
       disposed = true; window.clearTimeout(retryTimer); window.clearInterval(stateTimer); window.clearInterval(heartbeat);
@@ -172,7 +194,7 @@ export function useCampusMultiplayer(accountId: number | undefined) {
       if (socket.current === current) socket.current = null;
       current?.close(1000, "left_map");
     };
-  }, [accountId, hasToken, retryVersion]);
+  }, [accountId, character, hasToken, retryVersion]);
 
   useEffect(() => {
     if (token && network.current.connected && socket.current?.readyState === WebSocket.OPEN) socket.current.send(JSON.stringify({ type: "reauth", token }));

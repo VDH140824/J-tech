@@ -30,7 +30,7 @@ function RemotePlayer({ id, network }: { id: number; network: MutableRefObject<C
     motion.current = { speed: fresh ? state.speed : 0, running: fresh && state.running, seated: !!state.seatId,
       gesture: fresh ? state.gesture ?? undefined : undefined };
   });
-  return <group ref={group}><CampusAvatar name={peer?.name ?? "Học viên"} motion={motion} /></group>;
+  return <group ref={group}><CampusAvatar character={peer?.character ?? "male"} name={peer?.name ?? "Học viên"} motion={motion} /></group>;
 }
 
 export function CampusRemotePlayers({ roster, network }: { roster: number[]; network: MutableRefObject<CampusNetwork> }) {

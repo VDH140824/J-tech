@@ -1,6 +1,8 @@
 -- =============================================================================
 -- J-TECH DATABASE SCHEMA (MYSQL 8.0+)
--- Tổng số bảng: 37 bảng theo Phần III của tài liệu thiết kế J-Tech
+-- Tổng số bảng: 40 bảng (37 bảng theo Phần III của tài liệu thiết kế J-Tech
+--   + coin_reward_rule, streak_milestone, feedback_handling_history)
+-- Đã gộp toàn bộ migration trong doc/migrations (đến 2026-11-12).
 -- Charset: utf8mb4 / Collation: utf8mb4_unicode_ci / Engine: InnoDB
 -- Hãy sao lưu dữ liệu trước khi chạy nếu database đang có dữ liệu cần giữ.
 -- =============================================================================
@@ -16,6 +18,7 @@ DROP TABLE IF EXISTS system_setting;
 DROP TABLE IF EXISTS notification;
 
 -- NHÓM 7: THEO DÕI HỌC TẬP VÀ PHẢN HỒI
+DROP TABLE IF EXISTS feedback_handling_history;
 DROP TABLE IF EXISTS feedback;
 DROP TABLE IF EXISTS study_session;
 DROP TABLE IF EXISTS learning_item_progress;
@@ -28,6 +31,8 @@ DROP TABLE IF EXISTS classroom;
 
 -- NHÓM 5: GAME, XU VÀ CỬA HÀNG
 DROP TABLE IF EXISTS flashcard_progress;
+DROP TABLE IF EXISTS streak_milestone;
+DROP TABLE IF EXISTS coin_reward_rule;
 DROP TABLE IF EXISTS user_inventory;
 DROP TABLE IF EXISTS store_item;
 DROP TABLE IF EXISTS coin_transaction;
@@ -92,6 +97,7 @@ CREATE TABLE user_account (
   status ENUM('PENDING','ACTIVE','REJECTED','LOCKED') NOT NULL DEFAULT 'PENDING',
   status_reason VARCHAR(500) NULL,
   coin_balance INT UNSIGNED NOT NULL DEFAULT 0,
+  exp_balance BIGINT UNSIGNED NOT NULL DEFAULT 0,
   current_streak INT UNSIGNED NOT NULL DEFAULT 0,
   longest_streak INT UNSIGNED NOT NULL DEFAULT 0,
   last_study_date DATE NULL DEFAULT NULL,
@@ -303,9 +309,10 @@ CREATE TABLE reading_passage (
 CREATE TABLE listening_exercise (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   chapter_id BIGINT UNSIGNED NOT NULL,
+  lesson_id BIGINT UNSIGNED NULL,
   title VARCHAR(200) NOT NULL,
-  video_url VARCHAR(500) NOT NULL,
-  video_public_id VARCHAR(255) NOT NULL,
+  video_url VARCHAR(500) NULL,
+  video_public_id VARCHAR(255) NULL,
   video_duration_sec INT UNSIGNED NULL,
   script_jp MEDIUMTEXT NOT NULL,
   script_vi MEDIUMTEXT NULL,
@@ -316,7 +323,9 @@ CREATE TABLE listening_exercise (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (id),
+  UNIQUE KEY uq_listening_exercise_lesson (lesson_id),
   FOREIGN KEY (chapter_id) REFERENCES chapter (id),
+  CONSTRAINT fk_listening_exercise_lesson FOREIGN KEY (lesson_id) REFERENCES lesson (id),
   FOREIGN KEY (created_by) REFERENCES user_account (id),
   FOREIGN KEY (updated_by) REFERENCES user_account (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -472,7 +481,7 @@ CREATE TABLE lesson_section_progress (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id BIGINT UNSIGNED NOT NULL,
   lesson_id BIGINT UNSIGNED NOT NULL,
-  section_type ENUM('VOCABULARY','KANJI','GRAMMAR') NOT NULL,
+  section_type ENUM('VOCABULARY','KANJI','GRAMMAR','LISTENING','READING') NOT NULL,
   document_viewed_at DATETIME NULL DEFAULT NULL,
   video_completed_at DATETIME NULL DEFAULT NULL,
   exercise_completed_at DATETIME NULL DEFAULT NULL,
@@ -489,25 +498,34 @@ CREATE TABLE lesson_section_progress (
 CREATE TABLE reading_session (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id BIGINT UNSIGNED NOT NULL,
-  reading_passage_id BIGINT UNSIGNED NOT NULL,
+  reading_passage_id BIGINT UNSIGNED NULL,
+  course_id BIGINT UNSIGNED NULL,
+  chapter_id BIGINT UNSIGNED NULL,
+  lesson_id BIGINT UNSIGNED NULL,
   status ENUM('GENERATED','SUBMITTED','FAILED') NOT NULL DEFAULT 'GENERATED',
   total_questions SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   correct_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   questions_data JSON NOT NULL,
+  passage_data JSON NULL,
   input_tokens INT UNSIGNED NOT NULL DEFAULT 0,
   output_tokens INT UNSIGNED NOT NULL DEFAULT 0,
   coin_awarded INT UNSIGNED NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   submitted_at DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (id),
+  KEY idx_reading_session_user_created (user_id, created_at),
   FOREIGN KEY (user_id) REFERENCES user_account (id),
-  FOREIGN KEY (reading_passage_id) REFERENCES reading_passage (id)
+  FOREIGN KEY (reading_passage_id) REFERENCES reading_passage (id),
+  CONSTRAINT fk_reading_session_course FOREIGN KEY (course_id) REFERENCES course (id),
+  CONSTRAINT fk_reading_session_chapter FOREIGN KEY (chapter_id) REFERENCES chapter (id),
+  CONSTRAINT fk_reading_session_lesson FOREIGN KEY (lesson_id) REFERENCES lesson (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE speaking_session (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id BIGINT UNSIGNED NOT NULL,
   scenario_id BIGINT UNSIGNED NOT NULL,
+  swapped TINYINT(1) NOT NULL DEFAULT 0, -- 1 = học viên nói lời của vai AI
   status ENUM('IN_PROGRESS','COMPLETED','ABANDONED','FAILED') NOT NULL DEFAULT 'IN_PROGRESS',
   turn_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   overall_feedback TEXT NULL DEFAULT NULL,
@@ -583,7 +601,7 @@ CREATE TABLE coin_transaction (
 
 CREATE TABLE store_item (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  item_type ENUM('BADGE','AVATAR_FRAME','THEME','AVATAR') NOT NULL,
+  item_type ENUM('BADGE','AVATAR_FRAME','THEME','AVATAR','MATERIAL') NOT NULL,
   name VARCHAR(100) NOT NULL,
   description VARCHAR(500) NULL,
   image_url VARCHAR(500) NOT NULL,
@@ -595,6 +613,7 @@ CREATE TABLE store_item (
   updated_by BIGINT UNSIGNED NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL DEFAULT NULL,
+  material_url VARCHAR(500) NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (created_by) REFERENCES user_account (id),
   FOREIGN KEY (updated_by) REFERENCES user_account (id)
@@ -607,10 +626,30 @@ CREATE TABLE user_inventory (
   coin_transaction_id BIGINT UNSIGNED NOT NULL,
   is_equipped BOOLEAN NOT NULL DEFAULT FALSE,
   acquired_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  usable_until DATETIME NULL,
   PRIMARY KEY (id),
+  UNIQUE KEY uq_inventory_student_item (user_id, store_item_id),
   FOREIGN KEY (user_id) REFERENCES user_account (id),
   FOREIGN KEY (store_item_id) REFERENCES store_item (id),
   FOREIGN KEY (coin_transaction_id) REFERENCES coin_transaction (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE coin_reward_rule (
+  activity_type VARCHAR(30) NOT NULL PRIMARY KEY,
+  coin_amount INT UNSIGNED NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK (coin_amount > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE streak_milestone (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  target_days INT NOT NULL,
+  coin_amount BIGINT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  UNIQUE KEY uq_streak_days (target_days),
+  CHECK (target_days > 0),
+  CHECK (coin_amount > 0 AND coin_amount <= 4294967295)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE flashcard_progress (
@@ -780,11 +819,22 @@ CREATE TABLE feedback (
   resolved_at DATETIME NULL DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NULL DEFAULT NULL,
+  version BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (id),
   FOREIGN KEY (user_id) REFERENCES user_account (id),
   FOREIGN KEY (lesson_id) REFERENCES lesson (id),
   FOREIGN KEY (question_id) REFERENCES question (id),
   FOREIGN KEY (handled_by) REFERENCES user_account (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE feedback_handling_history (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  feedback_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  resolution_note TEXT NOT NULL,
+  handled_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX ix_feedback_history (feedback_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -841,6 +891,9 @@ CREATE TABLE audit_log (
 -- Nguồn: Tong_hop_ngu_phap_Nhat_Bai_1_2_3.docx
 -- Nguồn: Tong_hop_ngu_phap_Nhat_Bai_4_5_6_7.docx
 -- JPD113: chapter 1-3; JPD123: chapter 4-7. Mỗi mẫu ngữ pháp là 1 lesson GRAMMAR riêng.
+-- Ngữ pháp trong mỗi chapter chia đều thành 3 nhóm lesson_no = 1, 2, 3 theo display_order.
+-- Số mẫu trong Bài 1/2/3: chapter 1 = 3/3/2; 2 = 6/6/6; 3 = 5/5/4;
+-- chapter 4 = 7/7/7; 5 = 6/6/5; 6 = 5/5/5; 7 = 5/5/5.
 -- Tổng cộng: 2 course, 7 chapter, 122 lesson (7 kanji, 7 từ vựng, 108 ngữ pháp), 77 kanji, 260 vocabulary, 108 grammar.
 -- Các INSERT dùng mã course, chapter_no và skill_type để tìm liên kết; không gán cứng ID.
 -- vocabulary.reading giữ cách viết trong tài liệu vì không có cột cách đọc riêng.
@@ -913,219 +966,219 @@ FROM (
     UNION ALL
     SELECT 'JPD113', 1, 'GRAMMAR', 1, 'Câu khẳng định danh từ', 'Công thức: N1 は N2 です。 Slot 9.', 1, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 1, 'GRAMMAR', 2, 'Hỏi quốc gia, quê quán', 'Công thức: おくには どちらですか。 Slot 9.', 2, 'PUBLISHED'
+    SELECT 'JPD113', 1, 'GRAMMAR', 1, 'Hỏi quốc gia, quê quán', 'Công thức: おくには どちらですか。 Slot 9.', 2, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 1, 'GRAMMAR', 3, 'Câu phủ định danh từ', 'Công thức: N1 は N2 じゃありません。 Slot 10.', 3, 'PUBLISHED'
+    SELECT 'JPD113', 1, 'GRAMMAR', 1, 'Câu phủ định danh từ', 'Công thức: N1 は N2 じゃありません。 Slot 10.', 3, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 1, 'GRAMMAR', 4, 'Câu nghi vấn danh từ', 'Công thức: N1 は N2 ですか。 Slot 10.', 4, 'PUBLISHED'
+    SELECT 'JPD113', 1, 'GRAMMAR', 2, 'Câu nghi vấn danh từ', 'Công thức: N1 は N2 ですか。 Slot 10.', 4, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 1, 'GRAMMAR', 5, 'Trợ từ の – quan hệ sở thuộc', 'Công thức: N1 は N2 の N3 です。 Slot 10.', 5, 'PUBLISHED'
+    SELECT 'JPD113', 1, 'GRAMMAR', 2, 'Trợ từ の – quan hệ sở thuộc', 'Công thức: N1 は N2 の N3 です。 Slot 10.', 5, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 1, 'GRAMMAR', 6, 'Hỏi cái gì, sự việc gì', 'Công thức: N は なんですか。 Slot 13.', 6, 'PUBLISHED'
+    SELECT 'JPD113', 1, 'GRAMMAR', 2, 'Hỏi cái gì, sự việc gì', 'Công thức: N は なんですか。 Slot 13.', 6, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 1, 'GRAMMAR', 7, 'Trợ từ と – liệt kê đầy đủ', 'Công thức: N1 と N2 Slot 13.', 7, 'PUBLISHED'
+    SELECT 'JPD113', 1, 'GRAMMAR', 3, 'Trợ từ と – liệt kê đầy đủ', 'Công thức: N1 と N2 Slot 13.', 7, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 1, 'GRAMMAR', 8, 'Trợ từ も – cũng', 'Công thức: N1 は N2 です。N3 も N2 です。 Slot 13.', 8, 'PUBLISHED'
+    SELECT 'JPD113', 1, 'GRAMMAR', 3, 'Trợ từ も – cũng', 'Công thức: N1 は N2 です。N3 も N2 です。 Slot 13.', 8, 'PUBLISHED'
     UNION ALL
     SELECT 'JPD113', 2, 'GRAMMAR', 1, 'Nói vị trí tầng', 'Công thức: N は số + かいです。 Slot 17.', 1, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 2, 'Hỏi tầng', 'Công thức: N は なんかいですか。 Slot 17.', 2, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 1, 'Hỏi tầng', 'Công thức: N は なんかいですか。 Slot 17.', 2, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 3, 'Chỉ vị trí', 'Công thức: N は ここ／そこ／あそこです。 Slot 18.', 3, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 1, 'Chỉ vị trí', 'Công thức: N は ここ／そこ／あそこです。 Slot 18.', 3, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 4, 'Hỏi vị trí', 'Công thức: N は どこですか。 Slot 18.', 4, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 1, 'Hỏi vị trí', 'Công thức: N は どこですか。 Slot 18.', 4, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 5, 'Giới thiệu địa điểm', 'Công thức: ここ／そこ／あそこ は N です。 Slot 18.', 5, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 1, 'Giới thiệu địa điểm', 'Công thức: ここ／そこ／あそこ は N です。 Slot 18.', 5, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 6, 'Chỉ phương hướng lịch sự', 'Công thức: N は こちら／そちら／あちらです。 Slot 18.', 6, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 1, 'Chỉ phương hướng lịch sự', 'Công thức: N は こちら／そちら／あちらです。 Slot 18.', 6, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 7, 'Hỏi vị trí lịch sự', 'Công thức: N は どちらですか。 Slot 18.', 7, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 2, 'Hỏi vị trí lịch sự', 'Công thức: N は どちらですか。 Slot 18.', 7, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 8, 'Đại từ chỉ thị', 'Công thức: これ／それ／あれ は N です。 Slot 19.', 8, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 2, 'Đại từ chỉ thị', 'Công thức: これ／それ／あれ は N です。 Slot 19.', 8, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 9, 'Hỏi giá tiền', 'Công thức: N は いくらですか。 Slot 19.', 9, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 2, 'Hỏi giá tiền', 'Công thức: N は いくらですか。 Slot 19.', 9, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 10, 'Hỏi tên đồ vật', 'Công thức: これは なんですか。 Slot 19.', 10, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 2, 'Hỏi tên đồ vật', 'Công thức: これは なんですか。 Slot 19.', 10, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 11, 'Từ chỉ thị bổ nghĩa danh từ', 'Công thức: この／その／あの + N Slot 19.', 11, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 2, 'Từ chỉ thị bổ nghĩa danh từ', 'Công thức: この／その／あの + N Slot 19.', 11, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 12, 'Yêu cầu lấy hoặc mua đồ', 'Công thức: N を ください。 Slot 20.', 12, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 2, 'Yêu cầu lấy hoặc mua đồ', 'Công thức: N を ください。 Slot 20.', 12, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 13, 'Trợ từ の – nguyên liệu', 'Công thức: N1 の N2 Slot 21.', 13, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 3, 'Trợ từ の – nguyên liệu', 'Công thức: N1 の N2 Slot 21.', 13, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 14, 'Hỏi nguyên liệu', 'Công thức: N1 は なんの N2 ですか。 Slot 21.', 14, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 3, 'Hỏi nguyên liệu', 'Công thức: N1 は なんの N2 ですか。 Slot 21.', 14, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 15, 'Hỏi từ trong ngôn ngữ khác', 'Công thức: N は ～ごで なんですか。 Slot 21.', 15, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 3, 'Hỏi từ trong ngôn ngữ khác', 'Công thức: N は ～ごで なんですか。 Slot 21.', 15, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 16, 'Trợ từ の – nguồn gốc, xuất xứ', 'Công thức: N1 の N2 Slot 21.', 16, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 3, 'Trợ từ の – nguồn gốc, xuất xứ', 'Công thức: N1 の N2 Slot 21.', 16, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 17, 'Yêu cầu số lượng', 'Công thức: N を số lượng (～つ) ください。 Slot 21.', 17, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 3, 'Yêu cầu số lượng', 'Công thức: N を số lượng (～つ) ください。 Slot 21.', 17, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 2, 'GRAMMAR', 18, 'Trợ từ の – sở hữu, hỏi của ai', 'Công thức: N1 の N2／だれの N2 ですか。 Slot 22.', 18, 'PUBLISHED'
+    SELECT 'JPD113', 2, 'GRAMMAR', 3, 'Trợ từ の – sở hữu, hỏi của ai', 'Công thức: N1 の N2／だれの N2 ですか。 Slot 22.', 18, 'PUBLISHED'
     UNION ALL
     SELECT 'JPD113', 3, 'GRAMMAR', 1, 'Hỏi giờ', 'Công thức: いま なんじですか。 Slot 24.', 1, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 2, 'Chỉ khoảng thời gian', 'Công thức: N は thời gian 1 から thời gian 2 までです。 Slot 24.', 2, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 1, 'Chỉ khoảng thời gian', 'Công thức: N は thời gian 1 から thời gian 2 までです。 Slot 24.', 2, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 3, 'Hỏi thời điểm', 'Công thức: N は いつですか。 Slot 24.', 3, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 1, 'Hỏi thời điểm', 'Công thức: N は いつですか。 Slot 24.', 3, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 4, 'Động từ khẳng định dạng ます', 'Công thức: N は Vます。 Slot 26.', 4, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 1, 'Động từ khẳng định dạng ます', 'Công thức: N は Vます。 Slot 26.', 4, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 5, 'Trợ từ を – đối tượng tác động', 'Công thức: N を Vます。 Slot 26.', 5, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 1, 'Trợ từ を – đối tượng tác động', 'Công thức: N を Vます。 Slot 26.', 5, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 6, 'Trợ từ へ – hướng di chuyển', 'Công thức: Địa điểm へ いきます／かえります。 Slot 26.', 6, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 2, 'Trợ từ へ – hướng di chuyển', 'Công thức: Địa điểm へ いきます／かえります。 Slot 26.', 6, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 7, 'Động từ phủ định', 'Công thức: Vます → Vません。 Slot 27.', 7, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 2, 'Động từ phủ định', 'Công thức: Vます → Vません。 Slot 27.', 7, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 8, 'Trợ từ で – nơi diễn ra hành động', 'Công thức: Địa điểm で N を Vます。 Slot 27.', 8, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 2, 'Trợ từ で – nơi diễn ra hành động', 'Công thức: Địa điểm で N を Vます。 Slot 27.', 8, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 9, 'Thời gian chỉ thói quen', 'Công thức: まいにち／まいあさ／まいばん + Vます。 Slot 28.', 9, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 2, 'Thời gian chỉ thói quen', 'Công thức: まいにち／まいあさ／まいばん + Vます。 Slot 28.', 9, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 10, 'Trợ từ や～など – liệt kê mở', 'Công thức: N1 や N2 など Slot 28.', 10, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 2, 'Trợ từ や～など – liệt kê mở', 'Công thức: N1 や N2 など Slot 28.', 10, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 11, 'Phủ định hoàn toàn với なにも', 'Công thức: なにも Vません。 Slot 28.', 11, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 3, 'Phủ định hoàn toàn với なにも', 'Công thức: なにも Vません。 Slot 28.', 11, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 12, 'Trợ từ に – mốc thời gian', 'Công thức: Thời gian に Vます。 Slot 28.', 12, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 3, 'Trợ từ に – mốc thời gian', 'Công thức: Thời gian に Vます。 Slot 28.', 12, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 13, 'Khoảng thời gian làm hành động', 'Công thức: Thời gian 1 から thời gian 2 まで Vます。 Slot 29.', 13, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 3, 'Khoảng thời gian làm hành động', 'Công thức: Thời gian 1 から thời gian 2 まで Vます。 Slot 29.', 13, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD113', 3, 'GRAMMAR', 14, 'Phủ định hoàn toàn với どこも', 'Công thức: どこ（へ）も いきません。 Slot 29.', 14, 'PUBLISHED'
+    SELECT 'JPD113', 3, 'GRAMMAR', 3, 'Phủ định hoàn toàn với どこも', 'Công thức: どこ（へ）も いきません。 Slot 29.', 14, 'PUBLISHED'
     UNION ALL
     SELECT 'JPD123', 4, 'GRAMMAR', 1, 'Nói vị trí theo phương hướng', 'Công thức: N1 は N2 の + phương hướng + です。 Slot 1–32.', 1, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 2, 'Hỏi vị trí trong một quốc gia', 'Công thức: N のどこですか。 Slot 1–32.', 2, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 1, 'Hỏi vị trí trong một quốc gia', 'Công thức: N のどこですか。 Slot 1–32.', 2, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 3, 'Hỏi thời gian di chuyển', 'Công thức: N1 から N2 までどのくらいですか。 Slot 1–32.', 3, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 1, 'Hỏi thời gian di chuyển', 'Công thức: N1 から N2 までどのくらいですか。 Slot 1–32.', 3, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 4, 'Nói thời gian di chuyển', 'Công thức: N1 から N2 まで + thời gian + くらいです。 Slot 1–32.', 4, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 1, 'Nói thời gian di chuyển', 'Công thức: N1 から N2 まで + thời gian + くらいです。 Slot 1–32.', 4, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 5, 'Trợ từ で chỉ phương tiện', 'Công thức: Phương tiện で Vます。 Slot 1–32.', 5, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 1, 'Trợ từ で chỉ phương tiện', 'Công thức: Phương tiện で Vます。 Slot 1–32.', 5, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 6, 'Tính từ い – khẳng định', 'Công thức: N は Aいです。 Slot 3–34.', 6, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 1, 'Tính từ い – khẳng định', 'Công thức: N は Aいです。 Slot 3–34.', 6, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 7, 'Tính từ な – khẳng định', 'Công thức: N は Aな (bỏ な) です。 Slot 3–34.', 7, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 1, 'Tính từ な – khẳng định', 'Công thức: N は Aな (bỏ な) です。 Slot 3–34.', 7, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 8, 'Tính từ い – phủ định', 'Công thức: Aい → Aくないです。 Slot 3–34.', 8, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 2, 'Tính từ い – phủ định', 'Công thức: Aい → Aくないです。 Slot 3–34.', 8, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 9, 'Tính từ な – phủ định', 'Công thức: Aな → Aじゃありません。 Slot 3–34.', 9, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 2, 'Tính từ な – phủ định', 'Công thức: Aな → Aじゃありません。 Slot 3–34.', 9, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 10, 'Tính từ い bổ nghĩa danh từ', 'Công thức: Aい + N Slot 3–34.', 10, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 2, 'Tính từ い bổ nghĩa danh từ', 'Công thức: Aい + N Slot 3–34.', 10, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 11, 'Tính từ な bổ nghĩa danh từ', 'Công thức: Aな (gốc từ) + な + N Slot 3–34.', 11, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 2, 'Tính từ な bổ nghĩa danh từ', 'Công thức: Aな (gốc từ) + な + N Slot 3–34.', 11, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 12, 'Hỏi đặc điểm', 'Công thức: N はどんな N ですか。 Slot 3–34.', 12, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 2, 'Hỏi đặc điểm', 'Công thức: N はどんな N ですか。 Slot 3–34.', 12, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 13, 'Diễn tả nhiều hoặc ít', 'Công thức: N が多い／少ないです。 Slot 3–34.', 13, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 2, 'Diễn tả nhiều hoặc ít', 'Công thức: N が多い／少ないです。 Slot 3–34.', 13, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 14, 'Sự tồn tại của đồ vật', 'Công thức: Địa điểm に N があります。 Slot 4–35.', 14, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 2, 'Sự tồn tại của đồ vật', 'Công thức: Địa điểm に N があります。 Slot 4–35.', 14, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 15, 'Nối hai câu cùng hướng ý nghĩa', 'Công thức: S1。そして、S2。 Slot 4–35.', 15, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 3, 'Nối hai câu cùng hướng ý nghĩa', 'Công thức: S1。そして、S2。 Slot 4–35.', 15, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 16, 'Nối hai ý tương phản', 'Công thức: S1 が、S2。 Slot 4–35.', 16, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 3, 'Nối hai ý tương phản', 'Công thức: S1 が、S2。 Slot 4–35.', 16, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 17, 'Trợ từ cuối câu ね', 'Công thức: S + ね。 Slot 5–36.', 17, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 3, 'Trợ từ cuối câu ね', 'Công thức: S + ね。 Slot 5–36.', 17, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 18, 'Miêu tả thời tiết theo thời gian', 'Công thức: N は thời gian、Aです。 Slot 5–36.', 18, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 3, 'Miêu tả thời tiết theo thời gian', 'Công thức: N は thời gian、Aです。 Slot 5–36.', 18, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 19, 'Diễn tả mức độ rất hoặc hơi', 'Công thức: とても／少し + A Slot 5–36.', 19, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 3, 'Diễn tả mức độ rất hoặc hơi', 'Công thức: とても／少し + A Slot 5–36.', 19, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 20, 'Phủ định mức độ', 'Công thức: あまり + A phủ định Slot 5–36.', 20, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 3, 'Phủ định mức độ', 'Công thức: あまり + A phủ định Slot 5–36.', 20, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 4, 'GRAMMAR', 21, 'Hỏi cảm nhận, đặc điểm', 'Công thức: N はどうですか。 Slot 5–36.', 21, 'PUBLISHED'
+    SELECT 'JPD123', 4, 'GRAMMAR', 3, 'Hỏi cảm nhận, đặc điểm', 'Công thức: N はどうですか。 Slot 5–36.', 21, 'PUBLISHED'
     UNION ALL
     SELECT 'JPD123', 5, 'GRAMMAR', 1, 'Động từ quá khứ khẳng định', 'Công thức: Vます → Vました。 Slot 8–39.', 1, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 2, 'Động từ quá khứ phủ định', 'Công thức: Vません → Vませんでした。 Slot 8–39.', 2, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 1, 'Động từ quá khứ phủ định', 'Công thức: Vません → Vませんでした。 Slot 8–39.', 2, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 3, 'Diễn tả đi đâu đó', 'Công thức: どこか（へ）Vます／Vましたか。 Slot 8–39.', 3, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 1, 'Diễn tả đi đâu đó', 'Công thức: どこか（へ）Vます／Vましたか。 Slot 8–39.', 3, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 4, 'Làm hành động cùng ai', 'Công thức: Người と Vます／Vました。 Slot 8–39.', 4, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 1, 'Làm hành động cùng ai', 'Công thức: Người と Vます／Vました。 Slot 8–39.', 4, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 5, 'Nối các hành động theo trình tự', 'Công thức: S1。それから、S2。 Slot 9–40.', 5, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 1, 'Nối các hành động theo trình tự', 'Công thức: S1。それから、S2。 Slot 9–40.', 5, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 6, 'Tính từ い – quá khứ khẳng định', 'Công thức: Aい → Aかったです。 Slot 10–41.', 6, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 1, 'Tính từ い – quá khứ khẳng định', 'Công thức: Aい → Aかったです。 Slot 10–41.', 6, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 7, 'Tính từ い – quá khứ phủ định', 'Công thức: Aい → Aくなかったです。 Slot 10–41.', 7, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 2, 'Tính từ い – quá khứ phủ định', 'Công thức: Aい → Aくなかったです。 Slot 10–41.', 7, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 8, 'Tính từ な – quá khứ khẳng định', 'Công thức: Aな → Aでした。 Slot 10–41.', 8, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 2, 'Tính từ な – quá khứ khẳng định', 'Công thức: Aな → Aでした。 Slot 10–41.', 8, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 9, 'Tính từ な – quá khứ phủ định', 'Công thức: Aな → Aじゃありませんでした。 Slot 10–41.', 9, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 2, 'Tính từ な – quá khứ phủ định', 'Công thức: Aな → Aじゃありませんでした。 Slot 10–41.', 9, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 10, 'Danh từ – quá khứ', 'Công thức: Nでした／Nじゃありませんでした。 Slot 10–41.', 10, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 2, 'Danh từ – quá khứ', 'Công thức: Nでした／Nじゃありませんでした。 Slot 10–41.', 10, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 11, 'Hỏi cảm nhận trong quá khứ', 'Công thức: N はどうでしたか。 Slot 10–41.', 11, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 2, 'Hỏi cảm nhận trong quá khứ', 'Công thức: N はどうでしたか。 Slot 10–41.', 11, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 12, 'Hỏi và giải thích nguyên nhân', 'Công thức: どうして～か。／Lý do + から。 Slot 11–42.', 12, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 2, 'Hỏi và giải thích nguyên nhân', 'Công thức: どうして～か。／Lý do + から。 Slot 11–42.', 12, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 13, 'Mong muốn sở hữu', 'Công thức: N がほしいです。 Slot 12–43.', 13, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 3, 'Mong muốn sở hữu', 'Công thức: N がほしいです。 Slot 12–43.', 13, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 14, 'Phủ định mong muốn sở hữu', 'Công thức: N がほしくないです。 Slot 12–43.', 14, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 3, 'Phủ định mong muốn sở hữu', 'Công thức: N がほしくないです。 Slot 12–43.', 14, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 15, 'Thích hoặc ghét', 'Công thức: N が好き／嫌いです。 Slot 12–43.', 15, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 3, 'Thích hoặc ghét', 'Công thức: N が好き／嫌いです。 Slot 12–43.', 15, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 16, 'Muốn thực hiện hành động', 'Công thức: Vます bỏ ます + たいです。 Slot 12–43.', 16, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 3, 'Muốn thực hiện hành động', 'Công thức: Vます bỏ ます + たいです。 Slot 12–43.', 16, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 5, 'GRAMMAR', 17, 'Đi đến đâu để thực hiện hành động', 'Công thức: Địa điểm へ + Vます bỏ ます + に行きます。 Slot 13–44.', 17, 'PUBLISHED'
+    SELECT 'JPD123', 5, 'GRAMMAR', 3, 'Đi đến đâu để thực hiện hành động', 'Công thức: Địa điểm へ + Vます bỏ ます + に行きます。 Slot 13–44.', 17, 'PUBLISHED'
     UNION ALL
     SELECT 'JPD123', 6, 'GRAMMAR', 1, 'Rủ rê, mời người khác', 'Công thức: Vます → Vませんか。 Slot 16–46.', 1, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 2, 'Đề nghị cùng làm hành động', 'Công thức: Vます → Vましょう。 Slot 16–46.', 2, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 1, 'Đề nghị cùng làm hành động', 'Công thức: Vます → Vましょう。 Slot 16–46.', 2, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 3, 'Từ chối lời mời lịch sự', 'Công thức: Thời gian はちょっと……。 Slot 16–46.', 3, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 1, 'Từ chối lời mời lịch sự', 'Công thức: Thời gian はちょっと……。 Slot 16–46.', 3, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 4, 'Diễn tả sự kiện ở địa điểm', 'Công thức: Địa điểm で Sự kiện があります。 Slot 17–47.', 4, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 1, 'Diễn tả sự kiện ở địa điểm', 'Công thức: Địa điểm で Sự kiện があります。 Slot 17–47.', 4, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 5, 'Trợ số từ 枚（まい）', 'Công thức: N が số + 枚 あります。 Slot 17–47.', 5, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 1, 'Trợ số từ 枚（まい）', 'Công thức: N が số + 枚 あります。 Slot 17–47.', 5, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 6, 'So sánh nhất trong một nhóm', 'Công thức: N1 で N2 がいちばん Aです。 Slot 18–48.', 6, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 2, 'So sánh nhất trong một nhóm', 'Công thức: N1 で N2 がいちばん Aです。 Slot 18–48.', 6, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 7, 'Hỏi so sánh giữa hai đối tượng', 'Công thức: N1 と N2 とどちらが Aですか。 Slot 18–48.', 7, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 2, 'Hỏi so sánh giữa hai đối tượng', 'Công thức: N1 と N2 とどちらが Aですか。 Slot 18–48.', 7, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 8, 'Trả lời so sánh hơn', 'Công thức: N のほうが Aです。 Slot 18–48.', 8, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 2, 'Trả lời so sánh hơn', 'Công thức: N のほうが Aです。 Slot 18–48.', 8, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 9, 'Cả hai đều có cùng đặc điểm', 'Công thức: どちらも Aです。 Slot 18–48.', 9, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 2, 'Cả hai đều có cùng đặc điểm', 'Công thức: どちらも Aです。 Slot 18–48.', 9, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 10, 'So sánh hơn với より', 'Công thức: N1 は N2 より Aです。 Slot 19–49.', 10, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 2, 'So sánh hơn với より', 'Công thức: N1 は N2 より Aです。 Slot 19–49.', 10, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 11, 'Hỏi đã làm hành động chưa', 'Công thức: もう Vましたか。 Slot 20–50.', 11, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 3, 'Hỏi đã làm hành động chưa', 'Công thức: もう Vましたか。 Slot 20–50.', 11, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 12, 'Trả lời chưa thực hiện hành động', 'Công thức: いいえ、まだです。 Slot 20–50.', 12, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 3, 'Trả lời chưa thực hiện hành động', 'Công thức: いいえ、まだです。 Slot 20–50.', 12, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 13, 'Trợ từ よ – thông báo, nhấn mạnh', 'Công thức: S + よ。 Slot 20–50.', 13, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 3, 'Trợ từ よ – thông báo, nhấn mạnh', 'Công thức: S + よ。 Slot 20–50.', 13, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 14, 'Đưa ra lời gợi ý', 'Công thức: N はどうですか。 Slot 20–50.', 14, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 3, 'Đưa ra lời gợi ý', 'Công thức: N はどうですか。 Slot 20–50.', 14, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 6, 'GRAMMAR', 15, 'Trợ từ ね – xác nhận thông tin', 'Công thức: S + ね。 Slot 20–50.', 15, 'PUBLISHED'
+    SELECT 'JPD123', 6, 'GRAMMAR', 3, 'Trợ từ ね – xác nhận thông tin', 'Công thức: S + ね。 Slot 20–50.', 15, 'PUBLISHED'
     UNION ALL
     SELECT 'JPD123', 7, 'GRAMMAR', 1, 'Sự tồn tại của người, động vật', 'Công thức: Địa điểm に N がいます。 Slot 23–53.', 1, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 2, 'Nói vị trí tồn tại', 'Công thức: N は địa điểm にあります／います。 Slot 23–53.', 2, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 1, 'Nói vị trí tồn tại', 'Công thức: N は địa điểm にあります／います。 Slot 23–53.', 2, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 3, 'Nói vị trí tương đối', 'Công thức: N1 は N2 の + vị trí + にあります／います。 Slot 23–53.', 3, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 1, 'Nói vị trí tương đối', 'Công thức: N1 は N2 の + vị trí + にあります／います。 Slot 23–53.', 3, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 4, 'Phủ định hoàn toàn với だれも', 'Công thức: だれもいません。 Slot 24–54.', 4, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 1, 'Phủ định hoàn toàn với だれも', 'Công thức: だれもいません。 Slot 24–54.', 4, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 5, 'Phủ định hoàn toàn với なにも', 'Công thức: なにもありません。 Slot 24–54.', 5, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 1, 'Phủ định hoàn toàn với なにも', 'Công thức: なにもありません。 Slot 24–54.', 5, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 6, 'Chuyển động từ sang thể て', 'Công thức: Vます → Vて Slot 25–55.', 6, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 2, 'Chuyển động từ sang thể て', 'Công thức: Vます → Vて Slot 25–55.', 6, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 7, 'Yêu cầu, nhờ vả lịch sự', 'Công thức: Vてください。 Slot 25–55.', 7, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 2, 'Yêu cầu, nhờ vả lịch sự', 'Công thức: Vてください。 Slot 25–55.', 7, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 8, 'Trợ từ で chỉ công cụ, cách thức', 'Công thức: Công cụ で Vます／Vてください。 Slot 25–55.', 8, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 2, 'Trợ từ で chỉ công cụ, cách thức', 'Công thức: Công cụ で Vます／Vてください。 Slot 25–55.', 8, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 9, 'Diễn tả cách làm việc gì', 'Công thức: Vます bỏ ます + 方（かた） Slot 26–56.', 9, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 2, 'Diễn tả cách làm việc gì', 'Công thức: Vます bỏ ます + 方（かた） Slot 26–56.', 9, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 10, 'Hỏi danh từ nào', 'Công thức: どの + N ですか。 Slot 26–56.', 10, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 2, 'Hỏi danh từ nào', 'Công thức: どの + N ですか。 Slot 26–56.', 10, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 11, 'Hỏi cái nào', 'Công thức: どれですか。 Slot 26–56.', 11, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 3, 'Hỏi cái nào', 'Công thức: どれですか。 Slot 26–56.', 11, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 12, 'Hành động đang diễn ra', 'Công thức: Vています。 Slot 27–57.', 12, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 3, 'Hành động đang diễn ra', 'Công thức: Vています。 Slot 27–57.', 12, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 13, 'Chủ động đề nghị giúp đỡ', 'Công thức: Vます → Vましょうか。 Slot 27–57.', 13, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 3, 'Chủ động đề nghị giúp đỡ', 'Công thức: Vます → Vましょうか。 Slot 27–57.', 13, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 14, 'Hỏi ai thực hiện hành động', 'Công thức: だれが Vましたか。 Slot 27–57.', 14, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 3, 'Hỏi ai thực hiện hành động', 'Công thức: だれが Vましたか。 Slot 27–57.', 14, 'PUBLISHED'
     UNION ALL
-    SELECT 'JPD123', 7, 'GRAMMAR', 15, 'Diễn tả vẫn còn hoặc đã hết', 'Công thức: まだあります／もうありません。 Slot 27–57.', 15, 'PUBLISHED'
+    SELECT 'JPD123', 7, 'GRAMMAR', 3, 'Diễn tả vẫn còn hoặc đã hết', 'Công thức: まだあります／もうありません。 Slot 27–57.', 15, 'PUBLISHED'
 ) AS seed
 JOIN course AS c ON c.code = seed.course_code
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = seed.chapter_no;
@@ -2033,7 +2086,8 @@ JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.l
 -- =============================================================================
 -- NGỮ PHÁP
 -- =============================================================================
--- Mỗi lesson có đúng 1 chi tiết grammar; lesson_no và display_order của lesson đánh số trong từng chapter.
+-- Mỗi lesson có đúng 1 chi tiết grammar; lesson_no là nhóm bài 1, 2 hoặc 3 trong chapter.
+-- lesson.display_order giữ thứ tự từng mẫu; seed.lesson_order dùng thứ tự này để tìm đúng lesson.
 -- grammar.display_order = 1 vì mỗi lesson chỉ chứa một mẫu.
 
 
@@ -2041,7 +2095,7 @@ JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.l
 INSERT INTO grammar (lesson_id, structure_name, meaning_vi, usage_explanation, example_jp, example_vi, display_order, status)
 SELECT l.id, seed.structure_name, seed.meaning_vi, seed.usage_explanation, seed.example_jp, seed.example_vi, 1 AS display_order, seed.status
 FROM (
-    SELECT 'N1 は N2 です。' AS structure_name, 'Câu khẳng định danh từ' AS meaning_vi, 'Câu khẳng định danh từ (Slot 9).' AS usage_explanation, 'わたしは がくせいです。' AS example_jp, 'Tôi là học sinh.' AS example_vi, 1 AS lesson_no, 'PUBLISHED' AS status
+    SELECT 'N1 は N2 です。' AS structure_name, 'Câu khẳng định danh từ' AS meaning_vi, 'Câu khẳng định danh từ (Slot 9).' AS usage_explanation, 'わたしは がくせいです。' AS example_jp, 'Tôi là học sinh.' AS example_vi, 1 AS lesson_order, 'PUBLISHED' AS status
     UNION ALL
     SELECT 'おくには どちらですか。', 'Hỏi quốc gia, quê quán', 'Hỏi quốc gia, quê quán (Slot 9).', 'おくには どちらですか。', 'Bạn đến từ nước nào?', 2, 'PUBLISHED'
     UNION ALL
@@ -2060,13 +2114,13 @@ FROM (
 JOIN course AS c ON c.code = 'JPD113'
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 1
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'GRAMMAR'
-    AND l.lesson_no = seed.lesson_no AND l.title = seed.meaning_vi;
+    AND l.display_order = seed.lesson_order AND l.title = seed.meaning_vi;
 
 -- JPD113 / Chapter 2 / Ngữ pháp: 18 mục.
 INSERT INTO grammar (lesson_id, structure_name, meaning_vi, usage_explanation, example_jp, example_vi, display_order, status)
 SELECT l.id, seed.structure_name, seed.meaning_vi, seed.usage_explanation, seed.example_jp, seed.example_vi, 1 AS display_order, seed.status
 FROM (
-    SELECT 'N は số + かいです。' AS structure_name, 'Nói vị trí tầng' AS meaning_vi, 'Nói vị trí tầng (Slot 17).' AS usage_explanation, 'レストランは ごかいです。' AS example_jp, 'Nhà hàng ở tầng 5.' AS example_vi, 1 AS lesson_no, 'PUBLISHED' AS status
+    SELECT 'N は số + かいです。' AS structure_name, 'Nói vị trí tầng' AS meaning_vi, 'Nói vị trí tầng (Slot 17).' AS usage_explanation, 'レストランは ごかいです。' AS example_jp, 'Nhà hàng ở tầng 5.' AS example_vi, 1 AS lesson_order, 'PUBLISHED' AS status
     UNION ALL
     SELECT 'N は なんかいですか。', 'Hỏi tầng', 'Hỏi tầng (Slot 17).', 'レストランは なんかいですか。', 'Nhà hàng ở tầng mấy?', 2, 'PUBLISHED'
     UNION ALL
@@ -2105,13 +2159,13 @@ FROM (
 JOIN course AS c ON c.code = 'JPD113'
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 2
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'GRAMMAR'
-    AND l.lesson_no = seed.lesson_no AND l.title = seed.meaning_vi;
+    AND l.display_order = seed.lesson_order AND l.title = seed.meaning_vi;
 
 -- JPD113 / Chapter 3 / Ngữ pháp: 14 mục.
 INSERT INTO grammar (lesson_id, structure_name, meaning_vi, usage_explanation, example_jp, example_vi, display_order, status)
 SELECT l.id, seed.structure_name, seed.meaning_vi, seed.usage_explanation, seed.example_jp, seed.example_vi, 1 AS display_order, seed.status
 FROM (
-    SELECT 'いま なんじですか。' AS structure_name, 'Hỏi giờ' AS meaning_vi, 'Hỏi giờ (Slot 24).' AS usage_explanation, 'いま なんじですか。' AS example_jp, 'Bây giờ là mấy giờ?' AS example_vi, 1 AS lesson_no, 'PUBLISHED' AS status
+    SELECT 'いま なんじですか。' AS structure_name, 'Hỏi giờ' AS meaning_vi, 'Hỏi giờ (Slot 24).' AS usage_explanation, 'いま なんじですか。' AS example_jp, 'Bây giờ là mấy giờ?' AS example_vi, 1 AS lesson_order, 'PUBLISHED' AS status
     UNION ALL
     SELECT 'N は thời gian 1 から thời gian 2 までです。', 'Chỉ khoảng thời gian', 'Chỉ khoảng thời gian (Slot 24).', 'としょかんは はちじから ごじまでです。', 'Thư viện mở từ 8 giờ đến 5 giờ.', 2, 'PUBLISHED'
     UNION ALL
@@ -2142,13 +2196,13 @@ FROM (
 JOIN course AS c ON c.code = 'JPD113'
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 3
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'GRAMMAR'
-    AND l.lesson_no = seed.lesson_no AND l.title = seed.meaning_vi;
+    AND l.display_order = seed.lesson_order AND l.title = seed.meaning_vi;
 
 -- JPD123 / Chapter 4 / Ngữ pháp: 21 mục.
 INSERT INTO grammar (lesson_id, structure_name, meaning_vi, usage_explanation, example_jp, example_vi, display_order, status)
 SELECT l.id, seed.structure_name, seed.meaning_vi, seed.usage_explanation, seed.example_jp, seed.example_vi, 1 AS display_order, seed.status
 FROM (
-    SELECT 'N1 は N2 の + phương hướng + です。' AS structure_name, 'Nói vị trí theo phương hướng' AS meaning_vi, 'Nói vị trí theo phương hướng (Slot 1–32).' AS usage_explanation, 'ハノイはベトナムの北です。' AS example_jp, 'Hà Nội nằm ở phía bắc Việt Nam.' AS example_vi, 1 AS lesson_no, 'PUBLISHED' AS status
+    SELECT 'N1 は N2 の + phương hướng + です。' AS structure_name, 'Nói vị trí theo phương hướng' AS meaning_vi, 'Nói vị trí theo phương hướng (Slot 1–32).' AS usage_explanation, 'ハノイはベトナムの北です。' AS example_jp, 'Hà Nội nằm ở phía bắc Việt Nam.' AS example_vi, 1 AS lesson_order, 'PUBLISHED' AS status
     UNION ALL
     SELECT 'N のどこですか。', 'Hỏi vị trí trong một quốc gia', 'Hỏi vị trí trong một quốc gia (Slot 1–32).', 'ベトナムのどこですか。', 'Ở đâu của Việt Nam?', 2, 'PUBLISHED'
     UNION ALL
@@ -2193,13 +2247,13 @@ FROM (
 JOIN course AS c ON c.code = 'JPD123'
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 4
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'GRAMMAR'
-    AND l.lesson_no = seed.lesson_no AND l.title = seed.meaning_vi;
+    AND l.display_order = seed.lesson_order AND l.title = seed.meaning_vi;
 
 -- JPD123 / Chapter 5 / Ngữ pháp: 17 mục.
 INSERT INTO grammar (lesson_id, structure_name, meaning_vi, usage_explanation, example_jp, example_vi, display_order, status)
 SELECT l.id, seed.structure_name, seed.meaning_vi, seed.usage_explanation, seed.example_jp, seed.example_vi, 1 AS display_order, seed.status
 FROM (
-    SELECT 'Vます → Vました。' AS structure_name, 'Động từ quá khứ khẳng định' AS meaning_vi, 'Động từ quá khứ khẳng định (Slot 8–39).' AS usage_explanation, '昨日、デパートへ行きました。' AS example_jp, 'Hôm qua tôi đã đến trung tâm thương mại.' AS example_vi, 1 AS lesson_no, 'PUBLISHED' AS status
+    SELECT 'Vます → Vました。' AS structure_name, 'Động từ quá khứ khẳng định' AS meaning_vi, 'Động từ quá khứ khẳng định (Slot 8–39).' AS usage_explanation, '昨日、デパートへ行きました。' AS example_jp, 'Hôm qua tôi đã đến trung tâm thương mại.' AS example_vi, 1 AS lesson_order, 'PUBLISHED' AS status
     UNION ALL
     SELECT 'Vません → Vませんでした。', 'Động từ quá khứ phủ định', 'Động từ quá khứ phủ định (Slot 8–39).', '昨日、ご飯を食べませんでした。', 'Hôm qua tôi đã không ăn cơm.', 2, 'PUBLISHED'
     UNION ALL
@@ -2236,13 +2290,13 @@ FROM (
 JOIN course AS c ON c.code = 'JPD123'
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 5
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'GRAMMAR'
-    AND l.lesson_no = seed.lesson_no AND l.title = seed.meaning_vi;
+    AND l.display_order = seed.lesson_order AND l.title = seed.meaning_vi;
 
 -- JPD123 / Chapter 6 / Ngữ pháp: 15 mục.
 INSERT INTO grammar (lesson_id, structure_name, meaning_vi, usage_explanation, example_jp, example_vi, display_order, status)
 SELECT l.id, seed.structure_name, seed.meaning_vi, seed.usage_explanation, seed.example_jp, seed.example_vi, 1 AS display_order, seed.status
 FROM (
-    SELECT 'Vます → Vませんか。' AS structure_name, 'Rủ rê, mời người khác' AS meaning_vi, 'Rủ rê, mời người khác (Slot 16–46).' AS usage_explanation, '一緒にご飯を食べませんか。' AS example_jp, 'Cùng ăn cơm nhé?' AS example_vi, 1 AS lesson_no, 'PUBLISHED' AS status
+    SELECT 'Vます → Vませんか。' AS structure_name, 'Rủ rê, mời người khác' AS meaning_vi, 'Rủ rê, mời người khác (Slot 16–46).' AS usage_explanation, '一緒にご飯を食べませんか。' AS example_jp, 'Cùng ăn cơm nhé?' AS example_vi, 1 AS lesson_order, 'PUBLISHED' AS status
     UNION ALL
     SELECT 'Vます → Vましょう。', 'Đề nghị cùng làm hành động', 'Đề nghị cùng làm hành động (Slot 16–46).', '一緒に行きましょう。', 'Chúng ta cùng đi nhé.', 2, 'PUBLISHED'
     UNION ALL
@@ -2275,13 +2329,13 @@ FROM (
 JOIN course AS c ON c.code = 'JPD123'
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 6
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'GRAMMAR'
-    AND l.lesson_no = seed.lesson_no AND l.title = seed.meaning_vi;
+    AND l.display_order = seed.lesson_order AND l.title = seed.meaning_vi;
 
 -- JPD123 / Chapter 7 / Ngữ pháp: 15 mục.
 INSERT INTO grammar (lesson_id, structure_name, meaning_vi, usage_explanation, example_jp, example_vi, display_order, status)
 SELECT l.id, seed.structure_name, seed.meaning_vi, seed.usage_explanation, seed.example_jp, seed.example_vi, 1 AS display_order, seed.status
 FROM (
-    SELECT 'Địa điểm に N がいます。' AS structure_name, 'Sự tồn tại của người, động vật' AS meaning_vi, 'Sự tồn tại của người, động vật (Slot 23–53).' AS usage_explanation, '公園に犬がいます。' AS example_jp, 'Có con chó trong công viên.' AS example_vi, 1 AS lesson_no, 'PUBLISHED' AS status
+    SELECT 'Địa điểm に N がいます。' AS structure_name, 'Sự tồn tại của người, động vật' AS meaning_vi, 'Sự tồn tại của người, động vật (Slot 23–53).' AS usage_explanation, '公園に犬がいます。' AS example_jp, 'Có con chó trong công viên.' AS example_vi, 1 AS lesson_order, 'PUBLISHED' AS status
     UNION ALL
     SELECT 'N は địa điểm にあります／います。', 'Nói vị trí tồn tại', 'Nói vị trí tồn tại (Slot 23–53).', '私は交番の前にいます。', 'Tôi đang ở trước đồn cảnh sát.', 2, 'PUBLISHED'
     UNION ALL
@@ -2314,4 +2368,40 @@ FROM (
 JOIN course AS c ON c.code = 'JPD123'
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 7
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'GRAMMAR'
-    AND l.lesson_no = seed.lesson_no AND l.title = seed.meaning_vi;
+    AND l.display_order = seed.lesson_order AND l.title = seed.meaning_vi;
+
+-- Tình huống luyện nói AI mẫu, gắn vào chương PUBLISHED đầu tiên (Chương 1 - Nhật 1).
+-- sample_script: mảng JSON {speaker: AI|STUDENT, segments: [{text, free?}], translation, hint?};
+-- "free": true đánh dấu phần học viên có thể thay bằng từ của mình.
+SET @chapter_id = (SELECT id FROM chapter WHERE status = 'PUBLISHED' ORDER BY display_order, id LIMIT 1);
+
+INSERT INTO speaking_scenario
+  (chapter_id, title, situation, ai_role, student_role, max_turns, sample_script, display_order, status)
+VALUES
+(@chapter_id, 'Gọi món ở quán ramen',
+ 'Bạn vào một quán ramen ở Nhật. Nhân viên đón khách, hỏi số người và nhận gọi món.',
+ 'nhân viên 店員', 'khách 客', 20,
+ '[
+  {"speaker":"AI","segments":[{"text":"いらっしゃいませ。何名様ですか？"}],"translation":"Xin chào quý khách. Quý khách đi mấy người ạ?"},
+  {"speaker":"STUDENT","segments":[{"text":"一人","free":true},{"text":"です。"}],"translation":"Tôi đi một mình.","hint":"Có thể thay: 二人 (hai người), 三人 (ba người)."},
+  {"speaker":"AI","segments":[{"text":"こちらへどうぞ。ご注文はお決まりですか？"}],"translation":"Mời quý khách đi lối này. Quý khách đã chọn món chưa ạ?"},
+  {"speaker":"STUDENT","segments":[{"text":"すみません。"},{"text":"ラーメン","free":true},{"text":"を"},{"text":"一つ","free":true},{"text":"お願いします。"}],"translation":"Xin lỗi, cho tôi một bát ramen.","hint":"Có thể thay món (うどん, カレー) và số lượng (二つ, 三つ)."},
+  {"speaker":"AI","segments":[{"text":"かしこまりました。お飲み物はいかがですか？"}],"translation":"Vâng ạ. Quý khách có dùng đồ uống không ạ?"},
+  {"speaker":"STUDENT","segments":[{"text":"お水","free":true},{"text":"をください。"}],"translation":"Cho tôi nước lọc.","hint":"Có thể thay: お茶 (trà), コーラ (cola)."},
+  {"speaker":"AI","segments":[{"text":"お待たせしました。ラーメンとお水です。"}],"translation":"Xin lỗi đã để quý khách đợi. Ramen và nước của quý khách đây ạ."},
+  {"speaker":"STUDENT","segments":[{"text":"ありがとうございます。","free":true}],"translation":"Cảm ơn.","hint":"Có thể cảm ơn theo cách khác, ví dụ どうも。"},
+  {"speaker":"AI","segments":[{"text":"ごゆっくりどうぞ。"}],"translation":"Chúc quý khách ngon miệng."}
+ ]', 1, 'PUBLISHED'),
+(@chapter_id, 'Tự giới thiệu ngày đầu đi học',
+ 'Ngày đầu tiên ở trường tiếng Nhật, giáo viên hỏi thăm và mời bạn tự giới thiệu.',
+ 'giáo viên 先生', 'học viên 学生', 20,
+ '[
+  {"speaker":"AI","segments":[{"text":"はじめまして。お名前は何ですか？"}],"translation":"Rất vui được gặp em. Em tên là gì?"},
+  {"speaker":"STUDENT","segments":[{"text":"はじめまして。"},{"text":"アン","free":true},{"text":"です。"}],"translation":"Rất vui được gặp cô. Em là An.","hint":"Thay アン bằng tên của bạn."},
+  {"speaker":"AI","segments":[{"text":"お国はどちらですか？"}],"translation":"Em đến từ nước nào?"},
+  {"speaker":"STUDENT","segments":[{"text":"ベトナム","free":true},{"text":"から来ました。"}],"translation":"Em đến từ Việt Nam.","hint":"Có thể nói thêm thành phố: ハノイ, ホーチミン."},
+  {"speaker":"AI","segments":[{"text":"そうですか。お仕事は何ですか？"}],"translation":"Vậy à. Em làm nghề gì?"},
+  {"speaker":"STUDENT","segments":[{"text":"学生","free":true},{"text":"です。"}],"translation":"Em là sinh viên.","hint":"Có thể thay: エンジニア (kỹ sư), 会社員 (nhân viên công ty)."},
+  {"speaker":"AI","segments":[{"text":"これからよろしくお願いします。"}],"translation":"Từ nay mong được giúp đỡ nhé."},
+  {"speaker":"STUDENT","segments":[{"text":"どうぞよろしくお願いします。"}],"translation":"Rất mong được cô giúp đỡ."}
+ ]', 2, 'PUBLISHED');

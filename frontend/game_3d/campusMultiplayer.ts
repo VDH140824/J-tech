@@ -1,4 +1,4 @@
-import type { AvatarMotion } from "./CampusAvatar";
+import type { AvatarMotion, CampusCharacter } from "./CampusAvatar";
 
 export const CAMPUS_MAP_ID = "55fd442b15008443b281ea92dc5ec6ef2e978b2364c715c9d7e2f9d1db400abe";
 export interface CampusPose {
@@ -7,13 +7,14 @@ export interface CampusPose {
   gesture: AvatarMotion["gesture"] | null;
   teleport?: boolean;
 }
-export interface CampusPeer { id: number; name: string; state: CampusPose; updatedAt: number; receivedAt?: number }
+export interface CampusPeer { id: number; name: string; character: CampusCharacter; state: CampusPose; updatedAt: number; receivedAt?: number }
 export interface CampusMessage { id: number; clientId: string; userId: number; name: string; text: string; time: number }
 export type CampusConnectionStatus = "connecting" | "online" | "reconnecting" | "offline" | "full" | "replaced" | "unauthorized" | "map-mismatch";
 export interface SeatReply { requestId: string; seatId: string | null; granted: boolean; message: string }
 export interface CampusNetwork {
   connected: boolean;
   selfId: number | null;
+  serverClock: { time: number; receivedAt: number } | null;
   peers: Map<number, CampusPeer>;
   doors: Record<string, number>;
   seats: Record<string, number>;
@@ -27,7 +28,7 @@ export interface CampusNetwork {
   releaseSeat: () => void;
 }
 export function emptyCampusNetwork(): CampusNetwork {
-  return { connected: false, selfId: null, peers: new Map(), doors: {}, seats: {}, ownSeatId: null, spawn: null, seatReply: null, pendingDoors: new Map(),
+  return { connected: false, selfId: null, serverClock: null, peers: new Map(), doors: {}, seats: {}, ownSeatId: null, spawn: null, seatReply: null, pendingDoors: new Map(),
     publish: () => {}, door: () => false, reserveSeat: () => null, releaseSeat: () => {} };
 }
 export function isCampusPose(value: unknown): value is CampusPose {

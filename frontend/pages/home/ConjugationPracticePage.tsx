@@ -3,40 +3,95 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   checkConjugationAnswer,
+  getConjugationForm,
   startConjugationPractice,
   submitConjugationPractice,
   type ConjugationCheckResult,
   type ConjugationPracticeResult,
+  type ConjugationQuestion,
+  type DifficultyFilter,
+  type PracticeMode,
+  type VerbGroupFilter,
 } from "../../api/studentConjugationApi";
-import {
-  DIFFICULTY_OPTIONS,
-  GROUP_OPTIONS,
-  parseDifficulty,
-  parseGroup,
-  parseMode,
-} from "../../utils/conjugationFilters";
+import { DIFFICULTY_OPTIONS, parseDifficulty, parseGroup, parseMode } from "../../utils/conjugationFilters";
+import { ConjugationFormTiles } from "./ConjugationFormTiles";
+import { ConjugationMaterialModal } from "./ConjugationMaterialModal";
 import "./Conjugation.css";
 
 /**
  * 3.6.26 Conjugation Practice (UC-23). URL: /conjugations/:formId/practice?group=&difficulty=&mode=
- * Nhóm động từ, độ khó và hình thức được chọn ở hộp thoại trước khi luyện tập và cố định trong lượt;
- * muốn đổi thì bấm "Đổi lựa chọn" để quay lại hộp thoại. Màn luyện tập không hiển thị lý thuyết.
- * Mỗi lượt server chọn ngẫu nhiên N câu (N = số câu mỗi lượt do Moderator đặt).
+ * Thanh chọn thể ở trên; thẻ luyện tập bên dưới có nhóm động từ, độ khó, hình thức (nhập / trắc nghiệm),
+ * cách hiển thị và "Xem cách chia". Mỗi lượt server chọn ngẫu nhiên N câu; làm xong lượt chính thì lưu kết quả.
+ * "Ôn lại câu sai" chỉ luyện lại trên máy, không lưu thêm lượt.
  */
+
+type Display = "furigana" | "kanji" | "kana";
+type Run = { kind: "main" | "review"; questions: ConjugationQuestion[] };
+
+const DISPLAY_KEY = "cj-display";
+const GROUPS: ReadonlyArray<{ value: VerbGroupFilter; label: string }> = [
+  { value: 0, label: "Tất cả" },
+  { value: 1, label: "Nhóm 1" },
+  { value: 2, label: "Nhóm 2" },
+  { value: 3, label: "Nhóm 3" },
+];
+const DISPLAYS: ReadonlyArray<{ value: Display; label: string }> = [
+  { value: "furigana", label: "Kanji + Furigana" },
+  { value: "kanji", label: "Chỉ Kanji" },
+  { value: "kana", label: "Hiragana" },
+];
+
+function readDisplay(): Display {
+  try {
+    const value = window.localStorage.getItem(DISPLAY_KEY);
+    return value === "kanji" || value === "kana" ? value : "furigana";
+  } catch {
+    return "furigana";
+  }
+}
+
+const isKana = (text: string) => /^[぀-ヿー\s]+$/.test(text);
+
+function VerbText({ verb, reading, display }: { verb: string; reading: string; display: Display }) {
+  if (display === "kana" && reading) return <span lang="ja">{reading}</span>;
+  if (display === "furigana" && reading && reading !== verb)
+    return (
+      <ruby lang="ja">
+        {verb}
+        <rt>{reading}</rt>
+      </ruby>
+    );
+  return <span lang="ja">{verb}</span>;
+}
+
+/** Đáp án đúng theo cách hiển thị: 洗濯します（せんたくします） / 洗濯します / せんたくします. */
+function answerText(check: ConjugationCheckResult, display: Display) {
+  const kana = [check.correctAnswer, ...check.acceptedAnswers].find(isKana);
+  if (display === "kana") return kana ?? check.correctAnswer;
+  if (display === "furigana" && kana && kana !== check.correctAnswer) return `${check.correctAnswer}（${kana}）`;
+  return check.correctAnswer;
+}
+
+const verbLine = (q: ConjugationQuestion) => (q.reading && q.reading !== q.verb ? `${q.verb}（${q.reading}）` : q.verb);
+
 export function ConjugationPracticePage() {
   const navigate = useNavigate();
   const cache = useQueryClient();
   const { formId: formParam } = useParams();
   const formId = Number(formParam);
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const group = parseGroup(params.get("group"));
   const difficulty = parseDifficulty(params.get("difficulty"));
   const mode = parseMode(params.get("mode"));
 
+  const [display, setDisplay] = useState<Display>(readDisplay);
+  const [showMaterial, setShowMaterial] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+
   // round tăng mỗi khi bắt đầu lượt mới → gọi lại API để lấy bộ câu ngẫu nhiên khác.
   const [round, setRound] = useState(0);
   const session = useQuery({
-    queryKey: ["conjugation-practice", formId, group, difficulty, round],
+    queryKey: ["conjugation-practice", formId, group, difficulty, mode, round],
     queryFn: () => startConjugationPractice(formId, group, difficulty, mode),
     enabled: formId > 0,
     staleTime: Infinity,
@@ -45,45 +100,80 @@ export function ConjugationPracticePage() {
     refetchOnReconnect: false,
     retry: false,
   });
+  // Số câu theo nhóm / độ khó + tài liệu cách chia
+  const detail = useQuery({
+    queryKey: ["conjugation-form", formId, group, difficulty],
+    queryFn: ({ signal }) => getConjugationForm(formId, group, difficulty, signal),
+    enabled: formId > 0,
+    placeholderData: (previous) => previous,
+  });
 
+  const [run, setRun] = useState<Run | null>(null);
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [checked, setChecked] = useState<
-    Record<string, ConjugationCheckResult>
-  >({});
+  const [checked, setChecked] = useState<Record<string, ConjugationCheckResult>>({});
+  const [streak, setStreak] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  // result: kết quả đã lưu trên server; showResult: đang hiển thị màn kết quả.
+  const [finished, setFinished] = useState(false);
   const [result, setResult] = useState<ConjugationPracticeResult | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "error">(
-    "idle",
-  );
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
   const inputRef = useRef<HTMLInputElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
 
-  // Bắt đầu lượt mới (vào trang hoặc bấm "Luyện lượt mới") → xóa trạng thái lượt cũ.
-  useEffect(() => {
+  const startRun = (next: Run) => {
+    setRun(next);
     setIndex(0);
     setInput("");
     setAnswers({});
     setChecked({});
+    setStreak(0);
     setError("");
-    setResult(null);
-    setShowResult(false);
-    setSaveState("idle");
-  }, [formId, group, difficulty, mode, round]);
+    setFinished(false);
+    if (next.kind === "main") {
+      setResult(null);
+      setSaveState("idle");
+    }
+  };
 
-  const questions = session.data?.questions ?? [];
-  const question = questions[index];
+  useEffect(() => {
+    if (session.data) startRun({ kind: "main", questions: session.data.questions });
+    else setRun(null);
+  }, [session.data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const questions = run?.questions ?? [];
+  const question = finished ? undefined : questions[index];
   const feedback = question ? checked[String(question.id)] : undefined;
   const isLast = index === questions.length - 1;
   const doneCount = Object.keys(checked).length;
   const useChoices = mode === "choice" && !!question?.options?.length;
 
   useEffect(() => {
-    if (!feedback && !useChoices) inputRef.current?.focus();
-  }, [index, feedback, useChoices]);
+    if (feedback) nextRef.current?.focus();
+    else if (!useChoices) inputRef.current?.focus();
+  }, [index, feedback, useChoices, run]);
+
+  const changeDisplay = (value: Display) => {
+    setDisplay(value);
+    try {
+      window.localStorage.setItem(DISPLAY_KEY, value);
+    } catch {
+      /* chỉ là tiện ích, bỏ qua */
+    }
+  };
+
+  /** Đổi nhóm / độ khó / hình thức → bắt đầu lượt mới ngay (không hỏi xác nhận). */
+  const changeSetup = (next: { group?: VerbGroupFilter; difficulty?: DifficultyFilter; mode?: PracticeMode }) => {
+    setParams(
+      {
+        group: String(next.group ?? group),
+        difficulty: next.difficulty ?? difficulty,
+        mode: next.mode ?? mode,
+      },
+      { replace: true },
+    );
+  };
 
   async function check(value: string) {
     if (!question || feedback || busy) return;
@@ -94,18 +184,14 @@ export function ConjugationPracticePage() {
     setBusy(true);
     setError("");
     try {
-      const res = await checkConjugationAnswer(
-        formId,
-        question.id,
-        value.trim(),
-      );
+      const res = await checkConjugationAnswer(formId, question.id, value.trim());
       const nextAnswers = { ...answers, [String(question.id)]: value.trim() };
       const nextChecked = { ...checked, [String(question.id)]: res };
       setAnswers(nextAnswers);
       setChecked(nextChecked);
-      // Kiểm tra xong câu cuối cùng → lưu kết quả ngay, không phụ thuộc học viên có bấm tiếp hay thoát ra.
-      if (Object.keys(nextChecked).length === questions.length)
-        void save(nextAnswers);
+      setStreak((n) => (res.correct ? n + 1 : 0));
+      // Lượt chính: kiểm tra xong câu cuối → lưu kết quả ngay.
+      if (run?.kind === "main" && Object.keys(nextChecked).length === questions.length) void save(nextAnswers);
     } catch {
       setError("Không kiểm tra được đáp án. Vui lòng thử lại.");
     } finally {
@@ -117,21 +203,10 @@ export function ConjugationPracticePage() {
     if (result || saveState === "saving") return;
     setSaveState("saving");
     try {
-      const res = await submitConjugationPractice(
-        formId,
-        group,
-        difficulty,
-        mode,
-        finalAnswers,
-      );
+      const res = await submitConjugationPractice(formId, group, difficulty, mode, finalAnswers);
       setResult(res);
       setSaveState("idle");
-      for (const key of [
-        "conjugation-form",
-        "conjugation-forms",
-        "streak",
-        "coin-history",
-      ])
+      for (const key of ["conjugation-form", "conjugation-forms", "streak", "coin-history"])
         void cache.invalidateQueries({ queryKey: [key] });
     } catch {
       setSaveState("error");
@@ -139,317 +214,406 @@ export function ConjugationPracticePage() {
   }
 
   function next() {
-    if (isLast) {
-      if (result) setShowResult(true);
-      else void save(answers); // lần lưu tự động bị lỗi → thử lại khi bấm
-    } else {
+    if (!isLast) {
       setIndex(index + 1);
       setInput("");
+      return;
     }
+    // Lượt chính: kết quả đang lưu / lưu lỗi thì màn kết quả hiện trạng thái và nút "Lưu lại".
+    setFinished(true);
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     // Không bắt Enter khi đang gõ IME (chọn Kanji / Hiragana).
     if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
     event.preventDefault();
-    if (feedback) next();
-    else void check(input);
+    if (!feedback) void check(input);
   }
 
-  const backToList = () => navigate("/conjugations");
-  // Mở lại hộp thoại chọn nhóm, độ khó, hình thức (ở trang danh sách)
-  const changeSetup = () => navigate(`/conjugations?practice=${formId}`);
-  const groupLabel = GROUP_OPTIONS.find((option) => option.value === group)?.label;
-  const difficultyLabel = DIFFICULTY_OPTIONS.find((option) => option.value === difficulty)?.label;
+  const formName = detail.data ? `${detail.data.nameVi}` : session.data?.nameVi ?? "";
+  const counts = detail.data?.questionCountByGroup ?? {};
+  const wrongQuestions = questions.filter((q) => checked[String(q.id)] && !checked[String(q.id)].correct);
+  const nextLabel = isLast ? "Xem kết quả" : "Từ tiếp theo";
 
   return (
-    <div className="sg-page cj-page">
-      <header className="sg-header">
-        <h1>Luyện tập thể chia</h1>
-      </header>
+    <div className="cj2-page">
+      <ConjugationFormTiles
+        activeId={formId}
+        onSelect={(form) =>
+          form.id !== formId && navigate(`/conjugations/${form.id}/practice?group=0&difficulty=ALL&mode=${mode}`)
+        }
+      />
 
-      <div className="cj-practice-summary" aria-label="Lựa chọn luyện tập">
-        {session.data && (
-          <span className="cj-badge">
-            {session.data.nameVi} ({session.data.nameJp})
-          </span>
+      <section className="cj2-card" aria-label="Luyện tập thể chia">
+        {!finished && (
+          <div className="cj2-progress">
+            <strong>
+              {run?.kind === "review" && "Ôn lại · "}Câu {Math.min(index + 1, Math.max(questions.length, 1))} /{" "}
+              {questions.length || "—"}
+            </strong>
+            <div
+              className="cj2-progress-track"
+              role="progressbar"
+              aria-label="Số câu đã kiểm tra"
+              aria-valuemin={0}
+              aria-valuemax={questions.length}
+              aria-valuenow={doneCount}
+            >
+              <span style={{ width: `${questions.length ? (doneCount / questions.length) * 100 : 0}%` }} />
+            </div>
+            <span className="cj2-streak">
+              🔥 <b>{streak}</b> câu đúng liên tiếp
+            </span>
+          </div>
         )}
-        <span className="cj-badge">{groupLabel}</span>
-        <span className="cj-badge">{difficultyLabel}</span>
-        <span className="cj-badge">{mode === "choice" ? "Trắc nghiệm" : "Nhập đáp án"}</span>
-        <button type="button" className="mod-btn-back" onClick={changeSetup}>
-          Đổi lựa chọn
-        </button>
-      </div>
 
-      {session.isLoading ? (
-        <div className="admin-loading-state" role="status">
-          Đang tải câu hỏi...
-        </div>
-      ) : session.isError ? (
-        <div className="admin-empty-state" role="alert">
-          <p>
-            {(session.error as { response?: { status?: number } })?.response
-              ?.status === 404
-              ? "Chưa có câu luyện tập cho nhóm động từ và độ khó đã chọn."
-              : "Không tải được dữ liệu, hãy thử lại sau."}
-          </p>
+        <div className="cj2-controls">
           <button
             type="button"
-            className="mod-btn-back"
-            onClick={() => session.refetch()}
+            className="cj2-help-btn"
+            aria-label="Hướng dẫn"
+            aria-expanded={showHelp}
+            onClick={() => setShowHelp((v) => !v)}
           >
-            Thử lại
+            ?
           </button>
+          <button
+            type="button"
+            className="cj2-btn cj2-btn-outline"
+            disabled={!detail.data}
+            onClick={() => setShowMaterial(true)}
+          >
+            💡 Xem cách chia
+          </button>
+
+          <fieldset className="cj2-radio-box is-dashed">
+            <legend>Nhóm động từ:</legend>
+            {GROUPS.map((option) => {
+              const count = counts[String(option.value)];
+              return (
+                <label key={option.value} title={count !== undefined ? `${count} câu` : undefined}>
+                  <input
+                    type="radio"
+                    name="cj2-group"
+                    checked={group === option.value}
+                    disabled={!!detail.data && count === 0 && group !== option.value}
+                    onChange={() => changeSetup({ group: option.value })}
+                  />
+                  {option.label}
+                </label>
+              );
+            })}
+          </fieldset>
+
+          <label className="cj2-select">
+            Độ khó:
+            <select
+              value={difficulty}
+              onChange={(event) => changeSetup({ difficulty: parseDifficulty(event.target.value) })}
+            >
+              {DIFFICULTY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.value === "ALL" ? "Tất cả" : option.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-      ) : result && showResult ? (
-        <PracticeResult
-          result={result}
-          onNewRound={() => setRound((n) => n + 1)}
-          onBack={backToList}
-        />
-      ) : question ? (
-        <div className="cj-practice">
-          <div className="sg-main">
-            <div className="sg-question-progress">
-              <span>
-                Câu {index + 1}/{questions.length}
-              </span>
-              <div
-                className="sg-progress-track"
-                role="progressbar"
-                aria-label="Số câu đã kiểm tra"
-                aria-valuemin={0}
-                aria-valuemax={questions.length}
-                aria-valuenow={doneCount}
-              >
-                <span
-                  style={{ width: `${(doneCount / questions.length) * 100}%` }}
+
+        <div className="cj2-controls is-right">
+          <fieldset className="cj2-radio-box">
+            <legend>Hình thức:</legend>
+            <label>
+              <input type="radio" name="cj2-mode" checked={mode === "typed"} onChange={() => changeSetup({ mode: "typed" })} />
+              Nhập đáp án
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="cj2-mode"
+                checked={mode === "choice"}
+                onChange={() => changeSetup({ mode: "choice" })}
+              />
+              Trắc nghiệm
+            </label>
+          </fieldset>
+          <fieldset className="cj2-radio-box">
+            <legend>Hiển thị:</legend>
+            {DISPLAYS.map((option) => (
+              <label key={option.value}>
+                <input
+                  type="radio"
+                  name="cj2-display"
+                  checked={display === option.value}
+                  onChange={() => changeDisplay(option.value)}
                 />
+                {option.label}
+              </label>
+            ))}
+          </fieldset>
+        </div>
+
+        {showHelp && (
+          <p className="cj2-help" role="note">
+            Chia động từ sang <b>{formName}</b>. Chọn nhóm động từ, độ khó và hình thức làm bài (tự gõ hoặc trắc
+            nghiệm); đổi lựa chọn sẽ bắt đầu lượt mới ngay. Đáp án nhập được bằng Kanji hoặc Hiragana. Làm hết lượt thì kết
+            quả được lưu vào tiến độ học tập.
+          </p>
+        )}
+
+        {session.isLoading ? (
+          <p className="cj2-muted" role="status">
+            Đang tải câu hỏi...
+          </p>
+        ) : session.isError ? (
+          <div className="cj2-empty" role="alert">
+            <p>
+              {(session.error as { response?: { status?: number } })?.response?.status === 404
+                ? "Chưa có câu luyện tập cho nhóm động từ và độ khó đã chọn."
+                : "Không tải được dữ liệu, hãy thử lại sau."}
+            </p>
+            <button type="button" className="cj2-btn cj2-btn-light" onClick={() => session.refetch()}>
+              Thử lại
+            </button>
+          </div>
+        ) : finished && run ? (
+          <PracticeResult
+            run={run}
+            checked={checked}
+            result={run.kind === "main" ? result : null}
+            saveState={run.kind === "main" ? saveState : "idle"}
+            onRetrySave={() => void save(answers)}
+            display={display}
+            wrongQuestions={wrongQuestions}
+            totalInForm={counts[String(group)]}
+            onRetry={() => startRun(run)}
+            onReview={() => startRun({ kind: "review", questions: wrongQuestions })}
+            newRoundCount={session.data?.questions.length ?? 0}
+            onNewRound={() => setRound((n) => n + 1)}
+          />
+        ) : question ? (
+          <>
+            <div className="cj2-question">
+              <p>
+                Hãy chia sang <b>{formName}</b>
+              </p>
+              <div className="cj2-verb">
+                <VerbText verb={question.verb} reading={question.reading} display={display} />
               </div>
-              <span>Lượt {round + 1}</span>
+              {question.meaningVi && <p className="cj2-meaning">{question.meaningVi}</p>}
             </div>
 
-            <section className="sg-question">
-              <p className="sg-instruction">{question.instruction}</p>
-              <div className="cj-verb">
-                <span className="cj-verb-word" lang="ja">
-                  {question.verb}
-                </span>
-                <span className="cj-verb-reading" lang="ja">
-                  {question.reading}
-                </span>
-                <span className="cj-verb-meaning">{question.meaningVi}</span>
-                {question.verbGroup && (
-                  <span className="cj-badge">Nhóm {question.verbGroup}</span>
+            {useChoices ? (
+              <fieldset className="cj2-choices" disabled={!!feedback || busy}>
+                <legend className="sg-visually-hidden">Chọn đáp án</legend>
+                {question.options!.map((option, i) => {
+                  const chosen = answers[String(question.id)] === option;
+                  const state = !feedback
+                    ? ""
+                    : option === feedback.correctAnswer || feedback.acceptedAnswers.includes(option)
+                      ? " is-correct"
+                      : chosen
+                        ? " is-wrong"
+                        : "";
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`cj2-choice${state}`}
+                      aria-pressed={chosen}
+                      onClick={() => void check(option)}
+                    >
+                      <span className="cj2-choice-key">{String.fromCharCode(65 + i)}</span>
+                      <span lang="ja">{option}</span>
+                    </button>
+                  );
+                })}
+              </fieldset>
+            ) : (
+              <input
+                ref={inputRef}
+                className={`cj2-input${feedback ? (feedback.correct ? " is-correct" : " is-wrong") : ""}`}
+                aria-label="Đáp án của bạn"
+                lang="ja"
+                autoComplete="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                maxLength={100}
+                placeholder="Nhập đáp án..."
+                value={feedback ? (answers[String(question.id)] ?? input) : input}
+                readOnly={!!feedback}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={onKeyDown}
+              />
+            )}
+
+            {error && (
+              <p className="cj2-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            {feedback && (
+              <div className={`cj2-feedback ${feedback.correct ? "is-correct" : "is-wrong"}`} role="status">
+                <strong className="cj2-feedback-title">{feedback.correct ? "✅ Chính xác!" : "❌ Chưa đúng"}</strong>
+                <p className="cj2-feedback-main" lang="ja">
+                  {verbLine(question)} → {answerText(feedback, "furigana")}
+                </p>
+                {question.meaningVi && <p className="cj2-muted">{question.meaningVi}</p>}
+                {question.verbGroup && <small className="cj2-muted">Nhóm {question.verbGroup}</small>}
+                {feedback.explanation && (
+                  <div className="cj2-feedback-rule">
+                    <b>Quy tắc chia {formName}</b>
+                    <p className="cj2-pre">{feedback.explanation}</p>
+                  </div>
                 )}
               </div>
+            )}
 
-              {useChoices ? (
-                <fieldset className="sg-options" disabled={!!feedback || busy}>
-                  <legend className="sg-visually-hidden">Chọn đáp án</legend>
-                  {question.options!.map((option, i) => {
-                    const chosen = answers[String(question.id)] === option;
-                    const state = !feedback
-                      ? ""
-                      : option === feedback.correctAnswer
-                        ? " is-correct"
-                        : chosen
-                          ? " is-wrong"
-                          : "";
-                    return (
-                      <label
-                        key={option}
-                        className={`sg-option${chosen ? " is-selected" : ""}${state}`}
-                      >
-                        <input
-                          type="radio"
-                          name={`cj-${question.id}`}
-                          checked={chosen}
-                          onChange={() => void check(option)}
-                        />
-                        <span className="sg-option-key">
-                          {String.fromCharCode(65 + i)}
-                        </span>
-                        <span lang="ja">{option}</span>
-                      </label>
-                    );
-                  })}
-                </fieldset>
-              ) : (
-                <div className="cj-answer">
-                  <label htmlFor="cj-answer">Đáp án của bạn</label>
-                  <div className="cj-answer-row">
-                    <input
-                      id="cj-answer"
-                      ref={inputRef}
-                      lang="ja"
-                      autoComplete="off"
-                      autoCapitalize="off"
-                      spellCheck={false}
-                      maxLength={100}
-                      placeholder="Nhập đáp án… (Kanji, Hiragana hoặc Katakana)"
-                      value={
-                        feedback
-                          ? (answers[String(question.id)] ?? input)
-                          : input
-                      }
-                      readOnly={!!feedback}
-                      className={
-                        feedback
-                          ? feedback.correct
-                            ? "is-correct"
-                            : "is-wrong"
-                          : undefined
-                      }
-                      onChange={(event) => setInput(event.target.value)}
-                      onKeyDown={onKeyDown}
-                    />
-                    {!feedback && (
-                      <button
-                        type="button"
-                        className="sg-btn sg-btn-primary"
-                        onClick={() => void check(input)}
-                        disabled={busy || !input.trim()}
-                      >
-                        Kiểm tra
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {feedback && (
-                <div
-                  className={`sg-feedback ${feedback.correct ? "is-correct" : "is-wrong"}`}
-                  role="status"
+            <div className="cj2-actions">
+              {feedback ? (
+                <button
+                  ref={nextRef}
+                  type="button"
+                  className="cj2-btn cj2-btn-primary cj2-btn-big"
+                  onClick={next}
+                  disabled={busy}
                 >
-                  <strong>
-                    {feedback.correct ? "Chính xác!" : "Chưa đúng."}
-                  </strong>
-                  <p>
-                    Đáp án đúng: <span lang="ja">{feedback.correctAnswer}</span>
-                    {feedback.acceptedAnswers.length > 0 && (
-                      <>
-                        {" "}
-                        (chấp nhận:{" "}
-                        <span lang="ja">
-                          {feedback.acceptedAnswers.join(", ")}
-                        </span>
-                        )
-                      </>
-                    )}
-                  </p>
-                  {feedback.explanation && <p>{feedback.explanation}</p>}
-                </div>
-              )}
-              {error && (
-                <p className="sg-error" role="alert">
-                  {error}
-                </p>
-              )}
-              {isLast && feedback && (
-                <p
-                  className={saveState === "error" ? "sg-error" : "cj-saved"}
-                  role="status"
-                >
-                  {saveState === "saving"
-                    ? "Đang lưu kết quả lượt luyện tập..."
-                    : saveState === "error"
-                      ? "Chưa lưu được kết quả. Bấm “Lưu lại kết quả” để thử lại."
-                      : result
-                        ? "Đã lưu kết quả lượt luyện tập."
-                        : null}
-                </p>
-              )}
-            </section>
-
-            <footer className="sg-footer">
-              <button
-                type="button"
-                className="sg-btn sg-btn-secondary"
-                onClick={backToList}
-              >
-                Quay lại
-              </button>
-              <div className="sg-footer-group">
+                  ➜ {nextLabel} <span className="cj2-key">(Enter)</span>
+                </button>
+              ) : !useChoices ? (
                 <button
                   type="button"
-                  className="sg-btn sg-btn-primary"
-                  onClick={next}
-                  disabled={!feedback || busy || saveState === "saving"}
+                  className="cj2-btn cj2-btn-primary cj2-btn-big"
+                  onClick={() => void check(input)}
+                  disabled={busy || !input.trim()}
                 >
-                  {!isLast
-                    ? "Câu tiếp theo"
-                    : saveState === "saving"
-                      ? "Đang lưu..."
-                      : saveState === "error"
-                        ? "Lưu lại kết quả"
-                        : "Xem kết quả"}
+                  ✓ Kiểm tra <span className="cj2-key">(Enter)</span>
                 </button>
-              </div>
-            </footer>
-          </div>
+              ) : null}
+            </div>
 
-        </div>
-      ) : (
-        <div className="admin-empty-state">Chưa có dữ liệu được tạo.</div>
+            <p className="cj2-hint">
+              ⌨️ {useChoices ? "Bấm vào đáp án để chọn" : "Nhấn Enter để kiểm tra đáp án"} • Nhấn Enter lần nữa để
+              sang từ tiếp theo
+            </p>
+          </>
+        ) : (
+          <div className="cj2-empty">Chưa có câu luyện tập.</div>
+        )}
+      </section>
+
+      {showMaterial && detail.data && (
+        <ConjugationMaterialModal
+          nameVi={detail.data.nameVi}
+          nameJp={detail.data.nameJp}
+          description={detail.data.description}
+          materialContent={detail.data.materialContent}
+          onClose={() => setShowMaterial(false)}
+        />
       )}
     </div>
   );
 }
 
+/** Màn kết quả: chỉ liệt kê các câu sai kèm đáp án đúng (không hiện câu học viên đã gõ). */
 function PracticeResult({
+  run,
+  checked,
   result,
+  saveState,
+  onRetrySave,
+  display,
+  wrongQuestions,
+  totalInForm,
+  newRoundCount,
+  onRetry,
+  onReview,
   onNewRound,
-  onBack,
 }: {
-  result: ConjugationPracticeResult;
+  run: Run;
+  checked: Record<string, ConjugationCheckResult>;
+  result: ConjugationPracticeResult | null;
+  saveState: "idle" | "saving" | "error";
+  onRetrySave: () => void;
+  display: Display;
+  wrongQuestions: ConjugationQuestion[];
+  totalInForm: number | undefined;
+  newRoundCount: number;
+  onRetry: () => void;
+  onReview: () => void;
   onNewRound: () => void;
-  onBack: () => void;
 }) {
-  const wrong = result.details.filter((d) => !d.correct).length;
+  const total = run.questions.length;
+  const correct = total - wrongQuestions.length;
   return (
-    <>
-      <section
-        className={`sg-result ${result.passed ? "is-passed" : "is-failed"}`}
-        aria-live="polite"
-      >
-        <p className="sg-result-score">
-          {result.correctCount}/{result.totalQuestions} câu đúng (
-          {Math.round(Number(result.score))}%)
-        </p>
-        <p className="sg-result-status">
+    <div className="cj2-result" aria-live="polite">
+      <span className="cj2-result-icon" aria-hidden="true">
+        {wrongQuestions.length === 0 ? "🎉" : "📚"}
+      </span>
+      <h2>{run.kind === "review" ? "Ôn lại xong!" : "Hoàn thành!"}</h2>
+      <p>
+        Bạn đúng{" "}
+        <b>
+          {correct}/{total}
+        </b>{" "}
+        câu
+      </p>
+      {result && (
+        <p className={result.passed ? "cj2-pass" : "cj2-fail"}>
           {result.passed
-            ? "Đạt"
-            : `Chưa đạt (cần tối thiểu ${Math.round(Number(result.passingScore))}%)`}
+            ? `Đạt (${Math.round(Number(result.score))}%)`
+            : `Chưa đạt ${Math.round(Number(result.score))}% — cần tối thiểu ${Math.round(Number(result.passingScore))}%`}
+          {result.coinsAwarded > 0 && ` · +${result.coinsAwarded} xu cho lần đạt đầu tiên`}
         </p>
-        {wrong > 0 && (
-          <p>
-            {wrong} câu sai, bạn có thể xem lại cách chia rồi luyện lượt mới.
-          </p>
-        )}
-        {result.coinsAwarded > 0 && (
-          <p>Bạn nhận được {result.coinsAwarded} xu cho lần đạt đầu tiên.</p>
-        )}
-        <p>Kết quả đã được lưu vào tiến độ học tập.</p>
-      </section>
-      <footer className="sg-footer">
-        <button
-          type="button"
-          className="sg-btn sg-btn-secondary"
-          onClick={onBack}
-        >
-          Quay lại
+      )}
+      {saveState === "saving" && (
+        <p className="cj2-muted" role="status">
+          Đang lưu kết quả lượt luyện tập...
+        </p>
+      )}
+      {saveState === "error" && (
+        <p className="cj2-error" role="alert">
+          Chưa lưu được kết quả.{" "}
+          <button type="button" className="cj2-btn cj2-btn-outline" onClick={onRetrySave}>
+            Lưu lại
+          </button>
+        </p>
+      )}
+
+      {wrongQuestions.length > 0 && (
+        <div className="cj2-review">
+          <h3>Các câu cần ôn lại:</h3>
+          <ul>
+            {wrongQuestions.map((q) => (
+              <li key={q.id} lang="ja">
+                <VerbText verb={q.verb} reading={q.reading} display={display} /> →{" "}
+                <b>{answerText(checked[String(q.id)], display)}</b>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {run.kind === "main" && totalInForm !== undefined && (
+        <p className="cj2-muted cj2-small">
+          Mỗi lượt lấy ngẫu nhiên {total} / {totalInForm} câu
+        </p>
+      )}
+
+      <div className="cj2-actions">
+        <button type="button" className="cj2-btn cj2-btn-light" onClick={onRetry}>
+          ↻ Làm lại
         </button>
-        <button
-          type="button"
-          className="sg-btn sg-btn-primary"
-          onClick={onNewRound}
-        >
-          Lượt mới
+        {wrongQuestions.length > 0 && (
+          <button type="button" className="cj2-btn cj2-btn-danger" onClick={onReview}>
+            ↺ Ôn lại {wrongQuestions.length} câu sai
+          </button>
+        )}
+        <button type="button" className="cj2-btn cj2-btn-primary" onClick={onNewRound} autoFocus>
+          + Làm tiếp {newRoundCount} câu <span className="cj2-key">(Enter)</span>
         </button>
-      </footer>
-    </>
+      </div>
+    </div>
   );
 }

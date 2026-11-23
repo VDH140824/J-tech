@@ -7,6 +7,582 @@
 }
 .campus-3d-back { color: #8f284a; font-weight: 650; text-decoration: none; }
 .campus-3d-back:hover { text-decoration: underline; }
+
+/* ========================================================
+   FPTU CAMPUS 3D - CHARACTER SELECTION & CUSTOMIZATION V2
+   ======================================================== */
+.campus-select-v2-container {
+  max-width: 1240px;
+  min-height: calc(100vh - 4rem);
+  margin: 0 auto;
+  padding: 1.25rem clamp(1rem, 3vw, 2.5rem) 3rem;
+  box-sizing: border-box;
+}
+
+.campus-select-v2-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.campus-3d-back-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ea580c;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.6rem;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  transition: all 0.2s ease;
+}
+
+.campus-3d-back-modern:hover {
+  background: #ffedd5;
+  color: #c2410c;
+  transform: translateX(-2px);
+}
+
+.campus-3d-back-modern .back-arrow {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.campus-badge-metaverse {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.25);
+}
+
+.campus-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.campus-select-v2-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.campus-select-sub {
+  margin: 0 0 0.35rem;
+  color: #ea580c;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.campus-select-v2-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 4vw, 2.85rem);
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.campus-select-desc {
+  margin: 0 auto;
+  max-width: 560px;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Arena Layout: 3D Stage on left, Controls on right */
+.campus-select-v2-arena {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(420px, 1.22fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+
+@media (max-width: 960px) {
+  .campus-select-v2-arena {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* 3D Stage */
+.campus-stage-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.campus-stage-canvas-box {
+  position: relative;
+  width: 100%;
+  height: clamp(400px, 60vh, 560px);
+  border-radius: 1.5rem;
+  background: radial-gradient(circle at 50% 25%, #1e293b 0%, #0f172a 70%, #020617 100%);
+  overflow: hidden;
+  box-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  cursor: grab;
+  user-select: none;
+}
+
+.campus-stage-canvas-box:active {
+  cursor: grabbing;
+}
+
+.campus-stage-canvas-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+  outline: none;
+}
+
+.campus-stage-preview-notice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.campus-stage-overlay-tools {
+  position: absolute;
+  bottom: 0.85rem;
+  left: 0.85rem;
+  right: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.85rem;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+  pointer-events: auto;
+  z-index: 5;
+}
+
+.campus-stage-rotate-group,
+.campus-stage-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.stage-action-btn {
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.stage-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.stage-action-btn.active {
+  background: #ea580c;
+  border-color: #f97316;
+  color: #ffffff;
+}
+
+.campus-stage-char-tag {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 0.85rem;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.char-tag-gender {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #fb923c;
+  letter-spacing: 0.05em;
+}
+
+.char-tag-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.char-tag-major {
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+/* Right: Control Panel */
+.campus-custom-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.custom-section-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.65rem;
+}
+
+/* Gender Selector Grid */
+.gender-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.gender-card-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gender-card-btn:hover {
+  border-color: #fdba74;
+  background: #fffaf5;
+  transform: translateY(-1px);
+}
+
+.gender-card-btn.selected {
+  border-color: #ea580c;
+  background: #fff7ed;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.15);
+}
+
+.gender-card-icon {
+  font-size: 1.6rem;
+}
+
+.gender-card-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.gender-card-info strong {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.gender-card-info small {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.gender-card-check {
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ea580c;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* Wardrobe Box */
+.campus-wardrobe-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.wardrobe-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.wardrobe-header .custom-section-label {
+  margin-bottom: 0;
+}
+
+.wardrobe-tabs {
+  display: flex;
+  gap: 0.35rem;
+  background: #f1f5f9;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+}
+
+.wardrobe-tab-btn {
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wardrobe-tab-btn:hover {
+  color: #0f172a;
+}
+
+.wardrobe-tab-btn.active {
+  background: #ffffff;
+  color: #ea580c;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Wardrobe Grid Items */
+.wardrobe-content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.outfit-option-btn,
+.accessory-option-btn {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-radius: 0.85rem;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  transition: all 0.15s ease;
+}
+
+.outfit-option-btn:hover,
+.accessory-option-btn:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.outfit-option-btn.selected,
+.accessory-option-btn.selected {
+  border-color: #ea580c;
+  background: #fff7ed;
+  box-shadow: 0 3px 10px rgba(234, 88, 12, 0.12);
+}
+
+.outfit-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.outfit-meta,
+.acc-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.outfit-meta strong,
+.acc-meta strong {
+  font-size: 0.86rem;
+  font-weight: 750;
+  color: #0f172a;
+  line-height: 1.3;
+  word-break: break-word;
+  padding-right: 3.5rem;
+}
+
+.outfit-meta small,
+.acc-meta small {
+  font-size: 0.74rem;
+  color: #64748b;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.acc-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.option-badge {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #ea580c;
+  background: #ffedd5;
+  border: 1px solid #fed7aa;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.35rem;
+  pointer-events: none;
+}
+
+/* Hair color swatches */
+.hair-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+}
+
+.hair-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.75rem 0.4rem;
+  border-radius: 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hair-option-btn:hover {
+  background: #f1f5f9;
+}
+
+.hair-option-btn.selected {
+  border-color: #ea580c;
+  background: #fff7ed;
+}
+
+.hair-color-pill {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.hair-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+  text-align: center;
+}
+
+/* Enter Map Button */
+.campus-enter-v2-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.05rem 1.75rem;
+  border: none;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -4px rgba(234, 88, 12, 0.45);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.campus-enter-v2-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -4px rgba(234, 88, 12, 0.55);
+  background: linear-gradient(135deg, #d9480f 0%, #ea580c 100%);
+}
+
+.campus-enter-v2-btn:active {
+  transform: translateY(0);
+}
+
+.enter-btn-arrow {
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.campus-enter-v2-btn:hover .enter-btn-arrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 640px) {
+  .campus-select-v2-container {
+    padding: 1rem 0.75rem 2rem;
+  }
+  .wardrobe-content-grid {
+    grid-template-columns: 1fr;
+  }
+  .hair-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .campus-pulse-dot { animation: none; }
+  .campus-enter-v2-btn, .outfit-option-btn, .accessory-option-btn, .gender-card-btn { transition: none; }
+}
 .campus-3d-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 1rem 0; }
 .campus-3d-header h1 { margin: 0 0 .4rem; font-size: clamp(1.6rem, 3vw, 2.2rem); }
 .campus-3d-header p { margin: 0; color: #64748b; }

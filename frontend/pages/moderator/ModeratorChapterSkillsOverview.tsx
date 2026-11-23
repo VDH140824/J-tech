@@ -7,7 +7,19 @@ interface ModeratorChapterSkillsOverviewProps {
   onSelectSkill: (skill: LessonSection) => void;
   onBack: () => void;
   readOnly?: boolean;
+  /** Shows the AI speaking practice card when provided (learner view only). */
+  onOpenSpeaking?: () => void;
 }
+
+const SPEAKING_CARD = {
+  icon: "🗣️",
+  label: "Luyện nói",
+  labelJp: "会話",
+  description: "Nhập vai hội thoại với AI, chấm phát âm từng từ",
+  color: "#db2777",
+  bgColor: "#fdf2f8",
+  borderColor: "#fbcfe8",
+};
 
 export function ModeratorChapterSkillsOverview({
   courseName,
@@ -16,7 +28,27 @@ export function ModeratorChapterSkillsOverview({
   onSelectSkill,
   onBack,
   readOnly = false,
+  onOpenSpeaking,
 }: ModeratorChapterSkillsOverviewProps) {
+  const cards = [
+    ...SECTIONS.map((sec) => ({
+      ...sec,
+      isNew: false,
+      action: "Vào bài học →",
+      open: () => onSelectSkill(sec.key),
+    })),
+    ...(onOpenSpeaking
+      ? [
+          {
+            ...SPEAKING_CARD,
+            key: "speaking",
+            isNew: true,
+            action: "Chọn tình huống →",
+            open: onOpenSpeaking,
+          },
+        ]
+      : []),
+  ];
   return (
     <div className="admin-page-container">
       {/* Top Breadcrumb Navigation */}
@@ -41,21 +73,22 @@ export function ModeratorChapterSkillsOverview({
           </h2>
           <p className="admin-main-subtitle">
             Chọn kỹ năng {readOnly ? "để học" : "cần quản lý bài học"} trong{" "}
-            <strong>{courseName}</strong> (Kanji, Từ vựng, Ngữ pháp, Nghe, Đọc hiểu).
+            <strong>{courseName}</strong> (Kanji, Từ vựng, Ngữ pháp, Nghe, Đọc hiểu
+            {onOpenSpeaking ? ", Luyện nói" : ""}).
           </p>
         </div>
       </div>
 
-      {/* Grid 5 cards */}
+      {/* Skill cards, plus the speaking card in the learner view */}
       <div className="mod-skills-grid">
-        {SECTIONS.map((sec) => (
+        {cards.map((sec) => (
           <div
             key={sec.key}
             className="mod-skill-choice-card"
             style={{
               borderLeft: `5px solid ${sec.color}`,
             }}
-            onClick={() => onSelectSkill(sec.key)}
+            onClick={sec.open}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               <div
@@ -95,6 +128,22 @@ export function ModeratorChapterSkillsOverview({
                   >
                     {sec.labelJp}
                   </span>
+                  {sec.isNew && (
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
+                        fontWeight: 800,
+                        letterSpacing: "0.05em",
+                        textTransform: "uppercase",
+                        color: "#ffffff",
+                        backgroundColor: sec.color,
+                        borderRadius: "999px",
+                        padding: "2px 8px",
+                      }}
+                    >
+                      Mới
+                    </span>
+                  )}
                 </div>
                 <p
                   style={{
@@ -120,10 +169,10 @@ export function ModeratorChapterSkillsOverview({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                onSelectSkill(sec.key);
+                sec.open();
               }}
             >
-              Vào bài học →
+              {sec.action}
             </button>
           </div>
         ))}

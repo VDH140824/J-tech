@@ -36,13 +36,16 @@ class KanjiTestServiceTest {
   @Mock
   KanjiExerciseService exercise;
 
+  @Mock
+  LearningActivityService activities;
+
   final ObjectMapper mapper = new ObjectMapper();
   final Principal principal = () -> "student@example.com";
   KanjiTestService service;
 
   @BeforeEach
   void setup() {
-    service = new KanjiTestService(db, access, mapper, exercise, null);
+    service = new KanjiTestService(db, access, mapper, exercise, activities);
   }
 
   private KanjiExerciseRequest question(QuestionType type) {
