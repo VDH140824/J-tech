@@ -2595,7 +2595,7 @@ Bỏ る rồi thêm ます.
 Bất quy tắc:
 する → します
 来る（くる） → 来ます（きます）',
-   10, 1, 'DRAFT'),
+   10, 1, 'PUBLISHED'),
    ('NAI_FORM', 'Thể ない', 'ない形',
    'Thể phủ định thông thường, dùng trong các mẫu ないでください, なければなりません, なくてもいいです.',
    '【Nhóm I】
@@ -2612,7 +2612,7 @@ Bỏ る rồi thêm ない.
 Bất quy tắc:
 する → しない
 来る（くる） → 来ない（こない）',
-   10, 4, 'DRAFT'),
+   10, 4, 'PUBLISHED'),
   ('TA_FORM', 'Thể た', 'た形',
    'Thể quá khứ thông thường, dùng trong các mẫu たことがあります, たほうがいいです, たり～たりします. Cách chia giống thể て, chỉ đổi て → た, で → だ.',
    '【Nhóm I】
@@ -2630,7 +2630,7 @@ Bỏ る rồi thêm た.
 Bất quy tắc:
 する → した
 来る（くる） → 来た（きた）',
-   10, 5, 'DRAFT');
+   10, 5, 'PUBLISHED');
 
 -- TAI_FORM (thể たい)
 INSERT INTO conjugation_form
@@ -2651,7 +2651,7 @@ Bỏ る rồi thêm たい.
 Bất quy tắc:
 する → したい
 来る（くる） → 来たい（きたい）',
-   10, 7, 'DRAFT');
+   10, 7, 'PUBLISHED');
 SET @masu  = (SELECT id FROM conjugation_form WHERE code = 'MASU_FORM');
 SET @nai   = (SELECT id FROM conjugation_form WHERE code = 'NAI_FORM');
 SET @ta    = (SELECT id FROM conjugation_form WHERE code = 'TA_FORM');
