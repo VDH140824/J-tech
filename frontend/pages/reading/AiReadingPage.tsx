@@ -108,9 +108,9 @@ function ReadingExercise({
     <article className="reading-article">
       <header className="reading-header">
         <span>ĐỌC HIỂU AI · {scopeLabel(detail.courseName, detail.chapterNo)}</span>
-        <h1 lang="ja">
+        <h2 lang="ja">
           <FuriganaText text={detail.title} showReading={showFurigana} />
-        </h1>
+        </h2>
       </header>
       <div className="reading-tools">
         <button
@@ -201,47 +201,51 @@ function ScopePicker({
 
   return (
     <section className="reading-picker" aria-label="Chọn phạm vi tạo bài đọc">
-      <div className="reading-picker-courses" role="group" aria-label="Chọn môn">
-        {(courses.data ?? []).map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            aria-pressed={c.id === courseId}
-            onClick={() => {
-              setPickedCourse(c.id);
-              setPickedChapter("");
-            }}
-          >
-            {c.name}
-          </button>
-        ))}
-      </div>
-      <label className="reading-picker-chapter">
-        <span>Bài</span>
-        <select
-          value={chapterId}
-          disabled={!chapters.length}
-          onChange={(event) => setPickedChapter(event.target.value ? Number(event.target.value) : "")}
-        >
-          <option value="">Tất cả các bài</option>
-          {chapters.map((chapter) => (
-            <option key={chapter.id} value={chapter.id}>
-              Bài {chapter.chapterNo}: {chapter.title}
-            </option>
+      <div className="reading-picker-scope">
+        <div className="reading-picker-courses" role="group" aria-label="Chọn môn">
+          {(courses.data ?? []).map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              aria-pressed={c.id === courseId}
+              onClick={() => {
+                setPickedCourse(c.id);
+                setPickedChapter("");
+              }}
+            >
+              {c.name}
+            </button>
           ))}
-        </select>
-      </label>
-      <button
-        type="button"
-        className="reading-create"
-        disabled={disabled || courseId === undefined}
-        onClick={() => onCreate(chapterId ? { chapterId } : { courseId })}
-      >
-        {disabled ? "AI đang soạn…" : "Tạo bài đọc"}
-      </button>
-      <Link className="reading-history-link" to="/ai-reading/history">
-        Lịch sử
-      </Link>
+        </div>
+        <label className="reading-picker-chapter">
+          <span>Bài</span>
+          <select
+            value={chapterId}
+            disabled={!chapters.length}
+            onChange={(event) => setPickedChapter(event.target.value ? Number(event.target.value) : "")}
+          >
+            <option value="">Tất cả các bài</option>
+            {chapters.map((chapter) => (
+              <option key={chapter.id} value={chapter.id}>
+                Bài {chapter.chapterNo}: {chapter.title}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="reading-picker-actions">
+        <Link className="reading-history-link" to="/ai-reading/history">
+          Lịch sử
+        </Link>
+        <button
+          type="button"
+          className="reading-create"
+          disabled={disabled || courseId === undefined}
+          onClick={() => onCreate(chapterId ? { chapterId } : { courseId })}
+        >
+          {disabled ? "AI đang soạn…" : "Tạo bài đọc"}
+        </button>
+      </div>
     </section>
   );
 }
@@ -281,6 +285,12 @@ export function AiReadingPage() {
 
   return (
     <main className="reading-page">
+      <header className="reading-page-header">
+        <h1>
+          Đọc hiểu với AI <span lang="ja">読解</span>
+        </h1>
+        <p>Luyện đọc đoạn văn tiếng Nhật do AI soạn theo đúng phạm vi bạn đã học.</p>
+      </header>
       <ScopePicker
         key={detail?.id ?? "new"}
         initialCourseId={detail?.courseId}
@@ -289,9 +299,17 @@ export function AiReadingPage() {
         onCreate={(scope) => create.mutate(scope)}
       />
       {create.isPending && (
-        <div className="reading-loading" role="status">
-          <span className="reading-spinner" aria-hidden="true" />
-          AI đang soạn bài đọc…
+        <div className="reading-loading">
+          <p role="status">
+            <span className="reading-spinner" aria-hidden="true" />
+            AI đang soạn bài đọc, thường mất khoảng 10–30 giây…
+          </p>
+          <div className="reading-skeleton" aria-hidden="true">
+            <span className="reading-skeleton-title" />
+            <span />
+            <span />
+            <span className="reading-skeleton-short" />
+          </div>
         </div>
       )}
       {create.isError && <ErrorBox error={create.error} fallback="Không tạo được bài đọc. Vui lòng thử lại." />}
@@ -314,10 +332,27 @@ export function AiReadingPage() {
         sessionId === undefined &&
         lessonId === undefined &&
         !create.isPending && (
-          <p className="reading-state">
-            Chọn môn và bài rồi nhấn “Tạo bài đọc”. AI sẽ soạn một đoạn văn kèm 5 câu hỏi trắc nghiệm dựa trên từ
-            vựng, ngữ pháp và chữ Hán đã học.
-          </p>
+          <section className="reading-empty" aria-labelledby="reading-empty-title">
+            <span className="reading-empty-mark" lang="ja" aria-hidden="true">
+              読
+            </span>
+            <h2 id="reading-empty-title">Bắt đầu một bài đọc mới</h2>
+            <p>AI soạn đoạn văn dựa trên từ vựng, ngữ pháp và chữ Hán bạn đã học.</p>
+            <ol className="reading-empty-steps">
+              <li>
+                <strong>Chọn môn</strong>
+                <span>Nhật 1, Nhật 2…</span>
+              </li>
+              <li>
+                <strong>Chọn bài</strong>
+                <span>Hoặc để “Tất cả các bài”</span>
+              </li>
+              <li>
+                <strong>Nhấn “Tạo bài đọc”</strong>
+                <span>Nhận đoạn văn kèm 5 câu hỏi</span>
+              </li>
+            </ol>
+          </section>
         )
       )}
     </main>

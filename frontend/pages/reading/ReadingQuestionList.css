@@ -7,7 +7,7 @@
 }
 
 .reading-q-item fieldset {
-  border: 1px solid #f3d6e2;
+  border: 1px solid var(--learn-border);
   border-radius: 14px;
   padding: 14px 16px;
   margin: 0;
@@ -18,13 +18,13 @@
 .reading-q-item legend {
   padding: 0 4px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--learn-text);
   line-height: 1.6;
   overflow-wrap: anywhere;
 }
 
 .reading-q-number {
-  color: #db2777;
+  color: var(--learn-accent);
 }
 
 .reading-q-options {
@@ -38,7 +38,7 @@
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--learn-border);
   border-radius: 10px;
   cursor: pointer;
   overflow-wrap: anywhere;
@@ -51,7 +51,7 @@
 }
 
 .reading-q-option:focus-within {
-  outline: 2px solid #db2777;
+  outline: 3px solid var(--learn-focus);
   outline-offset: 2px;
 }
 
@@ -62,17 +62,17 @@
   display: inline-grid;
   place-items: center;
   border-radius: 50%;
-  background: #f3f4f6;
+  background: #f1f5f9;
   font-weight: 700;
 }
 
 .reading-q-option.chosen {
-  border-color: #db2777;
-  background: #fdf2f8;
+  border-color: var(--learn-accent);
+  background: var(--learn-accent-soft);
 }
 
 .reading-q-option.chosen .reading-q-letter {
-  background: #db2777;
+  background: var(--learn-accent);
   color: #fff;
 }
 

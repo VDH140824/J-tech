@@ -49,6 +49,22 @@
   --info-bg: #eff6ff;
   --info-text: #1e40af;
 
+  /* --- Learning pages (Nghe hiểu / Đọc hiểu / Luyện nói): teal theo trang Khóa học --- */
+  --learn-accent: #0f766e;
+  --learn-accent-strong: #0d9488;
+  --learn-accent-hover: #115e59;
+  --learn-accent-soft: #f0fdfa;
+  --learn-panel: #ecfdf5;
+  --learn-panel-border: #ccfbf1;
+  --learn-text: #1e293b;
+  --learn-text-body: #475569;
+  --learn-muted: #64748b;
+  --learn-border: #e2e8f0;
+  --learn-track: #e2e8f0;
+  --learn-focus: #14b8a6;
+  --learn-radius: 16px;
+  --learn-radius-btn: 8px;
+
   /* --- Typography --- */
   --font-sans:
     "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
