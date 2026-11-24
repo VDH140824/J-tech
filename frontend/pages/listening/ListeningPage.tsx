@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { getCourses } from "../../api/courseApi";
 import {
   getListening,
@@ -112,6 +112,8 @@ function ListeningExercise({ detail }: { detail: ListeningDetail }) {
 
 function ListeningSidebar({ currentLessonId, currentCourseId }: { currentLessonId: number; currentCourseId?: number }) {
   const courses = useQuery({ queryKey: ["courses"], queryFn: getCourses });
+  // Chuyển sang bài khác vẫn giữ nơi người dùng đã vào để nút quay lại không đổi.
+  const { state } = useLocation();
   const [tab, setTab] = useState<number>();
   const courseId = tab ?? currentCourseId ?? courses.data?.[0]?.id;
   const list = useQuery({
@@ -157,6 +159,7 @@ function ListeningSidebar({ currentLessonId, currentCourseId }: { currentLessonI
                   <Link
                     ref={current ? currentRef : undefined}
                     to={`/listening/${item.lessonId}`}
+                    state={state}
                     aria-current={current ? "page" : undefined}
                     className={current ? "current" : undefined}
                   >
@@ -176,27 +179,121 @@ function ListeningSidebar({ currentLessonId, currentCourseId }: { currentLessonI
   );
 }
 
-/** Mở từ menu: chuyển tới bài nghe đầu tiên của môn đầu tiên. */
+/** Trang tổng hợp nghe hiểu: chọn khóa học, xem tiến độ và danh sách bài nghe theo từng bài. */
 export function ListeningIndexPage() {
-  const list = useQuery({ queryKey: ["listening-list", "all"], queryFn: () => getListeningList() });
-  const first = list.data?.[0];
-  if (first) return <Navigate to={`/listening/${first.lessonId}`} replace />;
+  const courses = useQuery({ queryKey: ["courses"], queryFn: getCourses });
+  const [tab, setTab] = useState<number>();
+  const courseId = tab ?? courses.data?.[0]?.id;
+  const list = useQuery({
+    queryKey: ["listening-list", courseId],
+    queryFn: () => getListeningList(courseId),
+    enabled: courseId !== undefined,
+  });
+  const items = list.data ?? [];
+  const done = items.filter((item) => item.completed).length;
+  const groups = new Map<number | null, typeof items>();
+  for (const item of items) {
+    const group = groups.get(item.chapterNo);
+    if (group) group.push(item);
+    else groups.set(item.chapterNo, [item]);
+  }
+  const loading = courses.isLoading || list.isLoading;
+  const failed = courses.isError || list.isError;
+  const percent = items.length ? Math.round((done / items.length) * 100) : 0;
+
   return (
-    <main className="listening-page">
-      <div className="listening-main">
-        {list.isLoading ? (
-          <p className="listening-state" role="status">
-            Đang tải bài nghe…
-          </p>
-        ) : list.isError ? (
+    <main className="listening-overview">
+      <header className="listening-overview-header">
+        <span>LUYỆN KỸ NĂNG</span>
+        <h1>
+          Nghe hiểu <span lang="ja">聴解</span>
+        </h1>
+        <p>Nghe đoạn hội thoại tiếng Nhật rồi trả lời câu hỏi để luyện kỹ năng nghe.</p>
+      </header>
+
+      <div className="listening-overview-tabs" role="tablist" aria-label="Chọn khóa học">
+        {(courses.data ?? []).map((course) => (
+          <button
+            key={course.id}
+            type="button"
+            role="tab"
+            aria-selected={course.id === courseId}
+            onClick={() => setTab(course.id)}
+          >
+            {course.name}
+          </button>
+        ))}
+      </div>
+
+      <div role="tabpanel">
+        {failed ? (
           <div className="listening-state" role="alert">
-            <p>{errorMessage(list.error, "Không tải được danh sách bài nghe.")}</p>
-            <button type="button" onClick={() => void list.refetch()}>
+            <p>
+              {errorMessage(courses.error ?? list.error, "Không tải được danh sách bài nghe.")}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (courses.isError) void courses.refetch();
+                else void list.refetch();
+              }}
+            >
               Thử lại
             </button>
           </div>
+        ) : loading ? (
+          <p className="listening-state" role="status">
+            Đang tải bài nghe…
+          </p>
+        ) : items.length === 0 ? (
+          <p className="listening-state">Khóa học này chưa có bài nghe nào.</p>
         ) : (
-          <p className="listening-state">Chưa có bài nghe nào.</p>
+          <>
+            <section className="listening-progress" aria-label="Tiến độ nghe hiểu">
+              <div className="listening-progress-text">
+                <h2>Tiến độ nghe hiểu</h2>
+                <p>
+                  Đã hoàn thành <strong>{done}/{items.length}</strong> bài
+                </p>
+              </div>
+              <strong className="listening-progress-percent">{percent}%</strong>
+              <progress value={done} max={items.length} aria-label="Tiến độ nghe hiểu" />
+            </section>
+            {[...groups].map(([chapterNo, groupItems]) => (
+              <section className="listening-group" key={chapterNo ?? "other"}>
+                <div className="listening-group-heading">
+                  <span className="listening-group-number" aria-hidden="true">
+                    {chapterNo ?? "•"}
+                  </span>
+                  <div>
+                    <h2>{chapterNo ? `Bài ${chapterNo}` : "Khác"}</h2>
+                    <p>
+                      {groupItems.filter((item) => item.completed).length}/{groupItems.length} bài
+                      nghe hoàn thành
+                    </p>
+                  </div>
+                </div>
+                <ul>
+                  {groupItems.map((item) => (
+                    <li key={item.lessonId}>
+                      <Link
+                        className="listening-card"
+                        to={`/listening/${item.lessonId}`}
+                        state={{ from: "/listening" }}
+                      >
+                        <span className="listening-card-title">{item.title}</span>
+                        <span
+                          className={`listening-card-status${item.completed ? " done" : ""}`}
+                        >
+                          {item.completed ? "✓ Đã hoàn thành" : "Chưa hoàn thành"}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </>
         )}
       </div>
     </main>
@@ -213,13 +310,19 @@ export function ListeningPage() {
     enabled: valid,
     retry: false,
   });
+  // Quay về đúng trang người dùng đã vào (trang Luyện nghe hoặc chương trong khóa học);
+  // mở trực tiếp bằng link thì mặc định về trang khóa học.
+  const { state } = useLocation();
+  const from: string | undefined = typeof state?.from === "string" ? state.from : undefined;
+  const backTo = from ?? (detail.data ? `/courses/${detail.data.courseId}` : undefined);
+  const backLabel = from === "/listening" ? "Quay lại luyện nghe" : "Quay lại khóa học";
 
   return (
     <main className="listening-page">
       <div className="listening-main">
-        {detail.data && (
-          <Link className="listening-back" to={`/courses/${detail.data.courseId}`}>
-            ← Quay lại khóa học
+        {backTo && (
+          <Link className="listening-back" to={backTo}>
+            ← {backLabel}
           </Link>
         )}
         {!valid ? (
