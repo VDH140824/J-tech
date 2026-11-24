@@ -107,3 +107,24 @@ export async function saveChapterKanjiExercise(chapterId: number, id: number | u
 export async function deleteChapterKanjiExercise(chapterId: number, id: number, documentLessonId?: number) {
   return (await apiClient.delete<{ result: "DELETED" | "ARCHIVED" }>(`${base(chapterId)}/exercises/${id}`, { params: { documentLessonId } })).data.result;
 }
+
+export interface KanjiExcelError { row: number; column: string; message: string }
+
+export async function importKanjiExercises(chapterId: number, documentLessonId: number, file: File) {
+  const body = new FormData();
+  body.append("file", file);
+  return (await apiClient.post<{ importedCount: number }>(`${base(chapterId)}/exercises/import`, body,
+    { params: { documentLessonId } })).data;
+}
+
+export async function downloadKanjiExcel(chapterId: number, documentLessonId?: number, status?: string) {
+  const template = documentLessonId === undefined;
+  const response = await apiClient.get<Blob>(`${base(chapterId)}/exercises/${template ? "template" : "export"}`,
+    { responseType: "blob", params: template ? undefined : { documentLessonId, status: status || undefined } });
+  const url = URL.createObjectURL(response.data);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = template ? "Kanji_template.xlsx" : "Kanji_exercises.xlsx";
+  document.body.appendChild(link);
+  try { link.click(); } finally { link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000); }
+}

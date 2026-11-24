@@ -17,7 +17,7 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
   const [contentLoading, setContentLoading] = useState(true);
   const [contentError, setContentError] = useState("");
   const [contentRetry, setContentRetry] = useState(0);
-  const [documentIndex, setDocumentIndex] = useState(0);
+  const [viewedDocument, setViewedDocument] = useState<{ lessonId: number; url: string }>();
   const [documentFile, setDocumentFile] = useState<File>();
   const [documentName, setDocumentName] = useState("");
   const [renamingDocument, setRenamingDocument] = useState<KanjiDocument>();
@@ -32,7 +32,7 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
   const [documentNotice, setDocumentNotice] = useState("");
   const documentInputRef = useRef<HTMLInputElement>(null);
   const documents = content?.documentItems ?? [];
-  const selectedDocument = documents[documentIndex] ?? documents[0];
+  const selectedDocument = documents.find(document => document.lessonId === viewedDocument?.lessonId && document.url === viewedDocument.url);
   const isCloudinaryPdf = !!selectedDocument && /^https:\/\/res\.cloudinary\.com\//i.test(selectedDocument.url)
     && (/\.pdf(?:[?#]|$)/i.test(selectedDocument.url) || /\.pdf$/i.test(selectedDocument.name));
   const documentPreviewUrl = isCloudinaryPdf ? getPdfPreviewUrl(selectedDocument.url) : selectedDocument?.url;
@@ -59,6 +59,7 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
   useEffect(() => {
     const controller = new AbortController();
     setContentLoading(true);
+    setViewedDocument(undefined);
     setContentError("");
     getKanjiChapter(chapterId, controller.signal)
       .then(result => { if (!controller.signal.aborted) setContent(result); })
@@ -109,8 +110,7 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
     try {
       const updated = await uploadKanjiDocument(chapterId, documentFile, documentName.trim());
       setContent(updated);
-      const uploadedIndex = updated.documentItems.findIndex(doc => !documents.some(existing => existing.url === doc.url));
-      setDocumentIndex(Math.max(0, uploadedIndex));
+      setViewedDocument(undefined);
       setDocumentFile(undefined);
       setDocumentName("");
       if (documentInputRef.current) documentInputRef.current.value = "";
@@ -186,9 +186,7 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
     try {
       const result = await deleteKanjiDocument(chapterId, document);
       setContent(result.content);
-      const remaining = result.content.documentItems;
-      const selectedIndex = remaining.findIndex(item => item.url === selectedDocument?.url);
-      setDocumentIndex(selectedIndex >= 0 ? selectedIndex : Math.min(documentIndex, Math.max(0, remaining.length - 1)));
+      if (viewedDocument?.lessonId === document.lessonId && viewedDocument.url === document.url) setViewedDocument(undefined);
       if (exerciseLessonId === document.lessonId) setExerciseLessonId(undefined);
       setDocumentNotice("Đã xóa tài liệu khỏi chương.");
       if (result.warnings.length) setDocumentError(result.warnings.join(" "));
@@ -294,7 +292,7 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
           <td>{document.name}{document.status === "ARCHIVED" && <span> · Đã lưu trữ</span>}</td>
           <td>{document.sharedLesson ? "Câu hỏi cũ cần phân loại" : `${document.exerciseCount} câu hỏi`}</td>
           <td><div className="kanji-exercise-actions">
-            <button type="button" disabled={documentBusy} onClick={() => setDocumentIndex(index)}>Xem tài liệu</button>
+            <button type="button" disabled={documentBusy} onClick={() => setViewedDocument({ lessonId: document.lessonId, url: document.url })}>Xem tài liệu</button>
             <button type="button" disabled={documentBusy || content.status === "ARCHIVED" || document.status === "ARCHIVED"}
               onClick={() => { setRenamingDocument(document); setRenamedName(document.name); setDocumentError(""); }}>Đổi tên</button>
             <button type="button" disabled={documentBusy || (document.sharedLesson && (content.status === "ARCHIVED" || document.status === "ARCHIVED"))}
@@ -313,10 +311,11 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
         <iframe key={documentPreviewUrl} className="kanji-document-preview" src={documentPreviewUrl} title={selectedDocument.name}
           sandbox={isCloudinaryPdf ? undefined : "allow-scripts allow-same-origin allow-popups"} referrerPolicy="no-referrer" />
         <div className="kanji-document-reader-actions">
+          <button type="button" onClick={() => setViewedDocument(undefined)}>Đóng tài liệu</button>
           <a href={selectedDocument.url} target="_blank" rel="noopener noreferrer">Mở tài liệu trong tab mới ↗</a>
           {deletingDocument && <span role="status">Đang xóa tài liệu…</span>}
         </div>
-      </article> : <p className="admin-empty-state">Chương này chưa có tài liệu Kanji.</p>}
+      </article> : documents.length === 0 ? <p className="admin-empty-state">Chương này chưa có tài liệu Kanji.</p> : null}
     </section> : tab === "exercise" ? <section aria-label="Bài tập theo tài liệu">
       <div className="kanji-document-toolbar">
         <label>Tài liệu{" "}<select aria-label="Tài liệu của bộ bài tập" disabled={documentBusy}
@@ -334,7 +333,7 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
         documents={documents.filter(document => document.status !== "ARCHIVED")}
         readOnly={content.status === "ARCHIVED"} onChanged={refreshContent} />
         : exerciseDocument ? <><h3>Bài tập · {exerciseDocument.name}</h3>
-          <KanjiExercisesTab key={exerciseDocument.lessonId} chapterId={chapterId} documentLessonId={exerciseDocument.lessonId}
+          <KanjiExercisesTab key={exerciseDocument.lessonId} chapterId={chapterId} documentLessonId={exerciseDocument.lessonId} documentName={exerciseDocument.name}
             readOnly={content.status === "ARCHIVED" || exerciseDocument.status === "ARCHIVED"} onChanged={refreshContent} />
         </> : <p>Chọn tài liệu để tạo hoặc xem bộ bài tập tương ứng.</p>}
     </section> : <>
