@@ -126,7 +126,9 @@ function ChapterCard({
     queryKey: ["speaking-scenarios", chapter.id],
     queryFn: () => getSpeakingScenarios(chapter.id),
   });
-  const hasSpeaking = (speaking.data?.length ?? 0) > 0;
+  const scenarios = speaking.data ?? [];
+  const practicedScenarios = scenarios.filter((s) => s.completedCount > 0).length;
+  const speakingDone = scenarios.length > 0 && practicedScenarios === scenarios.length;
   return (
     <details
       className="student-chapter-card"
@@ -151,26 +153,7 @@ function ChapterCard({
       </summary>
       <div className="chapter-body">
         {chapter.description && <p>{chapter.description}</p>}
-        {/* Shown only for chapters that have speaking scenarios; independent of published lessons. */}
-        {hasSpeaking && (
-          <Link
-            to={`/courses/${courseId}/chapters/${chapter.id}/speaking`}
-            style={{
-              display: "inline-block",
-              margin: "4px 0 12px",
-              padding: "8px 14px",
-              borderRadius: "10px",
-              background: "#fdf2f8",
-              border: "1.5px solid #fbcfe8",
-              color: "#db2777",
-              fontWeight: 700,
-              textDecoration: "none",
-            }}
-          >
-            🗣️ Luyện nói với AI →
-          </Link>
-        )}
-        {!items.length && (
+        {!items.length && !scenarios.length && (
           <p>Chưa có tài liệu hoặc bài học được xuất bản trong chương này.</p>
         )}
         {Array.from(groups)
@@ -201,6 +184,11 @@ function ChapterCard({
                                 ? `/ai-reading?lessonId=${l.id}`
                                 : `/courses/${courseId}/chapters/${l.skillType === "VOCABULARY" ? chapters.find((item) => item.chapterNo === l.lessonNo)?.id ?? chapter.id : chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "VOCABULARY" ? "" : l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : `&lessonId=${l.id}`}`
                           }
+                          state={
+                            l.skillType === "LISTENING"
+                              ? { from: `/courses/${courseId}#chapter-${chapter.id}` }
+                              : undefined
+                          }
                         >
                           {skills[l.skillType] ?? l.skillType}
                         </Link>
@@ -222,6 +210,40 @@ function ChapterCard({
               </ul>
             </details>
           ))}
+        {/* Chỉ hiện với chương có tình huống luyện nói; không phụ thuộc bài học đã xuất bản. */}
+        {scenarios.length > 0 && (
+          <details className="chapter-lesson" open>
+            <summary>
+              <strong>Luyện nói</strong>
+              <span>
+                {practicedScenarios}/{scenarios.length} đã luyện
+              </span>
+              <span aria-hidden="true">⌄</span>
+            </summary>
+            <ul>
+              <li>
+                <span className="lesson-icon" aria-hidden="true">
+                  {speakingDone ? "✓" : "▷"}
+                </span>
+                <div className="lesson-content">
+                  <h3>
+                    <Link
+                      to={`/courses/${courseId}/chapters/${chapter.id}/speaking`}
+                      state={{ from: `/courses/${courseId}#chapter-${chapter.id}` }}
+                    >
+                      Luyện nói với AI
+                    </Link>
+                  </h3>
+                  <p>Hội thoại theo tình huống cùng AI</p>
+                  <small>{scenarios.length} tình huống hội thoại</small>
+                </div>
+                <span className={`lesson-status ${speakingDone ? "completed" : ""}`}>
+                  {speakingDone ? "Hoàn thành" : "Chưa hoàn thành"}
+                </span>
+              </li>
+            </ul>
+          </details>
+        )}
         {chapter.lessons.some(lesson => lesson.skillType === "KANJI") && (
           <Link className="chapter-kanji-link" to={`/courses/${courseId}/chapters/${chapter.id}?skill=KANJI`}>
             <span className="chapter-kanji-play" aria-hidden="true">▷</span>

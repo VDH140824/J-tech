@@ -137,6 +137,15 @@ export function MainSidebar({
 
             <button
               type="button"
+              className={`nav-link-btn ${/(^|\/)speaking(\/|$)/.test(location.pathname) ? "active" : ""}`}
+              onClick={() => navigate("/speaking")}
+            >
+              <span className="nav-link-icon">🗣️</span>
+              <span className="nav-link-text">Luyện nói AI</span>
+            </button>
+
+            <button
+              type="button"
               className={`nav-link-btn ${location.pathname === "/streak" ? "active" : ""}`}
               onClick={() => navigate("/streak")}
             >

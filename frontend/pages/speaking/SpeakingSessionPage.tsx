@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   SPEAKING_DEMO,
   finishSpeakingSession,
@@ -341,6 +341,7 @@ const MAX_ATTEMPTS = 3;
 
 function Conversation({ scenario, sessionId, listPath }: ConversationProps) {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const queryClient = useQueryClient();
   const recorder = useAudioRecorder();
   const speech = useJapaneseSpeech();
@@ -418,7 +419,7 @@ function Conversation({ scenario, sessionId, listPath }: ConversationProps) {
     onSuccess: (result) => {
       queryClient.setQueryData(["speaking-session", result.id], result);
       queryClient.invalidateQueries({ queryKey: ["speaking-scenarios"] });
-      navigate(`${listPath}/${scenario.id}/result/${result.id}`);
+      navigate(`${listPath}/${scenario.id}/result/${result.id}`, { state });
     },
   });
 
@@ -451,7 +452,7 @@ function Conversation({ scenario, sessionId, listPath }: ConversationProps) {
   };
 
   const endSession = () => {
-    if (turnsDone === 0) navigate(listPath);
+    if (turnsDone === 0) navigate(listPath, { state });
     else finish.mutate();
   };
 
@@ -478,7 +479,7 @@ function Conversation({ scenario, sessionId, listPath }: ConversationProps) {
         <button
           type="button"
           className="mod-btn-back"
-          onClick={() => navigate(listPath)}
+          onClick={() => navigate(listPath, { state })}
         >
           <span>←</span> Thoát
         </button>
@@ -781,6 +782,7 @@ function Conversation({ scenario, sessionId, listPath }: ConversationProps) {
 export function SpeakingSessionPage() {
   const { courseId, chapterId, scenarioId } = useParams();
   const navigate = useNavigate();
+  const { state } = useLocation();
   const valid = [courseId, chapterId, scenarioId].every(
     (value) => Number.isSafeInteger(Number(value)) && Number(value) > 0,
   );
@@ -810,7 +812,7 @@ export function SpeakingSessionPage() {
   const backButton = (
     <button
       className="mod-btn-back"
-      onClick={() => navigate(listPath)}
+      onClick={() => navigate(listPath, { state })}
     >
       ← Danh sách tình huống
     </button>

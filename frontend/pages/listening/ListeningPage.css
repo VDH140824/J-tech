@@ -3,13 +3,17 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   padding: 24px 16px 48px;
-  max-width: 1200px;
+  /* Cha (.main-layout-page) là flex column: cần width 100% để không co về giữa theo nội dung. */
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
 @media (min-width: 1024px) {
   .listening-page {
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: 32px;
     align-items: start;
     padding: 32px 24px 48px;
   }
@@ -22,7 +26,7 @@
 }
 
 .listening-back {
-  color: #db2777;
+  color: var(--learn-accent);
   font-weight: 600;
   text-decoration: none;
   justify-self: start;
@@ -32,13 +36,13 @@
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #db2777;
+  color: var(--learn-accent);
 }
 
 .listening-header h1 {
   margin: 6px 0 0;
   font-size: 1.6rem;
-  color: #1f2937;
+  color: var(--learn-text);
   overflow-wrap: anywhere;
 }
 
@@ -53,8 +57,8 @@
   gap: 12px;
   padding: 18px;
   border-radius: 16px;
-  background: #fdf2f8;
-  border: 1.5px solid #fbcfe8;
+  background: var(--learn-panel);
+  border: 1px solid var(--learn-panel-border);
 }
 
 .listening-link-btn {
@@ -62,7 +66,7 @@
   border: none;
   background: none;
   padding: 0;
-  color: #db2777;
+  color: var(--learn-accent);
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -106,8 +110,8 @@
 .listening-state button {
   padding: 10px 22px;
   border: none;
-  border-radius: 999px;
-  background: #db2777;
+  border-radius: var(--learn-radius-btn);
+  background: var(--learn-accent);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
@@ -135,15 +139,15 @@
 }
 
 .listening-state {
-  color: #6b7280;
+  color: var(--learn-muted);
 }
 
 /* Khung bài nghe bên phải: cố định, cuộn bên trong. */
 .listening-sidebar {
   display: flex;
   flex-direction: column;
-  border: 1.5px solid #f3d6e2;
-  border-radius: 16px;
+  border: 1px solid var(--learn-border);
+  border-radius: var(--learn-radius);
   background: #fff;
   overflow: hidden;
   max-height: 70vh;
@@ -151,9 +155,10 @@
 
 @media (min-width: 1024px) {
   .listening-sidebar {
+    /* Dính ngay dưới topbar sticky (64px) + 24px khoảng cách. */
     position: sticky;
-    top: 24px;
-    max-height: calc(100vh - 48px);
+    top: 88px;
+    max-height: calc(100vh - 112px);
   }
 }
 
@@ -161,25 +166,27 @@
   display: flex;
   gap: 6px;
   padding: 10px;
-  border-bottom: 1px solid #f3d6e2;
+  border-bottom: 1px solid var(--learn-border);
   flex: none;
 }
 
 .listening-tabs button {
   flex: 1;
   padding: 8px 10px;
-  border: 1.5px solid #fbcfe8;
-  border-radius: 10px;
+  border: 1px solid var(--learn-border);
+  border-radius: var(--learn-radius-btn);
   background: #fff;
-  color: #9d174d;
+  color: var(--learn-text-body);
   font-weight: 700;
   cursor: pointer;
 }
 
 .listening-tabs button[aria-selected="true"] {
-  background: #db2777;
-  border-color: #db2777;
-  color: #fff;
+  background: #fff;
+  border-color: var(--learn-accent);
+  color: var(--learn-accent);
+  /* Viền teal 2px bằng inset shadow để tab không đổi kích thước khi chọn. */
+  box-shadow: inset 0 0 0 1px var(--learn-accent);
 }
 
 .listening-sidebar-list {
@@ -202,16 +209,16 @@
   padding: 10px 12px;
   border-radius: 10px;
   text-decoration: none;
-  color: #1f2937;
+  color: var(--learn-text);
 }
 
 .listening-sidebar-list a:hover {
-  background: #fdf2f8;
+  background: var(--learn-accent-soft);
 }
 
 .listening-sidebar-list a.current {
-  background: #fce7f3;
-  box-shadow: inset 3px 0 0 #db2777;
+  background: var(--learn-accent-soft);
+  box-shadow: inset 3px 0 0 var(--learn-accent);
 }
 
 .listening-item-title {
@@ -221,9 +228,303 @@
 
 .listening-item-sub {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--learn-muted);
 }
 
 .listening-item-done {
   color: #15803d;
+}
+
+.listening-actions button:not(:disabled):hover,
+.listening-result button:hover,
+.listening-state button:hover {
+  background: var(--learn-accent-hover);
+}
+
+.listening-tabs button:not([aria-selected="true"]):hover {
+  background: var(--learn-accent-soft);
+}
+
+.listening-page a:focus-visible,
+.listening-page button:focus-visible {
+  outline: 3px solid var(--learn-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Trang tổng hợp nghe hiểu (/listening): bố cục theo trang Khóa học ---------- */
+.listening-overview {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: var(--learn-text);
+}
+
+@media (min-width: 1024px) {
+  .listening-overview {
+    padding: 32px;
+  }
+}
+
+.listening-overview-header > span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--learn-accent);
+}
+
+.listening-overview-header h1 {
+  margin: 6px 0 0;
+  font-size: 30px;
+  line-height: 1.25;
+  color: var(--learn-text);
+}
+
+.listening-overview-header h1 span {
+  margin-left: 6px;
+  color: var(--learn-accent);
+  font-weight: 600;
+}
+
+.listening-overview-header p {
+  margin: 8px 0 0;
+  color: var(--learn-muted);
+  line-height: 1.6;
+}
+
+.listening-overview-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.listening-overview-tabs button {
+  min-height: 44px;
+  padding: 8px 20px;
+  border: 1px solid var(--learn-border);
+  border-radius: var(--learn-radius-btn);
+  background: #fff;
+  color: var(--learn-text-body);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.listening-overview-tabs button:not([aria-selected="true"]):hover {
+  background: var(--learn-accent-soft);
+}
+
+.listening-overview-tabs button[aria-selected="true"] {
+  background: #fff;
+  border-color: var(--learn-accent);
+  color: var(--learn-accent);
+  /* Viền teal 2px bằng inset shadow để tab không đổi kích thước khi chọn. */
+  box-shadow: inset 0 0 0 1px var(--learn-accent);
+}
+
+.listening-overview .listening-state {
+  padding: 48px 20px;
+  border: 1px solid var(--learn-border);
+  border-radius: var(--learn-radius);
+  background: #fff;
+  text-align: center;
+}
+
+.listening-overview .listening-state p {
+  margin: 0 0 12px;
+}
+
+.listening-overview .listening-state button {
+  min-height: 44px;
+}
+
+/* Khung tiến độ */
+.listening-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 20px;
+  padding: 24px;
+  border: 1px solid var(--learn-panel-border);
+  border-radius: var(--learn-radius);
+  background: var(--learn-panel);
+}
+
+.listening-progress h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--learn-text);
+}
+
+.listening-progress p {
+  margin: 4px 0 0;
+  color: var(--learn-text-body);
+}
+
+.listening-progress p strong {
+  color: var(--learn-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.listening-progress-percent {
+  font-size: 28px;
+  color: var(--learn-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.listening-progress progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 10px;
+  border: none;
+  border-radius: 999px;
+  overflow: hidden;
+  appearance: none;
+  background: var(--learn-track);
+}
+
+.listening-progress progress::-webkit-progress-bar {
+  background: var(--learn-track);
+}
+
+.listening-progress progress::-webkit-progress-value {
+  background: var(--learn-accent-strong);
+  border-radius: 999px;
+}
+
+.listening-progress progress::-moz-progress-bar {
+  background: var(--learn-accent-strong);
+  border-radius: 999px;
+}
+
+/* Thẻ nhóm theo bài */
+.listening-group {
+  margin-bottom: 16px;
+  border: 1px solid var(--learn-border);
+  border-radius: var(--learn-radius);
+  background: #fff;
+  overflow: hidden;
+}
+
+.listening-group-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.listening-group-number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--learn-accent-soft);
+  color: var(--learn-accent);
+  font-size: 23px;
+  font-weight: 700;
+}
+
+.listening-group-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--learn-text);
+}
+
+.listening-group-heading p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--learn-muted);
+}
+
+.listening-group ul {
+  margin: 0;
+  padding: 0 24px 8px;
+  list-style: none;
+}
+
+.listening-group li {
+  border-top: 1px solid var(--learn-border);
+}
+
+.listening-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  margin: 0 -12px;
+  padding: 18px 12px;
+  border-radius: var(--learn-radius-btn);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.listening-card:hover {
+  background: var(--learn-accent-soft);
+}
+
+.listening-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--learn-text);
+  overflow-wrap: anywhere;
+}
+
+.listening-card-status {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  color: var(--learn-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.listening-card-status.done {
+  background: var(--learn-panel);
+  color: var(--learn-accent);
+  font-weight: 700;
+}
+
+.listening-overview button:focus-visible,
+.listening-overview a:focus-visible {
+  outline: 3px solid var(--learn-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .listening-overview-header h1 {
+    font-size: 24px;
+  }
+
+  .listening-progress,
+  .listening-group-heading {
+    padding: 18px;
+  }
+
+  .listening-group ul {
+    padding: 0 18px 4px;
+  }
+
+  .listening-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listening-overview-tabs button,
+  .listening-card {
+    transition: none;
+  }
 }

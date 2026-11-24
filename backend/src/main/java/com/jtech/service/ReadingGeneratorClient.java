@@ -44,6 +44,10 @@ public class ReadingGeneratorClient {
 
     /** Wait before the single retry of a busy model; after that the next model is tried instead. */
     private static final long RETRY_DELAY_MS = 2000;
+    /** Longest one generate call may spend across every model, so a learner never waits minutes. */
+    private static final Duration TOTAL_BUDGET = Duration.ofSeconds(45);
+    /** A request is not started with less time than this left, since Gemini cannot answer that fast. */
+    private static final Duration MIN_REQUEST_TIME = Duration.ofSeconds(5);
 
     /** Learning data the passage must be built from. */
     public record Source(String scopeLabel, List<String> vocabulary, List<String> grammar, List<String> kanji) {}
@@ -90,8 +94,9 @@ public class ReadingGeneratorClient {
                 Dạng bài: %s
 
                 Yêu cầu:
-                - passageJp: bài văn tiếng Nhật thể です/ます theo đúng dạng bài ở trên, dài 300–450 ký tự (không tính phần
-                  cách đọc furigana), chia 2–3 đoạn bằng ký tự xuống dòng \\n, theo bố cục:
+                - passageJp: bài văn tiếng Nhật thể です/ます theo đúng dạng bài ở trên, dài ÍT NHẤT 400 ký tự và nên
+                  khoảng 450–550 ký tự (không tính phần cách đọc furigana; bài dưới 400 ký tự là sai yêu cầu, hãy viết
+                  thêm chi tiết cho đến khi đủ độ dài), chia 3 đoạn bằng ký tự xuống dòng \\n, theo bố cục:
                   1) Mở đầu: giới thiệu nhân vật (có tên riêng), thời gian, địa điểm.
                   2) Diễn biến: 3–4 việc xảy ra theo thứ tự thời gian, mỗi việc có chi tiết cụ thể (giờ, nơi chốn,
                      người đi cùng, lý do, cảm nhận) để làm câu hỏi.
@@ -137,40 +142,64 @@ public class ReadingGeneratorClient {
                         "questions", Map.of("type", "ARRAY", "items", question)),
                 "required", List.of("title", "passageJp", "translationVi", "questions"),
                 "propertyOrdering", List.of("title", "passageJp", "translationVi", "questions"));
-        try {
-            for (String model : models) {
-                var response = request(model, prompt, schema);
-                if (response.statusCode() == 200) return read(response);
-                log.warn("Gemini model {} failed: HTTP {} {}", model, response.statusCode(), response.body());
+        long deadline = System.nanoTime() + TOTAL_BUDGET.toNanos();
+        for (String model : models) {
+            if (remaining(deadline).compareTo(MIN_REQUEST_TIME) < 0) {
+                log.warn("Gemini reading generation stopped before model {}: time budget of {} s used up", model,
+                        TOTAL_BUDGET.toSeconds());
+                break;
             }
-            return null;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return null;
-        } catch (Exception e) {
-            log.warn("Gemini reading generation error", e);
-            return null;
+            try {
+                var response = request(model, prompt, schema, deadline);
+                if (response.statusCode() == 200) {
+                    var reply = read(response);
+                    if (reply != null) return reply;
+                    log.warn("Gemini model {} returned no text", model);
+                } else {
+                    log.warn("Gemini model {} failed: HTTP {} {}", model, response.statusCode(), response.body());
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            } catch (Exception e) {
+                // A timeout or unreadable answer from one model must not stop the fallbacks from being tried.
+                log.warn("Gemini model {} reading generation error: {}", model, e.toString());
+            }
         }
+        return null;
     }
 
-    /** One model: drops thinkingConfig if the model rejects it, then retries once when it is busy. */
-    private HttpResponse<String> request(String model, String prompt, Map<String, Object> schema) throws Exception {
+    /**
+     * One model: drops thinkingConfig if the model rejects it, then retries once when it is busy. Each send is
+     * limited to the time left before the deadline, and a resend is skipped when too little time is left.
+     */
+    private HttpResponse<String> request(String model, String prompt, Map<String, Object> schema, long deadline)
+            throws Exception {
         boolean withThinking = !rejectsThinkingConfig.contains(model);
-        var response = send(model, prompt, schema, withThinking);
-        if (response.statusCode() == 400 && withThinking) {
+        var response = send(model, prompt, schema, withThinking, deadline);
+        if (response.statusCode() == 400 && withThinking && hasTimeFor(deadline, 0)) {
             log.info("Gemini model {} returned HTTP 400; retrying without thinkingConfig", model);
             withThinking = false;
-            response = send(model, prompt, schema, false);
+            response = send(model, prompt, schema, false, deadline);
             // Any answer other than another 400 shows the model rejects thinkingConfig, even an overload error.
             if (response.statusCode() != 400) rejectsThinkingConfig.add(model);
         }
-        if (isTransient(response.statusCode())) {
+        if (isTransient(response.statusCode()) && hasTimeFor(deadline, RETRY_DELAY_MS)) {
             log.info("Gemini model {} returned HTTP {}; retrying in {} ms", model, response.statusCode(),
                     RETRY_DELAY_MS);
             Thread.sleep(RETRY_DELAY_MS);
-            response = send(model, prompt, schema, withThinking);
+            response = send(model, prompt, schema, withThinking, deadline);
         }
         return response;
+    }
+
+    private static Duration remaining(long deadline) {
+        return Duration.ofNanos(Math.max(0, deadline - System.nanoTime()));
+    }
+
+    /** True when a request can still get MIN_REQUEST_TIME after waiting delayMs. */
+    private static boolean hasTimeFor(long deadline, long delayMs) {
+        return remaining(deadline).minusMillis(delayMs).compareTo(MIN_REQUEST_TIME) >= 0;
     }
 
     private Reply read(HttpResponse<String> response) throws Exception {
@@ -215,8 +244,10 @@ public class ReadingGeneratorClient {
         return items == null || items.isEmpty() ? "không có" : String.join("; ", items);
     }
 
-    private HttpResponse<String> send(String model, String prompt, Map<String, Object> schema, boolean withThinking)
-            throws Exception {
+    private HttpResponse<String> send(String model, String prompt, Map<String, Object> schema, boolean withThinking,
+            long deadline) throws Exception {
+        Duration left = remaining(deadline);
+        Duration requestTimeout = left.compareTo(timeout) < 0 ? left : timeout;
         var config = new LinkedHashMap<String, Object>();
         config.put("temperature", 0.9);
         config.put("responseMimeType", "application/json");
@@ -228,7 +259,7 @@ public class ReadingGeneratorClient {
         var uri = URI.create("https://generativelanguage.googleapis.com/v1beta/models/"
                 + URLEncoder.encode(model, StandardCharsets.UTF_8) + ":generateContent");
         var request = HttpRequest.newBuilder(uri)
-                .timeout(timeout)
+                .timeout(requestTimeout)
                 .header("x-goog-api-key", apiKey)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body), StandardCharsets.UTF_8))

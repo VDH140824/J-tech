@@ -11,12 +11,18 @@
   gap: 8px;
   padding: 12px 20px;
   border: none;
-  border-radius: 999px;
-  background: #db2777;
+  border-radius: var(--learn-radius-btn);
+  background: var(--learn-accent);
   color: #fff;
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.script-speech-play:not(:disabled):hover,
+.script-speech-play[aria-pressed="true"] {
+  background: var(--learn-accent-hover);
 }
 
 .script-speech-play:disabled {
@@ -24,15 +30,12 @@
   cursor: not-allowed;
 }
 
-.script-speech-play[aria-pressed="true"] {
-  background: #9d174d;
-}
-
 .script-speech-rate {
   display: inline-flex;
-  border: 1.5px solid #fbcfe8;
-  border-radius: 999px;
+  border: 1px solid var(--learn-border);
+  border-radius: var(--learn-radius-btn);
   overflow: hidden;
+  background: #fff;
 }
 
 .script-speech-rate button {
@@ -40,13 +43,13 @@
   background: #fff;
   padding: 6px 12px;
   font-weight: 600;
-  color: #9d174d;
+  color: var(--learn-text-body);
   cursor: pointer;
 }
 
 .script-speech-rate button[aria-pressed="true"] {
-  background: #fdf2f8;
-  color: #db2777;
+  background: var(--learn-accent-soft);
+  color: var(--learn-accent);
 }
 
 .script-speech-rate button:disabled {
@@ -54,9 +57,21 @@
   opacity: 0.6;
 }
 
+.script-speech-play:focus-visible,
+.script-speech-rate button:focus-visible {
+  outline: 3px solid var(--learn-focus);
+  outline-offset: 2px;
+}
+
 .script-speech-message {
   flex-basis: 100%;
   margin: 0;
   color: #b45309;
   font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .script-speech-play {
+    transition: none;
+  }
 }

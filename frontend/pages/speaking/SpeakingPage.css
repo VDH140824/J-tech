@@ -1,8 +1,8 @@
 /* AI speaking practice: scenario list, conversation session and result screens. */
 .speaking-page {
-  --speak: #db2777;
-  --speak-bg: #fdf2f8;
-  --speak-border: #fbcfe8;
+  --speak: var(--learn-accent);
+  --speak-bg: var(--learn-accent-soft);
+  --speak-border: var(--learn-panel-border);
   --speak-good: #047857;
   --speak-good-bg: #ecfdf5;
   --speak-mid: #b45309;
@@ -22,7 +22,7 @@
 
 .speaking-page button:focus-visible,
 .speaking-page summary:focus-visible {
-  outline: 3px solid var(--primary);
+  outline: 3px solid var(--learn-focus);
   outline-offset: 2px;
 }
 
@@ -65,7 +65,7 @@
 
 .speaking-btn {
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--learn-radius-btn);
   padding: 10px 16px;
   min-height: 40px;
   font: inherit;
@@ -75,11 +75,11 @@
   background: var(--speak);
   white-space: nowrap;
   cursor: pointer;
-  transition: filter 0.15s ease-out;
+  transition: background-color 0.15s ease-out;
 }
 
 .speaking-btn:hover {
-  filter: brightness(0.93);
+  background: var(--learn-accent-hover);
 }
 
 .speaking-btn-ghost {
@@ -624,7 +624,7 @@
   height: 64px;
   border-radius: 50%;
   border: 0;
-  background: var(--primary);
+  background: var(--learn-accent);
   color: #ffffff;
   display: grid;
   place-items: center;
@@ -637,7 +637,7 @@
 }
 
 .speaking-mic:hover {
-  background: var(--primary-hover);
+  background: var(--learn-accent-hover);
 }
 
 .speaking-mic:active {
@@ -654,7 +654,7 @@
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  border: 3px solid var(--primary);
+  border: 3px solid var(--learn-accent-strong);
   opacity: 0.5;
   animation: speaking-ring 1.2s ease-out infinite;
 }
@@ -775,8 +775,8 @@
 
 /* Result */
 .speaking-hero {
-  background: linear-gradient(120deg, var(--primary-light), var(--speak-bg));
-  border: 1px solid var(--primary-border);
+  background: linear-gradient(120deg, var(--learn-panel), var(--speak-bg));
+  border: 1px solid var(--learn-panel-border);
   border-radius: 22px;
   padding: 26px;
   display: grid;
@@ -788,7 +788,7 @@
 .speaking-hero strong {
   display: block;
   font-size: clamp(28px, 4.5vw, 44px);
-  color: var(--primary-active);
+  color: var(--learn-accent);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
@@ -938,4 +938,41 @@
   .speaking-mic-label {
     min-width: 0;
   }
+}
+
+/* Trang tổng hợp luyện nói: tab chọn khóa học. */
+.speaking-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.speaking-tabs button {
+  min-height: 40px;
+  padding: 8px 18px;
+  border: 1px solid var(--learn-border);
+  border-radius: var(--learn-radius-btn);
+  background: #ffffff;
+  color: var(--learn-text-body);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.speaking-tabs button:not([aria-selected="true"]):hover {
+  background: var(--learn-accent-soft);
+}
+
+.speaking-tabs button[aria-selected="true"] {
+  background: #ffffff;
+  border-color: var(--learn-accent);
+  color: var(--learn-accent);
+  /* Viền teal 2px bằng inset shadow để tab không đổi kích thước khi chọn. */
+  box-shadow: inset 0 0 0 1px var(--learn-accent);
+}
+
+a.speaking-btn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }

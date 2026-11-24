@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getChapterStudy } from "../../api/courseApi";
 import { getSpeakingScenarios, type SpeakingScenario } from "../../api/speakingApi";
 import { DemoBanner, roleKanji } from "./SpeakingSessionPage";
@@ -58,7 +58,13 @@ export function SpeakingScenarioListPage() {
     enabled: valid,
   });
   const chapterPath = `/courses/${courseId}/chapters/${chapterId}`;
-  const back = () => navigate(chapterPath);
+  // Quay về đúng trang người dùng đã vào (trang Luyện nói hoặc chương trong khóa học);
+  // mở trực tiếp bằng link thì mặc định về chương trong trang khóa học.
+  const { state } = useLocation();
+  const from: string =
+    typeof state?.from === "string" ? state.from : `/courses/${courseId}#chapter-${chapterId}`;
+  const backLabel = from === "/speaking" ? "Quay lại luyện nói" : "Quay lại chương";
+  const back = () => navigate(from);
 
   let content;
   if (!valid) content = <p role="alert">Mã khóa học hoặc chương không hợp lệ.</p>;
@@ -83,7 +89,7 @@ export function SpeakingScenarioListPage() {
           className="mod-btn-back"
           onClick={back}
         >
-          ← Quay lại chương
+          ← {backLabel}
         </button>
         <button
           className="mod-btn-back"
@@ -105,7 +111,7 @@ export function SpeakingScenarioListPage() {
             className="mod-btn-back"
             onClick={back}
           >
-            <span>←</span> Quay lại chương
+            <span>←</span> {backLabel}
           </button>
           <span className="mod-chapter-breadcrumb-pill">
             {chapter.data.courseName} / Chương {chapter.data.chapterNo} / Luyện nói
@@ -134,7 +140,7 @@ export function SpeakingScenarioListPage() {
               className="mod-btn-back"
               onClick={back}
             >
-              ← Quay lại chương
+              ← {backLabel}
             </button>
           </div>
         ) : (
@@ -143,7 +149,7 @@ export function SpeakingScenarioListPage() {
               <ScenarioCard
                 key={scenario.id}
                 scenario={scenario}
-                onStart={() => navigate(`${chapterPath}/speaking/${scenario.id}`)}
+                onStart={() => navigate(`${chapterPath}/speaking/${scenario.id}`, { state: { from } })}
               />
             ))}
           </div>
