@@ -13,6 +13,7 @@ import { AccountRejectedPage } from "../pages/auth/AccountRejectedPage";
 import { HomePage } from "../pages/home/HomePage";
 import { CoursePage } from "../pages/home/CoursePage";
 import { ChapterPage } from "../pages/home/ChapterPage";
+import { SpeakingIndexPage } from "../pages/speaking/SpeakingIndexPage";
 import { SpeakingScenarioListPage } from "../pages/speaking/SpeakingScenarioListPage";
 import { SpeakingSessionPage } from "../pages/speaking/SpeakingSessionPage";
 import { SpeakingResultPage } from "../pages/speaking/SpeakingResultPage";
@@ -72,6 +73,14 @@ export function AppRouter() {
           <Route
             path="/courses/:courseId/chapters/:chapterId"
             element={<ChapterPage />}
+          />
+          <Route
+            path="/speaking"
+            element={
+              <StudentProtectedRoute>
+                <SpeakingIndexPage />
+              </StudentProtectedRoute>
+            }
           />
           <Route
             path="/courses/:courseId/chapters/:chapterId/speaking"

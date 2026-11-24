@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { formatScore, getSpeakingSession, scoreLevel } from "../../api/speakingApi";
 import {
   DemoBanner,
@@ -63,6 +63,8 @@ function highlightFeedback(text: string) {
 export function SpeakingResultPage() {
   const { courseId, chapterId, scenarioId, sessionId } = useParams();
   const navigate = useNavigate();
+  // Chuyển tiếp nơi người dùng đã vào để trang danh sách quay lại đúng chỗ.
+  const { state } = useLocation();
   const speech = useJapaneseSpeech();
   const valid = [courseId, chapterId, scenarioId, sessionId].every(
     (value) => Number.isSafeInteger(Number(value)) && Number(value) > 0,
@@ -74,7 +76,7 @@ export function SpeakingResultPage() {
     enabled: valid,
     retry: false,
   });
-  const toList = () => navigate(listPath);
+  const toList = () => navigate(listPath, { state });
 
   let content;
   if (!valid) content = <p role="alert">Mã phiên luyện nói không hợp lệ.</p>;
@@ -173,7 +175,7 @@ export function SpeakingResultPage() {
               <button
                 type="button"
                 className="speaking-btn"
-                onClick={() => navigate(`${listPath}/${scenarioId}`)}
+                onClick={() => navigate(`${listPath}/${scenarioId}`, { state })}
               >
                 Luyện lại
               </button>
