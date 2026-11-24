@@ -93,6 +93,14 @@ export function MainSidebar({
           <>
             <button
               type="button"
+              className={`nav-link-btn ${location.pathname === "/progress" ? "active" : ""}`}
+              onClick={() => navigate("/progress")}
+            >
+              <span className="nav-link-icon" aria-hidden="true">📊</span>
+              <span className="nav-link-text">Tiến độ học tập</span>
+            </button>
+            <button
+              type="button"
               className={`nav-link-btn ${location.pathname.startsWith("/classes") ? "active" : ""}`}
               onClick={() => navigate("/classes")}
             >

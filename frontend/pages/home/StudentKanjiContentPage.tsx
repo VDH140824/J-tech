@@ -9,11 +9,13 @@ export function StudentKanjiContentPage({
   kanjiId,
   documentIndex,
   onBack,
+  onExercise,
 }: {
   lesson: LessonSummary;
   kanjiId: string | null;
   documentIndex: string | null;
   onBack: () => void;
+  onExercise: () => void;
 }) {
   const documents = parseLessonDocuments(lesson.documents);
   const isDocument = documentIndex !== null;
@@ -39,6 +41,10 @@ export function StudentKanjiContentPage({
       <p className="kanji-breadcrumb">
         {document?.name ?? "Chữ Hán"}
       </p>
+      {document && <nav className="kanji-lesson-switch" aria-label="Nội dung tài liệu Kanji">
+        <button type="button" aria-current="page">Bài học</button>
+        <button type="button" onClick={onExercise}><span className="kanji-lesson-switch-dot" aria-hidden="true" />Bài tập</button>
+      </nav>}
       {isDocument ? (
         document ? (
           <article className="kanji-reading-panel kanji-document-reader">

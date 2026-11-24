@@ -3,7 +3,7 @@ spring:
     name: jtech-backend
 
   config:
-    import: "optional:file:.env[.properties],optional:file:backend/.env[.properties]"
+    import: "optional:file:./.env[.properties],optional:file:./backend/.env[.properties]"
 
   mail:
     host: smtp.gmail.com

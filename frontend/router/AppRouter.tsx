@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { StudentProtectedRoute } from "../components/auth/StudentProtectedRoute";
 import { StudentStreakPage } from "../pages/streak/StudentStreakPage";
+import { LearningProgressPage } from "../pages/progress/LearningProgressPage";
 import { CoinHistoryPage } from "../pages/store/CoinHistoryPage";
 import { RewardStorePage } from "../pages/store/RewardStorePage";
 import { Navigate, Route, Routes } from "react-router-dom";
@@ -67,6 +68,7 @@ export function AppRouter() {
           }
         >
           <Route path="/home" element={<HomePage />} />
+          <Route path="/progress" element={<StudentProtectedRoute><LearningProgressPage /></StudentProtectedRoute>} />
           <Route path="/courses/:courseId" element={<CoursePage />} />
           <Route
             path="/courses/:courseId/chapters/:chapterId"
