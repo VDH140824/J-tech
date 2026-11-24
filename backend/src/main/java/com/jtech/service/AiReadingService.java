@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ import org.springframework.web.server.ResponseStatusException;
  */
 @Service
 public class AiReadingService {
+    private static final Logger log = LoggerFactory.getLogger(AiReadingService.class);
     public static final BigDecimal PASSING_SCORE = BigDecimal.valueOf(80);
     private static final String COIN_RULE = "READING";
     private static final String NOT_FOUND = "Không tìm thấy bài đọc.";
@@ -89,13 +92,18 @@ public class AiReadingService {
         int outputTokens = 0;
         for (int attempt = 0; attempt < 2; attempt++) {
             var candidate = generator.generate(source);
-            if (candidate == null) continue;
+            if (candidate == null) {
+                log.warn("AI reading attempt {}: Gemini returned no usable reply", attempt + 1);
+                continue;
+            }
             inputTokens += candidate.inputTokens();
             outputTokens += candidate.outputTokens();
-            if (isValid(candidate.passage())) {
+            String reason = invalidReason(candidate.passage());
+            if (reason == null) {
                 reply = candidate;
                 break;
             }
+            log.warn("AI reading attempt {}: passage rejected ({})", attempt + 1, reason);
         }
         if (reply == null) {
             readings.createSession(studentId, scope, "FAILED", 0, "[]", null, inputTokens, outputTokens, now);
@@ -286,17 +294,34 @@ public class AiReadingService {
      * và một đáp án A–D.
      */
     static boolean isValid(ReadingGeneratorClient.Passage passage) {
-        if (passage == null || isBlank(passage.title()) || isBlank(passage.passageJp())
-                || stripFurigana(passage.passageJp()).strip().length() < ReadingGeneratorClient.MIN_PASSAGE_LENGTH
-                || isBlank(passage.translationVi()) || passage.questions() == null
-                || passage.questions().size() != ReadingGeneratorClient.QUESTION_COUNT) return false;
-        for (var q : passage.questions()) {
-            if (q == null || isBlank(q.content()) || q.options() == null || McqAnswerData.letter(q.correctAnswer()) == null) {
-                return false;
-            }
-            for (String letter : McqAnswerData.LETTERS) if (isBlank(q.options().get(letter))) return false;
+        return invalidReason(passage) == null;
+    }
+
+    /** Why a passage is rejected, or null when it is valid; used for logging and by isValid. */
+    static String invalidReason(ReadingGeneratorClient.Passage passage) {
+        if (passage == null) return "passage is null";
+        if (isBlank(passage.title())) return "title is blank";
+        if (isBlank(passage.passageJp())) return "passageJp is blank";
+        int length = stripFurigana(passage.passageJp()).strip().length();
+        if (length < ReadingGeneratorClient.MIN_PASSAGE_LENGTH) {
+            return "passage too short: " + length + " < " + ReadingGeneratorClient.MIN_PASSAGE_LENGTH;
         }
-        return true;
+        if (isBlank(passage.translationVi())) return "translationVi is blank";
+        if (passage.questions() == null || passage.questions().size() != ReadingGeneratorClient.QUESTION_COUNT) {
+            return "question count is " + (passage.questions() == null ? "null" : passage.questions().size());
+        }
+        int number = 0;
+        for (var q : passage.questions()) {
+            number++;
+            if (q == null || isBlank(q.content()) || q.options() == null) return "question " + number + " is incomplete";
+            if (McqAnswerData.letter(q.correctAnswer()) == null) {
+                return "question " + number + " has invalid correctAnswer";
+            }
+            for (String letter : McqAnswerData.LETTERS) {
+                if (isBlank(q.options().get(letter))) return "question " + number + " is missing option " + letter;
+            }
+        }
+        return null;
     }
 
     private static Map<String, String> normalizedOptions(Map<String, String> options) {

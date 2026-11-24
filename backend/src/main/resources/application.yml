@@ -2,6 +2,9 @@ spring:
   application:
     name: jtech-backend
 
+  config:
+    import: "optional:file:.env[.properties],optional:file:backend/.env[.properties]"
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -75,12 +78,12 @@ app:
       language: ja-JP
     gemini:
       api-key: ${GEMINI_API_KEY:}
-      model: ${GEMINI_MODEL:gemini-3.8-flash}
+      model: ${GEMINI_MODEL:gemini-3.1-flash-lite}
       timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:60}
   reading:
     # Shares GEMINI_API_KEY with speaking; daily-limit counts AI passages a student may create per day.
     gemini:
-      model: ${READING_GEMINI_MODEL:${GEMINI_MODEL:gemini-3.8-flash}}
+      model: ${READING_GEMINI_MODEL:${GEMINI_MODEL:gemini-3.1-flash-lite}}
       timeout-seconds: ${READING_GEMINI_TIMEOUT_SECONDS:60}
     daily-limit: ${READING_DAILY_LIMIT:10}
 
