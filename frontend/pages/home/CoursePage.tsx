@@ -80,12 +80,10 @@ function Progress({ lessons }: { lessons: StudentLesson[] }) {
 }
 function ChapterCard({
   chapter,
-  chapters,
   expanded,
   courseId,
 }: {
   chapter: StudentChapter;
-  chapters: StudentChapter[];
   expanded: boolean;
   courseId: number;
 }) {
@@ -199,7 +197,7 @@ function ChapterCard({
                               ? `/listening/${l.id}`
                               : l.skillType === "READING"
                                 ? `/ai-reading?lessonId=${l.id}`
-                                : `/courses/${courseId}/chapters/${l.skillType === "VOCABULARY" ? chapters.find((item) => item.chapterNo === l.lessonNo)?.id ?? chapter.id : chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "VOCABULARY" ? "" : l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : `&lessonId=${l.id}`}`
+                                : `/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "VOCABULARY" && l.id > 0 ? `&lessonId=${l.id}` : l.skillType === "GRAMMAR" || l.skillType === "VOCABULARY" ? `&lessonNo=${l.lessonNo}` : `&lessonId=${l.id}`}`
                           }
                         >
                           {skills[l.skillType] ?? l.skillType}
@@ -331,7 +329,6 @@ export function CoursePage() {
                 <ChapterCard
                   key={chapter.id}
                   chapter={chapter}
-                  chapters={course.chapters}
                   courseId={Number(courseId)}
                   expanded={targetChapter ? targetChapter.id === chapter.id : i === 0}
                 />

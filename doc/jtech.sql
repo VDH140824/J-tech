@@ -1504,586 +1504,6 @@ JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 7
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1;
 
 -- =============================================================================
--- TỪ VỰNG
--- =============================================================================
-
--- JPD113 / Chapter 1 / Từ vựng: 27 mục.
-INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
-SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
-FROM (
-    SELECT 'ベトナム' AS word, 'ベトナム' AS reading, 'Việt Nam' AS meaning_vi, 'Danh từ riêng' AS word_type, 'わたしはベトナムからきました。' AS example_jp, 'Tôi đến từ Việt Nam.' AS example_vi, 1 AS display_order, 'PUBLISHED' AS status
-    UNION ALL
-    SELECT 'にほん', 'にほん', 'Nhật Bản', 'Danh từ riêng', 'わたしはにほんからきました。', 'Tôi đến từ Nhật Bản.', 2, 'PUBLISHED'
-    UNION ALL
-    SELECT 'アメリカ', 'アメリカ', 'Mỹ', 'Danh từ riêng', 'わたしはアメリカからきました。', 'Tôi đến từ Mỹ.', 3, 'PUBLISHED'
-    UNION ALL
-    SELECT 'イタリア', 'イタリア', 'Ý', 'Danh từ riêng', 'わたしはイタリアからきました。', 'Tôi đến từ Ý.', 4, 'PUBLISHED'
-    UNION ALL
-    SELECT 'オーストラリア', 'オーストラリア', 'Úc', 'Danh từ riêng', 'わたしはオーストラリアからきました。', 'Tôi đến từ Úc.', 5, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かんこく', 'かんこく', 'Hàn Quốc', 'Danh từ riêng', 'わたしはかんこくからきました。', 'Tôi đến từ Hàn Quốc.', 6, 'PUBLISHED'
-    UNION ALL
-    SELECT 'タイ', 'タイ', 'Thái Lan', 'Danh từ riêng', 'わたしはタイからきました。', 'Tôi đến từ Thái Lan.', 7, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ちゅうごく', 'ちゅうごく', 'Trung Quốc', 'Danh từ riêng', 'わたしはちゅうごくからきました。', 'Tôi đến từ Trung Quốc.', 8, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ロシア', 'ロシア', 'Nga', 'Danh từ riêng', 'わたしはロシアからきました。', 'Tôi đến từ Nga.', 9, 'PUBLISHED'
-    UNION ALL
-    SELECT 'こうこう', 'こうこう', 'trường trung học phổ thông', 'Danh từ', 'わたしはこうこうがすきです。', 'Tôi thích trường trung học phổ thông.', 10, 'PUBLISHED'
-    UNION ALL
-    SELECT 'だいがく', 'だいがく', 'trường đại học', 'Danh từ', 'わたしはだいがくがすきです。', 'Tôi thích trường đại học.', 11, 'PUBLISHED'
-    UNION ALL
-    SELECT 'にほんごがっこう', 'にほんごがっこう', 'trường tiếng Nhật', 'Danh từ', 'わたしはにほんごがっこうがすきです。', 'Tôi thích trường tiếng Nhật.', 12, 'PUBLISHED'
-    UNION ALL
-    SELECT 'がくせい', 'がくせい', 'học sinh, sinh viên', 'Danh từ', 'わたしはがくせいがすきです。', 'Tôi thích học sinh, sinh viên.', 13, 'PUBLISHED'
-    UNION ALL
-    SELECT 'せんせい', 'せんせい', 'giáo viên', 'Danh từ', 'わたしはせんせいがすきです。', 'Tôi thích giáo viên.', 14, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きょうし', 'きょうし', 'giáo viên, nhà giáo', 'Danh từ', 'わたしはきょうしがすきです。', 'Tôi thích giáo viên, nhà giáo.', 15, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かいしゃいん', 'かいしゃいん', 'nhân viên công ty', 'Danh từ', 'わたしはかいしゃいんがすきです。', 'Tôi thích nhân viên công ty.', 16, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ぎんこういん', 'ぎんこういん', 'nhân viên ngân hàng', 'Danh từ', 'わたしはぎんこういんがすきです。', 'Tôi thích nhân viên ngân hàng.', 17, 'PUBLISHED'
-    UNION ALL
-    SELECT 'いしゃ', 'いしゃ', 'bác sĩ', 'Danh từ', 'わたしはいしゃがすきです。', 'Tôi thích bác sĩ.', 18, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しゅみ', 'しゅみ', 'sở thích', 'Danh từ', 'わたしはしゅみがすきです。', 'Tôi thích sở thích.', 19, 'PUBLISHED'
-    UNION ALL
-    SELECT 'サッカー', 'サッカー', 'bóng đá', 'Danh từ', 'わたしはサッカーがすきです。', 'Tôi thích bóng đá.', 20, 'PUBLISHED'
-    UNION ALL
-    SELECT 'テニス', 'テニス', 'quần vợt', 'Danh từ', 'わたしはテニスがすきです。', 'Tôi thích quần vợt.', 21, 'PUBLISHED'
-    UNION ALL
-    SELECT 'すいえい', 'すいえい', 'bơi lội', 'Danh từ', 'わたしはすいえいがすきです。', 'Tôi thích bơi lội.', 22, 'PUBLISHED'
-    UNION ALL
-    SELECT 'えいが', 'えいが', 'phim', 'Danh từ', 'わたしはえいががすきです。', 'Tôi thích phim.', 23, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おんがく', 'おんがく', 'âm nhạc', 'Danh từ', 'わたしはおんがくがすきです。', 'Tôi thích âm nhạc.', 24, 'PUBLISHED'
-    UNION ALL
-    SELECT 'りょこう', 'りょこう', 'du lịch', 'Danh từ', 'わたしはりょこうがすきです。', 'Tôi thích du lịch.', 25, 'PUBLISHED'
-    UNION ALL
-    SELECT 'どくしょ', 'どくしょ', 'đọc sách', 'Danh từ', 'わたしはどくしょがすきです。', 'Tôi thích đọc sách.', 26, 'PUBLISHED'
-    UNION ALL
-    SELECT 'りょうり', 'りょうり', 'nấu ăn, món ăn', 'Danh từ', 'わたしはりょうりがすきです。', 'Tôi thích nấu ăn, món ăn.', 27, 'PUBLISHED'
-) AS seed
-JOIN course AS c ON c.code = 'JPD113'
-JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 1
-JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = 1;
-
--- JPD113 / Chapter 2 / Từ vựng: 39 mục.
-INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
-SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
-FROM (
-    SELECT 'ATM' AS word, 'ATM' AS reading, 'máy ATM' AS meaning_vi, 'Danh từ' AS word_type, 'わたしはATMがすきです。' AS example_jp, 'Tôi thích máy ATM.' AS example_vi, 1 AS display_order, 'PUBLISHED' AS status
-    UNION ALL
-    SELECT 'エスカレーター', 'エスカレーター', 'thang cuốn', 'Danh từ', 'わたしはエスカレーターがすきです。', 'Tôi thích thang cuốn.', 2, 'PUBLISHED'
-    UNION ALL
-    SELECT 'エレベーター', 'エレベーター', 'thang máy', 'Danh từ', 'わたしはエレベーターがすきです。', 'Tôi thích thang máy.', 3, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きつえんじょ', 'きつえんじょ', 'khu vực hút thuốc', 'Danh từ', 'わたしはきつえんじょがすきです。', 'Tôi thích khu vực hút thuốc.', 4, 'PUBLISHED'
-    UNION ALL
-    SELECT 'トイレ', 'トイレ', 'nhà vệ sinh', 'Danh từ', 'わたしはトイレがすきです。', 'Tôi thích nhà vệ sinh.', 5, 'PUBLISHED'
-    UNION ALL
-    SELECT 'レジ', 'レジ', 'quầy thu ngân', 'Danh từ', 'わたしはレジがすきです。', 'Tôi thích quầy thu ngân.', 6, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きっさてん', 'きっさてん', 'quán cà phê', 'Danh từ', 'わたしはきっさてんがすきです。', 'Tôi thích quán cà phê.', 7, 'PUBLISHED'
-    UNION ALL
-    SELECT 'スーパー', 'スーパー', 'siêu thị', 'Danh từ', 'わたしはスーパーがすきです。', 'Tôi thích siêu thị.', 8, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ひゃくえんショップ', 'ひゃくえんショップ', 'cửa hàng 100 yên', 'Danh từ', 'わたしはひゃくえんショップがすきです。', 'Tôi thích cửa hàng 100 yên.', 9, 'PUBLISHED'
-    UNION ALL
-    SELECT 'レストラン', 'レストラン', 'nhà hàng', 'Danh từ', 'わたしはレストランがすきです。', 'Tôi thích nhà hàng.', 10, 'PUBLISHED'
-    UNION ALL
-    SELECT 'カメラ', 'カメラ', 'máy ảnh', 'Danh từ', 'わたしはカメラがすきです。', 'Tôi thích máy ảnh.', 11, 'PUBLISHED'
-    UNION ALL
-    SELECT 'けいたいでんわ', 'けいたいでんわ', 'điện thoại di động', 'Danh từ', 'わたしはけいたいでんわがすきです。', 'Tôi thích điện thoại di động.', 12, 'PUBLISHED'
-    UNION ALL
-    SELECT 'でんしじしょ', 'でんしじしょ', 'từ điển điện tử', 'Danh từ', 'わたしはでんしじしょがすきです。', 'Tôi thích từ điển điện tử.', 13, 'PUBLISHED'
-    UNION ALL
-    SELECT 'くつ', 'くつ', 'giày', 'Danh từ', 'わたしはくつがすきです。', 'Tôi thích giày.', 14, 'PUBLISHED'
-    UNION ALL
-    SELECT 'けしゴム', 'けしゴム', 'cục tẩy', 'Danh từ', 'わたしはけしゴムがすきです。', 'Tôi thích cục tẩy.', 15, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ペン', 'ペン', 'bút', 'Danh từ', 'わたしはペンがすきです。', 'Tôi thích bút.', 16, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ほん', 'ほん', 'sách', 'Danh từ', 'わたしはほんがすきです。', 'Tôi thích sách.', 17, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あぶら', 'あぶら', 'dầu ăn', 'Danh từ', 'わたしはあぶらがすきです。', 'Tôi thích dầu ăn.', 18, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ケーキ', 'ケーキ', 'bánh ngọt', 'Danh từ', 'わたしはケーキがすきです。', 'Tôi thích bánh ngọt.', 19, 'PUBLISHED'
-    UNION ALL
-    SELECT 'こめ', 'こめ', 'gạo', 'Danh từ', 'わたしはこめがすきです。', 'Tôi thích gạo.', 20, 'PUBLISHED'
-    UNION ALL
-    SELECT 'たまご', 'たまご', 'trứng', 'Danh từ', 'わたしはたまごがすきです。', 'Tôi thích trứng.', 21, 'PUBLISHED'
-    UNION ALL
-    SELECT 'パン', 'パン', 'bánh mì', 'Danh từ', 'わたしはパンがすきです。', 'Tôi thích bánh mì.', 22, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かばん', 'かばん', 'cặp, túi xách', 'Danh từ', 'わたしはかばんがすきです。', 'Tôi thích cặp, túi xách.', 23, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ズボン', 'ズボン', 'quần dài', 'Danh từ', 'わたしはズボンがすきです。', 'Tôi thích quần dài.', 24, 'PUBLISHED'
-    UNION ALL
-    SELECT 'Tシャツ', 'Tシャツ', 'áo thun', 'Danh từ', 'わたしはTシャツがすきです。', 'Tôi thích áo thun.', 25, 'PUBLISHED'
-    UNION ALL
-    SELECT 'とけい', 'とけい', 'đồng hồ', 'Danh từ', 'わたしはとけいがすきです。', 'Tôi thích đồng hồ.', 26, 'PUBLISHED'
-    UNION ALL
-    SELECT 'さかな', 'さかな', 'cá', 'Danh từ', 'わたしはさかながすきです。', 'Tôi thích cá.', 27, 'PUBLISHED'
-    UNION ALL
-    SELECT 'やさい', 'やさい', 'rau', 'Danh từ', 'わたしはやさいがすきです。', 'Tôi thích rau.', 28, 'PUBLISHED'
-    UNION ALL
-    SELECT 'にく', 'にく', 'thịt', 'Danh từ', 'わたしはにくがすきです。', 'Tôi thích thịt.', 29, 'PUBLISHED'
-    UNION ALL
-    SELECT 'イチゴ', 'イチゴ', 'dâu tây', 'Danh từ', 'わたしはイチゴがすきです。', 'Tôi thích dâu tây.', 30, 'PUBLISHED'
-    UNION ALL
-    SELECT 'リンゴ', 'リンゴ', 'táo', 'Danh từ', 'わたしはリンゴがすきです。', 'Tôi thích táo.', 31, 'PUBLISHED'
-    UNION ALL
-    SELECT 'カレー', 'カレー', 'cà ri', 'Danh từ', 'わたしはカレーがすきです。', 'Tôi thích cà ri.', 32, 'PUBLISHED'
-    UNION ALL
-    SELECT 'とんかつ', 'とんかつ', 'thịt heo chiên xù', 'Danh từ', 'わたしはとんかつがすきです。', 'Tôi thích thịt heo chiên xù.', 33, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おちゃ', 'おちゃ', 'trà xanh', 'Danh từ', 'わたしはおちゃがすきです。', 'Tôi thích trà xanh.', 34, 'PUBLISHED'
-    UNION ALL
-    SELECT 'こうちゃ', 'こうちゃ', 'trà đen', 'Danh từ', 'わたしはこうちゃがすきです。', 'Tôi thích trà đen.', 35, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ビール', 'ビール', 'bia', 'Danh từ', 'わたしはビールがすきです。', 'Tôi thích bia.', 36, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ワイン', 'ワイン', 'rượu vang', 'Danh từ', 'わたしはワインがすきです。', 'Tôi thích rượu vang.', 37, 'PUBLISHED'
-    UNION ALL
-    SELECT 'コーヒー', 'コーヒー', 'cà phê', 'Danh từ', 'わたしはコーヒーがすきです。', 'Tôi thích cà phê.', 38, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ジュース', 'ジュース', 'nước ép, nước ngọt', 'Danh từ', 'わたしはジュースがすきです。', 'Tôi thích nước ép, nước ngọt.', 39, 'PUBLISHED'
-) AS seed
-JOIN course AS c ON c.code = 'JPD113'
-JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 2
-JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = 1;
-
--- JPD113 / Chapter 3 / Từ vựng: 37 mục.
-INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
-SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
-FROM (
-    SELECT 'ごぜん' AS word, 'ごぜん' AS reading, 'buổi sáng, trước trưa' AS meaning_vi, 'Danh từ' AS word_type, 'わたしはごぜんがすきです。' AS example_jp, 'Tôi thích buổi sáng, trước trưa.' AS example_vi, 1 AS display_order, 'PUBLISHED' AS status
-    UNION ALL
-    SELECT 'ごご', 'ごご', 'buổi chiều, sau trưa', 'Danh từ', 'わたしはごごがすきです。', 'Tôi thích buổi chiều, sau trưa.', 2, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ぎんこう', 'ぎんこう', 'ngân hàng', 'Danh từ', 'わたしはぎんこうがすきです。', 'Tôi thích ngân hàng.', 3, 'PUBLISHED'
-    UNION ALL
-    SELECT 'たいいくかん', 'たいいくかん', 'nhà thi đấu thể thao', 'Danh từ', 'わたしはたいいくかんがすきです。', 'Tôi thích nhà thi đấu thể thao.', 4, 'PUBLISHED'
-    UNION ALL
-    SELECT 'としょかん', 'としょかん', 'thư viện', 'Danh từ', 'わたしはとしょかんがすきです。', 'Tôi thích thư viện.', 5, 'PUBLISHED'
-    UNION ALL
-    SELECT 'びょういん', 'びょういん', 'bệnh viện', 'Danh từ', 'わたしはびょういんがすきです。', 'Tôi thích bệnh viện.', 6, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ゆうびんきょく', 'ゆうびんきょく', 'bưu điện', 'Danh từ', 'わたしはゆうびんきょくがすきです。', 'Tôi thích bưu điện.', 7, 'PUBLISHED'
-    UNION ALL
-    SELECT 'テスト', 'テスト', 'bài kiểm tra', 'Danh từ', 'わたしはテストがすきです。', 'Tôi thích bài kiểm tra.', 8, 'PUBLISHED'
-    UNION ALL
-    SELECT 'スキー', 'スキー', 'trượt tuyết', 'Danh từ', 'わたしはスキーがすきです。', 'Tôi thích trượt tuyết.', 9, 'PUBLISHED'
-    UNION ALL
-    SELECT 'バーベキュー', 'バーベキュー', 'tiệc nướng', 'Danh từ', 'わたしはバーベキューがすきです。', 'Tôi thích tiệc nướng.', 10, 'PUBLISHED'
-    UNION ALL
-    SELECT 'はなび', 'はなび', 'pháo hoa', 'Danh từ', 'わたしははなびがすきです。', 'Tôi thích pháo hoa.', 11, 'PUBLISHED'
-    UNION ALL
-    SELECT 'はなみ', 'はなみ', 'ngắm hoa', 'Danh từ', 'わたしははなみがすきです。', 'Tôi thích ngắm hoa.', 12, 'PUBLISHED'
-    UNION ALL
-    SELECT 'さくら', 'さくら', 'hoa anh đào', 'Danh từ', 'わたしはさくらがすきです。', 'Tôi thích hoa anh đào.', 13, 'PUBLISHED'
-    UNION ALL
-    SELECT 'すし', 'すし', 'sushi', 'Danh từ', 'わたしはすしがすきです。', 'Tôi thích sushi.', 14, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おべんとう', 'おべんとう', 'cơm hộp', 'Danh từ', 'わたしはおべんとうがすきです。', 'Tôi thích cơm hộp.', 15, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おまつり', 'おまつり', 'lễ hội', 'Danh từ', 'わたしはおまつりがすきです。', 'Tôi thích lễ hội.', 16, 'PUBLISHED'
-    UNION ALL
-    SELECT 'いきます', 'いきます', 'đi', 'Động từ', 'まいにちいきます。', 'Mỗi ngày tôi đi.', 17, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かえります', 'かえります', 'trở về', 'Động từ', 'まいにちかえります。', 'Mỗi ngày tôi trở về.', 18, 'PUBLISHED'
-    UNION ALL
-    SELECT 'のみます', 'のみます', 'uống', 'Động từ', 'まいにちのみます。', 'Mỗi ngày tôi uống.', 19, 'PUBLISHED'
-    UNION ALL
-    SELECT 'たべます', 'たべます', 'ăn', 'Động từ', 'まいにちたべます。', 'Mỗi ngày tôi ăn.', 20, 'PUBLISHED'
-    UNION ALL
-    SELECT 'みます', 'みます', 'xem, nhìn', 'Động từ', 'まいにちみます。', 'Mỗi ngày tôi xem, nhìn.', 21, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かいしゃ', 'かいしゃ', 'công ty', 'Danh từ', 'わたしはかいしゃがすきです。', 'Tôi thích công ty.', 22, 'PUBLISHED'
-    UNION ALL
-    SELECT 'コンビニ', 'コンビニ', 'cửa hàng tiện lợi', 'Danh từ', 'わたしはコンビニがすきです。', 'Tôi thích cửa hàng tiện lợi.', 23, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ぎゅうにゅう', 'ぎゅうにゅう', 'sữa bò', 'Danh từ', 'わたしはぎゅうにゅうがすきです。', 'Tôi thích sữa bò.', 24, 'PUBLISHED'
-    UNION ALL
-    SELECT 'くだもの', 'くだもの', 'trái cây', 'Danh từ', 'わたしはくだものがすきです。', 'Tôi thích trái cây.', 25, 'PUBLISHED'
-    UNION ALL
-    SELECT 'サラダ', 'サラダ', 'salad', 'Danh từ', 'わたしはサラダがすきです。', 'Tôi thích salad.', 26, 'PUBLISHED'
-    UNION ALL
-    SELECT 'チーズ', 'チーズ', 'phô mai', 'Danh từ', 'わたしはチーズがすきです。', 'Tôi thích phô mai.', 27, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しんぶん', 'しんぶん', 'báo', 'Danh từ', 'わたしはしんぶんがすきです。', 'Tôi thích báo.', 28, 'PUBLISHED'
-    UNION ALL
-    SELECT 'テレビ', 'テレビ', 'tivi', 'Danh từ', 'わたしはテレビがすきです。', 'Tôi thích tivi.', 29, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かいます', 'かいます', 'mua', 'Động từ', 'まいにちかいます。', 'Mỗi ngày tôi mua.', 30, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ききます', 'ききます', 'nghe', 'Động từ', 'まいにちききます。', 'Mỗi ngày tôi nghe.', 31, 'PUBLISHED'
-    UNION ALL
-    SELECT 'はたらきます', 'はたらきます', 'làm việc', 'Động từ', 'まいにちはたらきます。', 'Mỗi ngày tôi làm việc.', 32, 'PUBLISHED'
-    UNION ALL
-    SELECT 'よみます', 'よみます', 'đọc', 'Động từ', 'まいにちよみます。', 'Mỗi ngày tôi đọc.', 33, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おきます', 'おきます', 'thức dậy', 'Động từ', 'まいにちおきます。', 'Mỗi ngày tôi thức dậy.', 34, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ねます', 'ねます', 'ngủ', 'Động từ', 'まいにちねます。', 'Mỗi ngày tôi ngủ.', 35, 'PUBLISHED'
-    UNION ALL
-    SELECT 'べんきょうします', 'べんきょうします', 'học', 'Động từ', 'まいにちべんきょうします。', 'Mỗi ngày tôi học.', 36, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きます', 'きます', 'đến', 'Động từ', 'まいにちきます。', 'Mỗi ngày tôi đến.', 37, 'PUBLISHED'
-) AS seed
-JOIN course AS c ON c.code = 'JPD113'
-JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 3
-JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = 1;
-
--- JPD123 / Chapter 4 / Từ vựng: 48 mục.
-INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
-SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
-FROM (
-    SELECT 'まんなか' AS word, 'まんなか' AS reading, 'ở giữa, trung tâm' AS meaning_vi, 'Danh từ' AS word_type, 'わたしはまんなかがすきです。' AS example_jp, 'Tôi thích ở giữa, trung tâm.' AS example_vi, 1 AS display_order, 'PUBLISHED' AS status
-    UNION ALL
-    SELECT 'くるま', 'くるま', 'ô tô', 'Danh từ', 'わたしはくるまがすきです。', 'Tôi thích ô tô.', 2, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しんかんせん', 'しんかんせん', 'tàu cao tốc Shinkansen', 'Danh từ', 'わたしはしんかんせんがすきです。', 'Tôi thích tàu cao tốc Shinkansen.', 3, 'PUBLISHED'
-    UNION ALL
-    SELECT 'でんしゃ', 'でんしゃ', 'tàu điện', 'Danh từ', 'わたしはでんしゃがすきです。', 'Tôi thích tàu điện.', 4, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ひこうき', 'ひこうき', 'máy bay', 'Danh từ', 'わたしはひこうきがすきです。', 'Tôi thích máy bay.', 5, 'PUBLISHED'
-    UNION ALL
-    SELECT 'えき', 'えき', 'nhà ga', 'Danh từ', 'わたしはえきがすきです。', 'Tôi thích nhà ga.', 6, 'PUBLISHED'
-    UNION ALL
-    SELECT 'やま', 'やま', 'núi', 'Danh từ', 'わたしはやまがすきです。', 'Tôi thích núi.', 7, 'PUBLISHED'
-    UNION ALL
-    SELECT 'まち', 'まち', 'thành phố, thị trấn', 'Danh từ', 'わたしはまちがすきです。', 'Tôi thích thành phố, thị trấn.', 8, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かわ', 'かわ', 'sông', 'Danh từ', 'わたしはかわがすきです。', 'Tôi thích sông.', 9, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あるいて', 'あるいて', 'đi bộ', 'Cụm động từ', 'わたしはあるいてがすきです。', 'Tôi thích đi bộ.', 10, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おんせん', 'おんせん', 'suối nước nóng', 'Danh từ', 'わたしはおんせんがすきです。', 'Tôi thích suối nước nóng.', 11, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きょうかい', 'きょうかい', 'nhà thờ', 'Danh từ', 'わたしはきょうかいがすきです。', 'Tôi thích nhà thờ.', 12, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しろ', 'しろ', 'lâu đài', 'Danh từ', 'わたしはしろがすきです。', 'Tôi thích lâu đài.', 13, 'PUBLISHED'
-    UNION ALL
-    SELECT 'じんじゃ', 'じんじゃ', 'đền Thần đạo', 'Danh từ', 'わたしはじんじゃがすきです。', 'Tôi thích đền Thần đạo.', 14, 'PUBLISHED'
-    UNION ALL
-    SELECT 'てら', 'てら', 'chùa', 'Danh từ', 'わたしはてらがすきです。', 'Tôi thích chùa.', 15, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ビル', 'ビル', 'tòa nhà', 'Danh từ', 'わたしはビルがすきです。', 'Tôi thích tòa nhà.', 16, 'PUBLISHED'
-    UNION ALL
-    SELECT 'みどり', 'みどり', 'cây xanh', 'Danh từ', 'わたしはみどりがすきです。', 'Tôi thích cây xanh.', 17, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あります', 'あります', 'có, tồn tại (đồ vật)', 'Động từ', 'まいにちあります。', 'Mỗi ngày tôi có, tồn tại (đồ vật).', 18, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あたらしい', 'あたらしい', 'mới', 'Tính từ い', 'このまちはあたらしいです。', 'Thành phố này mới.', 19, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ふるい', 'ふるい', 'cũ', 'Tính từ い', 'このまちはふるいです。', 'Thành phố này cũ.', 20, 'PUBLISHED'
-    UNION ALL
-    SELECT 'いい', 'いい', 'tốt', 'Tính từ い', 'このまちはいいです。', 'Thành phố này tốt.', 21, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ひとがすくない', 'ひとがすくない', 'ít người', 'Cụm tính từ', 'このまちはひとがすくないです。', 'Thành phố này ít người.', 22, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ひとがおおい', 'ひとがおおい', 'đông người', 'Cụm tính từ', 'このまちはひとがおおいです。', 'Thành phố này đông người.', 23, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おおきい', 'おおきい', 'to, lớn', 'Tính từ い', 'このまちはおおきいです。', 'Thành phố này to, lớn.', 24, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ちいさい', 'ちいさい', 'nhỏ', 'Tính từ い', 'このまちはちいさいです。', 'Thành phố này nhỏ.', 25, 'PUBLISHED'
-    UNION ALL
-    SELECT 'たかい', 'たかい', 'cao, đắt', 'Tính từ い', 'このまちはたかいです。', 'Thành phố này cao, đắt.', 26, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ひくい', 'ひくい', 'thấp', 'Tính từ い', 'このまちはひくいです。', 'Thành phố này thấp.', 27, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きれい', 'きれい', 'đẹp, sạch', 'Tính từ な', 'このまちはきれいです。', 'Thành phố này đẹp, sạch.', 28, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しずか', 'しずか', 'yên tĩnh', 'Tính từ な', 'このまちはしずかです。', 'Thành phố này yên tĩnh.', 29, 'PUBLISHED'
-    UNION ALL
-    SELECT 'にぎやか', 'にぎやか', 'náo nhiệt', 'Tính từ な', 'このまちはにぎやかです。', 'Thành phố này náo nhiệt.', 30, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ゆうめい', 'ゆうめい', 'nổi tiếng', 'Tính từ な', 'このまちはゆうめいです。', 'Thành phố này nổi tiếng.', 31, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あめ', 'あめ', 'mưa', 'Danh từ', 'わたしはあめがすきです。', 'Tôi thích mưa.', 32, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ゆき', 'ゆき', 'tuyết', 'Danh từ', 'わたしはゆきがすきです。', 'Tôi thích tuyết.', 33, 'PUBLISHED'
-    UNION ALL
-    SELECT 'メロン', 'メロン', 'dưa lưới', 'Danh từ', 'わたしはメロンがすきです。', 'Tôi thích dưa lưới.', 34, 'PUBLISHED'
-    UNION ALL
-    SELECT 'すずしい', 'すずしい', 'mát mẻ', 'Tính từ い', 'きょうはすずしいです。', 'Hôm nay mát mẻ.', 35, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あたたかい', 'あたたかい', 'ấm áp', 'Tính từ い', 'きょうはあたたかいです。', 'Hôm nay ấm áp.', 36, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あつい', 'あつい', 'nóng', 'Tính từ い', 'きょうはあついです。', 'Hôm nay nóng.', 37, 'PUBLISHED'
-    UNION ALL
-    SELECT 'さむい', 'さむい', 'lạnh', 'Tính từ い', 'きょうはさむいです。', 'Hôm nay lạnh.', 38, 'PUBLISHED'
-    UNION ALL
-    SELECT 'てんきがいい', 'てんきがいい', 'thời tiết đẹp', 'Cụm tính từ', 'きょうはてんきがいいです。', 'Hôm nay thời tiết đẹp.', 39, 'PUBLISHED'
-    UNION ALL
-    SELECT 'てんきがわるい', 'てんきがわるい', 'thời tiết xấu', 'Cụm tính từ', 'きょうはてんきがわるいです。', 'Hôm nay thời tiết xấu.', 40, 'PUBLISHED'
-    UNION ALL
-    SELECT 'つめたい', 'つめたい', 'lạnh (khi chạm, đồ ăn/uống)', 'Tính từ い', 'このりょうりはつめたいです。', 'Món ăn này lạnh (khi chạm, đồ ăn/uống).', 41, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おいしい', 'おいしい', 'ngon', 'Tính từ い', 'このりょうりはおいしいです。', 'Món ăn này ngon.', 42, 'PUBLISHED'
-    UNION ALL
-    SELECT 'まずい', 'まずい', 'dở', 'Tính từ い', 'このりょうりはまずいです。', 'Món ăn này dở.', 43, 'PUBLISHED'
-    UNION ALL
-    SELECT 'からい', 'からい', 'cay', 'Tính từ い', 'このりょうりはからいです。', 'Món ăn này cay.', 44, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あまい', 'あまい', 'ngọt', 'Tính từ い', 'このりょうりはあまいです。', 'Món ăn này ngọt.', 45, 'PUBLISHED'
-    UNION ALL
-    SELECT 'にがい', 'にがい', 'đắng', 'Tính từ い', 'このりょうりはにがいです。', 'Món ăn này đắng.', 46, 'PUBLISHED'
-    UNION ALL
-    SELECT 'すっぱい', 'すっぱい', 'chua', 'Tính từ い', 'このりょうりはすっぱいです。', 'Món ăn này chua.', 47, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しおからい', 'しおからい', 'mặn', 'Tính từ い', 'このりょうりはしおからいです。', 'Món ăn này mặn.', 48, 'PUBLISHED'
-) AS seed
-JOIN course AS c ON c.code = 'JPD123'
-JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 4
-JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = 1;
-
--- JPD123 / Chapter 5 / Từ vựng: 40 mục.
-INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
-SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
-FROM (
-    SELECT 'しゅうまつ' AS word, 'しゅうまつ' AS reading, 'cuối tuần' AS meaning_vi, 'Danh từ' AS word_type, 'わたしはしゅうまつがすきです。' AS example_jp, 'Tôi thích cuối tuần.' AS example_vi, 1 AS display_order, 'PUBLISHED' AS status
-    UNION ALL
-    SELECT 'いえ', 'いえ', 'nhà', 'Danh từ', 'わたしはいえがすきです。', 'Tôi thích nhà.', 2, 'PUBLISHED'
-    UNION ALL
-    SELECT 'へや', 'へや', 'phòng', 'Danh từ', 'わたしはへやがすきです。', 'Tôi thích phòng.', 3, 'PUBLISHED'
-    UNION ALL
-    SELECT 'デパート', 'デパート', 'cửa hàng bách hóa', 'Danh từ', 'わたしはデパートがすきです。', 'Tôi thích cửa hàng bách hóa.', 4, 'PUBLISHED'
-    UNION ALL
-    SELECT 'びじゅつかん', 'びじゅつかん', 'bảo tàng mỹ thuật', 'Danh từ', 'わたしはびじゅつかんがすきです。', 'Tôi thích bảo tàng mỹ thuật.', 5, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ゲーム', 'ゲーム', 'trò chơi', 'Danh từ', 'わたしはゲームがすきです。', 'Tôi thích trò chơi.', 6, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かぞく', 'かぞく', 'gia đình', 'Danh từ', 'わたしはかぞくがすきです。', 'Tôi thích gia đình.', 7, 'PUBLISHED'
-    UNION ALL
-    SELECT 'こいびと', 'こいびと', 'người yêu', 'Danh từ', 'わたしはこいびとがすきです。', 'Tôi thích người yêu.', 8, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ともだち', 'ともだち', 'bạn bè', 'Danh từ', 'わたしはともだちがすきです。', 'Tôi thích bạn bè.', 9, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ルームメイト', 'ルームメイト', 'bạn cùng phòng', 'Danh từ', 'わたしはルームメイトがすきです。', 'Tôi thích bạn cùng phòng.', 10, 'PUBLISHED'
-    UNION ALL
-    SELECT 'にあいます', 'にあいます', 'hợp, vừa (quần áo)', 'Động từ', 'まいにちにあいます。', 'Mỗi ngày tôi hợp, vừa (quần áo).', 11, 'PUBLISHED'
-    UNION ALL
-    SELECT 'つくります', 'つくります', 'làm, chế tạo', 'Động từ', 'まいにちつくります。', 'Mỗi ngày tôi làm, chế tạo.', 12, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かいものします', 'かいものします', 'mua sắm', 'Động từ', 'まいにちかいものします。', 'Mỗi ngày tôi mua sắm.', 13, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しょくじします', 'しょくじします', 'dùng bữa', 'Động từ', 'まいにちしょくじします。', 'Mỗi ngày tôi dùng bữa.', 14, 'PUBLISHED'
-    UNION ALL
-    SELECT 'せんたくします', 'せんたくします', 'giặt quần áo', 'Động từ', 'まいにちせんたくします。', 'Mỗi ngày tôi giặt quần áo.', 15, 'PUBLISHED'
-    UNION ALL
-    SELECT 'そうじします', 'そうじします', 'dọn dẹp', 'Động từ', 'まいにちそうじします。', 'Mỗi ngày tôi dọn dẹp.', 16, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かぜ', 'かぜ', 'gió', 'Danh từ', 'わたしはかぜがすきです。', 'Tôi thích gió.', 17, 'PUBLISHED'
-    UNION ALL
-    SELECT 'てんき', 'てんき', 'thời tiết', 'Danh từ', 'わたしはてんきがすきです。', 'Tôi thích thời tiết.', 18, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ふく', 'ふく', 'quần áo', 'Danh từ', 'わたしはふくがすきです。', 'Tôi thích quần áo.', 19, 'PUBLISHED'
-    UNION ALL
-    SELECT 'のぼります', 'のぼります', 'leo, trèo', 'Động từ', 'まいにちのぼります。', 'Mỗi ngày tôi leo, trèo.', 20, 'PUBLISHED'
-    UNION ALL
-    SELECT 'はいります', 'はいります', 'vào', 'Động từ', 'まいにちはいります。', 'Mỗi ngày tôi vào.', 21, 'PUBLISHED'
-    UNION ALL
-    SELECT 'いそがしい', 'いそがしい', 'bận rộn', 'Tính từ い', 'このまちはいそがしいです。', 'Thành phố này bận rộn.', 22, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おもしろい', 'おもしろい', 'thú vị', 'Tính từ い', 'このまちはおもしろいです。', 'Thành phố này thú vị.', 23, 'PUBLISHED'
-    UNION ALL
-    SELECT 'つまらない', 'つまらない', 'nhàm chán', 'Tính từ い', 'このまちはつまらないです。', 'Thành phố này nhàm chán.', 24, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きもちがいい', 'きもちがいい', 'dễ chịu', 'Cụm tính từ', 'このまちはきもちがいいです。', 'Thành phố này dễ chịu.', 25, 'PUBLISHED'
-    UNION ALL
-    SELECT 'やすい', 'やすい', 'rẻ', 'Tính từ い', 'このまちはやすいです。', 'Thành phố này rẻ.', 26, 'PUBLISHED'
-    UNION ALL
-    SELECT 'たのしい', 'たのしい', 'vui', 'Tính từ い', 'このまちはたのしいです。', 'Thành phố này vui.', 27, 'PUBLISHED'
-    UNION ALL
-    SELECT 'むずかしい', 'むずかしい', 'khó', 'Tính từ い', 'このまちはむずかしいです。', 'Thành phố này khó.', 28, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かんたん', 'かんたん', 'đơn giản', 'Tính từ な', 'このまちはかんたんです。', 'Thành phố này đơn giản.', 29, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ひま', 'ひま', 'rảnh', 'Tính từ な', 'このまちはひまです。', 'Thành phố này rảnh.', 30, 'PUBLISHED'
-    UNION ALL
-    SELECT 'アニメ', 'アニメ', 'hoạt hình', 'Danh từ', 'わたしはアニメがすきです。', 'Tôi thích hoạt hình.', 31, 'PUBLISHED'
-    UNION ALL
-    SELECT 'え', 'え', 'tranh', 'Danh từ', 'わたしはえがすきです。', 'Tôi thích tranh.', 32, 'PUBLISHED'
-    UNION ALL
-    SELECT 'けしき', 'けしき', 'phong cảnh', 'Danh từ', 'わたしはけしきがすきです。', 'Tôi thích phong cảnh.', 33, 'PUBLISHED'
-    UNION ALL
-    SELECT 'じてんしゃ', 'じてんしゃ', 'xe đạp', 'Danh từ', 'わたしはじてんしゃがすきです。', 'Tôi thích xe đạp.', 34, 'PUBLISHED'
-    UNION ALL
-    SELECT 'とります', 'とります', 'chụp, lấy', 'Động từ', 'まいにちとります。', 'Mỗi ngày tôi chụp, lấy.', 35, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しゃしん', 'しゃしん', 'ảnh', 'Danh từ', 'わたしはしゃしんがすきです。', 'Tôi thích ảnh.', 36, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かります', 'かります', 'mượn', 'Động từ', 'まいにちかります。', 'Mỗi ngày tôi mượn.', 37, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ほしい', 'ほしい', 'muốn có', 'Tính từ い', 'このまちはほしいです。', 'Thành phố này muốn có.', 38, 'PUBLISHED'
-    UNION ALL
-    SELECT 'すき', 'すき', 'thích', 'Tính từ な', 'このまちはすきです。', 'Thành phố này thích.', 39, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きらい', 'きらい', 'ghét, không thích', 'Tính từ な', 'このまちはきらいです。', 'Thành phố này ghét, không thích.', 40, 'PUBLISHED'
-) AS seed
-JOIN course AS c ON c.code = 'JPD123'
-JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 5
-JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = 1;
-
--- JPD123 / Chapter 6 / Từ vựng: 24 mục.
-INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
-SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
-FROM (
-    SELECT 'カラオケ' AS word, 'カラオケ' AS reading, 'karaoke' AS meaning_vi, 'Danh từ' AS word_type, 'わたしはカラオケがすきです。' AS example_jp, 'Tôi thích karaoke.' AS example_vi, 1 AS display_order, 'PUBLISHED' AS status
-    UNION ALL
-    SELECT 'コンサート', 'コンサート', 'buổi hòa nhạc', 'Danh từ', 'わたしはコンサートがすきです。', 'Tôi thích buổi hòa nhạc.', 2, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しあい', 'しあい', 'trận đấu', 'Danh từ', 'わたしはしあいがすきです。', 'Tôi thích trận đấu.', 3, 'PUBLISHED'
-    UNION ALL
-    SELECT 'やきゅう', 'やきゅう', 'bóng chày', 'Danh từ', 'わたしはやきゅうがすきです。', 'Tôi thích bóng chày.', 4, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ちず', 'ちず', 'bản đồ', 'Danh từ', 'わたしはちずがすきです。', 'Tôi thích bản đồ.', 5, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ドライブ', 'ドライブ', 'lái xe đi chơi', 'Danh từ', 'わたしはドライブがすきです。', 'Tôi thích lái xe đi chơi.', 6, 'PUBLISHED'
-    UNION ALL
-    SELECT 'チケット', 'チケット', 'vé', 'Danh từ', 'わたしはチケットがすきです。', 'Tôi thích vé.', 7, 'PUBLISHED'
-    UNION ALL
-    SELECT 'みずぎ', 'みずぎ', 'đồ bơi', 'Danh từ', 'わたしはみずぎがすきです。', 'Tôi thích đồ bơi.', 8, 'PUBLISHED'
-    UNION ALL
-    SELECT 'やきにく', 'やきにく', 'thịt nướng', 'Danh từ', 'わたしはやきにくがすきです。', 'Tôi thích thịt nướng.', 9, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ラーメン', 'ラーメン', 'mì ramen', 'Danh từ', 'わたしはラーメンがすきです。', 'Tôi thích mì ramen.', 10, 'PUBLISHED'
-    UNION ALL
-    SELECT 'たべほうだい', 'たべほうだい', 'ăn buffet không giới hạn', 'Danh từ', 'わたしはたべほうだいがすきです。', 'Tôi thích ăn buffet không giới hạn.', 11, 'PUBLISHED'
-    UNION ALL
-    SELECT 'いざかや', 'いざかや', 'quán nhậu kiểu Nhật', 'Danh từ', 'わたしはいざかやがすきです。', 'Tôi thích quán nhậu kiểu Nhật.', 12, 'PUBLISHED'
-    UNION ALL
-    SELECT 'えいがかん', 'えいがかん', 'rạp chiếu phim', 'Danh từ', 'わたしはえいがかんがすきです。', 'Tôi thích rạp chiếu phim.', 13, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ちかてつ', 'ちかてつ', 'tàu điện ngầm', 'Danh từ', 'わたしはちかてつがすきです。', 'Tôi thích tàu điện ngầm.', 14, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かしゅ', 'かしゅ', 'ca sĩ', 'Danh từ', 'わたしはかしゅがすきです。', 'Tôi thích ca sĩ.', 15, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ジャズ', 'ジャズ', 'nhạc jazz', 'Danh từ', 'わたしはジャズがすきです。', 'Tôi thích nhạc jazz.', 16, 'PUBLISHED'
-    UNION ALL
-    SELECT 'コース', 'コース', 'lộ trình, khóa học', 'Danh từ', 'わたしはコースがすきです。', 'Tôi thích lộ trình, khóa học.', 17, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ツアー', 'ツアー', 'chuyến du lịch theo tour', 'Danh từ', 'わたしはツアーがすきです。', 'Tôi thích chuyến du lịch theo tour.', 18, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ちかい', 'ちかい', 'gần', 'Tính từ い', 'このまちはちかいです。', 'Thành phố này gần.', 19, 'PUBLISHED'
-    UNION ALL
-    SELECT 'とおい', 'とおい', 'xa', 'Tính từ い', 'このまちはとおいです。', 'Thành phố này xa.', 20, 'PUBLISHED'
-    UNION ALL
-    SELECT 'はやい', 'はやい', 'nhanh, sớm', 'Tính từ い', 'このまちははやいです。', 'Thành phố này nhanh, sớm.', 21, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おこのみやき', 'おこのみやき', 'bánh xèo Nhật', 'Danh từ', 'わたしはおこのみやきがすきです。', 'Tôi thích bánh xèo Nhật.', 22, 'PUBLISHED'
-    UNION ALL
-    SELECT 'すきやき', 'すきやき', 'món lẩu sukiyaki', 'Danh từ', 'わたしはすきやきがすきです。', 'Tôi thích món lẩu sukiyaki.', 23, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あそびます', 'あそびます', 'chơi', 'Động từ', 'まいにちあそびます。', 'Mỗi ngày tôi chơi.', 24, 'PUBLISHED'
-) AS seed
-JOIN course AS c ON c.code = 'JPD123'
-JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 6
-JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = 1;
-
--- JPD123 / Chapter 7 / Từ vựng: 45 mục.
-INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
-SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
-FROM (
-    SELECT 'います' AS word, 'います' AS reading, 'có, ở (người/động vật)' AS meaning_vi, 'Động từ' AS word_type, 'まいにちいます。' AS example_jp, 'Mỗi ngày tôi có, ở (người/động vật).' AS example_vi, 1 AS display_order, 'PUBLISHED' AS status
-    UNION ALL
-    SELECT 'あります', 'あります', 'có, tồn tại (đồ vật)', 'Động từ', 'まいにちあります。', 'Mỗi ngày tôi có, tồn tại (đồ vật).', 2, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かいさつ', 'かいさつ', 'cổng soát vé', 'Danh từ', 'わたしはかいさつがすきです。', 'Tôi thích cổng soát vé.', 3, 'PUBLISHED'
-    UNION ALL
-    SELECT 'こうばん', 'こうばん', 'đồn cảnh sát nhỏ', 'Danh từ', 'わたしはこうばんがすきです。', 'Tôi thích đồn cảnh sát nhỏ.', 4, 'PUBLISHED'
-    UNION ALL
-    SELECT 'じどうはんばいき', 'じどうはんばいき', 'máy bán hàng tự động', 'Danh từ', 'わたしはじどうはんばいきがすきです。', 'Tôi thích máy bán hàng tự động.', 5, 'PUBLISHED'
-    UNION ALL
-    SELECT 'バスてい', 'バスてい', 'trạm xe buýt', 'Danh từ', 'わたしはバスていがすきです。', 'Tôi thích trạm xe buýt.', 6, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ポスト', 'ポスト', 'hòm thư', 'Danh từ', 'わたしはポストがすきです。', 'Tôi thích hòm thư.', 7, 'PUBLISHED'
-    UNION ALL
-    SELECT 'はな', 'はな', 'hoa', 'Danh từ', 'わたしははながすきです。', 'Tôi thích hoa.', 8, 'PUBLISHED'
-    UNION ALL
-    SELECT 'うえ', 'うえ', 'ở trên', 'Danh từ chỉ vị trí', 'わたしはうえがすきです。', 'Tôi thích ở trên.', 9, 'PUBLISHED'
-    UNION ALL
-    SELECT 'した', 'した', 'ở dưới', 'Danh từ chỉ vị trí', 'わたしはしたがすきです。', 'Tôi thích ở dưới.', 10, 'PUBLISHED'
-    UNION ALL
-    SELECT 'うしろ', 'うしろ', 'phía sau', 'Danh từ chỉ vị trí', 'わたしはうしろがすきです。', 'Tôi thích phía sau.', 11, 'PUBLISHED'
-    UNION ALL
-    SELECT 'まえ', 'まえ', 'phía trước', 'Danh từ chỉ vị trí', 'わたしはまえがすきです。', 'Tôi thích phía trước.', 12, 'PUBLISHED'
-    UNION ALL
-    SELECT 'なか', 'なか', 'bên trong', 'Danh từ chỉ vị trí', 'わたしはなかがすきです。', 'Tôi thích bên trong.', 13, 'PUBLISHED'
-    UNION ALL
-    SELECT 'そと', 'そと', 'bên ngoài', 'Danh từ chỉ vị trí', 'わたしはそとがすきです。', 'Tôi thích bên ngoài.', 14, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ひだり', 'ひだり', 'bên trái', 'Danh từ chỉ vị trí', 'わたしはひだりがすきです。', 'Tôi thích bên trái.', 15, 'PUBLISHED'
-    UNION ALL
-    SELECT 'みぎ', 'みぎ', 'bên phải', 'Danh từ chỉ vị trí', 'わたしはみぎがすきです。', 'Tôi thích bên phải.', 16, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ちかく', 'ちかく', 'gần', 'Danh từ chỉ vị trí', 'わたしはちかくがすきです。', 'Tôi thích gần.', 17, 'PUBLISHED'
-    UNION ALL
-    SELECT 'となり', 'となり', 'bên cạnh', 'Danh từ chỉ vị trí', 'わたしはとなりがすきです。', 'Tôi thích bên cạnh.', 18, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あいだ', 'あいだ', 'ở giữa', 'Danh từ chỉ vị trí', 'わたしはあいだがすきです。', 'Tôi thích ở giữa.', 19, 'PUBLISHED'
-    UNION ALL
-    SELECT 'よこ', 'よこ', 'bên cạnh, ngang bên', 'Danh từ chỉ vị trí', 'わたしはよこがすきです。', 'Tôi thích bên cạnh, ngang bên.', 20, 'PUBLISHED'
-    UNION ALL
-    SELECT 'いす', 'いす', 'ghế', 'Danh từ', 'わたしはいすがすきです。', 'Tôi thích ghế.', 21, 'PUBLISHED'
-    UNION ALL
-    SELECT 'テーブル', 'テーブル', 'bàn', 'Danh từ', 'わたしはテーブルがすきです。', 'Tôi thích bàn.', 22, 'PUBLISHED'
-    UNION ALL
-    SELECT 'でんしレンジ', 'でんしレンジ', 'lò vi sóng', 'Danh từ', 'わたしはでんしレンジがすきです。', 'Tôi thích lò vi sóng.', 23, 'PUBLISHED'
-    UNION ALL
-    SELECT 'れいぞうこ', 'れいぞうこ', 'tủ lạnh', 'Danh từ', 'わたしはれいぞうこがすきです。', 'Tôi thích tủ lạnh.', 24, 'PUBLISHED'
-    UNION ALL
-    SELECT 'さとう', 'さとう', 'đường', 'Danh từ', 'わたしはさとうがすきです。', 'Tôi thích đường.', 25, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しお', 'しお', 'muối', 'Danh từ', 'わたしはしおがすきです。', 'Tôi thích muối.', 26, 'PUBLISHED'
-    UNION ALL
-    SELECT 'しょうゆ', 'しょうゆ', 'nước tương', 'Danh từ', 'わたしはしょうゆがすきです。', 'Tôi thích nước tương.', 27, 'PUBLISHED'
-    UNION ALL
-    SELECT 'スプーン', 'スプーン', 'thìa', 'Danh từ', 'わたしはスプーンがすきです。', 'Tôi thích thìa.', 28, 'PUBLISHED'
-    UNION ALL
-    SELECT 'フォーク', 'フォーク', 'nĩa', 'Danh từ', 'わたしはフォークがすきです。', 'Tôi thích nĩa.', 29, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ナイフ', 'ナイフ', 'dao', 'Danh từ', 'わたしはナイフがすきです。', 'Tôi thích dao.', 30, 'PUBLISHED'
-    UNION ALL
-    SELECT 'て', 'て', 'tay', 'Danh từ', 'わたしはてがすきです。', 'Tôi thích tay.', 31, 'PUBLISHED'
-    UNION ALL
-    SELECT 'はし', 'はし', 'đũa', 'Danh từ', 'わたしははしがすきです。', 'Tôi thích đũa.', 32, 'PUBLISHED'
-    UNION ALL
-    SELECT 'あらいます', 'あらいます', 'rửa', 'Động từ', 'まいにちあらいます。', 'Mỗi ngày tôi rửa.', 33, 'PUBLISHED'
-    UNION ALL
-    SELECT 'かきます', 'かきます', 'viết', 'Động từ', 'まいにちかきます。', 'Mỗi ngày tôi viết.', 34, 'PUBLISHED'
-    UNION ALL
-    SELECT 'きります', 'きります', 'cắt', 'Động từ', 'まいにちきります。', 'Mỗi ngày tôi cắt.', 35, 'PUBLISHED'
-    UNION ALL
-    SELECT 'てつだいます', 'てつだいます', 'giúp đỡ', 'Động từ', 'まいにちてつだいます。', 'Mỗi ngày tôi giúp đỡ.', 36, 'PUBLISHED'
-    UNION ALL
-    SELECT 'いれます', 'いれます', 'cho vào', 'Động từ', 'まいにちいれます。', 'Mỗi ngày tôi cho vào.', 37, 'PUBLISHED'
-    UNION ALL
-    SELECT 'だします', 'だします', 'lấy ra, đưa ra', 'Động từ', 'まいにちだします。', 'Mỗi ngày tôi lấy ra, đưa ra.', 38, 'PUBLISHED'
-    UNION ALL
-    SELECT 'おしえます', 'おしえます', 'dạy, chỉ bảo', 'Động từ', 'まいにちおしえます。', 'Mỗi ngày tôi dạy, chỉ bảo.', 39, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ギター', 'ギター', 'đàn ghi-ta', 'Danh từ', 'わたしはギターがすきです。', 'Tôi thích đàn ghi-ta.', 40, 'PUBLISHED'
-    UNION ALL
-    SELECT 'だいどころ', 'だいどころ', 'nhà bếp', 'Danh từ', 'わたしはだいどころがすきです。', 'Tôi thích nhà bếp.', 41, 'PUBLISHED'
-    UNION ALL
-    SELECT 'たばこ', 'たばこ', 'thuốc lá', 'Danh từ', 'わたしはたばこがすきです。', 'Tôi thích thuốc lá.', 42, 'PUBLISHED'
-    UNION ALL
-    SELECT 'でんわ', 'でんわ', 'điện thoại', 'Danh từ', 'わたしはでんわがすきです。', 'Tôi thích điện thoại.', 43, 'PUBLISHED'
-    UNION ALL
-    SELECT 'ピザ', 'ピザ', 'pizza', 'Danh từ', 'わたしはピザがすきです。', 'Tôi thích pizza.', 44, 'PUBLISHED'
-    UNION ALL
-    SELECT 'まど', 'まど', 'cửa sổ', 'Danh từ', 'わたしはまどがすきです。', 'Tôi thích cửa sổ.', 45, 'PUBLISHED'
-) AS seed
-JOIN course AS c ON c.code = 'JPD123'
-JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 7
-JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = 1;
-
--- =============================================================================
 -- NGỮ PHÁP
 -- =============================================================================
 -- Mỗi lesson có đúng 1 chi tiết grammar; lesson_no là nhóm bài 1, 2 hoặc 3 trong chapter.
@@ -2793,6 +2213,1036 @@ COMMIT;
 
 -- =============================================================================
 -- NGÂN HÀNG CÂU HỎI JPD113 / JPD123
+-- =============================================================================
+-- TỪ VỰNG (454 mục theo thứ tự tài liệu nguồn)
+-- Thay thế nguyên khối TỪ VỰNG cũ; nội dung này không chứa câu lệnh DROP hoặc DELETE.
+-- Các bài 1–3 theo biểu tượng trong danh sách từ vựng. Thứ tự bắt đầu từ 1 trong từng bài.
+-- =============================================================================
+
+-- Bài từ vựng 2 và 3 của mỗi chương.
+INSERT INTO lesson (chapter_id, skill_type, lesson_no, title, display_order, status)
+SELECT ch.id, 'VOCABULARY', seed.lesson_no, seed.title, seed.display_order, 'PUBLISHED'
+FROM (
+    SELECT 'JPD113' AS course_code, 1 AS chapter_no, 2 AS lesson_no, 'Từ vựng bài 2' AS title, 3 AS display_order
+    UNION ALL
+    SELECT 'JPD113', 1, 3, 'Từ vựng bài 3', 4
+    UNION ALL
+    SELECT 'JPD113', 2, 2, 'Từ vựng bài 2', 3
+    UNION ALL
+    SELECT 'JPD113', 2, 3, 'Từ vựng bài 3', 4
+    UNION ALL
+    SELECT 'JPD113', 3, 2, 'Từ vựng bài 2', 3
+    UNION ALL
+    SELECT 'JPD113', 3, 3, 'Từ vựng bài 3', 4
+    UNION ALL
+    SELECT 'JPD123', 4, 2, 'Từ vựng bài 2', 3
+    UNION ALL
+    SELECT 'JPD123', 4, 3, 'Từ vựng bài 3', 4
+    UNION ALL
+    SELECT 'JPD123', 5, 2, 'Từ vựng bài 2', 3
+    UNION ALL
+    SELECT 'JPD123', 5, 3, 'Từ vựng bài 3', 4
+    UNION ALL
+    SELECT 'JPD123', 6, 2, 'Từ vựng bài 2', 3
+    UNION ALL
+    SELECT 'JPD123', 6, 3, 'Từ vựng bài 3', 4
+    UNION ALL
+    SELECT 'JPD123', 7, 2, 'Từ vựng bài 2', 3
+    UNION ALL
+    SELECT 'JPD123', 7, 3, 'Từ vựng bài 3', 4
+) AS seed
+JOIN course AS c ON c.code = seed.course_code
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = seed.chapter_no
+WHERE NOT EXISTS (
+    SELECT 1 FROM lesson AS l WHERE l.chapter_id = ch.id
+      AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no
+);
+
+-- JPD113 / Chapter 1 / Từ vựng: 47 mục.
+INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
+SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
+FROM (
+    -- Bài 1: 30 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '私' AS word, 'わたし' AS reading, 'Tôi' AS meaning_vi, NULL AS word_type, NULL AS example_jp, NULL AS example_vi, 1 AS display_order, 'PUBLISHED' AS status, 1 AS lesson_no
+    UNION ALL
+    SELECT '（お）名前', '（お）なまえ', 'Tên (bạn)', NULL, NULL, NULL, 2, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '（お）国', '（お）くに', 'Đất nước (bạn)', NULL, NULL, NULL, 3, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '日本', 'にほん', 'Nhật Bản', 'Danh từ riêng', 'わたしはにほんからきました。', 'Tôi đến từ Nhật Bản.', 4, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '韓国', 'かんこく', 'Hàn Quốc', 'Danh từ riêng', 'わたしはかんこくからきました。', 'Tôi đến từ Hàn Quốc.', 5, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '中国', 'ちゅうごく', 'Trung Quốc', 'Danh từ riêng', 'わたしはちゅうごくからきました。', 'Tôi đến từ Trung Quốc.', 6, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'アメリカ', '', 'Mỹ', 'Danh từ riêng', 'わたしはアメリカからきました。', 'Tôi đến từ Mỹ.', 7, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'イタリア', '', 'Ý', 'Danh từ riêng', 'わたしはイタリアからきました。', 'Tôi đến từ Ý.', 8, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'オーストラリア', '', 'Úc', 'Danh từ riêng', 'わたしはオーストラリアからきました。', 'Tôi đến từ Úc.', 9, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ロシア', '', 'Nga', 'Danh từ riêng', 'わたしはロシアからきました。', 'Tôi đến từ Nga.', 10, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'タイ', '', 'Thái Lan', 'Danh từ riêng', 'わたしはタイからきました。', 'Tôi đến từ Thái Lan.', 11, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '高校', 'こうこう', 'Trường trung học phổ thông (cấp 3)', NULL, NULL, NULL, 12, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '大学', 'だいがく', 'Trường đại học', 'Danh từ', 'わたしはだいがくがすきです。', 'Tôi thích trường đại học.', 13, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '日本語学校', 'にほんごがっこう', 'Trường tiếng Nhật', 'Danh từ', 'わたしはにほんごがっこうがすきです。', 'Tôi thích trường tiếng Nhật.', 14, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '（お）仕事', '（お）しごと', 'Công việc (của bạn)', NULL, NULL, NULL, 15, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '学生', 'がくせい', 'Học sinh', NULL, NULL, NULL, 16, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '先生', 'せんせい', 'Thầy/Cô giáo', NULL, NULL, NULL, 17, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '教師', 'きょうし', 'Giáo viên', NULL, NULL, NULL, 18, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '会社員', 'かいしゃいん', 'Nhân viên văn phòng', NULL, NULL, NULL, 19, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '社員', 'しゃいん', 'Nhân viên (của công ty nào đó)', NULL, NULL, NULL, 20, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～さん', '', 'Anh/Chị/Ông/Bà/Bạn ～', 'Hậu tố', NULL, NULL, 21, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～人', '～じん', 'Người (nước nào)', 'Hậu tố', NULL, NULL, 22, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～語', '～ご', 'Tiếng (nước nào)', 'Hậu tố', NULL, NULL, 23, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'どちら', '', 'Ở đâu / Phía nào', NULL, NULL, NULL, 24, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'はじめまして', '', 'Xin chào (lần đầu gặp mặt)', NULL, NULL, NULL, 25, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '（どうぞ）よろしくお願いします。', '', 'Rất mong nhận được sự giúp đỡ của bạn', NULL, NULL, NULL, 26, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'こちらこそ', '', 'Tôi cũng vậy!', NULL, NULL, NULL, 27, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'あのう', '', 'Anh / chị ơi…', NULL, NULL, NULL, 28, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'すみません', '', 'Xin lỗi… cho tôi hỏi…', NULL, NULL, NULL, 29, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'そうですか。', '', 'Thế à!', NULL, NULL, NULL, 30, 'PUBLISHED', 1
+    UNION ALL
+    -- Bài 2: 6 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '誕生日', 'たんじょうび', 'Ngày sinh / Sinh nhật', NULL, NULL, NULL, 1, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ブラジル', '', 'Brazil', 'Danh từ riêng', 'わたしはブラジルからきました。', 'Tôi đến từ Brazil.', 2, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '～月', '～がつ', 'Tháng ～', 'Hậu tố', NULL, NULL, 3, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '～日', '～にち／か', 'Ngày (mùng) ～', 'Hậu tố', NULL, NULL, 4, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '～歳', '～さい', '～ tuổi', 'Hậu tố', NULL, NULL, 5, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'いつ', '', 'Lúc nào / Khi nào', NULL, NULL, NULL, 6, 'PUBLISHED', 2
+    UNION ALL
+    -- Bài 3: 11 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '趣味', 'しゅみ', 'Sở thích', 'Danh từ', 'わたしはしゅみがすきです。', 'Tôi thích sở thích.', 1, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'スポーツ', '', 'Thể thao', NULL, NULL, NULL, 2, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'サッカー', '', 'Bóng đá', 'Danh từ', 'わたしはサッカーがすきです。', 'Tôi thích bóng đá.', 3, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'テニス', '', 'Tennis (Quần vợt)', NULL, NULL, NULL, 4, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '水泳', 'すいえい', 'Bơi lội', 'Danh từ', 'わたしはすいえいがすきです。', 'Tôi thích bơi lội.', 5, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '音楽', 'おんがく', 'Âm nhạc', 'Danh từ', 'わたしはおんがくがすきです。', 'Tôi thích âm nhạc.', 6, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '読書', 'どくしょ', 'Đọc sách', 'Danh từ', 'わたしはどくしょがすきです。', 'Tôi thích đọc sách.', 7, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '旅行', 'りょこう', 'Du lịch', 'Danh từ', 'わたしはりょこうがすきです。', 'Tôi thích du lịch.', 8, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '料理', 'りょうり', 'Nấu ăn / Món ăn', NULL, NULL, NULL, 9, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '何', 'なん', 'Cái gì', NULL, NULL, NULL, 10, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'あ（っ）', '', 'A! / Á!', NULL, NULL, NULL, 11, 'PUBLISHED', 3
+) AS seed
+JOIN course AS c ON c.code = 'JPD113'
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 1
+JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no;
+
+-- JPD113 / Chapter 2 / Từ vựng: 77 mục.
+INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
+SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
+FROM (
+    -- Bài 1: 34 mục theo thứ tự trong tài liệu nguồn.
+    SELECT 'ここ／こちら' AS word, '' AS reading, 'Đây, chỗ này / Phía này' AS meaning_vi, NULL AS word_type, NULL AS example_jp, NULL AS example_vi, 1 AS display_order, 'PUBLISHED' AS status, 1 AS lesson_no
+    UNION ALL
+    SELECT 'そこ／そちら', '', 'Kia, chỗ kia / Phía kia', NULL, NULL, NULL, 2, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'あそこ／あちら', '', 'Đó, chỗ đó / Phía đó', NULL, NULL, NULL, 3, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'インフォメーション', '', 'Quầy thông tin', NULL, NULL, NULL, 4, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ＡＴＭ', '', 'Máy rút tiền tự động', NULL, NULL, NULL, 5, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'エスカレーター', '', 'Thang cuốn', 'Danh từ', 'わたしはエスカレーターがすきです。', 'Tôi thích thang cuốn.', 6, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'エレベーター', '', 'Thang máy', 'Danh từ', 'わたしはエレベーターがすきです。', 'Tôi thích thang máy.', 7, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'きつえんじょ', '', 'Nơi hút thuốc', NULL, NULL, NULL, 8, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'トイレ', '', 'Nhà vệ sinh', 'Danh từ', 'わたしはトイレがすきです。', 'Tôi thích nhà vệ sinh.', 9, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'レジ', '', 'Quầy thu ngân', 'Danh từ', 'わたしはレジがすきです。', 'Tôi thích quầy thu ngân.', 10, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'きっさてん', '', 'Quán giải khát', NULL, NULL, NULL, 11, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'スーパー', '', 'Siêu thị', 'Danh từ', 'わたしはスーパーがすきです。', 'Tôi thích siêu thị.', 12, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '１００円ショップ', '', 'Cửa hàng 100 Yên', NULL, NULL, NULL, 13, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'レストラン', '', 'Nhà hàng, quán ăn', NULL, NULL, NULL, 14, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '地下', '', 'Ngầm, dưới lòng đất', NULL, NULL, NULL, 15, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'カメラ', '', 'Máy ảnh', 'Danh từ', 'わたしはカメラがすきです。', 'Tôi thích máy ảnh.', 16, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '携帯電話', 'けいたんでんわ', 'Điện thoại di động', NULL, NULL, NULL, 17, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '電子辞書', 'でんしじしょ', 'Kim từ điển/Từ điển điện tử', NULL, NULL, NULL, 18, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'パソコン', '', 'Máy tính cá nhân', NULL, NULL, NULL, 19, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'くつ', '', 'Giầy, đôi giầy', NULL, NULL, NULL, 20, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '消しゴム', 'けしごむ', 'Tẩy', NULL, NULL, NULL, 21, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ペン', '', 'Bút', 'Danh từ', 'わたしはペンがすきです。', 'Tôi thích bút.', 22, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'トイレットペーパー', '', 'Giấy vệ sinh', NULL, NULL, NULL, 23, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '本', 'ほん', 'Sách, quyển sách', NULL, NULL, NULL, 24, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '油', 'あぶら', 'Dầu', NULL, NULL, NULL, 25, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ケーキ', '', 'Bánh ngọt', 'Danh từ', 'わたしはケーキがすきです。', 'Tôi thích bánh ngọt.', 26, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '米', 'こめ', 'Gạo', 'Danh từ', 'わたしはこめがすきです。', 'Tôi thích gạo.', 27, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '卵', 'たまご', 'Trứng, quả trứng', NULL, NULL, NULL, 28, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'パン', '', 'Bánh mỳ', NULL, NULL, NULL, 29, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '水', 'みず', 'Nước', NULL, NULL, NULL, 30, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '店員', 'てんいん', 'Nhân viên bán hàng', NULL, NULL, NULL, 31, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～階', '～かい', 'Tầng ～', 'Hậu tố', NULL, NULL, 32, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～屋', '～や', 'Cửa hàng ～, Hiệu～', 'Hậu tố', NULL, NULL, 33, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'いらっしゃいませ', '', 'Kính chào quý khách', NULL, NULL, NULL, 34, 'PUBLISHED', 1
+    UNION ALL
+    -- Bài 2: 15 mục theo thứ tự trong tài liệu nguồn.
+    SELECT 'これ', '', 'Cái này', NULL, NULL, NULL, 1, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'それ', '', 'Cái kia', NULL, NULL, NULL, 2, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'あれ', '', 'Cái đó', NULL, NULL, NULL, 3, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'どれ', '', 'Cái nào', NULL, NULL, NULL, 4, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'この～', '', 'Cái ～ này', NULL, NULL, NULL, 5, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'その～', '', 'Cái ～ kia', NULL, NULL, NULL, 6, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'あの～', '', 'Cái ～ đó', NULL, NULL, NULL, 7, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'どの～', '', 'Cái ～ nào', NULL, NULL, NULL, 8, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'かばん', '', 'Cặp, túi xách', 'Danh từ', 'わたしはかばんがすきです。', 'Tôi thích cặp, túi xách.', 9, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ズボン', '', 'Quần dài', 'Danh từ', 'わたしはズボンがすきです。', 'Tôi thích quần dài.', 10, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'T シャツ', '', 'Áo phông', NULL, NULL, NULL, 11, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '時計', 'とけい', 'Đồng hồ', 'Danh từ', 'わたしはとけいがすきです。', 'Tôi thích đồng hồ.', 12, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '～円', '～えん', '～ Yên', 'Hậu tố', NULL, NULL, 13, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'いくら', '', 'Bao nhiêu tiền', NULL, NULL, NULL, 14, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'じゃ', '', 'Thế thì / Thôi thì', NULL, NULL, NULL, 15, 'PUBLISHED', 2
+    UNION ALL
+    -- Bài 3: 28 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '魚', 'さかな', 'Cá, con cá', NULL, NULL, NULL, 1, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '肉', 'にく', 'Thịt', 'Danh từ', 'わたしはにくがすきです。', 'Tôi thích thịt.', 2, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '牛肉', 'ぎゅうにく', 'Thịt bò', NULL, NULL, NULL, 3, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '豚肉', 'ぶたにく', 'Thịt lợn', NULL, NULL, NULL, 4, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '野菜', 'やさい', 'Rau', 'Danh từ', 'わたしはやさいがすきです。', 'Tôi thích rau.', 5, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'いちご', '', 'Quả dâu', NULL, NULL, NULL, 6, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'りんご', '', 'Quả táo', NULL, NULL, NULL, 7, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '料理', 'りょうり', 'Món ăn / Nấu ăn', NULL, NULL, NULL, 8, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'カレー', '', 'Món cà-ri', NULL, NULL, NULL, 9, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'スープ', '', 'Canh, súp', NULL, NULL, NULL, 10, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'とんかつ', '', 'Món thịt lợn chiên xù', NULL, NULL, NULL, 11, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ハンバーグ', '', 'Món thịt băm viên', NULL, NULL, NULL, 12, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ご飯', 'ごはん', 'Cơm', NULL, NULL, NULL, 13, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ライス', '', 'Cơm, gạo', NULL, NULL, NULL, 14, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ジュース', '', 'Nước ngọt, nước trái cây', NULL, NULL, NULL, 15, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'コーヒー', '', 'Cà phê', 'Danh từ', 'わたしはコーヒーがすきです。', 'Tôi thích cà phê.', 16, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '紅茶', 'こうちゃ', 'Trà đen', 'Danh từ', 'わたしはこうちゃがすきです。', 'Tôi thích trà đen.', 17, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '（お）茶', '（お）ちゃ', 'Trà, nước chè', NULL, NULL, NULL, 18, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ビール', '', 'Bia', 'Danh từ', 'わたしはビールがすきです。', 'Tôi thích bia.', 19, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ワイン', '', 'Rượu vang', 'Danh từ', 'わたしはワインがすきです。', 'Tôi thích rượu vang.', 20, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'インド', '', 'Ấn Độ', NULL, NULL, NULL, 21, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ドイツ', '', 'Đức', NULL, NULL, NULL, 22, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'フランス', '', 'Pháp', NULL, NULL, NULL, 23, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '財布', 'さいふ', 'Cái ví, Ví tiền', NULL, NULL, NULL, 24, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '英語', 'えいご', 'Tiếng Anh', NULL, NULL, NULL, 25, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '～つ', '', '～ cái / ～ chiếc', 'Hậu tố', NULL, NULL, 26, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'だれ', '', 'Ai', NULL, NULL, NULL, 27, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'どうぞ', '', 'Xin mời', NULL, NULL, NULL, 28, 'PUBLISHED', 3
+) AS seed
+JOIN course AS c ON c.code = 'JPD113'
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 2
+JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no;
+
+-- JPD113 / Chapter 3 / Từ vựng: 78 mục.
+INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
+SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
+FROM (
+    -- Bài 1: 17 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '今' AS word, 'いま' AS reading, 'Bây giờ' AS meaning_vi, NULL AS word_type, NULL AS example_jp, NULL AS example_vi, 1 AS display_order, 'PUBLISHED' AS status, 1 AS lesson_no
+    UNION ALL
+    SELECT '午前', 'ごぜん', 'Buổi sáng / AM', NULL, NULL, NULL, 2, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '午後', 'ごご', 'Buổi chiều / PM', NULL, NULL, NULL, 3, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '昼', 'ひる', 'Buổi trưa', NULL, NULL, NULL, 4, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '銀行', 'ぎんこう', 'Ngân hàng', 'Danh từ', 'わたしはぎんこうがすきです。', 'Tôi thích ngân hàng.', 5, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '体育館', 'たいいくかん', 'Nhà thi đấu, Nhà tập thể dục', NULL, NULL, NULL, 6, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '図書館', 'としょかん', 'Thư viện', 'Danh từ', 'わたしはとしょかんがすきです。', 'Tôi thích thư viện.', 7, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '病院', 'びょういん', 'Bệnh viện', 'Danh từ', 'わたしはびょういんがすきです。', 'Tôi thích bệnh viện.', 8, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '郵便局', 'ゆうびんきょく', 'Bưu điện', 'Danh từ', 'わたしはゆうびんきょくがすきです。', 'Tôi thích bưu điện.', 9, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '授業', 'じゅぎょう', 'Giờ học', NULL, NULL, NULL, 10, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'テスト', '', 'Bài kiểm tra', 'Danh từ', 'わたしはテストがすきです。', 'Tôi thích bài kiểm tra.', 11, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '休み', 'やすみ', 'Nghỉ / Ngày nghỉ', NULL, NULL, NULL, 12, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '時間', 'じかん', 'Thời gian / Giờ giấc', NULL, NULL, NULL, 13, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～時', '～じ', '～ giờ', 'Hậu tố', NULL, NULL, 14, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～分', '～ふん', '～ phút', 'Hậu tố', NULL, NULL, 15, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～時半', '～じはん', '～ giờ rưỡi', 'Hậu tố', NULL, NULL, 16, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～曜日', '～ようび', 'Thứ ～', 'Hậu tố', NULL, NULL, 17, 'PUBLISHED', 1
+    UNION ALL
+    -- Bài 2: 32 mục theo thứ tự trong tài liệu nguồn.
+    SELECT 'スケジュール', '', 'Kế hoạch, lịch trình', NULL, NULL, NULL, 1, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'アルバイト', '', 'Việc làm thêm', NULL, NULL, NULL, 2, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'スキー', '', 'Trượt tuyết', 'Danh từ', 'わたしはスキーがすきです。', 'Tôi thích trượt tuyết.', 3, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'パーティー', '', 'Bữa tiệc', NULL, NULL, NULL, 4, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'バーベキュー', '', 'Tiệc nướng ngoài trời', NULL, NULL, NULL, 5, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '花火', 'はなび', 'Pháo hoa', 'Danh từ', 'わたしははなびがすきです。', 'Tôi thích pháo hoa.', 6, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（お）花見', '（お）はなみ', 'Ngắm hoa (anh đào)', NULL, NULL, NULL, 7, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ホームステイ', '', 'Ở cùng gia đình bản địa', NULL, NULL, NULL, 8, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（お）祭り', '（お）まつり', 'Lễ hội', NULL, NULL, NULL, 9, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '海', 'うみ', 'Biển', NULL, NULL, NULL, 10, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '公園', 'こうえん', 'Công viên', NULL, NULL, NULL, 11, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '桜', 'さくら', 'Hoa anh đào', 'Danh từ', 'わたしはさくらがすきです。', 'Tôi thích hoa anh đào.', 12, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（お）酒', '（お）さけ', 'Rượu (Nhật)', NULL, NULL, NULL, 13, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（お）すし', '', 'Món sushi', NULL, NULL, NULL, 14, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'バス', '', 'Xe buýt', NULL, NULL, NULL, 15, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（お）弁当', '（お）べんとう', 'Cơm hộp', NULL, NULL, NULL, 16, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '１年', 'いちねん', '1 năm', NULL, NULL, NULL, 17, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '春', 'はる', 'Mùa xuân', NULL, NULL, NULL, 18, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '夏', 'なつ', 'Mùa hè', NULL, NULL, NULL, 19, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '秋', 'あき', 'Mùa thu', NULL, NULL, NULL, 20, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '冬', 'ふゆ', 'Mùa đông', NULL, NULL, NULL, 21, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ゴールデンウイーク', '', 'Tuần lễ vàng', NULL, NULL, NULL, 22, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '何', 'なに', 'Cái gì', NULL, NULL, NULL, 23, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '行きます［行く］', 'いきます', 'Đi', 'Động từ', 'まいにちいきます。', 'Mỗi ngày tôi đi.', 24, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '帰ります［帰る］', 'かえります', 'Về, trở về', 'Động từ', NULL, NULL, 25, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '飲みます［飲む］', 'のみます', 'Uống', 'Động từ', 'まいにちのみます。', 'Mỗi ngày tôi uống.', 26, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '食べます［食べる］', 'たべます', 'Ăn', 'Động từ', 'まいにちたべます。', 'Mỗi ngày tôi ăn.', 27, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '見ます［見る］', 'みます', 'Xem, nhìn', 'Động từ', 'まいにちみます。', 'Mỗi ngày tôi xem, nhìn.', 28, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'します［する］', '', 'Làm, chơi', 'Động từ', NULL, NULL, 29, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'いいですね', '', 'Hay quá nhỉ!', NULL, NULL, NULL, 30, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'えっ', '', 'Ơ! / Hả', NULL, NULL, NULL, 31, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'へえ', '', 'Chà / Wow', NULL, NULL, NULL, 32, 'PUBLISHED', 2
+    UNION ALL
+    -- Bài 3: 29 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '朝', 'あさ', 'Buổi sáng', NULL, NULL, NULL, 1, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '夜', 'よる', 'Buổi tối, đêm', NULL, NULL, NULL, 2, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '毎日', 'まいにち', 'Hàng ngày', NULL, NULL, NULL, 3, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '毎朝', 'まいあさ', 'Hàng sáng', NULL, NULL, NULL, 4, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '毎晩', 'まいばん', 'Mỗi tối', NULL, NULL, NULL, 5, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '朝ご飯', 'あさごはん', 'Bữa sáng', NULL, NULL, NULL, 6, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '昼ごはん', 'ひるごはん', 'Bữa trưa', NULL, NULL, NULL, 7, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '家', 'うち', 'Nhà, ngôi nhà', NULL, NULL, NULL, 8, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '会社', 'かいしゃ', 'Công ty', 'Danh từ', 'わたしはかいしゃがすきです。', 'Tôi thích công ty.', 9, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '学校', 'がっこう', 'Trường học', NULL, NULL, NULL, 10, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'コンビニ', '', 'Cửa hàng tiện lợi', 'Danh từ', 'わたしはコンビニがすきです。', 'Tôi thích cửa hàng tiện lợi.', 11, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '牛乳', 'ぎゅうにゅう', 'Sữa bò', 'Danh từ', 'わたしはぎゅうにゅうがすきです。', 'Tôi thích sữa bò.', 12, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '果物', 'くだもの', 'Hoa quả, trái cây', NULL, NULL, NULL, 13, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'サラダ', '', 'Món salad', NULL, NULL, NULL, 14, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'チーズ', '', 'Pho-mát', NULL, NULL, NULL, 15, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'インターネット', '', 'Mạng internet', NULL, NULL, NULL, 16, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '新聞', 'しんぶん', 'Báo, tờ báo', NULL, NULL, NULL, 17, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'テレビ', '', 'Ti vi', NULL, NULL, NULL, 18, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'CD', '（シーディー）', 'CD', NULL, NULL, NULL, 19, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'DVD', '（ディーブイディー）', 'DVD', NULL, NULL, NULL, 20, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '何も', 'なにも', 'Cái gì cũng…', NULL, NULL, NULL, 21, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'どこ（へ）も', '', 'Đâu cũng…', NULL, NULL, NULL, 22, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '買います［買う］', 'かいます', 'Mua', 'Động từ', 'まいにちかいます。', 'Mỗi ngày tôi mua.', 23, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '聞きます［聞く］', 'ききます', 'Nghe', 'Động từ', 'まいにちききます。', 'Mỗi ngày tôi nghe.', 24, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '働きます［働く］', 'はたらきます', 'Làm việc, lao động', 'Động từ', NULL, NULL, 25, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '読みます［読む］', 'よみます', 'Đọc', 'Động từ', 'まいにちよみます。', 'Mỗi ngày tôi đọc.', 26, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '寝ます［寝る］', 'ねます', 'Ngủ', 'Động từ', 'まいにちねます。', 'Mỗi ngày tôi ngủ.', 27, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '勉強します［する］', 'べんきょうします', 'Học, học bài, học tập', 'Động từ', NULL, NULL, 28, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '来ます［来る］', 'きます［くる］', 'Tới, đến', 'Động từ', NULL, NULL, 29, 'PUBLISHED', 3
+) AS seed
+JOIN course AS c ON c.code = 'JPD113'
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 3
+JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no;
+
+-- JPD123 / Chapter 4 / Từ vựng: 68 mục.
+INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
+SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
+FROM (
+    -- Bài 1: 17 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '北' AS word, 'きた' AS reading, 'Phía bắc' AS meaning_vi, NULL AS word_type, NULL AS example_jp, NULL AS example_vi, 1 AS display_order, 'PUBLISHED' AS status, 1 AS lesson_no
+    UNION ALL
+    SELECT '南', 'みなみ', 'Phía nam', NULL, NULL, NULL, 2, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '東', 'ひがし', 'Phía đông', NULL, NULL, NULL, 3, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '西', 'にし', 'Phía tây', NULL, NULL, NULL, 4, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '真ん中', 'まんなか', 'Chính giữa', NULL, NULL, NULL, 5, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '車', 'くるま', 'Ô tô', 'Danh từ', 'わたしはくるまがすきです。', 'Tôi thích ô tô.', 6, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '新幹線', 'しんかんせん', 'Tàu cao tốc Shinkansen', 'Danh từ', 'わたしはしんかんせんがすきです。', 'Tôi thích tàu cao tốc Shinkansen.', 7, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '電車', 'でんしゃ', 'Tàu điện', 'Danh từ', 'わたしはでんしゃがすきです。', 'Tôi thích tàu điện.', 8, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '飛行機', 'ひこうき', 'Máy bay', 'Danh từ', 'わたしはひこうきがすきです。', 'Tôi thích máy bay.', 9, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '駅', 'えき', 'Nhà ga', 'Danh từ', 'わたしはえきがすきです。', 'Tôi thích nhà ga.', 10, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '町', 'まち', 'Thành ohố, thị trấn', NULL, NULL, NULL, 11, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～時間', '～じかん', '～Tiếng', 'Hậu tố', NULL, NULL, 12, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～時間半', '～じかんはん', '～ Tiếng rưỡi', 'Hậu tố', NULL, NULL, 13, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～分', '～ふん', '～ Phút', 'Hậu tố', NULL, NULL, 14, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '歩いて', 'あるいて', 'Đi bộ', 'Cụm động từ', 'わたしはあるいてがすきです。', 'Tôi thích đi bộ.', 15, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～くらい', '', 'Khoảng', 'Hậu tố', NULL, NULL, 16, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'どのくらい', '', 'Bao lâu', NULL, NULL, NULL, 17, 'PUBLISHED', 1
+    UNION ALL
+    -- Bài 2: 27 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '温泉', 'おんせん', 'Suối nước nóng', 'Danh từ', 'わたしはおんせんがすきです。', 'Tôi thích suối nước nóng.', 1, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '川', 'かわ', 'Sông', 'Danh từ', 'わたしはかわがすきです。', 'Tôi thích sông.', 2, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '山', 'やま', 'Núi', 'Danh từ', 'わたしはやまがすきです。', 'Tôi thích núi.', 3, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '教会', 'きょうかい', 'Nhà thờ', 'Danh từ', 'わたしはきょうかいがすきです。', 'Tôi thích nhà thờ.', 4, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（お）城', 'おしろ', 'Lâu đài', NULL, NULL, NULL, 5, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '神社', 'じんじゃ', 'Đền', NULL, NULL, NULL, 6, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（お）寺', 'おてら', 'Chùa', NULL, NULL, NULL, 7, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ビル', '', 'Tòa nhà', 'Danh từ', 'わたしはビルがすきです。', 'Tôi thích tòa nhà.', 8, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ところ', '', 'Nơi, chỗ', NULL, NULL, NULL, 9, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '人', 'ひと', 'Người', NULL, NULL, NULL, 10, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '緑', 'みどり', 'Màu xanh; Cây xanh', NULL, NULL, NULL, 11, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'あります［ある］', '', 'Có', 'Động từ', NULL, NULL, 12, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '新しい', 'あたらしい', 'Mới', 'Tính từ い', 'このまちはあたらしいです。', 'Thành phố này mới.', 13, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '古い', 'ふるい', 'Cũ', 'Tính từ い', 'このまちはふるいです。', 'Thành phố này cũ.', 14, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'いい', '', 'Tốt', 'Tính từ い', 'このまちはいいです。', 'Thành phố này tốt.', 15, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（～が）多い', '（～が）おおい', 'Nhiều ～', NULL, NULL, NULL, 16, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（～が）少ない', '（～が）すくない', 'Ít ～', NULL, NULL, NULL, 17, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '大きい', 'おおきい', 'To, lớn', 'Tính từ い', 'このまちはおおきいです。', 'Thành phố này to, lớn.', 18, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '小さい', 'ちいさい', 'Nhỏ, bé', NULL, NULL, NULL, 19, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '高い', 'たかい', 'Cao, đắt', 'Tính từ い', 'このまちはたかいです。', 'Thành phố này cao, đắt.', 20, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '低い', 'ひくい', 'Thấp', 'Tính từ い', 'このまちはひくいです。', 'Thành phố này thấp.', 21, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'きれい（な）', '', 'Đẹp, sạch sẽ', 'Tính từ đuôi な', NULL, NULL, 22, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '静か（な）', 'しずか', 'Yên tĩnh', 'Tính từ な', 'このまちはしずかです。', 'Thành phố này yên tĩnh.', 23, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'にぎやか（な）', '', 'Náo nhiệt, nhộn nhịp', 'Tính từ đuôi な', NULL, NULL, 24, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '有名（な）', 'ゆうめい', 'Nổi tiếng', 'Tính từ な', 'このまちはゆうめいです。', 'Thành phố này nổi tiếng.', 25, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'どんな', '', 'Như thế nào', NULL, NULL, NULL, 26, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'そして', '', 'Và / Rồi thì', NULL, NULL, NULL, 27, 'PUBLISHED', 2
+    UNION ALL
+    -- Bài 3: 24 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '雨', 'あめ', 'Mưa', 'Danh từ', 'わたしはあめがすきです。', 'Tôi thích mưa.', 1, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '雪', 'ゆき', 'Tuyết', 'Danh từ', 'わたしはゆきがすきです。', 'Tôi thích tuyết.', 2, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '日', 'ひ', 'Ngày / Mặt trời', NULL, NULL, NULL, 3, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'メロン', '', 'Dưa gang (dưa lưới)', NULL, NULL, NULL, 4, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '暖かい', 'あたたかい', 'Ấm áp (thời tiết)', NULL, NULL, NULL, 5, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '涼しい', 'すずしい', 'Mát mẻ', 'Tính từ い', 'きょうはすずしいです。', 'Hôm nay mát mẻ.', 6, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '暑い', 'あつい', 'Nóng bức (thời tiết)', NULL, NULL, NULL, 7, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '寒い', 'さむい', 'Lạnh, rét (thời tiết)', NULL, NULL, NULL, 8, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '天気がいい', 'てんきがいい', 'Thời tiết đẹp', 'Cụm tính từ', 'きょうはてんきがいいです。', 'Hôm nay thời tiết đẹp.', 9, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '天気がわるい', 'てんきがわるい', 'Thời tiết xấu', 'Cụm tính từ', 'きょうはてんきがわるいです。', 'Hôm nay thời tiết xấu.', 10, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '温かい', 'あたたかい', 'Ấm (nhiệt độ, cảm giác)', NULL, NULL, NULL, 11, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '熱い', 'あつい', 'Nóng (nhiệt độ)', NULL, NULL, NULL, 12, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '冷たい', 'つめたい', 'Lạnh / Mát (nhiệt độ, cảm giác)', NULL, NULL, NULL, 13, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'おいしい', '', 'Ngon', 'Tính từ い', 'このりょうりはおいしいです。', 'Món ăn này ngon.', 14, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '甘い', 'あまい', 'Ngọt', 'Tính từ い', 'このりょうりはあまいです。', 'Món ăn này ngọt.', 15, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '辛い', 'からい', 'Cay', 'Tính từ い', 'このりょうりはからいです。', 'Món ăn này cay.', 16, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '苦い', 'にがい', 'Đắng', 'Tính từ い', 'このりょうりはにがいです。', 'Món ăn này đắng.', 17, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'すっぱい', '', 'Chua', 'Tính từ い', 'このりょうりはすっぱいです。', 'Món ăn này chua.', 18, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '一年中', 'いちねんじゅう', 'Suốt 1 năm / Quanh năm', NULL, NULL, NULL, 19, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'あまり', '', 'Không ～ lắm / Không ～ mấy', NULL, NULL, NULL, 20, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '少し', 'すこし', 'Một chút, ít', NULL, NULL, NULL, 21, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'とても', '', 'Rất', NULL, NULL, NULL, 22, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'どう', '', 'Thế nào', NULL, NULL, NULL, 23, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'そうですね。', '', 'Câu nói thể hiện sự đồng tình với ý kiến của người khác', NULL, NULL, NULL, 24, 'PUBLISHED', 3
+) AS seed
+JOIN course AS c ON c.code = 'JPD123'
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 4
+JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no;
+
+-- JPD123 / Chapter 5 / Từ vựng: 59 mục.
+INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
+SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
+FROM (
+    -- Bài 1: 25 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '今日' AS word, 'きょう' AS reading, 'Hôm nay' AS meaning_vi, NULL AS word_type, NULL AS example_jp, NULL AS example_vi, 1 AS display_order, 'PUBLISHED' AS status, 1 AS lesson_no
+    UNION ALL
+    SELECT '明日', 'あした', 'Ngày mai', NULL, NULL, NULL, 2, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'あさって', '', 'Ngày kia', NULL, NULL, NULL, 3, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '昨日', 'きのう', 'Hôm qua', NULL, NULL, NULL, 4, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'おととい', '', 'Hôm kia', NULL, NULL, NULL, 5, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '先週', 'せんしゅう', 'Tuần trước', NULL, NULL, NULL, 6, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '週末', 'しゅうまつ', 'Cuối tuần', 'Danh từ', 'わたしはしゅうまつがすきです。', 'Tôi thích cuối tuần.', 7, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '家', 'いえ', 'Nhà, ngôi nhà', NULL, NULL, NULL, 8, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '部屋', 'へや', 'Căn phòng', NULL, NULL, NULL, 9, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'デパート', '', 'Trung tâm thương mại', NULL, NULL, NULL, 10, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '美術館', 'びじゅつかん', 'Bảo tàng mỹ thuật', 'Danh từ', 'わたしはびじゅつかんがすきです。', 'Tôi thích bảo tàng mỹ thuật.', 11, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ゲーム', '', 'Trò chơi', 'Danh từ', 'わたしはゲームがすきです。', 'Tôi thích trò chơi.', 12, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '家族', 'かぞく', 'Gia đình', 'Danh từ', 'わたしはかぞくがすきです。', 'Tôi thích gia đình.', 13, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '恋人', 'こいびと', 'Người yêu', 'Danh từ', 'わたしはこいびとがすきです。', 'Tôi thích người yêu.', 14, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '友達', 'ともだち', 'Bạn bè', 'Danh từ', 'わたしはともだちがすきです。', 'Tôi thích bạn bè.', 15, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ルームメイト', '', 'Bạn cùng phòng', 'Danh từ', 'わたしはルームメイトがすきです。', 'Tôi thích bạn cùng phòng.', 16, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'どこか（へ）', '', 'Nơi nào đó', NULL, NULL, NULL, 17, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '会います［会う］1', 'あいます', 'Gặp gỡ', 'Động từ', NULL, NULL, 18, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '作ります［作る］1', 'つくります', 'Làm ra, chế tạo', 'Động từ', NULL, NULL, 19, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '買い物します［買い物する］3', 'かいものします', 'Mua sắm', 'Động từ', 'まいにちかいものします。', 'Mỗi ngày tôi mua sắm.', 20, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '食事します［食事する］3', 'しょくじします', 'Dùng bữa, ăn uống', 'Động từ', NULL, NULL, 21, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '洗濯します［洗濯する］3', 'せんたくします', 'Giặt giũ', 'Động từ', NULL, NULL, 22, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '掃除します［掃除する］3', 'そうじします', 'Hút bụi, lau dọn nhà cửa', 'Động từ', NULL, NULL, 23, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'それから', '', 'Sau đó', NULL, NULL, NULL, 24, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '一人で', 'ひとりで', 'Một mình', NULL, NULL, NULL, 25, 'PUBLISHED', 1
+    UNION ALL
+    -- Bài 2: 20 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '今朝', 'けさ', 'Sáng nay', NULL, NULL, NULL, 1, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '先月', 'せんげつ', 'Tháng trước', NULL, NULL, NULL, 2, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '去年', 'きょねん', 'Năm ngoái', NULL, NULL, NULL, 3, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '風邪', 'かぜ', 'Cảm cúm', NULL, NULL, NULL, 4, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '天気', 'てんき', 'Thời tiết', 'Danh từ', 'わたしはてんきがすきです。', 'Tôi thích thời tiết.', 5, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '晩ご飯', 'ばんごはん', 'Cơm tối', NULL, NULL, NULL, 6, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '服', 'ふく', 'Quần áo', 'Danh từ', 'わたしはふくがすきです。', 'Tôi thích quần áo.', 7, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '登ります［登る］1', 'のぼります', 'Leo, trèo', 'Động từ', 'まいにちのぼります。', 'Mỗi ngày tôi leo, trèo.', 8, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '入ります［入る］1', 'はいります', 'Vào / Bước vào', 'Động từ', NULL, NULL, 9, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '忙しい', 'いそがしい', 'Bận rộn', 'Tính từ い', 'このまちはいそがしいです。', 'Thành phố này bận rộn.', 10, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'おもしろい', '', 'Thú vị, hay, hấp dẫn', NULL, NULL, NULL, 11, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '気持ちがいい', 'きもちがいい', '(Cảm giác) sảng khoái, thoải mái', NULL, NULL, NULL, 12, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '高い', 'たかい', 'Cao, đắt', 'Tính từ い', 'このかばんはたかいです。', 'Cái cặp này đắt.', 13, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '安い', 'やすい', 'Rẻ', 'Tính từ い', 'このまちはやすいです。', 'Thành phố này rẻ.', 14, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '楽しい', 'たのしい', 'Vui vẻ (không khí)', NULL, NULL, NULL, 15, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '難しい', 'むずかしい', 'Khó', 'Tính từ い', 'このまちはむずかしいです。', 'Thành phố này khó.', 16, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '簡単（な）', 'かんたん', 'Dễ, đơn giản', 'Tính từ đuôi な', NULL, NULL, 17, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '大変（な）', 'たいへん', 'Vất vả', 'Tính từ đuôi な', NULL, NULL, 18, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '暇（な）', 'ひま', 'Rảnh rỗi', 'Tính từ đuôi な', NULL, NULL, 19, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'どうして', '', 'Tại sao', NULL, NULL, NULL, 20, 'PUBLISHED', 2
+    UNION ALL
+    -- Bài 3: 14 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '今度', 'こんど', 'Lần tới', NULL, NULL, NULL, 1, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '今晩', 'こんばん', 'Tối nay', NULL, NULL, NULL, 2, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '今年', 'ことし', 'Năm nay', NULL, NULL, NULL, 3, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '来年', 'らいねん', 'Sang năm', NULL, NULL, NULL, 4, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'アニメ', '', 'Hoạt hình', 'Danh từ', 'わたしはアニメがすきです。', 'Tôi thích hoạt hình.', 5, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '絵', 'え', 'Tranh', 'Danh từ', 'わたしはえがすきです。', 'Tôi thích tranh.', 6, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '景色', 'けしき', 'Phong cảnh', 'Danh từ', 'わたしはけしきがすきです。', 'Tôi thích phong cảnh.', 7, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '自転車', 'じてんしゃ', 'Xe đạp', 'Danh từ', 'わたしはじてんしゃがすきです。', 'Tôi thích xe đạp.', 8, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '写真', 'しゃしん', 'Ảnh', 'Danh từ', 'わたしはしゃしんがすきです。', 'Tôi thích ảnh.', 9, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '撮ります［撮る］1', 'とります', 'Chụp', 'Động từ', NULL, NULL, 10, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '借ります［借りる］2', 'かります', 'Vay, mượn', 'Động từ', NULL, NULL, 11, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ほしい', '', 'Muốn có', 'Tính từ い', 'このまちはほしいです。', 'Thành phố này muốn có.', 12, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '好き（な）', 'すき', 'Thích', 'Tính từ な', 'このまちはすきです。', 'Thành phố này thích.', 13, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '嫌い（な）', 'きらい', 'Ghét', 'Tính từ đuôi な', NULL, NULL, 14, 'PUBLISHED', 3
+) AS seed
+JOIN course AS c ON c.code = 'JPD123'
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 5
+JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no;
+
+-- JPD123 / Chapter 6 / Từ vựng: 55 mục.
+INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
+SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
+FROM (
+    -- Bài 1: 24 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '今週' AS word, 'こんしゅう' AS reading, 'Tuần này' AS meaning_vi, NULL AS word_type, NULL AS example_jp, NULL AS example_vi, 1 AS display_order, 'PUBLISHED' AS status, 1 AS lesson_no
+    UNION ALL
+    SELECT '来週', 'らいしゅう', 'Tuần sau', NULL, NULL, NULL, 2, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '今月', 'こんげつ', 'Tháng này', NULL, NULL, NULL, 3, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '来月', 'らいげつ', 'Tháng sau', NULL, NULL, NULL, 4, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'カラオケ', '', 'Hát karaoke', NULL, NULL, NULL, 5, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'コンサート', '', 'Buổi hòa nhạc', 'Danh từ', 'わたしはコンサートがすきです。', 'Tôi thích buổi hòa nhạc.', 6, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '試合', 'しあい', 'Trận đấu', 'Danh từ', 'わたしはしあいがすきです。', 'Tôi thích trận đấu.', 7, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'セール', '', 'Giảm giá', NULL, NULL, NULL, 8, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'チケット', '', 'Vé', 'Danh từ', 'わたしはチケットがすきです。', 'Tôi thích vé.', 9, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '地図', 'ちず', 'Bản đồ', 'Danh từ', 'わたしはちずがすきです。', 'Tôi thích bản đồ.', 10, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ドライブ', '', 'Lái xe (đi chơi)', NULL, NULL, NULL, 11, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '水着', 'みずぎ', 'Đồ bơi', 'Danh từ', 'わたしはみずぎがすきです。', 'Tôi thích đồ bơi.', 12, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '野球', 'やきゅう', 'Bóng chày', 'Danh từ', 'わたしはやきゅうがすきです。', 'Tôi thích bóng chày.', 13, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '約束', 'やくそく', 'Hứa, hẹn', NULL, NULL, NULL, 14, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '用事', 'ようじ', 'Việc bận', NULL, NULL, NULL, 15, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '～枚', '～まい', '～ tấm (Cách đếm vật mỏng, phẳng)', 'Hậu tố', NULL, NULL, 16, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'あります［ある ］1', '', 'Có', 'Động từ', NULL, NULL, 17, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '残念（な）', 'ざんねん', 'Tiếc', 'Tính từ đuôi な', NULL, NULL, 18, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '一緒に', 'いっしょに', 'Cùng với', NULL, NULL, NULL, 19, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'いいですね', '', 'Hay đấy, được đấy!', NULL, NULL, NULL, 20, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ああ', '', 'A / Ôi', NULL, NULL, NULL, 21, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'すみません', '', 'Xin lỗi', NULL, NULL, NULL, 22, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'また今度', 'またこんど', 'Hẹn (anh) lần sau nhé', NULL, NULL, NULL, 23, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'わあ', '', 'Oa (Thể hiện sự ngạc nhiên)', NULL, NULL, NULL, 24, 'PUBLISHED', 1
+    UNION ALL
+    -- Bài 2: 23 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '食べ物', 'たべもの', 'Đồ ăn', NULL, NULL, NULL, 1, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '飲み物', 'のみもの', 'Đồ uống', NULL, NULL, NULL, 2, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '焼き肉', 'やきにく', 'Thịt nướng', 'Danh từ', 'わたしはやきにくがすきです。', 'Tôi thích thịt nướng.', 3, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ラーメン', '', 'Mỳ Nhật', NULL, NULL, NULL, 4, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '食べ放題', 'たべほうだい', 'Ăn buffet (ăn tự chọn)', NULL, NULL, NULL, 5, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'コース', '', 'Suất ăn / Khóa học', NULL, NULL, NULL, 6, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '居酒屋', 'いざかや', 'Quán rượu', NULL, NULL, NULL, 7, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '映画館', 'えいがかん', 'Rạp chiếu phim', 'Danh từ', 'わたしはえいがかんがすきです。', 'Tôi thích rạp chiếu phim.', 8, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '地下鉄', 'ちかてつ', 'Tàu điện ngầm', 'Danh từ', 'わたしはちかてつがすきです。', 'Tôi thích tàu điện ngầm.', 9, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '歌手', 'かしゅ', 'Ca sỹ', NULL, NULL, NULL, 10, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '季節', 'きせつ', 'Mùa', NULL, NULL, NULL, 11, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'コメディー', '', 'Hài kịch', NULL, NULL, NULL, 12, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ジャズ', '', 'Nhạc jazz', 'Danh từ', 'わたしはジャズがすきです。', 'Tôi thích nhạc jazz.', 13, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ツアー', '', 'Tour du lịch', NULL, NULL, NULL, 14, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'どちら', '', 'Bên nào, phương nào', NULL, NULL, NULL, 15, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'どちらも', '', 'Bên nào cũng', NULL, NULL, NULL, 16, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '近い', 'ちかい', 'Gần', 'Tính từ い', 'このまちはちかいです。', 'Thành phố này gần.', 17, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '遠い', 'とおい', 'Xa', 'Tính từ い', 'このまちはとおいです。', 'Thành phố này xa.', 18, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '早い', 'はやい', 'Sớm', NULL, NULL, NULL, 19, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '広い', 'ひろい', 'Rộng', NULL, NULL, NULL, 20, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'いちばん', '', 'Nhất', NULL, NULL, NULL, 21, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '全部', 'ぜんぶ', 'Toàn bộ', NULL, NULL, NULL, 22, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'そうですねえ', '', 'À cái này thì… (Câu nói ngập ngừng khi suy nghĩ tìm câu trả lời)', NULL, NULL, NULL, 23, 'PUBLISHED', 2
+    UNION ALL
+    -- Bài 3: 8 mục theo thứ tự trong tài liệu nguồn.
+    SELECT 'お好み焼き', 'おこのみやき', 'Món bánh xèo Nhật', NULL, NULL, NULL, 1, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'すき焼き', 'すきやき', 'Món nhúng có thịt bò và rau', NULL, NULL, NULL, 2, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '遊びます［遊ぶ］1', 'あそびます', 'Chơi, chơi đùa', 'Động từ', NULL, NULL, 3, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ぜひ', '', 'Nhất định', NULL, NULL, NULL, 4, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'まだ', '', 'Vẫn, chưa', NULL, NULL, NULL, 5, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'もう', '', 'Đã, rồi', NULL, NULL, NULL, 6, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'そうしましょう', '', 'Mình cùng làm thế đi!', NULL, NULL, NULL, 7, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'わかりました', '', 'Tôi hiểu rồi', NULL, NULL, NULL, 8, 'PUBLISHED', 3
+) AS seed
+JOIN course AS c ON c.code = 'JPD123'
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 6
+JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no;
+
+-- JPD123 / Chapter 7 / Từ vựng: 70 mục.
+INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
+SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
+FROM (
+    -- Bài 1: 20 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '改札' AS word, 'かいさつ' AS reading, 'Cổng/Cửa soát vé' AS meaning_vi, NULL AS word_type, NULL AS example_jp, NULL AS example_vi, 1 AS display_order, 'PUBLISHED' AS status, 1 AS lesson_no
+    UNION ALL
+    SELECT '木', 'き', 'Cây / Gỗ', NULL, NULL, NULL, 2, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '交番', 'こうばん', 'Đồn cảnh sát', NULL, NULL, NULL, 3, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '自動販売機', 'じどうはんばいき', 'Máy bán hàng tự động', 'Danh từ', 'わたしはじどうはんばいきがすきです。', 'Tôi thích máy bán hàng tự động.', 4, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'ポスト', '', 'Thùng thư', NULL, NULL, NULL, 5, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '花', 'はな', 'Hoa', 'Danh từ', 'わたしははながすきです。', 'Tôi thích hoa.', 6, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '犬', 'いぬ', 'Con chó', NULL, NULL, NULL, 7, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '間', 'あいだ', 'Giữa, ở giữa', NULL, NULL, NULL, 8, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '上', 'うえ', 'Trên, bên trên', NULL, NULL, NULL, 9, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '下', 'した', 'Dưới, phía dưới', NULL, NULL, NULL, 10, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '近く', 'ちかく', 'Gần (ở vị trí gần)', NULL, NULL, NULL, 11, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '隣', 'となり', 'Bên cạnh (cạnh sát)', NULL, NULL, NULL, 12, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '中', 'なか', 'Trong, bên trong', NULL, NULL, NULL, 13, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '外', 'そと', 'Ngoài, bên ngoài', NULL, NULL, NULL, 14, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '前', 'まえ', 'Trước, phía trước', NULL, NULL, NULL, 15, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '後ろ', 'うしろ', 'Sau, phía sau, đằng sau', NULL, NULL, NULL, 16, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '横', 'よこ', 'Bên cạnh, chiều ngang', NULL, NULL, NULL, 17, 'PUBLISHED', 1
+    UNION ALL
+    SELECT '迎えに行きます［迎えに行く］1', 'むかえにいきます', 'Đi đón', 'Động từ', NULL, NULL, 18, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'います［いる］2', '', 'Có mặt ở (sự tồn tại của người, động vật)', 'Động từ', NULL, NULL, 19, 'PUBLISHED', 1
+    UNION ALL
+    SELECT 'もしもし', '', 'A lô a lô (khi gọi điện thoại)', NULL, NULL, NULL, 20, 'PUBLISHED', 1
+    UNION ALL
+    -- Bài 2: 34 mục theo thứ tự trong tài liệu nguồn.
+    SELECT 'いす', '', 'Ghế, cái ghế', NULL, NULL, NULL, 1, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'テーブル', '', 'Bàn, cái bàn', NULL, NULL, NULL, 2, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '電子レンジ', 'でんしれんじ', 'Lò vi sóng', NULL, NULL, NULL, 3, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '冷蔵庫', 'れいぞうこ', 'Tủ lạnh', 'Danh từ', 'わたしはれいぞうこがすきです。', 'Tôi thích tủ lạnh.', 4, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '砂糖', 'さとう', 'Đường (ăn)', NULL, NULL, NULL, 5, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '塩', 'しお', 'Muối', 'Danh từ', 'わたしはしおがすきです。', 'Tôi thích muối.', 6, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'しょうゆ', '', 'Xì dầu / Nước tương chấm', NULL, NULL, NULL, 7, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'コップ', '', 'Cốc, cái cốc', NULL, NULL, NULL, 8, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '（お）皿 （お）さら', '', 'Đĩa, cái đĩa', NULL, NULL, NULL, 9, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'スプーン', '', 'Cái thìa, cái muỗng', NULL, NULL, NULL, 10, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ナイフ', '', 'Dao, con dao', NULL, NULL, NULL, 11, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'フォーク', '', 'Cái dĩa', NULL, NULL, NULL, 12, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'はし', '', 'Đũa', 'Danh từ', 'わたしははしがすきです。', 'Tôi thích đũa.', 13, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '漢字', 'かんじ', 'Chữ Hán', NULL, NULL, NULL, 14, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'どれ', '', 'Cái nào', NULL, NULL, NULL, 15, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'どの～', '', '(cái, người…) ～ nào', NULL, NULL, NULL, 16, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '洗います［洗う］1', 'あらいます', 'Giặt, rửa, tắm', 'Động từ', NULL, NULL, 17, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '置きます［置く］1', 'おきます', 'Đặt, để', 'Động từ', NULL, NULL, 18, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '書きます［書く］1', 'かきます', 'Viết', 'Động từ', 'まいにちかきます。', 'Mỗi ngày tôi viết.', 19, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '貸します［貸す］1', 'かします', 'Cho mượn', 'Động từ', NULL, NULL, 20, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '聞きます［聞く］1', 'ききます', 'Hỏi', 'Động từ', NULL, NULL, 21, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '切ります［切る］1', 'きります', 'Cắt, gọt', 'Động từ', NULL, NULL, 22, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '使います［使う］1', 'つかいます', 'Dùng, sử dụng', 'Động từ', NULL, NULL, 23, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '手伝います［手伝う］1', 'てつだいます', 'Giúp, giúp đỡ', 'Động từ', NULL, NULL, 24, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '取ります［取る］1', 'とります', 'Lấy', 'Động từ', NULL, NULL, 25, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '持って行きます［持って行く］1', 'もっていきます', 'Mang đi', 'Động từ', NULL, NULL, 26, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'わかります［わかる］1', '', 'Hiểu, biết', 'Động từ', NULL, NULL, 27, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '出します［出す］1', 'だします', 'Lấy ra', 'Động từ', NULL, NULL, 28, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '入れます［入れる］2', 'いれます', 'Cho vào, bỏ vào', 'Động từ', NULL, NULL, 29, 'PUBLISHED', 2
+    UNION ALL
+    SELECT '教えます［教える］2', 'おしえます', 'Dạy, chỉ bảo', 'Động từ', 'まいにちおしえます。', 'Mỗi ngày tôi dạy, chỉ bảo.', 30, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'たくさん', '', 'Nhiều', NULL, NULL, NULL, 31, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'すみませんが', '', 'Xin lỗi', NULL, NULL, NULL, 32, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'ああ', '', 'A, à', NULL, NULL, NULL, 33, 'PUBLISHED', 2
+    UNION ALL
+    SELECT 'いいですよ。', '', 'Được đấy! (dùng khi khen hoặc cho phép)', NULL, NULL, NULL, 34, 'PUBLISHED', 2
+    UNION ALL
+    -- Bài 3: 16 mục theo thứ tự trong tài liệu nguồn.
+    SELECT '歌', 'うた', 'Bài hát', NULL, NULL, NULL, 1, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ギター', '', 'Đàn ghi-ta', 'Danh từ', 'わたしはギターがすきです。', 'Tôi thích đàn ghi-ta.', 2, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '台所', 'だいどころ', 'Nhà bếp', 'Danh từ', 'わたしはだいどころがすきです。', 'Tôi thích nhà bếp.', 3, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'たばこ', '', 'Thuốc lá', 'Danh từ', 'わたしはたばこがすきです。', 'Tôi thích thuốc lá.', 4, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '電話', 'でんわ', 'Điện thoại', 'Danh từ', 'わたしはでんわがすきです。', 'Tôi thích điện thoại.', 5, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'ピザ', '', 'Bánh pizza', NULL, NULL, NULL, 6, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '窓', 'まど', 'Cửa sổ', 'Danh từ', 'わたしはまどがすきです。', 'Tôi thích cửa sổ.', 7, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '歌います［歌う］1', 'うたいます', 'Hát, ca hát', 'Động từ', NULL, NULL, 8, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '吸います［吸う］1', 'すいます', 'Hút', 'Động từ', NULL, NULL, 9, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '話します［話す］1', 'はなします', 'Nói chuyện', 'Động từ', NULL, NULL, 10, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '弾きます［弾く］1', 'ひきます', 'Chơi (nhạc cụ)', 'Động từ', NULL, NULL, 11, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '持ちます［持つ］1', 'もちます', 'Cầm, mang', 'Động từ', NULL, NULL, 12, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '開けます［開ける］2', 'あけます', 'Mở', 'Động từ', NULL, NULL, 13, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '閉めます［閉める］2', 'しめます', 'Đóng', 'Động từ', NULL, NULL, 14, 'PUBLISHED', 3
+    UNION ALL
+    SELECT 'かけます［かける］2', '', 'Gọi', 'Động từ', NULL, NULL, 15, 'PUBLISHED', 3
+    UNION ALL
+    SELECT '持って来ます［持って来る］3', 'もってきます［もってくる］', 'Mang đến', 'Động từ', NULL, NULL, 16, 'PUBLISHED', 3
+) AS seed
+JOIN course AS c ON c.code = 'JPD123'
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 7
+JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no;
+
 -- =============================================================================
 -- display_order: 1 trở lên cho luyện tập, 1001 trở lên cho mini test,
 -- 2001–2050 cho 50 câu của từng kỹ năng trong ngân hàng kiểm tra chương.
