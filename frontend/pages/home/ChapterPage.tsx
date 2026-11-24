@@ -48,6 +48,9 @@ export function ChapterPage() {
   const grammarLessonNo = params.has("lessonNo")
     ? Number(params.get("lessonNo"))
     : undefined;
+  const vocabularyLessonNo = params.has("lessonNo")
+    ? Number(params.get("lessonNo"))
+    : undefined;
   const selected = chapter.data?.lessons.find(
     (lesson) =>
       lesson.id === selectedId &&
@@ -166,6 +169,7 @@ export function ChapterPage() {
       next.set("skill", "VOCABULARY");
       for (const key of [
         "lessonId",
+        "lessonNo",
         "vocabTab",
         "kanjiView",
         "kanjiId",
@@ -354,6 +358,7 @@ export function ChapterPage() {
         <StudentVocabularyChapterPage
           chapterId={data.id}
           chapterNo={data.chapterNo}
+          lessonNo={vocabularyLessonNo}
           lessons={data.lessons}
           onLesson={selectLesson}
           onOpen={openChapterVocabulary}

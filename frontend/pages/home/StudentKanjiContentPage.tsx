@@ -51,11 +51,6 @@ export function StudentKanjiContentPage({
               sandbox={isCloudinaryPdf ? undefined : "allow-scripts allow-same-origin allow-popups"}
               referrerPolicy="no-referrer"
             />
-            <div className="kanji-document-reader-actions">
-              <a href={document.url} target="_blank" rel="noopener noreferrer">
-                Mở tài liệu trong tab mới ↗
-              </a>
-            </div>
           </article>
         ) : (
           <p role="alert">Tài liệu đã được gỡ hoặc đường dẫn không còn hợp lệ.</p>

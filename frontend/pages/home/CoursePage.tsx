@@ -80,10 +80,12 @@ function Progress({ lessons }: { lessons: StudentLesson[] }) {
 }
 function ChapterCard({
   chapter,
+  chapters,
   expanded,
   courseId,
 }: {
   chapter: StudentChapter;
+  chapters: StudentChapter[];
   expanded: boolean;
   courseId: number;
 }) {
@@ -92,9 +94,34 @@ function ChapterCard({
   const sum = (field: "videoCount" | "exerciseCount" | "testCount") =>
     sources.reduce((n, l) => n + l[field], 0);
   const groups = new Map<number, StudentLesson[]>();
-  items.filter(item => item.skillType !== "KANJI").forEach((l) =>
-    groups.set(l.lessonNo, [...(groups.get(l.lessonNo) ?? []), l]),
-  );
+  const vocabularyLessons = items.filter((item) => item.skillType === "VOCABULARY");
+  items
+    .filter((item) => item.skillType !== "KANJI" && item.skillType !== "VOCABULARY")
+    .forEach((lesson) => {
+      groups.set(lesson.lessonNo, [...(groups.get(lesson.lessonNo) ?? []), lesson]);
+    });
+  for (const lesson of vocabularyLessons) {
+    if (!groups.has(lesson.lessonNo)) groups.set(lesson.lessonNo, []);
+  }
+  for (const [groupNo, lessons] of groups) {
+    const matchingVocabulary = vocabularyLessons.filter((lesson) => lesson.lessonNo === groupNo);
+    const vocabularyBase = matchingVocabulary[0] ?? lessons[0] ?? items[0];
+    if (!vocabularyBase) continue;
+    const vocabularySection: StudentLesson = {
+      ...vocabularyBase,
+      id: matchingVocabulary[0]?.id ?? -(chapter.id * 1000 + groupNo),
+      lessonNo: groupNo,
+      skillType: "VOCABULARY",
+      title: `Từ vựng bài ${groupNo}`,
+      itemCount: matchingVocabulary.reduce((total, lesson) => total + lesson.itemCount, 0),
+      videoCount: matchingVocabulary.reduce((total, lesson) => total + lesson.videoCount, 0),
+      durationSeconds: matchingVocabulary.reduce((total, lesson) => total + lesson.durationSeconds, 0),
+      exerciseCount: matchingVocabulary.reduce((total, lesson) => total + lesson.exerciseCount, 0),
+      testCount: matchingVocabulary.reduce((total, lesson) => total + lesson.testCount, 0),
+      completed: matchingVocabulary.length > 0 && matchingVocabulary.every((lesson) => lesson.completed),
+    };
+    groups.set(groupNo, [...lessons, vocabularySection]);
+  }
   const speaking = useQuery({
     queryKey: ["speaking-scenarios", chapter.id],
     queryFn: () => getSpeakingScenarios(chapter.id),
@@ -172,7 +199,7 @@ function ChapterCard({
                               ? `/listening/${l.id}`
                               : l.skillType === "READING"
                                 ? `/ai-reading?lessonId=${l.id}`
-                                : `/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : l.skillType === "VOCABULARY" ? "" : `&lessonId=${l.id}`}`
+                                : `/courses/${courseId}/chapters/${l.skillType === "VOCABULARY" ? chapters.find((item) => item.chapterNo === l.lessonNo)?.id ?? chapter.id : chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "VOCABULARY" ? "" : l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : `&lessonId=${l.id}`}`
                           }
                         >
                           {skills[l.skillType] ?? l.skillType}
@@ -304,6 +331,7 @@ export function CoursePage() {
                 <ChapterCard
                   key={chapter.id}
                   chapter={chapter}
+                  chapters={course.chapters}
                   courseId={Number(courseId)}
                   expanded={targetChapter ? targetChapter.id === chapter.id : i === 0}
                 />

@@ -88,23 +88,138 @@
   border-radius: 10px 10px 0 0;
 }
 .mod-vocab-document-toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   padding: 16px 20px;
   border-bottom: 1px solid #e2e8f0;
 }
+.mod-vocab-document-toolbar > select,
+.mod-vocab-document-toolbar > span {
+  justify-self: start;
+}
+.mod-vocab-document-toolbar > strong {
+  text-align: center;
+}
+.mod-vocab-document-toolbar > a {
+  justify-self: end;
+}
 .mod-vocab-document-toolbar a {
   text-decoration: none;
 }
+.mod-vocab-published-words {
+  margin: 0 20px 20px;
+  overflow: hidden;
+  border: 1px solid #dbe5ee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px #0f172a0a;
+}
+.mod-vocab-published-words__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(110deg, #f0fdfa, #f8fafc 72%);
+  border-bottom: 1px solid #e2e8f0;
+}
+.mod-vocab-published-words__heading h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.05rem;
+}
+.mod-vocab-published-words__heading p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 0.88rem;
+}
+.mod-vocab-published-words__heading > span {
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f766e;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+.mod-vocab-published-words__message {
+  margin: 0;
+  padding: 18px 20px;
+  color: #64748b;
+}
+.mod-vocab-published-words__scroll {
+  max-height: 390px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.mod-vocab-published-words__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+.mod-vocab-published-words__table th,
+.mod-vocab-published-words__table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: top;
+}
+.mod-vocab-published-words__table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.77rem;
+  font-weight: 750;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+}
+.mod-vocab-published-words__table td {
+  color: #334155;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.mod-vocab-published-words__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.mod-vocab-published-words__table tbody tr:hover {
+  background: #f8fffd;
+}
+.mod-vocab-published-words__word {
+  color: #0f766e !important;
+  font-size: 1rem !important;
+  font-weight: 750;
+}
+.mod-vocab-published-words__example,
+.mod-vocab-published-words__example-translation {
+  display: block;
+}
+.mod-vocab-published-words__example {
+  color: #0f172a;
+}
+.mod-vocab-published-words__example-translation {
+  margin-top: 3px;
+  color: #64748b;
+}
+.mod-vocab-pdf-viewer {
+  margin: 0 20px 20px;
+  overflow: hidden;
+  border: 1px solid #dbe5ee;
+  border-radius: 14px;
+  background: #fff;
+}
 .mod-vocab-pdf-frame {
   display: block;
-  width: 100%;
+  width: calc(100% - 40px);
+  margin: 0 20px;
   height: 72vh;
   min-height: 480px;
   border: 0;
-  background: #f1f5f9;
+  background: #fff;
 }
 .mod-vocab-pdf-hint {
   padding: 12px 20px;
@@ -228,7 +343,40 @@
 }
 @media (max-width: 720px) {
   .mod-vocab-document-toolbar {
-    flex-wrap: wrap;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .mod-vocab-published-words,
+  .mod-vocab-pdf-viewer {
+    margin-right: 12px;
+    margin-left: 12px;
+  }
+  .mod-vocab-published-words__scroll {
+    max-height: 340px;
+  }
+  .mod-vocab-published-words__table {
+    min-width: 760px;
+  }
+  .mod-vocab-document-toolbar {
+    row-gap: 12px;
+  }
+  .mod-vocab-document-toolbar > strong {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+  }
+  .mod-vocab-document-toolbar > select,
+  .mod-vocab-document-toolbar > span {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .mod-vocab-document-toolbar > a {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .mod-vocab-pdf-frame {
+    width: calc(100% - 24px);
+    min-height: 420px;
+    margin: 0 12px;
   }
   .mod-vocab-lesson-tabs button {
     padding: 12px;

@@ -6,6 +6,7 @@ import { deleteVocabularyDocument, renameVocabularyDocument, uploadVocabularyDoc
 import { ModeratorVocabularyListPage } from "./ModeratorVocabularyListPage";
 import { VocabularyExerciseTab } from "./VocabularyExerciseTab";
 import { StudentVocabularyExerciseTab } from "../../home/StudentVocabularyExerciseTab";
+import { StudentVocabularyList } from "../../home/StudentVocabularyList";
 import "../ModeratorContent.css";
 
 interface Props {
@@ -318,6 +319,7 @@ export function ModeratorVocabularyLessonPage({
         )}
         {tab === "document" ? (
           <>
+            <StudentVocabularyList lessonId={lesson.id} />
             {document ? (
               <>
               {!readOnly && documents.length > 0 && (
@@ -350,46 +352,36 @@ export function ModeratorVocabularyLessonPage({
                   )}
                 </div>
               )}
-              <div className="mod-vocab-document-toolbar">
-                {documents.length > 1 ? (
-                  <select
-                    aria-label="Chọn tài liệu PDF"
-                    className="mod-toolbar-select"
-                    value={documentIndex}
-                    onChange={(event) => setDocumentIndex(Number(event.target.value))}
-                  >
-                    {documents.map((item, index) => (
-                      <option
-                        key={item.url}
-                        value={index}
-                      >
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
+              <div className="mod-vocab-pdf-viewer">
+                <div className="mod-vocab-document-toolbar">
+                  {documents.length > 1 ? (
+                    <select
+                      aria-label="Chọn tài liệu PDF"
+                      className="mod-toolbar-select"
+                      value={documentIndex}
+                      onChange={(event) => setDocumentIndex(Number(event.target.value))}
+                    >
+                      {documents.map((item, index) => (
+                        <option key={item.url} value={index}>{item.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span aria-hidden="true" />
+                  )}
                   <strong>{document.name}</strong>
-                )}
-                <a
-                  href={document.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mod-btn-back"
-                >
-                  Mở PDF trong tab mới ↗
-                </a>
+                </div>
+                <iframe
+                  key={document.url}
+                  title={`Tài liệu ${lesson.title}`}
+                  className="mod-vocab-pdf-frame"
+                  src={document.url}
+                  referrerPolicy="no-referrer"
+                />
+                <p className="mod-vocab-pdf-hint">
+                  Nếu PDF không hiển thị, hãy mở trong tab mới và kiểm tra quyền truy cập file trên
+                  Cloudinary.
+                </p>
               </div>
-              <iframe
-                key={document.url}
-                title={`Tài liệu ${lesson.title}`}
-                className="mod-vocab-pdf-frame"
-                src={document.url}
-                referrerPolicy="no-referrer"
-              />
-              <p className="mod-vocab-pdf-hint">
-                Nếu PDF không hiển thị, hãy mở trong tab mới và kiểm tra quyền truy cập file trên
-                Cloudinary.
-              </p>
               </>
             ) : (
               <div className="admin-empty-state">
