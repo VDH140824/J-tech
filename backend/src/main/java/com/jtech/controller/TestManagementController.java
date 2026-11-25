@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Quản lý bài kiểm tra (Moderator): /api/moderator/tests — mini test và test chương. */
 @RestController
 @RequestMapping("/moderator/tests")
 @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
@@ -32,7 +31,6 @@ public class TestManagementController {
         this.service = service;
     }
 
-    /** Bước 2: danh sách đề theo bộ lọc. */
     @GetMapping
     public ResponseEntity<TestManagementResponse.Page> search(
             @RequestParam(required = false) String testType,
@@ -49,7 +47,6 @@ public class TestManagementController {
         return ResponseEntity.ok(service.search(filter, page, size));
     }
 
-    /** Bước 8: câu hỏi ngân hàng để chọn (theo đề đang sửa, hoặc theo loại đề + bài học / chương khi tạo mới). */
     @GetMapping("/candidates")
     public ResponseEntity<List<TestManagementResponse.QuestionItem>> candidates(
             @RequestParam(required = false) Long testId,
@@ -65,13 +62,11 @@ public class TestManagementController {
                 difficulty, keyword));
     }
 
-    /** A1: chi tiết đề. */
     @GetMapping("/{id}")
     public ResponseEntity<TestManagementResponse.Detail> detail(@PathVariable Long id) {
         return ResponseEntity.ok(service.detail(id));
     }
 
-    /** Bước 10–11: tạo đề (nháp). */
     @PostMapping
     public ResponseEntity<TestManagementResponse.Detail> create(@Valid @RequestBody TestManagementRequest request,
             Principal principal) {
@@ -79,26 +74,22 @@ public class TestManagementController {
         return ResponseEntity.created(URI.create("/api/moderator/tests/" + created.summary().id())).body(created);
     }
 
-    /** A2: sửa đề. */
     @PutMapping("/{id}")
     public ResponseEntity<TestManagementResponse.Detail> update(@PathVariable Long id,
             @Valid @RequestBody TestManagementRequest request, Principal principal) {
         return ResponseEntity.ok(service.update(id, request, principal.getName()));
     }
 
-    /** A3: xuất bản. */
     @PutMapping("/{id}/publish")
     public ResponseEntity<TestManagementResponse.Detail> publish(@PathVariable Long id, Principal principal) {
         return ResponseEntity.ok(service.publish(id, principal.getName()));
     }
 
-    /** A4: chuyển về nháp. */
     @PutMapping("/{id}/unpublish")
     public ResponseEntity<TestManagementResponse.Detail> unpublish(@PathVariable Long id, Principal principal) {
         return ResponseEntity.ok(service.unpublish(id, principal.getName()));
     }
 
-    /** A5: xóa; đề đã có lượt làm thì chuyển Lưu trữ (BR-T7). */
     @DeleteMapping("/{id}")
     public ResponseEntity<TestManagementResponse.DeleteResult> delete(@PathVariable Long id, Principal principal) {
         return ResponseEntity.ok(service.delete(id, principal.getName()));

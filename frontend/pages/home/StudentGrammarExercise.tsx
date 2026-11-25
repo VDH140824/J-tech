@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   checkGrammarExercise,
   getGrammarExercise,
@@ -149,7 +149,14 @@ export function StudentGrammarExercise({
   const query = useQuery({
     queryKey: ["student-grammar-exercise", lesson.id],
     queryFn: ({ signal }) => getGrammarExercise(lesson.id, signal),
+    // Mỗi lượt là 5 câu ngẫu nhiên: không tự tải lại giữa chừng (đổi câu khi đang làm);
+    // gcTime 0 → mở lại tab Bài tập hoặc bấm "Làm lại" sẽ nhận bộ 5 câu mới.
+    staleTime: Infinity,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
+  const cache = useQueryClient();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<GrammarCheckResult | null>(null);
   const [checking, setChecking] = useState(false);
@@ -161,7 +168,15 @@ export function StudentGrammarExercise({
     setChecking(true);
     setError("");
     try {
-      setResult(await checkGrammarExercise(lesson.id, answers));
+      const checked = await checkGrammarExercise(
+        lesson.id,
+        questions.map((q) => q.id),
+        answers,
+      );
+      setResult(checked);
+      // Cập nhật tiến độ (trang chủ, /progress, tab Tài liệu) và chuỗi ngày học
+      for (const key of ["learning-progress", "chapter-study", "student-grammar-lesson", "progress-streak", "streak"])
+        void cache.invalidateQueries({ queryKey: [key] });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       setError(grammarError(e, "Không chấm được bài. Vui lòng thử lại."));
@@ -211,7 +226,6 @@ export function StudentGrammarExercise({
             <h3>
               Kết quả: {result.correctCount}/{result.totalQuestions} câu đúng · {Number(result.score)}%
             </h3>
-            <p>Bài luyện tập không lưu điểm. Bạn có thể làm lại bao nhiêu lần tùy thích.</p>
           </div>
           <GrammarReview questions={questions} results={result.results} />
           <div className="kanji-test-actions">
@@ -237,7 +251,7 @@ export function StudentGrammarExercise({
             <strong>
               Đã trả lời {answered}/{questions.length} câu
             </strong>
-            <span>Bấm "Kiểm tra đáp án" để xem kết quả và lời giải.</span>
+            <span>Nộp bài tập để hoàn thành bài và xem kết quả, lời giải.</span>
           </div>
           <fieldset disabled={checking}>
             {questions.map((q, index) => (
@@ -252,7 +266,7 @@ export function StudentGrammarExercise({
           </fieldset>
           <div className="kanji-test-actions">
             <button type="submit" className="kanji-primary" disabled={checking}>
-              {checking ? "Đang chấm…" : "Kiểm tra đáp án"}
+              {checking ? "Đang chấm…" : "Nộp bài"}
             </button>
           </div>
         </form>

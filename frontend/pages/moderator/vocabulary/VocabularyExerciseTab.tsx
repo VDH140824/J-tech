@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   saveExercise,
+  addQuestionBankItemsToExercise,
   importExerciseQuestions,
   getExercise,
   getExercises,
@@ -9,6 +10,7 @@ import {
   type ExerciseQuestionInput,
   type VocabularyExercise,
 } from "../../../api/vocabularyExerciseApi";
+import { getQuestionBank, type QuestionBankSummary } from "../../../api/questionBankApi";
 import "./VocabularyExercises.css";
 
 type Settings = Omit<ExerciseInput, "questions">;
@@ -28,6 +30,10 @@ export function VocabularyExerciseTab({ lessonId, onBack }: {
   const [busy, setBusy] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [questionDraft, setQuestionDraft] = useState<ExerciseQuestionInput | null>(null);
+  const [showQuestionBank, setShowQuestionBank] = useState(false);
+  const [bankQuestions, setBankQuestions] = useState<QuestionBankSummary[]>([]);
+  const [selectedBankIds, setSelectedBankIds] = useState<number[]>([]);
+  const [bankLoading, setBankLoading] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
   const [settings, setSettings] = useState<Settings>({
     title: "Exercise từ vựng",
@@ -39,6 +45,9 @@ export function VocabularyExerciseTab({ lessonId, onBack }: {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
+    setBankQuestions([]);
+    setSelectedBankIds([]);
+    setShowQuestionBank(false);
     setLoading(true);
     setError("");
     getExercises(lessonId, controller.signal)
@@ -100,12 +109,15 @@ export function VocabularyExerciseTab({ lessonId, onBack }: {
       </div>
     );
   const hasHistory = !!test && test.attemptCount > 0;
-  const canSave = questions.length > 0 && questions.every((question) =>
-    question.content.trim().length > 0
-    && question.options.length >= 2
-    && question.options.every((option) => option.trim().length > 0)
-    && question.options.some((option) => option === question.correctAnswer),
-  );
+  const canSave = questions.length > 0 && questions.every((question) => {
+    if (!question.content.trim()) return false;
+    if (question.questionType === "MCQ") return question.options.length >= 2
+      && question.options.every((option) => option.trim().length > 0)
+      && question.options.includes(question.correctAnswer);
+    if (question.questionType === "FILL_IN") return !!question.correctAnswer.trim();
+    const pairs = Object.entries(question.matches);
+    return pairs.length >= 2 && pairs.every(([left, right]) => !!left.trim() && !!right.trim());
+  });
   const openQuestionEditor = (index?: number) => {
     if (busy) return;
     const source = index === undefined ? null : questions[index];
@@ -193,10 +205,59 @@ export function VocabularyExerciseTab({ lessonId, onBack }: {
       if (importInputRef.current) importInputRef.current.value = "";
     }
   };
-  const answerSummary = (question: ExerciseQuestionInput) =>
-    question.options.map((option, index) =>
+  const openQuestionBank = async () => {
+    setShowQuestionBank(true);
+    if (bankQuestions.length || bankLoading) return;
+    setBankLoading(true);
+    setError("");
+    try {
+      const firstPage = await getQuestionBank({ skill: "VOCABULARY", status: "ACTIVE", lessonId, page: 0, size: 100 });
+      const pages = await Promise.all(Array.from({ length: Math.max(0, firstPage.totalPages - 1) }, (_, index) =>
+        getQuestionBank({ skill: "VOCABULARY", status: "ACTIVE", lessonId, page: index + 1, size: 100 }),
+      ));
+      const eligible = [firstPage, ...pages].flatMap((page) => page.content).filter((question) => question.exerciseQuestion);
+      setBankQuestions(eligible);
+      setSelectedBankIds(eligible.slice(0, 7).map((question) => question.id));
+    } catch (failure) {
+      setError(exerciseError(failure));
+    } finally {
+      setBankLoading(false);
+    }
+  };
+  const addSelectedBankQuestions = async () => {
+    if (!selectedBankIds.length || busy) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const saved = await addQuestionBankItemsToExercise(lessonId, {
+        ...settings,
+        questionIds: selectedBankIds,
+      });
+      setTest(saved);
+      setQuestions(saved.questions);
+      setSettings({
+        title: saved.title,
+        description: saved.description || "",
+        durationMinutes: saved.durationMinutes,
+        passingScore: saved.passingScore,
+        status: saved.status,
+      });
+      setNotice(`Đã cập nhật exercise với ${saved.questionCount} câu.`);
+      setShowQuestionBank(false);
+    } catch (failure) {
+      setError(exerciseError(failure));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const answerSummary = (question: ExerciseQuestionInput) => question.questionType === "MCQ"
+    ? question.options.map((option, index) =>
       `${String.fromCharCode(65 + index)}. ${option}${option === question.correctAnswer ? " (Đúng)" : ""}`,
-    ).join("\n") || question.correctAnswer || "—";
+    ).join("\n") || "—"
+    : question.questionType === "MATCHING"
+      ? Object.entries(question.matches).map(([left, right]) => `${left} → ${right}`).join("\n") || "—"
+      : question.correctAnswer || "—";
   return (
     <div className="mod-assessment-tab">
       <div className="mod-chapter-back-row">
@@ -209,6 +270,10 @@ export function VocabularyExerciseTab({ lessonId, onBack }: {
         </div>
       </div>
       <div className="modal-actions-row mod-vocab-question-toolbar">
+        <button type="button" className="mod-btn-add mod-question-btn--secondary" disabled={busy || bankLoading}
+          onClick={() => void openQuestionBank()}>
+          {bankLoading ? "Đang tải Question Bank…" : "Thêm từ Question Bank"}
+        </button>
         <a className="mod-btn-add mod-question-btn--secondary" href={templateUrl} download="Form_question.xlsx">
           Tải form Excel
         </a>
@@ -222,6 +287,40 @@ export function VocabularyExerciseTab({ lessonId, onBack }: {
           Thêm câu hỏi
         </button>
       </div>
+      {showQuestionBank && (
+        <section className="admin-table-card mod-vocab-question-list" aria-label="Chọn câu hỏi từ Question Bank">
+          <div className="mod-assessment-heading">
+            <div>
+              <h3>Chọn câu hỏi từ Question Bank</h3>
+              <p>Hiển thị câu Từ vựng đang dùng, được đánh dấu Exercise và thuộc bài học này. Mỗi lần tạo nên chọn khoảng 5–7 câu; có thể thêm nhiều câu hơn.</p>
+            </div>
+          </div>
+          {bankLoading ? <p className="mod-assessment-list-note">Đang tải câu hỏi…</p> : bankQuestions.length ? (
+            <div className="admin-table-responsive">
+              <table className="admin-dekiru-table">
+                <thead><tr><th>Chọn</th><th>Loại câu hỏi</th><th>Độ khó</th><th>Nội dung</th></tr></thead>
+                <tbody>{bankQuestions.map((question) => (
+                  <tr key={question.id}>
+                    <td><input type="checkbox" checked={selectedBankIds.includes(question.id)} disabled={busy}
+                      onChange={(event) => setSelectedBankIds((ids) => event.target.checked
+                        ? [...ids, question.id]
+                        : ids.filter((id) => id !== question.id))} /></td>
+                    <td>{question.questionType === "MCQ" ? "Trắc nghiệm" : question.questionType === "FILL_IN" ? "Điền đáp án" : "Nối nghĩa"}</td>
+                    <td>{question.difficulty === "EASY" ? "Dễ" : question.difficulty === "MEDIUM" ? "Trung bình" : "Khó"}</td>
+                    <td>{question.content}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          ) : <p className="mod-assessment-list-note">Bài học chưa có câu Từ vựng nào được đánh dấu Exercise trong Question Bank.</p>}
+          <div className="modal-actions-row">
+            <span>{selectedBankIds.length} câu được chọn</span>
+            <button type="button" className="btn-modal-cancel" disabled={busy} onClick={() => setShowQuestionBank(false)}>Đóng</button>
+            <button type="button" className="btn-modal-submit" disabled={busy || bankLoading || !selectedBankIds.length}
+              onClick={() => void addSelectedBankQuestions()}>{busy ? "Đang thêm…" : "Thêm câu đã chọn vào bài tập"}</button>
+          </div>
+        </section>
+      )}
       {error && (
         <div
           className="mod-assessment-error"
@@ -285,7 +384,7 @@ export function VocabularyExerciseTab({ lessonId, onBack }: {
             <tbody>
               {questions.map((question, questionIndex) => (
                 <tr key={question.sourceVocabularyId ?? questionIndex}>
-                  <td>Trắc nghiệm</td>
+                  <td>{question.questionType === "MCQ" ? "Trắc nghiệm" : question.questionType === "FILL_IN" ? "Điền đáp án" : "Nối nghĩa"}</td>
                   <td>{question.difficulty === "EASY" ? "Dễ" : question.difficulty === "MEDIUM" ? "Trung bình" : "Khó"}</td>
                   <td>{question.content || "—"}</td>
                   <td>{question.explanation || "—"}</td>
@@ -294,7 +393,9 @@ export function VocabularyExerciseTab({ lessonId, onBack }: {
                   <td>{statusNames[settings.status]}</td>
                   <td>
                     <div className="mod-vocab-question-actions">
-                      <button type="button" className="mod-btn-add mod-question-btn--secondary" disabled={busy}
+                      <button type="button" className="mod-btn-add mod-question-btn--secondary"
+                        disabled={busy || question.questionType !== "MCQ"}
+                        title={question.questionType !== "MCQ" ? "Chỉnh sửa câu dạng này trong Question Bank." : undefined}
                         onClick={() => openQuestionEditor(questionIndex)}>
                         Chỉnh sửa
                       </button>

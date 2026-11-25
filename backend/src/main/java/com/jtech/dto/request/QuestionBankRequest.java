@@ -7,11 +7,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
 
-/**
- * UC-39 Manage Question Bank: dữ liệu Moderator nhập khi tạo / sửa câu hỏi.
- * Ngân hàng chỉ quản lý câu hỏi Từ vựng, Kanji (gắn lessonId) và Ngữ pháp (gắn grammarId).
- * Đáp án theo dạng câu: MCQ → options + correctAnswer; FILL_IN → correctAnswer; MATCHING → matches.
- */
+
 public record QuestionBankRequest(
         @NotNull(message = "Vui lòng chọn kỹ năng.") Question.Skill skill,
         @NotNull(message = "Vui lòng chọn dạng câu hỏi.") Question.QuestionType questionType,

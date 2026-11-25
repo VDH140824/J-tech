@@ -18,24 +18,18 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-/**
- * Quản lý bài kiểm tra (Moderator): truy vấn trên các bảng có sẵn test, test_question, test_attempt, question
- * (không thêm bảng / cột). Chỉ làm việc với MINI_TEST và CHAPTER_TEST.
- */
+
 @Repository
 public class TestManagementQueryRepository {
 
-    /** Bộ lọc danh sách đề. */
     public record Filter(String testType, String skill, String status, Long courseId, Long chapterId, Long lessonId,
                          String keyword) {
     }
 
-    /** Bộ lọc câu hỏi ngân hàng để chọn vào đề. */
     public record CandidateFilter(Long lessonId, Long chapterId, Collection<String> skills, String skill,
                                   String questionType, String difficulty, String keyword) {
     }
 
-    /** Một dòng bảng test. */
     public record TestRow(Long id, String testType, String skill, Long lessonId, Long chapterId, String title,
                           String description, int durationMinutes, BigDecimal passingScore, String status) {
     }
@@ -74,7 +68,6 @@ public class TestManagementQueryRepository {
         this.db = db;
     }
 
-    // ===== Danh sách / chi tiết =====
     public TestManagementResponse.Page search(Filter f, int page, int size) {
         List<Object> args = new ArrayList<>();
         StringBuilder where = new StringBuilder();
@@ -131,7 +124,6 @@ public class TestManagementQueryRepository {
                 rs.getString("status")), id).stream().findFirst();
     }
 
-    /** Câu hỏi trong đề, theo thứ tự đã lưu. */
     public List<TestManagementResponse.QuestionItem> questionsOf(long testId) {
         return db.query(QUESTION_SQL + " JOIN test_question tq ON tq.question_id = q.id WHERE tq.test_id = ? ORDER BY tq.id",
                 (rs, i) -> question(rs), testId);
@@ -143,7 +135,6 @@ public class TestManagementQueryRepository {
         return db.query(QUESTION_SQL + " WHERE q.id IN (" + marks + ")", (rs, i) -> question(rs), ids.toArray());
     }
 
-    /** BR-T1, BR-T2: câu kiểm tra đang dùng trong ngân hàng, thuộc bài học (mini test) hoặc chương (test chương). */
     public List<TestManagementResponse.QuestionItem> candidates(CandidateFilter f) {
         List<Object> args = new ArrayList<>();
         StringBuilder sql = new StringBuilder(QUESTION_SQL)
@@ -195,9 +186,7 @@ public class TestManagementQueryRepository {
         return n != null && n > 0;
     }
 
-    /** BR-T8: đã có đề cùng loại, cùng kỹ năng đang xuất bản cho bài học / chương này (trừ đề đang xét). */
     public boolean otherPublished(TestRow test) {
-        // Mini test Từ vựng / Ngữ pháp theo bài học; mini test Kanji và test chương theo chương
         String scope = test.lessonId() != null ? "lesson_id = ?" : "lesson_id IS NULL AND chapter_id = ?";
         Long scopeId = test.lessonId() != null ? test.lessonId() : test.chapterId();
         Long n = db.queryForObject("SELECT COUNT(*) FROM test WHERE test_type = ? AND skill = ? AND " + scope
@@ -206,7 +195,6 @@ public class TestManagementQueryRepository {
         return n != null && n > 0;
     }
 
-    // ===== Ghi =====
     public long insert(TestRow t, long userId) {
         KeyHolder key = new GeneratedKeyHolder();
         db.update(con -> {
@@ -241,7 +229,6 @@ public class TestManagementQueryRepository {
                 """, title, description, durationMinutes, passingScore, userId, id);
     }
 
-    /** Thay toàn bộ câu hỏi của đề theo thứ tự mới; part_type = kỹ năng của câu. */
     public void replaceQuestions(long testId, List<TestManagementResponse.QuestionItem> questions) {
         db.update("DELETE FROM test_question WHERE test_id = ?", testId);
         if (questions.isEmpty()) return;
@@ -258,7 +245,6 @@ public class TestManagementQueryRepository {
         db.update("DELETE FROM test WHERE id = ?", id);
     }
 
-    // ===== Mapping =====
     private static TestManagementResponse.Summary summary(ResultSet rs) throws SQLException {
         Timestamp changed = rs.getTimestamp("changed_at");
         return new TestManagementResponse.Summary(rs.getLong("id"), rs.getString("test_type"), rs.getString("skill"),

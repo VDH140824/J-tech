@@ -1,4 +1,7 @@
+import { useQueries } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import type { LessonSummary } from "../../api/lessonApi";
+import { getStudentGrammarLesson } from "../../api/studentGrammarApi";
 import "./StudentKanjiFlashcards.css";
 import "./StudentGrammar.css";
 
@@ -28,6 +31,25 @@ export function StudentGrammarChapterPage({
   const lessonNumbers = [...new Set(grammarLessons.map((lesson) => lesson.lessonNo))]
     .sort((a, b) => a - b);
   const visibleLessons = grammarLessons.filter((lesson) => lesson.lessonNo === lessonNo);
+  const [, setParams] = useSearchParams();
+  // Mini test của từng bài ngữ pháp trong nhóm (cùng cache với trang bài học)
+  const details = useQueries({
+    queries: visibleLessons.map((lesson) => ({
+      queryKey: ["student-grammar-lesson", lesson.id],
+      queryFn: ({ signal }: { signal: AbortSignal }) => getStudentGrammarLesson(lesson.id, signal),
+    })),
+  });
+  const miniTests = visibleLessons.flatMap((lesson, index) => {
+    const test = details[index]?.data?.miniTest;
+    return test ? [{ lesson, test }] : [];
+  });
+  const openMiniTest = (lesson: LessonSummary) =>
+    setParams({
+      skill: "GRAMMAR",
+      lessonNo: String(lesson.lessonNo),
+      lessonId: String(lesson.id),
+      grammarView: "test",
+    });
   return (
     <section className="student-kanji-page">
       <button type="button" className="kanji-text-button" onClick={onBack}>
@@ -66,10 +88,33 @@ export function StudentGrammarChapterPage({
             </div>
             <div className="kanji-tile-body">
               <h4>{lesson.title}</h4>
-              <small>Tài liệu · Luyện tập · Mini test</small>
+              <small>Tài liệu · Bài tập</small>
             </div>
           </button>
         ))}
+        {lessonNo !== undefined && miniTests.map(({ lesson, test }) => {
+          const best = test.attempts.reduce<number | null>(
+            (max, a) => (a.score === null ? max : Math.max(max ?? 0, Number(a.score))), null);
+          const passed = test.attempts.some((a) => a.passed);
+          return (
+            <button type="button" className="kanji-tile" key={`test-${lesson.id}`} onClick={() => openMiniTest(lesson)}>
+              <div className="kanji-tile-banner kanji-banner-test">
+                <strong>MINI TEST</strong>
+              </div>
+              <div className="kanji-tile-body">
+                <h4>{test.title}</h4>
+                <small>
+                  {test.questionCount} câu · {test.durationMinutes} phút
+                  {test.inProgressAttemptId
+                    ? " · Đang làm dở"
+                    : best !== null
+                      ? ` · Cao nhất ${Math.round(best)} điểm${passed ? " · Đã đạt" : ""}`
+                      : " · Chưa làm"}
+                </small>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </section>
   );

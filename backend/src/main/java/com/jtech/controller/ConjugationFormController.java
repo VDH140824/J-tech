@@ -42,7 +42,7 @@ public class ConjugationFormController {
         this.conjugationFormService = conjugationFormService;
     }
 
-    /** sd View Conjugation Forms, message 1.1: GET /api/moderator/conjugation-forms */
+   
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @GetMapping
     public ResponseEntity<Page<ConjugationFormResponse>> getAll(
@@ -66,7 +66,7 @@ public class ConjugationFormController {
                 .body(response);
     }
 
-    /** sd Update Conjugation Form, message 3.3: PUT /api/moderator/conjugation-forms/{id} */
+    
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PutMapping("/{id}")
     public ResponseEntity<ConjugationFormResponse> update(
@@ -76,10 +76,7 @@ public class ConjugationFormController {
         return ResponseEntity.ok(conjugationFormService.update(id, request, principal.getName()));
     }
 
-    /**
-     * sd Delete / Archive Conjugation Form, message 3.1: DELETE /api/moderator/conjugation-forms/{id}
-     * 200 OK kèm archived để Browser chọn thông báo ở 3.3: true = đã lưu trữ, false = đã xóa hẳn.
-     */
+ 
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<DeleteResultResponse> delete(@PathVariable Long id, Principal principal) {
@@ -95,7 +92,7 @@ public class ConjugationFormController {
         return ResponseEntity.ok(conjugationFormService.getPracticeQuestions(id, difficulty, verbGroup));
     }
 
-    /** UC-47 bước 5: thêm câu hỏi thủ công. */
+  
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PostMapping("/{id}/questions")
     public ResponseEntity<PracticeQuestionResponse> createQuestion(
@@ -106,7 +103,7 @@ public class ConjugationFormController {
                 .body(conjugationFormService.createQuestion(id, request, principal.getName()));
     }
 
-    /** UC-47 bước 5: sửa câu hỏi. */
+  
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @PutMapping("/{id}/questions/{questionId}")
     public ResponseEntity<PracticeQuestionResponse> updateQuestion(
@@ -117,7 +114,7 @@ public class ConjugationFormController {
         return ResponseEntity.ok(conjugationFormService.updateQuestion(id, questionId, request, principal.getName()));
     }
 
-    /** UC-47 bước 5: xóa mềm câu hỏi. */
+  
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
     @DeleteMapping("/{id}/questions/{questionId}")
     public ResponseEntity<Void> deleteQuestion(

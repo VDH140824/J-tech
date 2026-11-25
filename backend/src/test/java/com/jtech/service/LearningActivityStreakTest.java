@@ -43,9 +43,9 @@ class LearningActivityStreakTest {
         when(first.progress().isPublished(ContentType.VOCABULARY, 7L)).thenReturn(true);
         when(first.days().findLearningDays(STUDENT_ID)).thenReturn(List.of(today));
 
-        assertEquals(new LearningActivityService.CompletionResult(true, 1, 1),
+        assertEquals(new LearningActivityService.CompletionResult(true, 0, 0),
             first.activity().recordContentCompletion(STUDENT_ID, ContentType.VOCABULARY, 7L));
-        verify(first.days()).updateStreak(STUDENT_ID, 1, 1, today);
+        verify(first.days()).updateStreak(STUDENT_ID, 0, 0, today);
 
         var review = fixture();
         when(review.progress().isPublished(ContentType.VOCABULARY, 7L)).thenReturn(true);
@@ -74,10 +74,10 @@ class LearningActivityStreakTest {
         when(dated.progress().findCompletedPractice(STUDENT_ID, 8L)).thenReturn(submitted);
         when(dated.days().findLearningDays(STUDENT_ID)).thenReturn(List.of(submitted.toLocalDate()));
 
-        assertEquals(new LearningActivityService.CompletionResult(true, 1, 1),
+        assertEquals(new LearningActivityService.CompletionResult(true, 0, 0),
             dated.activity().recordPracticeCompletion(STUDENT_ID, 8L));
         verify(dated.days()).saveCompletedSession(STUDENT_ID, "PRACTICE", "practice_attempt_id", 8L, submitted);
-        verify(dated.days()).updateStreak(STUDENT_ID, 1, 1, submitted.toLocalDate());
+        verify(dated.days()).updateStreak(STUDENT_ID, 0, 0, submitted.toLocalDate());
 
         var sameDay = fixture();
         when(sameDay.progress().findCompletedPractice(STUDENT_ID, 8L)).thenReturn(today.atTime(0, 1));
@@ -97,7 +97,7 @@ class LearningActivityStreakTest {
             .thenReturn(List.of(today.minusDays(1)))
             .thenReturn(List.of(today.minusDays(1), today));
 
-        assertEquals(new LearningActivityService.CompletionResult(true, 1, 1),
+        assertEquals(new LearningActivityService.CompletionResult(true, 0, 0),
             midnight.activity().recordPracticeCompletion(STUDENT_ID, 8L));
         assertEquals(new LearningActivityService.CompletionResult(true, 2, 2),
             midnight.activity().recordPracticeCompletion(STUDENT_ID, 9L));
@@ -126,11 +126,11 @@ class LearningActivityStreakTest {
         when(f.days().hasQualifiedDay(STUDENT_ID, today)).thenReturn(false, true);
         when(f.days().findLearningDays(STUDENT_ID)).thenReturn(List.of(today));
 
-        assertEquals(new LearningActivityService.CompletionResult(true, 1, 1),
+        assertEquals(new LearningActivityService.CompletionResult(true, 0, 0),
             f.activity().recordExerciseCompletion(STUDENT_ID, 7L, 3L, graded, answers));
-        assertEquals(new LearningActivityService.CompletionResult(false, 1, 1),
+        assertEquals(new LearningActivityService.CompletionResult(false, 0, 0),
             f.activity().recordExerciseCompletion(STUDENT_ID, 7L, 3L, graded, answers));
-        verify(f.days(), times(1)).updateStreak(STUDENT_ID, 1, 1, today);
+        verify(f.days(), times(1)).updateStreak(STUDENT_ID, 0, 0, today);
     }
 
     @Test

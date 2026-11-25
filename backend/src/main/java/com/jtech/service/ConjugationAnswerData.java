@@ -15,19 +15,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Định dạng answer_data của câu hỏi thể chia, dùng chung cho Moderator (UC-47) và học viên (UC-23).
- * {"verb":"書く","reading":"かく","meaningVi":"viết","verbGroup":1,"correctAnswer":"書いて",
- *  "acceptedAnswers":["かいて"],"options":["書きて","書って","書かて"]}   (options: phương án nhiễu, không bắt buộc)
- */
+
 public final class ConjugationAnswerData {
     private ConjugationAnswerData() {}
 
-    /** Dữ liệu đọc được từ một câu hỏi thể chia. verbGroup = 0 khi không xác định được. */
     public record Data(String verb, String reading, String meaningVi, int verbGroup,
         String correctAnswer, List<String> acceptedAnswers, List<String> options) {}
 
-    /** Ghi answer_data khi Moderator thêm / sửa câu hỏi. */
     public static String write(ObjectMapper json, String verb, String reading, String meaningVi, int verbGroup,
             String correctAnswer, List<String> acceptedAnswers, List<String> options) {
         Map<String, Object> data = new LinkedHashMap<>();
@@ -45,7 +39,6 @@ public final class ConjugationAnswerData {
         }
     }
 
-    /** Nội dung câu hỏi: “Chia động từ 書く (かく) sang thể て.” (tên thể lấy từ nameVi của thể chia). */
     public static String buildContent(ConjugationForm form, String verb, String reading) {
         String formName = form.getNameVi() == null ? "" : form.getNameVi().trim();
         if (!formName.isEmpty()) formName = Character.toLowerCase(formName.charAt(0)) + formName.substring(1);
@@ -53,7 +46,6 @@ public final class ConjugationAnswerData {
         return "Chia động từ " + verbPart + " sang " + formName + ".";
     }
 
-    /** BR-97: chấp nhận Kanji / Hiragana / Katakana. Chuẩn hóa NFKC, bỏ khoảng trắng, đổi Katakana → Hiragana. */
     public static String normalize(String value) {
         if (value == null) return "";
         String text = Normalizer.normalize(value, Normalizer.Form.NFKC).replaceAll("\\s+", "");
@@ -62,15 +54,7 @@ public final class ConjugationAnswerData {
         return out.toString();
     }
 
-    /**
-     * Đọc answer_data theo nhiều định dạng để dùng được dữ liệu nhóm đã nhập:
-     * - Đáp án đúng: correctAnswer / answer / correct / expectedAnswer, hoặc phần tử đầu của
-     *   correctAnswers / acceptedAnswers / answers. Nếu là khóa trắc nghiệm ("A"…) thì đổi sang nội dung phương án.
-     * - options: mảng ["…"] hoặc object {"A": "…", "B": "…"}.
-     * - Động từ / cách đọc: verb, reading…; nếu không có thì tách từ nội dung câu hỏi
-     *   “Chia động từ 書く (かく) sang thể ます.”
-     * - Nhóm động từ: verbGroup / group; nếu không có thì suy ra từ động từ và cách đọc.
-     */
+   
     public static Data read(Question q, ObjectMapper json) {
         try {
             JsonNode root = q.getAnswerData() == null ? json.createObjectNode() : json.readTree(q.getAnswerData());
@@ -126,17 +110,14 @@ public final class ConjugationAnswerData {
         }
     }
 
-    /** “động từ 書く (かく)” hoặc “động từ 書く（かく）”. */
     private static final Pattern VERB_IN_CONTENT =
         Pattern.compile("động từ\\s+([^\\s（(]+)\\s*(?:[（(]\\s*([^）)]+?)\\s*[）)])?", Pattern.CASE_INSENSITIVE);
 
     private static final String I_ROW = "いきぎしじちぢにひびぴみり";
     private static final String E_ROW = "えけげせぜてでねへべぺめれ";
-    /** Động từ đuôi -iru / -eru nhưng thuộc nhóm I. */
     private static final Set<String> GROUP1_EXCEPTIONS = Set.of("帰る", "入る", "走る", "要る", "切る", "知る", "減る",
         "喋る", "滑る", "蹴る", "焦る", "限る", "握る", "参る", "混じる", "茂る", "覆る", "照る", "散る", "湿る");
 
-    /** Suy ra nhóm động từ khi dữ liệu không ghi rõ (0 = không xác định). */
     public static int inferVerbGroup(String verb, String reading) {
         String v = verb == null ? "" : verb.trim();
         String r = normalize(reading == null || reading.isBlank() ? v : reading);
@@ -160,7 +141,6 @@ public final class ConjugationAnswerData {
         return "";
     }
 
-    /** Chấp nhận 1/2/3, "1", "I", "II", "GROUP_1"… */
     private static int verbGroup(JsonNode node) {
         String text = node.asText("").trim().toUpperCase(Locale.ROOT).replace("GROUP", "").replace("_", "").trim();
         return switch (text) {

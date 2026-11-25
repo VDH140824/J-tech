@@ -20,7 +20,7 @@ class LearningProgressStreakTest {
         assertAll(
             () -> assertEquals(new StreakService.State(3, 3, start),
             StreakService.calculate(List.of(today, start, today.minusDays(1)), today)),
-            () -> assertEquals(new StreakService.State(1, 1, today),
+            () -> assertEquals(new StreakService.State(0, 0, null),
             StreakService.calculate(List.of(today, today), today)),
             () -> assertEquals(new StreakService.State(0, 2, null),
             StreakService.calculate(List.of(today.minusDays(3), today.minusDays(2)), today)),

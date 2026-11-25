@@ -1,7 +1,9 @@
 import { apiClient } from "../services/api";
-import type { QuestionFormat, QuestionLevel, QuestionSkill } from "./questionBankApi";
-
-// Quản lý bài kiểm tra (Moderator) — /api/moderator/tests
+import type {
+  QuestionFormat,
+  QuestionLevel,
+  QuestionSkill,
+} from "./questionBankApi";
 
 export type ManagedTestType = "MINI_TEST" | "CHAPTER_TEST";
 export type TestSkill = QuestionSkill | "ALL";
@@ -27,7 +29,6 @@ export interface TestSummary {
   updatedAt: string | null;
 }
 
-/** Câu hỏi ngân hàng (trong đề hoặc để chọn). answerData = JSON đáp án như ngân hàng lưu. */
 export interface TestQuestionItem {
   id: number;
   skill: QuestionSkill;
@@ -47,7 +48,6 @@ export interface TestDetail {
   summary: TestSummary;
   description: string | null;
   questions: TestQuestionItem[];
-  /** BR-T6: đã có lượt làm → không sửa câu hỏi, thời gian, điểm đạt */
   locked: boolean;
 }
 
@@ -73,11 +73,9 @@ export interface TestQuery {
 
 export interface TestInput {
   testType: ManagedTestType;
-  /** Kỹ năng của mini test (test chương bỏ trống) */
   skill?: QuestionSkill | null;
   lessonId?: number | null;
   chapterId?: number | null;
-  /** Tên đề: màn hình tự đặt theo bài học / chương */
   title: string;
   description?: string | null;
   durationMinutes: number;
@@ -88,7 +86,6 @@ export interface TestInput {
 export interface CandidateQuery {
   testId?: number;
   testType?: ManagedTestType;
-  /** Kỹ năng mini test khi tạo mới (Kanji theo chương) */
   testSkill?: QuestionSkill;
   lessonId?: number;
   chapterId?: number;
@@ -100,13 +97,14 @@ export interface CandidateQuery {
 
 export interface TestDeleteResult {
   id: number;
-  /** BR-T7: true = đề đã có lượt làm nên được chuyển Lưu trữ */
   archived: boolean;
   reason: string | null;
 }
 
 export async function getTests(query: TestQuery): Promise<TestPage> {
-  const { data } = await apiClient.get<TestPage>("/moderator/tests", { params: query });
+  const { data } = await apiClient.get<TestPage>("/moderator/tests", {
+    params: query,
+  });
   return data;
 }
 
@@ -115,46 +113,80 @@ export async function getTestDetail(id: number): Promise<TestDetail> {
   return data;
 }
 
-export async function getTestCandidates(query: CandidateQuery): Promise<TestQuestionItem[]> {
-  const { data } = await apiClient.get<TestQuestionItem[]>("/moderator/tests/candidates", { params: query });
+export async function getTestCandidates(
+  query: CandidateQuery,
+): Promise<TestQuestionItem[]> {
+  const { data } = await apiClient.get<TestQuestionItem[]>(
+    "/moderator/tests/candidates",
+    { params: query },
+  );
   return data;
 }
 
 export async function createTest(payload: TestInput): Promise<TestDetail> {
-  const { data } = await apiClient.post<TestDetail>("/moderator/tests", payload);
+  const { data } = await apiClient.post<TestDetail>(
+    "/moderator/tests",
+    payload,
+  );
   return data;
 }
 
-export async function updateTest(id: number, payload: TestInput): Promise<TestDetail> {
-  const { data } = await apiClient.put<TestDetail>(`/moderator/tests/${id}`, payload);
+export async function updateTest(
+  id: number,
+  payload: TestInput,
+): Promise<TestDetail> {
+  const { data } = await apiClient.put<TestDetail>(
+    `/moderator/tests/${id}`,
+    payload,
+  );
   return data;
 }
 
 export async function publishTest(id: number): Promise<TestDetail> {
-  const { data } = await apiClient.put<TestDetail>(`/moderator/tests/${id}/publish`);
+  const { data } = await apiClient.put<TestDetail>(
+    `/moderator/tests/${id}/publish`,
+  );
   return data;
 }
 
 export async function unpublishTest(id: number): Promise<TestDetail> {
-  const { data } = await apiClient.put<TestDetail>(`/moderator/tests/${id}/unpublish`);
+  const { data } = await apiClient.put<TestDetail>(
+    `/moderator/tests/${id}/unpublish`,
+  );
   return data;
 }
 
 export async function deleteTest(id: number): Promise<TestDeleteResult> {
-  const { data } = await apiClient.delete<TestDeleteResult>(`/moderator/tests/${id}`);
+  const { data } = await apiClient.delete<TestDeleteResult>(
+    `/moderator/tests/${id}`,
+  );
   return data;
 }
 
-/** BR-T4, BR-T5: giới hạn theo loại đề (số câu tối thiểu chỉ áp dụng khi xuất bản). */
-export const TEST_LIMITS: Record<ManagedTestType, {
-  minQuestions: number;
-  maxQuestions: number;
-  minMinutes: number;
-  maxMinutes: number;
-  defaultMinutes: number;
-}> = {
-  MINI_TEST: { minQuestions: 5, maxQuestions: 20, minMinutes: 5, maxMinutes: 20, defaultMinutes: 15 },
-  CHAPTER_TEST: { minQuestions: 15, maxQuestions: 40, minMinutes: 15, maxMinutes: 40, defaultMinutes: 30 },
+export const TEST_LIMITS: Record<
+  ManagedTestType,
+  {
+    minQuestions: number;
+    maxQuestions: number;
+    minMinutes: number;
+    maxMinutes: number;
+    defaultMinutes: number;
+  }
+> = {
+  MINI_TEST: {
+    minQuestions: 5,
+    maxQuestions: 15,
+    minMinutes: 5,
+    maxMinutes: 30,
+    defaultMinutes: 15,
+  },
+  CHAPTER_TEST: {
+    minQuestions: 15,
+    maxQuestions: 40,
+    minMinutes: 5,
+    maxMinutes: 30,
+    defaultMinutes: 30,
+  },
 };
 
 export const TEST_TYPE_LABEL: Record<ManagedTestType, string> = {
@@ -175,7 +207,6 @@ export const TEST_STATUS_LABEL: Record<TestStatus, string> = {
   ARCHIVED: "Lưu trữ",
 };
 
-/** Đáp án đúng để xem trước, đọc từ answerData của ngân hàng (MCQ / FILL_IN / MATCHING, Ngữ pháp A–D). */
 export function answerPreview(item: TestQuestionItem): string {
   if (!item.answerData) return "—";
   try {
@@ -185,12 +216,18 @@ export function answerPreview(item: TestQuestionItem): string {
       matches?: Record<string, string>;
     };
     if (item.questionType === "MATCHING") {
-      return Object.entries(data.matches ?? {})
-        .map(([left, right]) => `${left} ↔ ${right}`)
-        .join(" · ") || "—";
+      return (
+        Object.entries(data.matches ?? {})
+          .map(([left, right]) => `${left} ↔ ${right}`)
+          .join(" · ") || "—"
+      );
     }
     const correct = data.correctAnswer ?? "";
-    if (data.options && !Array.isArray(data.options) && correct in data.options) {
+    if (
+      data.options &&
+      !Array.isArray(data.options) &&
+      correct in data.options
+    ) {
       return `${correct}. ${data.options[correct]}`;
     }
     return correct || "—";

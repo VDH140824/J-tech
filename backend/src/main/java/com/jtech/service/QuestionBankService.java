@@ -27,15 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * UC-39 Manage Question Bank (Moderator). Câu hỏi chỉ gồm chữ, không kèm hình ảnh / âm thanh.
- *
- * Ngân hàng chỉ quản lý câu hỏi Từ vựng, Kanji và Ngữ pháp (bảng question có sẵn), giữ đúng định dạng
- * answer_data mà các phần học viên đang đọc:
- * - Từ vựng / Kanji: {"options":[...],"correctAnswer":"...","matches":{...}} (như Kanji exercise, Mini test).
- * - Ngữ pháp trắc nghiệm: {"options":{"A":..,"B":..,"C":..,"D":..},"correctAnswer":"A"} (như phần Ngữ pháp).
- * BR-13: chưa có dữ liệu liên quan → xóa vĩnh viễn, ngược lại chỉ lưu trữ. BR-29: đã có lượt làm → không đổi đáp án.
- */
+
 @Service
 public class QuestionBankService {
     private static final List<String> GRAMMAR_KEYS = List.of("A", "B", "C", "D");
@@ -48,7 +40,6 @@ public class QuestionBankService {
     static final String ANSWER_LOCKED = "Câu hỏi đã có học viên làm bài nên không thể thay đổi đáp án (BR-29). "
             + "Bạn vẫn có thể sửa nội dung, giải thích và độ khó.";
 
-    /** Đáp án ở dạng chung để kiểm tra, so sánh (BR-29) và trả về màn hình. */
     record Answer(List<String> options, String correctAnswer, Map<String, String> matches) {
     }
 
@@ -65,7 +56,6 @@ public class QuestionBankService {
         this.json = json;
     }
 
-    // ===== Bước 2 + A1: danh sách và bộ lọc =====
     @Transactional(readOnly = true)
     public QuestionBankResponse.Page search(QuestionBankQueryRepository.Filter filter, int page, int size) {
         return queries.search(filter, Math.max(page, 0), Math.min(Math.max(size, 1), 100));
@@ -76,7 +66,6 @@ public class QuestionBankService {
         return queries.targets();
     }
 
-    // ===== A2: xem chi tiết =====
     @Transactional(readOnly = true)
     public QuestionBankResponse.Detail detail(long id) {
         Question q = find(id);
@@ -90,7 +79,6 @@ public class QuestionBankService {
                 queries.linkedTests(id));
     }
 
-    // ===== Bước 3–11: tạo câu hỏi =====
     @Transactional
     public QuestionBankResponse.Detail create(QuestionBankRequest request, String moderatorEmail) {
         if (!BANK_SKILLS.contains(request.skill())) throw badRequest(UNSUPPORTED_SKILL);
@@ -114,7 +102,6 @@ public class QuestionBankService {
         return detail(saved.getId());
     }
 
-    // ===== A3 / A4: sửa câu hỏi (BR-29) =====
     @Transactional
     public QuestionBankResponse.Detail update(long id, QuestionBankRequest request, String moderatorEmail) {
         Question q = find(id);
@@ -132,7 +119,6 @@ public class QuestionBankService {
         q.setContent(request.content().trim());
         q.setExplanation(trimToNull(request.explanation()));
         q.setDifficulty(request.difficulty());
-        // Giữ nguyên is_exercise_question (câu bản sao trong bài kiểm tra Kanji có cờ FALSE)
         if (answerChanged) {
             q.setAnswerData(writeAnswer(q.getSkill(), request.questionType(), answer, q.getAnswerData()));
             q.setQuestionType(request.questionType());
@@ -143,11 +129,7 @@ public class QuestionBankService {
         return detail(id);
     }
 
-    // ===== A5 / A6: xóa câu hỏi (BR-13) =====
-    /**
-     * Moderator chỉ xác nhận "Xóa". Hệ thống tự quyết theo BR-13: chưa có dữ liệu liên quan → xóa vĩnh viễn;
-     * đã có lượt làm / thuộc bài kiểm tra / có phản hồi → chuyển ARCHIVED để giữ dữ liệu học tập.
-     */
+    
     @Transactional
     public QuestionBankResponse.DeleteResult delete(long id, String moderatorEmail) {
         Question q = find(id);
@@ -177,9 +159,7 @@ public class QuestionBankService {
         questions.save(q);
     }
 
-    // ===== Helpers =====
     private Question find(long id) {
-        // Câu hỏi Nghe / Thể chia không thuộc ngân hàng (Thể chia quản lý ở UC-47)
         return questions.findById(id).filter(q -> BANK_SKILLS.contains(q.getSkill()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND));
     }
@@ -189,15 +169,11 @@ public class QuestionBankService {
                 .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Không tìm thấy tài khoản đăng nhập."));
     }
 
-    /**
-     * Câu ngân hàng là câu kiểm tra (is_exercise_question = FALSE) cho cả 3 kỹ năng: mini test và test chương
-     * chỉ lấy câu từ ngân hàng (Quản lý bài kiểm tra, BR-T1); câu luyện tập (TRUE) do bài luyện tập tự tạo.
-     */
+    
     static boolean exerciseFlag(QuestionBankRequest request) {
         return false;
     }
 
-    /** BR-13: lý do phải giữ lại câu hỏi (chỉ lưu trữ), null nếu được xóa vĩnh viễn. */
     private String retentionReason(Question q, boolean attempted) {
         if (attempted) return "Câu hỏi đã có học viên làm bài.";
         if (queries.isInTest(q.getId())) return "Câu hỏi đang thuộc một bài kiểm tra.";
@@ -205,7 +181,6 @@ public class QuestionBankService {
         return null;
     }
 
-    /** Bước 5: nơi gắn câu hỏi theo kỹ năng. */
     private void applyTarget(Question q, QuestionBankRequest r) {
         q.setLessonId(null);
         q.setGrammarId(null);
@@ -230,7 +205,6 @@ public class QuestionBankService {
         }
     }
 
-    /** Bước 8 / E1: kiểm tra đáp án theo dạng câu hỏi. */
     Answer validateAnswer(Question.Skill skill, Question.QuestionType type, QuestionBankRequest r) {
         return switch (type) {
             case MCQ -> {
@@ -280,7 +254,6 @@ public class QuestionBankService {
         };
     }
 
-    /** Ghi answer_data theo định dạng của kỹ năng; giữ các trường khác của dữ liệu cũ (vd. sourceVocabularyId). */
     String writeAnswer(Question.Skill skill, Question.QuestionType type, Answer answer, String previous) {
         try {
             if (skill == Question.Skill.GRAMMAR && type == Question.QuestionType.MCQ) {
@@ -308,7 +281,6 @@ public class QuestionBankService {
         }
     }
 
-    /** Đọc answer_data của mọi định dạng đang có về dạng chung. */
     Answer readAnswer(Question q) {
         try {
             JsonNode root = q.getAnswerData() == null ? null : json.readTree(q.getAnswerData());
@@ -337,7 +309,6 @@ public class QuestionBankService {
         }
     }
 
-    /** BR-29: so sánh đáp án sau chuẩn hóa (bỏ khác biệt khoảng trắng, hoa thường, full-width). */
     static boolean sameAnswer(Answer a, Answer b) {
         return a.options().stream().map(QuestionBankService::key).toList()
                 .equals(b.options().stream().map(QuestionBankService::key).toList())

@@ -47,6 +47,9 @@ export interface StudentGrammarLesson {
   grammars: GrammarPoint[];
   exerciseCount: number;
   miniTest: GrammarMiniTestInfo | null;
+  /** Đã hoàn thành bài (đã nộp bài tập). */
+  completed: boolean;
+  bestExerciseScore: number | null;
 }
 
 /** Câu hỏi không kèm đáp án. MCQ: options; MATCHING: vế trái + vế phải đã xáo. */
@@ -73,6 +76,11 @@ export interface GrammarCheckResult {
   correctCount: number;
   totalQuestions: number;
   score: number;
+  /** Bài đã được tính hoàn thành trong tiến độ (nộp bài tập là hoàn thành). */
+  lessonCompleted: boolean;
+  /** Lần nộp này là lần đầu hoàn thành bài. */
+  firstCompletion: boolean;
+  bestScore: number | null;
   results: GrammarQuestionResult[];
 }
 
@@ -122,8 +130,10 @@ export async function getGrammarExercise(lessonId: number, signal?: AbortSignal)
   })).data;
 }
 
-export async function checkGrammarExercise(lessonId: number, answers: Record<string, string>) {
-  return (await apiClient.post<GrammarCheckResult>(`${base}/lessons/${lessonId}/exercise/check`, { answers })).data;
+/** Chấm bài tập: questionIds = các câu đã được phát (5 câu ngẫu nhiên của lượt này). */
+export async function checkGrammarExercise(lessonId: number, questionIds: number[], answers: Record<string, string>) {
+  return (await apiClient.post<GrammarCheckResult>(`${base}/lessons/${lessonId}/exercise/check`, { questionIds, answers }))
+    .data;
 }
 
 export async function startGrammarMiniTest(testId: number) {

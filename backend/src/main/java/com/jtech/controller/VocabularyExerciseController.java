@@ -1,6 +1,7 @@
 package com.jtech.controller;
 
 import com.jtech.dto.request.VocabularyExerciseRequest;
+import com.jtech.dto.request.VocabularyExerciseQuestionBankRequest;
 import com.jtech.dto.response.VocabularyTestResponse;
 import com.jtech.service.VocabularyExerciseService;
 import jakarta.validation.Valid;
@@ -43,6 +44,15 @@ public class VocabularyExerciseController {
         Authentication authentication
     ) {
         return ResponseEntity.ok(service.saveReviewed(lessonId, request, authentication));
+    }
+
+    @PostMapping("/lessons/{lessonId}/mini-tests/question-bank")
+    public ResponseEntity<VocabularyTestResponse> addQuestionBankItems(
+        @PathVariable Long lessonId,
+        @Valid @RequestBody VocabularyExerciseQuestionBankRequest request,
+        Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.addQuestionBankItems(lessonId, request, authentication));
     }
 
     @PostMapping(value = "/lessons/{lessonId}/mini-tests/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
