@@ -285,7 +285,7 @@ export function ModeratorVocabularyLessonPage({
           className={tab === "questions" ? "active" : ""}
           onClick={() => selectTab("questions")}
         >
-          ✎ Exercise / Bài tập
+          ✎ Bài tập
         </button>
       </div>}
       <section

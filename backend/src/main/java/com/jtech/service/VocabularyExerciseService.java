@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jtech.dto.request.VocabularyExerciseGenerateRequest;
 import com.jtech.dto.request.VocabularyExerciseRequest;
+import com.jtech.dto.request.VocabularyExerciseQuestionBankRequest;
 import com.jtech.dto.response.VocabularyTestResponse;
 import com.jtech.dto.response.StudentVocabularyExercise;
 import com.jtech.entity.*;
@@ -205,6 +206,67 @@ public class VocabularyExerciseService {
     }
 
     @Transactional
+    public VocabularyTestResponse addQuestionBankItems(
+        Long lessonId,
+        VocabularyExerciseQuestionBankRequest request,
+        Authentication authentication
+    ) {
+        vocabulary.checkLesson(lessonId, authentication);
+        vocabulary.lockLesson(lessonId, authentication);
+        var ids = new LinkedHashSet<>(request.questionIds());
+        if (ids.size() != request.questionIds().size()) {
+            throw new IllegalArgumentException("Không chọn trùng câu hỏi.");
+        }
+
+        var selected = questions.findAllById(ids);
+        if (selected.size() != ids.size() || selected.stream().anyMatch(question ->
+            !Objects.equals(question.getLessonId(), lessonId)
+                || question.getSkill() != VocabularyTestQuestion.Skill.VOCABULARY
+                || !Boolean.TRUE.equals(question.getExerciseQuestion())
+                || question.getStatus() != VocabularyTestQuestion.Status.ACTIVE
+        )) {
+            throw new IllegalArgumentException("Chỉ có thể thêm câu Từ vựng đang dùng, được đánh dấu Exercise và thuộc đúng bài học.");
+        }
+
+        var current = tests.findByLessonIdAndTestTypeAndSkillOrderByIdDesc(
+            lessonId, VocabularyTest.Type.EXERCISE, VocabularyTest.Skill.VOCABULARY
+        );
+        VocabularyTest target;
+        if (current.isEmpty()) {
+            target = new VocabularyTest();
+            target.setLessonId(lessonId);
+            apply(target, request);
+            tests.saveAndFlush(target);
+        } else {
+            var latest = current.getFirst();
+            if (tests.countActiveAttempts(latest.getId()) > 0) {
+                throw new IllegalStateException("Có học sinh đang làm exercise. Vui lòng chờ các lượt làm kết thúc rồi thử lại.");
+            }
+            if (tests.countAttempts(latest.getId()) > 0) {
+                target = new VocabularyTest();
+                target.setLessonId(lessonId);
+                apply(target, request);
+                tests.saveAndFlush(target);
+                for (var oldQuestion : questions.findForTest(latest.getId())) {
+                    linkQuestion(target, oldQuestion.getId());
+                }
+            } else {
+                target = latest;
+                apply(target, request);
+                tests.save(target);
+            }
+        }
+
+        var linkedIds = questions.findForTest(target.getId()).stream()
+            .map(VocabularyTestQuestion::getId).collect(java.util.stream.Collectors.toSet());
+        for (var id : ids) {
+            if (!linkedIds.contains(id)) linkQuestion(target, id);
+        }
+        links.flush();
+        return response(target, true);
+    }
+
+    @Transactional
     public VocabularyTestResponse importQuestions(Long lessonId, MultipartFile file, Authentication authentication) {
         if (file == null || file.isEmpty() || file.getSize() > 5L * 1024 * 1024) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chọn file Excel có dữ liệu và không quá 5 MB.");
@@ -342,7 +404,7 @@ public class VocabularyExerciseService {
         links.removeForTest(id);
         // Questions shared with another test must keep their original content and status.
         for (var question : previousQuestions) {
-            if (!links.existsByQuestionId(question.getId())) {
+            if (!links.existsByQuestionId(question.getId()) && !Boolean.TRUE.equals(question.getExerciseQuestion())) {
                 question.setStatus(VocabularyTestQuestion.Status.ARCHIVED);
                 questions.save(question);
             }
@@ -561,6 +623,21 @@ public class VocabularyExerciseService {
         test.setStatus(request.status());
     }
 
+    private void apply(VocabularyTest test, VocabularyExerciseQuestionBankRequest request) {
+        test.setTitle(request.title().trim());
+        test.setDescription(request.description() == null ? null : request.description().trim());
+        test.setDurationMinutes(request.durationMinutes());
+        test.setPassingScore(request.passingScore());
+        test.setStatus(request.status());
+    }
+
+    private void linkQuestion(VocabularyTest test, Long questionId) {
+        var link = new VocabularyTestQuestionLink();
+        link.setTestId(test.getId());
+        link.setQuestionId(questionId);
+        links.save(link);
+    }
+
     private void saveQuestions(
         VocabularyTest test,
         List<VocabularyExerciseRequest.Question> inputs
@@ -647,10 +724,11 @@ public class VocabularyExerciseService {
             if (
                 data == null ||
                 data.options() == null ||
-                data.matches() == null ||
                 data.correctAnswer() == null
             ) throw new IllegalArgumentException();
-            return data;
+            return data.matches() == null
+                ? new AnswerData(data.options(), data.correctAnswer(), Map.of(), data.sourceVocabularyId())
+                : data;
         } catch (JsonProcessingException | IllegalArgumentException ex) {
             throw new IllegalStateException(
                 "Đáp án câu " + question.getId() + " chưa đúng định dạng exercise Vocab."
