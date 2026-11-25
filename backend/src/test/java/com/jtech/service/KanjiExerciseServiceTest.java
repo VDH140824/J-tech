@@ -442,7 +442,7 @@ class KanjiExerciseServiceTest {
   }
 
   @Test
-  void archivesUsedQuestion() {
+  void rejectsDeletingUsedQuestionWithoutChangingStatus() {
     actor("MODERATOR", UserStatus.ACTIVE);
     lesson(true);
     Question q = question();
@@ -450,8 +450,76 @@ class KanjiExerciseServiceTest {
       em.find(Question.class, 20L, LockModeType.PESSIMISTIC_WRITE)
     ).thenReturn(q);
     used(true);
-    assertEquals("ARCHIVED", service.delete(principal, 10, 20));
+    assertEquals(409, assertThrows(ResponseStatusException.class, () -> service.delete(principal, 10, 20)).getStatusCode().value());
+    assertEquals(Question.QuestionStatus.ACTIVE, q.getStatus());
+    verify(em, never()).remove(any());
+  }
+
+  private Question statusQuestion(Question.QuestionStatus status) {
+    Question q = question();
+    q.setStatus(status);
+    q.setQuestionType(Question.QuestionType.FILL_IN);
+    q.setContent("日"); q.setExplanation("Giải thích");
+    q.setDifficulty(Question.Difficulty.EASY); q.setDisplayOrder(0);
+    q.setAnswerData("{\"options\":[],\"correctAnswer\":\"ひ\",\"matches\":{}}");
+    when(em.find(Question.class, 20L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(q);
+    return q;
+  }
+
+  @Test
+  void archiveAndPublishAgainPreservesIdLessonAndAnswer() {
+    actor("MODERATOR", UserStatus.ACTIVE); lesson(true);
+    Question q = statusQuestion(Question.QuestionStatus.ACTIVE);
+    var archived = service.changeStatus(principal, 10, 20, Question.QuestionStatus.ARCHIVED);
+    assertEquals(Question.QuestionStatus.ARCHIVED, archived.status());
+    var published = service.changeStatus(principal, 10, 20, Question.QuestionStatus.ACTIVE);
+    assertEquals(Question.QuestionStatus.ACTIVE, published.status());
+    assertEquals(20L, published.id()); assertEquals(10L, published.lessonId());
+    assertEquals("ひ", published.correctAnswer()); assertEquals(7L, q.getUpdatedBy());
+    verify(em, never()).remove(any()); verify(em, never()).persist(any());
+  }
+
+  @Test
+  void deletesUnusedArchivedQuestion() {
+    actor("MODERATOR", UserStatus.ACTIVE); lesson(true);
+    Question q = statusQuestion(Question.QuestionStatus.ARCHIVED); used(false);
+    assertEquals("DELETED", service.delete(principal, 10, 20));
+    verify(em).remove(q);
+  }
+
+  @Test
+  void cannotDeleteUsedArchivedQuestion() {
+    actor("MODERATOR", UserStatus.ACTIVE); lesson(true);
+    Question q = statusQuestion(Question.QuestionStatus.ARCHIVED); used(true);
+    assertThrows(ResponseStatusException.class, () -> service.delete(principal, 10, 20));
     assertEquals(Question.QuestionStatus.ARCHIVED, q.getStatus());
+    verify(em, never()).remove(any());
+  }
+
+  private void targetLesson() {
+    Lesson target = new Lesson(); target.setId(11L); target.setSkillType(Lesson.SkillType.KANJI);
+    when(em.find(Lesson.class, 11L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(target);
+  }
+
+  @Test
+  void assigningUnusedQuestionKeepsIdAndMovesLesson() {
+    actor("MODERATOR", UserStatus.ACTIVE); lesson(true); targetLesson();
+    Question q = statusQuestion(Question.QuestionStatus.ACTIVE); used(false);
+    var result = service.assign(principal, 10, 20, 11);
+    assertEquals(20L, result.id()); assertEquals(11L, q.getLessonId());
+    assertEquals(Question.QuestionStatus.ACTIVE, q.getStatus());
+    verify(em, never()).persist(any()); verify(em, never()).remove(any());
+  }
+
+  @Test
+  void assigningUsedQuestionKeepsHistoricalLessonAndPublishesReplacement() {
+    actor("MODERATOR", UserStatus.ACTIVE); lesson(true); targetLesson();
+    Question q = statusQuestion(Question.QuestionStatus.ACTIVE); used(true);
+    doAnswer(call -> { ((Question) call.getArgument(0)).setId(30L); return null; }).when(em).persist(any(Question.class));
+    var result = service.assign(principal, 10, 20, 11);
+    assertEquals(30L, result.id()); assertEquals(11L, result.lessonId());
+    assertEquals(Question.QuestionStatus.ACTIVE, result.status());
+    assertEquals(10L, q.getLessonId()); assertEquals(Question.QuestionStatus.ARCHIVED, q.getStatus());
     verify(em, never()).remove(any());
   }
 

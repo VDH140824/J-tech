@@ -166,6 +166,14 @@ public class KanjiChapterController {
         return Map.of("result", service.deleteExercise(p, chapterId, id, documentLessonId));
     }
 
+    public record ExerciseStatusRequest(@jakarta.validation.constraints.NotNull Question.QuestionStatus status) {}
+
+    @PatchMapping("/exercises/{id}/status")
+    public KanjiExerciseResponse changeExerciseStatus(Principal p, @PathVariable long chapterId, @PathVariable long id,
+        @Valid @RequestBody ExerciseStatusRequest request, @RequestParam(required = false) Long documentLessonId) {
+        return service.changeExerciseStatus(p, chapterId, id, request.status(), documentLessonId);
+    }
+
     @ExceptionHandler({
         org.springframework.validation.BindException.class,
         org.springframework.web.multipart.support.MissingServletRequestPartException.class,

@@ -24,8 +24,10 @@ export function StudentKanjiExercisePage({ lesson, documentIndex, onBack, onBack
   return <section className="student-kanji-page kanji-student-exercises">
     <button type="button" className="kanji-text-button" disabled={busy} onClick={onBack}>← Quay lại tài liệu</button>
     {document && <nav className="kanji-lesson-switch" aria-label="Nội dung tài liệu Kanji">
-      <button type="button" disabled={busy} onClick={onBack}>Bài học</button>
-      <button type="button" aria-current="page"><span className="kanji-lesson-switch-dot" aria-hidden="true" />Bài tập</button>
+      <button type="button" disabled={busy} onClick={onBack}><span aria-hidden="true">📄</span>Tài liệu</button>
+      <button type="button" aria-current="page"><span aria-hidden="true">✏️</span>Bài tập
+        {query.isSuccess && <span className="kanji-lesson-question-count">{questions.length} câu</span>}
+      </button>
     </nav>}
     <h2>Bài tập · {document?.name ?? "Kanji"}</h2>
     {!document ? <p role="alert">Tài liệu đã được gỡ hoặc đường dẫn không còn hợp lệ.</p>
