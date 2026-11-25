@@ -20,10 +20,13 @@ import org.mockito.Mock;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -463,7 +466,9 @@ void UTCID03() {
 
         // Assert
         verify(userRepository).existsById(1L);
-        verify(userRepository).deleteById(1L);
+        var deletion = inOrder(userRepository);
+        deletion.verify(userRepository).deleteById(1L);
+        deletion.verify(userRepository).flush();
     }
 
     // UTCID24: Báo lỗi và không xóa khi ID người dùng không tồn tại.
@@ -479,6 +484,21 @@ void UTCID03() {
         // Assert
         assertEquals("Không tìm thấy người dùng với ID: 99", error.getMessage());
         verify(userRepository, never()).deleteById(anyLong());
+    }
+
+    // UTCID37: Báo lỗi 409 khi khóa ngoại refresh_token chặn xóa tài khoản.
+    @Test
+    void UTCID37() {
+        when(userRepository.existsById(1L)).thenReturn(true);
+        var constraintViolation = new DataIntegrityViolationException("refresh_token foreign key");
+        doThrow(constraintViolation).when(userRepository).flush();
+
+        var error = assertThrows(ResponseStatusException.class, () -> service.deleteUser(1L));
+
+        assertEquals(HttpStatus.CONFLICT, error.getStatusCode());
+        assertEquals("Không thể xóa tài khoản vì tài khoản có dữ liệu liên quan.", error.getReason());
+        assertSame(constraintViolation, error.getCause());
+        verify(userRepository).deleteById(1L);
     }
 
     // UTCID25: Tạo trước tài khoản MODERATOR với trạng thái ACTIVE và số xu bằng 0.

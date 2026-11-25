@@ -12,10 +12,13 @@ import com.jtech.mapper.UserMapper;
 import com.jtech.repository.RoleRepository;
 import com.jtech.repository.UserRepository;
 import com.jtech.service.AdminUserService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AdminUserServiceImpl implements AdminUserService {
@@ -162,7 +165,16 @@ public class AdminUserServiceImpl implements AdminUserService {
         if (!userRepository.existsById(userId)) {
             throw new IllegalArgumentException("Không tìm thấy người dùng với ID: " + userId);
         }
-        userRepository.deleteById(userId);
+        try {
+            userRepository.deleteById(userId);
+            userRepository.flush();
+        } catch (DataIntegrityViolationException exception) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Không thể xóa tài khoản vì tài khoản có dữ liệu liên quan.",
+                exception
+            );
+        }
     }
 
     @Override
