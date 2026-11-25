@@ -172,7 +172,7 @@ function Runner({
       <>
         <Review attempt={attempt} />
         <button type="button" className="kanji-primary" onClick={onBack}>
-          Quay lại danh sách Test
+          Quay lại danh sách mini test
         </button>
       </>
     );
@@ -311,7 +311,7 @@ export function StudentKanjiTestPage({
           ← Chữ Hán · Chương {chapterNo}
         </button>
       )}
-      <h2>{active?.title || `Test chữ Hán · Chương ${chapterNo}`}</h2>
+      <h2>{active?.title || `Mini test Kanji · Chương ${chapterNo}`}</h2>
 
       {error && (
         <p role="alert" className="kanji-error">
@@ -331,14 +331,14 @@ export function StudentKanjiTestPage({
       ) : (
         <>
           {tests.isFetching ? (
-            <p role="status">Đang tải Test…</p>
+            <p role="status">Đang tải mini test…</p>
           ) : tests.isError ? (
             <p role="alert">
-              Không thể tải Test.{" "}
+              Không thể tải mini test.{" "}
               <button onClick={() => tests.refetch()}>Thử lại</button>
             </p>
           ) : !tests.data?.length ? (
-            <p role="status">Chương chưa có Test được xuất bản.</p>
+            <p role="status">Chương này chưa có mini test Kanji được xuất bản.</p>
           ) : (
             tests.data.map((test) => (
               <article className="kanji-reading-panel" key={test.id}>

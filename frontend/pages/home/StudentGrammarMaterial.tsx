@@ -1,21 +1,19 @@
 import type { StudentGrammarLesson } from "../../api/studentGrammarApi";
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { recordCompletion } from "../../api/progressApi";
-import { useAuthStore } from "../../store/authStore";
-import "../streak/StudentStreakPage.css";
 import "./StudentKanjiFlashcards.css";
 import "./StudentGrammar.css";
 
 // Material Grammar: các điểm ngữ pháp đã xuất bản của bài học
 // embedded: hiện trong tab "Tài liệu" của trang bài học (không có nút quay lại, tiêu đề riêng)
+// onExercise: mở tab Bài tập (bài được tính hoàn thành khi nộp bài tập)
 export function StudentGrammarMaterial({
   lesson,
   onBack,
+  onExercise,
   embedded = false,
 }: {
   lesson: StudentGrammarLesson;
   onBack?: () => void;
+  onExercise?: () => void;
   embedded?: boolean;
 }) {
   return (
@@ -72,41 +70,23 @@ export function StudentGrammarMaterial({
           )}
         </article>
       ))}
-      {lesson.grammars.length > 0 && <GrammarCompletionButton key={lesson.id} grammarIds={lesson.grammars.map((g) => g.id)} />}
+      {lesson.grammars.length > 0 && lesson.exerciseCount > 0 && (
+        <div className={`grammar-progress-note ${lesson.completed ? "is-done" : ""}`} role="status">
+          {lesson.completed ? (
+            <p>
+              ✓ Bạn đã hoàn thành bài này
+              {lesson.bestExerciseScore !== null && ` · Điểm bài tập cao nhất: ${Math.round(Number(lesson.bestExerciseScore))}`}
+            </p>
+          ) : (
+            <p>Làm và nộp bài tập để hoàn thành bài này.</p>
+          )}
+          {onExercise && (
+            <button type="button" onClick={onExercise}>
+              {lesson.completed ? "Ôn lại bài tập →" : "Làm bài tập →"}
+            </button>
+          )}
+        </div>
+      )}
     </section>
-  );
-}
-
-/**
- * Một nút chung ở cuối tài liệu: ghi nhận đã học tất cả mẫu ngữ pháp của bài
- * (POST /progress/completions cho từng mẫu, giống nút "Hoàn thành nội dung" của nhóm) → tính chuỗi ngày học.
- */
-function GrammarCompletionButton({ grammarIds }: { grammarIds: number[] }) {
-  const user = useAuthStore((s) => s.user);
-  const cache = useQueryClient();
-  const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
-  const role = user?.role?.trim().toUpperCase();
-  const isStudent = role === "STUDENT" || role === "ROLE_STUDENT" || (!role && String(user?.roleId) === "1");
-  if (!isStudent || user?.status?.toUpperCase() !== "ACTIVE") return null;
-
-  async function complete() {
-    setState("saving");
-    try {
-      for (const id of grammarIds) await recordCompletion("GRAMMAR", id);
-      setState("done");
-      for (const key of ["streak", "coin-history", "store-catalog"]) void cache.invalidateQueries({ queryKey: [key] });
-    } catch {
-      setState("error");
-    }
-  }
-
-  return (
-    <div className="learning-completion grammar-completion">
-      <button type="button" disabled={state === "saving" || state === "done"} onClick={complete}>
-        {state === "saving" ? "Đang lưu…" : state === "done" ? "Đã ghi nhận" : "Hoàn thành tài liệu"}
-      </button>
-      {state === "done" && <p role="status">Đã ghi nhận hoạt động học của bạn.</p>}
-      {state === "error" && <p role="alert">Chưa lưu được kết quả. Vui lòng thử lại.</p>}
-    </div>
   );
 }

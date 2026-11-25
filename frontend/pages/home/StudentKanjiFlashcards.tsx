@@ -212,7 +212,23 @@ export function StudentKanjiFlashcards({
           </div>
           <article
             className={`kanji-study-card ${flipped ? "is-flipped" : ""}`}
+            tabIndex={saving ? -1 : 0}
+            aria-disabled={saving}
             aria-label={flipped ? "Mặt sau flashcard" : "Mặt trước flashcard"}
+            aria-describedby="kanji-card-flip-hint"
+            onClick={(event) => {
+              const target = event.target as HTMLElement;
+              if (saving || target.closest("button, a, input, select, textarea")) return;
+              if (window.getSelection()?.toString()) return;
+              setFlipped(value => !value);
+            }}
+            onKeyDown={(event) => {
+              if (event.target !== event.currentTarget || saving) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setFlipped(value => !value);
+              }
+            }}
           >
             {!flipped ? (
               <div className="kanji-front">
@@ -224,17 +240,22 @@ export function StudentKanjiFlashcards({
                   {current.sinoVietnamese || "Chưa có âm Hán Việt"}
                 </p>
                 <p className="kanji-hint">
-                  Lật thẻ để xem nghĩa, ví dụ và cách nhớ
+                  Bấm vào thẻ để xem nghĩa, ví dụ và cách nhớ
                 </p>
               </div>
             ) : (
-              <div className="kanji-back">
+              <div className={`kanji-back kanji-back-layout ${current.imageUrl ? "kanji-back-layout--illustrated" : ""}`}>
+                <div className="kanji-back-details">
                 <div className="kanji-character-audio">
                   <h3>{current.sinoVietnamese || current.characterText}</h3>
                   <span lang="ja">{current.characterText}</span>
                   <JapaneseAudioButton text={current.characterText} />
                 </div>
                 <p className="kanji-meaning">{current.meaningVi}</p>
+                {(current.onyomi || current.kunyomi) && <dl className="kanji-card-readings">
+                  {current.onyomi && <div><dt>Âm On</dt><dd lang="ja">{current.onyomi}</dd></div>}
+                  {current.kunyomi && <div><dt>Âm Kun</dt><dd lang="ja">{current.kunyomi}</dd></div>}
+                </dl>}
                 <h4>Ví dụ</h4>
                 {examplesFrom(current.examples).length ? (
                   <ol className="kanji-examples">
@@ -256,29 +277,26 @@ export function StudentKanjiFlashcards({
                 ) : (
                   <p>Chưa có từ ví dụ.</p>
                 )}
-                {(current.imageUrl || current.mnemonicStory) && (
+                {!current.imageUrl && current.mnemonicStory && <section className="kanji-mnemonic">
+                  <h4>Cách nhớ</h4><p>{current.mnemonicStory}</p>
+                </section>}
+                </div>
+                {current.imageUrl && (
                   <section className="kanji-mnemonic">
-                    <h4>Cách nhớ</h4>
-                    {current.mnemonicStory && <p>{current.mnemonicStory}</p>}
-                    {current.imageUrl && (
+                    <h4>Ảnh minh họa</h4>
                       <img
                         src={current.imageUrl}
                         alt={`Ảnh gợi nhớ chữ ${current.characterText}`}
                         loading="lazy"
                       />
-                    )}
+                    {current.mnemonicStory && <><h4>Cách nhớ</h4><p>{current.mnemonicStory}</p></>}
                   </section>
                 )}
               </div>
             )}
-            <button
-              type="button"
-              className="kanji-flip"
-              disabled={saving}
-              onClick={() => setFlipped((value) => !value)}
-            >
-              ↻ {flipped ? "Xem mặt trước" : "Lật thẻ"}
-            </button>
+            <p id="kanji-card-flip-hint" className="kanji-hint kanji-card-flip-hint">
+            {flipped ? "xem mặt trước" : "lật thẻ"}
+            </p>
           </article>
           {error && (
             <p role="alert" className="kanji-error">

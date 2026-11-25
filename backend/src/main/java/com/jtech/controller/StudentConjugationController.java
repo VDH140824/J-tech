@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-/** Màn hình “Thể chia” của học viên (UC-21, UC-22, UC-23). */
 @RestController
 @RequestMapping("/conjugation-study/forms")
 @PreAuthorize("hasAnyAuthority('ROLE_STUDENT', 'STUDENT')")
@@ -21,7 +20,6 @@ public class StudentConjugationController {
         this.access = access;
     }
 
-    /** Conjugation List: tìm theo từ khóa, lọc nhóm động từ (0 = Tất cả). */
     @GetMapping
     public List<StudentConjugationResponse.FormCard> list(
         @RequestParam(required = false) String keyword,
@@ -32,7 +30,6 @@ public class StudentConjugationController {
         return service.list(keyword, group, difficulty, studentId(principal));
     }
 
-    /** “Xem cách chia” + danh sách đề của thể chia. */
     @GetMapping("/{formId}")
     public StudentConjugationResponse.FormDetail detail(
         @PathVariable Long formId,
@@ -43,7 +40,6 @@ public class StudentConjugationController {
         return service.detail(formId, group, difficulty, studentId(principal));
     }
 
-    /** Conjugation Practice: bắt đầu một lượt mới, lấy ngẫu nhiên N câu (mode = typed | choice). */
     @PostMapping("/{formId}/sessions")
     public StudentConjugationResponse.PracticeSession start(
         @PathVariable Long formId,

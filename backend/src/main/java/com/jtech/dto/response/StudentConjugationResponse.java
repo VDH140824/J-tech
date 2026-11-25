@@ -4,11 +4,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/** Conjugation List (3.6.25) và Conjugation Practice (3.6.26) phía học viên. */
 public final class StudentConjugationResponse {
     private StudentConjugationResponse() {}
 
-    /** Thẻ thể chia trên Conjugation List. questionCount tính theo bộ lọc nhóm động từ. */
     public record FormCard(
         Long id,
         String code,
@@ -22,7 +20,6 @@ public final class StudentConjugationResponse {
         boolean passed
     ) {}
 
-    /** “Xem cách chia”: tài liệu + số câu theo nhóm + tiến độ luyện tập của học viên. */
     public record FormDetail(
         Long id,
         String code,
@@ -40,7 +37,6 @@ public final class StudentConjugationResponse {
         boolean passed
     ) {}
 
-    /** Câu hỏi không kèm đáp án. options chỉ có khi mode = choice và đủ phương án. */
     public record Question(
         Long id,
         String instruction,
@@ -51,7 +47,6 @@ public final class StudentConjugationResponse {
         List<String> options
     ) {}
 
-    /** Một lượt luyện tập: N câu ngẫu nhiên (N = questions_per_practice, hoặc ít hơn nếu không đủ câu). */
     public record PracticeSession(
         Long formId,
         String nameVi,

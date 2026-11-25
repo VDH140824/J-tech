@@ -4,6 +4,7 @@ import { getCourses, type CourseSummary } from "../../api/courseApi";
 import { useAuthStore } from "../../store/authStore";
 import { checkIsModerator } from "../../utils/auth";
 import bannerCatImg from "../../assets/banner-cat.png";
+import { StudentHomeDashboard } from "./StudentHomeDashboard";
 import "./HomePage.css";
 
 // Graphic Component for Hero Banner
@@ -413,11 +414,16 @@ export function HomePage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [courses, setCourses] = useState<CourseSummary[]>([]);
+  const isStudent = user?.role?.replace("ROLE_", "") === "STUDENT";
   useEffect(() => {
+    if (isStudent) return; // học viên dùng trang chủ mới (StudentHomeDashboard)
     getCourses()
       .then(setCourses)
       .catch(() => setCourses([]));
-  }, []);
+  }, [isStudent]);
+
+  // Học viên: trang chủ mới. Moderator / Admin: giữ trang cũ.
+  if (isStudent) return <StudentHomeDashboard />;
 
   return (
     <div className="dekiru-content-grid">

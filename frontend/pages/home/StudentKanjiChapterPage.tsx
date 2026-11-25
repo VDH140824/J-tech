@@ -72,25 +72,24 @@ export function StudentKanjiChapterPage({
             <small>Ôn tập các chữ Hán trong chương</small>
           </div>
         </button>
-        {tests.isSuccess && !tests.isFetching && tests.data.length > 0 && (
           <button
             type="button"
             className="kanji-tile"
             onClick={() => onOpen("test")}
           >
             <div className="kanji-tile-banner kanji-banner-test">
-              <strong>TEST CHƯƠNG</strong>
+              <strong>MINI TEST KANJI</strong>
             </div>
             <div className="kanji-tile-body">
-              <h4>Test chữ Hán chương {chapterNo}</h4>
-              <small>{tests.data.length} Test đã xuất bản</small>
+              <h4>Mini test Kanji chương {chapterNo}</h4>
+              <small>{tests.isPending ? "Đang tải mini test…" : tests.isError ? "Mở danh sách mini test"
+                : tests.data.length ? `${tests.data.length} mini test đã xuất bản` : "Chưa có mini test được xuất bản"}</small>
             </div>
           </button>
-        )}
       </div>
       {tests.isError && (
         <p role="alert">
-          Không thể kiểm tra Test khả dụng.{" "}
+          Không thể kiểm tra mini test khả dụng.{" "}
           <button onClick={() => tests.refetch()}>Thử lại</button>
         </p>
       )}

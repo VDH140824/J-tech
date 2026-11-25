@@ -9133,12 +9133,21 @@ ORDER BY s.display_order;
 
 -- KANJI — dữ liệu câu hỏi theo bài.
 
+-- Keep source_kanji until the document lessons have been inserted.
+CREATE TEMPORARY TABLE jtech_kanji_question_seed (
+    lesson_id BIGINT UNSIGNED NOT NULL,
+    display_order SMALLINT UNSIGNED NOT NULL,
+    source_kanji VARCHAR(10) NOT NULL,
+    content TEXT NOT NULL,
+    explanation TEXT NOT NULL,
+    answers JSON NOT NULL,
+    difficulty VARCHAR(10) NOT NULL,
+    PRIMARY KEY (lesson_id, display_order)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- JPD113 / Chương 1 / KANJI / Bài 1 / Nhóm 1
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「私」 (tôi) được đọc như thế nào bằng hiragana?' AS content, _utf8mb4'私 (わたし) nghĩa là “tôi”.' AS explanation, _utf8mb4'{"options":["にほんじん","わたし","わたしのほん","しりつだいがく"],"correctAnswer":"わたし"}' AS answers, _utf8mb4'私' AS source_kanji
     UNION ALL SELECT 2, _utf8mb4'MEDIUM', _utf8mb4'Chọn cách viết của 「わたしのほん」 với nghĩa “sách của tôi”.', _utf8mb4'私の本 (わたしのほん) nghĩa là “sách của tôi”.', _utf8mb4'{"options":["私の学校","外国人","私の本","私立"],"correctAnswer":"私の本"}', _utf8mb4'本'
@@ -9219,21 +9228,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 1
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 1 / KANJI / Bài 1 / Nhóm 2
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 76 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「校門」 có nghĩa gì trong tiếng Việt?' AS content, _utf8mb4'校門 (こうもん) nghĩa là “cổng trường”.' AS explanation, _utf8mb4'{"options":["hiệu trưởng","trường trung học cơ sở","sinh nhật","cổng trường"],"correctAnswer":"cổng trường"}' AS answers, _utf8mb4'校' AS source_kanji
     UNION ALL SELECT 77, _utf8mb4'MEDIUM', _utf8mb4'Điền chữ Hán vào ô □ trong 「□長」 để được từ đọc là 「こうちょう」 (hiệu trưởng).', _utf8mb4'校長 (こうちょう) nghĩa là “hiệu trưởng”.', _utf8mb4'{"options":["校","日","本","語"],"correctAnswer":"校"}', _utf8mb4'校'
@@ -9314,21 +9315,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 1
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 1 / KANJI / Bài 1 / Nhóm 3
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1051 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Điền chữ Hán vào ô □ trong 「□」 để được từ đọc là 「わたし」 (tôi).' AS content, _utf8mb4'私 (わたし) nghĩa là “tôi”.' AS explanation, _utf8mb4'{"options":["私","人","才","学"],"correctAnswer":"私"}' AS answers, _utf8mb4'私' AS source_kanji
     UNION ALL SELECT 1052, _utf8mb4'HARD', _utf8mb4'Chọn cách đọc lần lượt của 「私の本」 và 「何才」.', _utf8mb4'私の本 (わたしのほん) nghĩa là “sách của tôi”. 何才 (なんさい) nghĩa là “mấy tuổi”.', _utf8mb4'{"options":["なんさい ／ わたしのほん","わたしのほん ／ なんさい","わたしのほん ／ しりつ","わたしのがっこう ／ なんさい"],"correctAnswer":"わたしのほん ／ なんさい"}', _utf8mb4'本'
@@ -9409,21 +9402,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 1
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 1 / KANJI / Bài 1 / Nhóm 4
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1126 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Hai từ nào lần lượt mang nghĩa “cổng trường” và “sách tranh”?' AS content, _utf8mb4'校門 (こうもん) nghĩa là “cổng trường”. 絵本 (えほん) nghĩa là “sách tranh”.' AS explanation, _utf8mb4'{"options":["中学校 ／ 絵本","絵本 ／ 校門","校門 ／ 絵本","校門 ／ 校長"],"correctAnswer":"校門 ／ 絵本"}' AS answers, _utf8mb4'校' AS source_kanji
     UNION ALL SELECT 1127, _utf8mb4'EASY', _utf8mb4'「校長」 (hiệu trưởng) được đọc như thế nào bằng hiragana?', _utf8mb4'校長 (こうちょう) nghĩa là “hiệu trưởng”.', _utf8mb4'{"options":["こうこう","しょうがっこう","にっき","こうちょう"],"correctAnswer":"こうちょう"}', _utf8mb4'校'
@@ -9504,21 +9489,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 1
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 2 / KANJI / Bài 1 / Nhóm 1
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Chọn cách viết của 「ひとり」 với nghĩa “một người”.' AS content, _utf8mb4'一人 (ひとり) nghĩa là “một người”.' AS explanation, _utf8mb4'{"options":["二つ","一人","一月","一才"],"correctAnswer":"一人"}' AS answers, _utf8mb4'一' AS source_kanji
     UNION ALL SELECT 2, _utf8mb4'EASY', _utf8mb4'「一月」 có nghĩa gì trong tiếng Việt?', _utf8mb4'一月 (いちがつ) nghĩa là “tháng một”.', _utf8mb4'{"options":["hai người","ba người","tháng một","ngày thứ nhất"],"correctAnswer":"tháng một"}', _utf8mb4'一'
@@ -9599,21 +9576,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 2
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 2 / KANJI / Bài 1 / Nhóm 2
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 76 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Điền chữ Hán vào ô □ trong 「□日」 để được từ đọc là 「なのか」 (ngày mùng bảy).' AS content, _utf8mb4'七日 (なのか) nghĩa là “ngày mùng bảy”.' AS explanation, _utf8mb4'{"options":["八","九","十","七"],"correctAnswer":"七"}' AS answers, _utf8mb4'七' AS source_kanji
     UNION ALL SELECT 77, _utf8mb4'HARD', _utf8mb4'Chọn cách đọc lần lượt của 「七つ」 và 「六百」.', _utf8mb4'七つ (ななつ) nghĩa là “bảy cái”. 六百 (ろっぴゃく) nghĩa là “sáu trăm”.', _utf8mb4'{"options":["ななつ ／ ろっぴゃく","ななつ ／ はちにん","ようか ／ ろっぴゃく","ろっぴゃく ／ ななつ"],"correctAnswer":"ななつ ／ ろっぴゃく"}', _utf8mb4'七'
@@ -9694,21 +9663,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 2
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 2 / KANJI / Bài 1 / Nhóm 3
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1051 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Chọn cách đọc lần lượt của 「一人」 và 「三つ」.' AS content, _utf8mb4'一人 (ひとり) nghĩa là “một người”. 三つ (みっつ) nghĩa là “ba cái”.' AS explanation, _utf8mb4'{"options":["ひとり ／ みっつ","ひとり ／ いちがつ","いっさい ／ みっつ","みっつ ／ ひとり"],"correctAnswer":"ひとり ／ みっつ"}' AS answers, _utf8mb4'一' AS source_kanji
     UNION ALL SELECT 1052, _utf8mb4'HARD', _utf8mb4'Hai từ nào lần lượt mang nghĩa “tháng một” và “bốn người”?', _utf8mb4'一月 (いちがつ) nghĩa là “tháng một”. 四人 (よにん) nghĩa là “bốn người”.', _utf8mb4'{"options":["四人 ／ 一月","一月 ／ 四人","一月 ／ 一日目","二人 ／ 四人"],"correctAnswer":"一月 ／ 四人"}', _utf8mb4'一'
@@ -9789,21 +9750,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 2
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 2 / KANJI / Bài 1 / Nhóm 4
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1126 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「七日」 (ngày mùng bảy) được đọc như thế nào bằng hiragana?' AS content, _utf8mb4'七日 (なのか) nghĩa là “ngày mùng bảy”.' AS explanation, _utf8mb4'{"options":["はちがつ","ここのか","なのか","ななつ"],"correctAnswer":"なのか"}' AS answers, _utf8mb4'七' AS source_kanji
     UNION ALL SELECT 1127, _utf8mb4'MEDIUM', _utf8mb4'Chọn cách viết của 「ななつ」 với nghĩa “bảy cái”.', _utf8mb4'七つ (ななつ) nghĩa là “bảy cái”.', _utf8mb4'{"options":["八人","八日","十人","七つ"],"correctAnswer":"七つ"}', _utf8mb4'七'
@@ -9884,21 +9837,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 2
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 3 / KANJI / Bài 1 / Nhóm 1
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「月曜日」 có nghĩa gì trong tiếng Việt?' AS content, _utf8mb4'月曜日 (げつようび) nghĩa là “thứ hai”.' AS explanation, _utf8mb4'{"options":["thứ mấy","thứ hai","thứ ba","thứ năm"],"correctAnswer":"thứ hai"}' AS answers, _utf8mb4'月' AS source_kanji
     UNION ALL SELECT 2, _utf8mb4'MEDIUM', _utf8mb4'Điền chữ Hán vào ô □ trong 「□曜日」 để được từ đọc là 「かようび」 (thứ ba).', _utf8mb4'火曜日 (かようび) nghĩa là “thứ ba”.', _utf8mb4'{"options":["木","金","火","水"],"correctAnswer":"火"}', _utf8mb4'火'
@@ -9979,21 +9924,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 3
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 3 / KANJI / Bài 1 / Nhóm 2
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 76 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Chọn cách đọc lần lượt của 「土の中」 và 「七時」.' AS content, _utf8mb4'土の中 (つちのなか) nghĩa là “trong lòng đất”. 七時 (しちじ) nghĩa là “bảy giờ”.' AS explanation, _utf8mb4'{"options":["つちのなか ／ どそく","なんじ ／ しちじ","しちじ ／ つちのなか","つちのなか ／ しちじ"],"correctAnswer":"つちのなか ／ しちじ"}' AS answers, _utf8mb4'土' AS source_kanji
     UNION ALL SELECT 77, _utf8mb4'HARD', _utf8mb4'Hai từ nào lần lượt mang nghĩa “giày dép đi ngoài đường” và “chín giờ”?', _utf8mb4'土足 (どそく) nghĩa là “giày dép đi ngoài đường”. 九時 (くじ) nghĩa là “chín giờ”.', _utf8mb4'{"options":["土足 ／ 九時","土足 ／ 何月","何年生 ／ 九時","九時 ／ 土足"],"correctAnswer":"土足 ／ 九時"}', _utf8mb4'土'
@@ -10074,21 +10011,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 3
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 3 / KANJI / Bài 1 / Nhóm 3
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1051 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Hai từ nào lần lượt mang nghĩa “thứ hai” và “tháng này”?' AS content, _utf8mb4'月曜日 (げつようび) nghĩa là “thứ hai”. 今月 (こんげつ) nghĩa là “tháng này”.' AS explanation, _utf8mb4'{"options":["月曜日 ／ 今月","月曜日 ／ 火曜日","木曜日 ／ 今月","今月 ／ 月曜日"],"correctAnswer":"月曜日 ／ 今月"}' AS answers, _utf8mb4'月' AS source_kanji
     UNION ALL SELECT 1052, _utf8mb4'EASY', _utf8mb4'「火曜日」 (thứ ba) được đọc như thế nào bằng hiragana?', _utf8mb4'火曜日 (かようび) nghĩa là “thứ ba”.', _utf8mb4'{"options":["つきみ","かようび","すいようび","きんようび"],"correctAnswer":"かようび"}', _utf8mb4'火'
@@ -10169,21 +10098,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 3
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD113 / Chương 3 / KANJI / Bài 1 / Nhóm 4
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1126 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Chọn cách viết của 「つちのなか」 với nghĩa “trong lòng đất”.' AS content, _utf8mb4'土の中 (つちのなか) nghĩa là “trong lòng đất”.' AS explanation, _utf8mb4'{"options":["何時","去年","土の中","土足"],"correctAnswer":"土の中"}' AS answers, _utf8mb4'土' AS source_kanji
     UNION ALL SELECT 1127, _utf8mb4'EASY', _utf8mb4'「土足」 có nghĩa gì trong tiếng Việt?', _utf8mb4'土足 (どそく) nghĩa là “giày dép đi ngoài đường”.', _utf8mb4'{"options":["tháng mấy","học sinh năm thứ mấy","năm sau","giày dép đi ngoài đường"],"correctAnswer":"giày dép đi ngoài đường"}', _utf8mb4'土'
@@ -10264,21 +10185,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 3
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 4 / KANJI / Bài 1 / Nhóm 1
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Điền chữ Hán vào ô □ trong 「□」 để được từ đọc là 「ひがし」 (phía đông).' AS content, _utf8mb4'東 (ひがし) nghĩa là “phía đông”.' AS explanation, _utf8mb4'{"options":["前","東","京","名"],"correctAnswer":"東"}' AS answers, _utf8mb4'東' AS source_kanji
     UNION ALL SELECT 2, _utf8mb4'HARD', _utf8mb4'Chọn cách đọc lần lượt của 「東口」 và 「有名」.', _utf8mb4'東口 (ひがしぐち) nghĩa là “cửa ra phía đông”. 有名 (ゆうめい) nghĩa là “nổi tiếng”.', _utf8mb4'{"options":["とうざい ／ ゆうめい","ゆうめい ／ ひがしぐち","ひがしぐち ／ ゆうめい","ひがしぐち ／ とうきょう"],"correctAnswer":"ひがしぐち ／ ゆうめい"}', _utf8mb4'東'
@@ -10359,21 +10272,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 4
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 4 / KANJI / Bài 1 / Nhóm 2
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 76 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Hai từ nào lần lượt mang nghĩa “trong nước” và “nữ sinh viên”?' AS content, _utf8mb4'国内 (こくない) nghĩa là “trong nước”. 女子学生 (じょしがくせい) nghĩa là “nữ sinh viên”.' AS explanation, _utf8mb4'{"options":["国内 ／ 全国","国旗 ／ 女子学生","女子学生 ／ 国内","国内 ／ 女子学生"],"correctAnswer":"国内 ／ 女子学生"}' AS answers, _utf8mb4'国' AS source_kanji
     UNION ALL SELECT 77, _utf8mb4'EASY', _utf8mb4'「全国」 (toàn quốc) được đọc như thế nào bằng hiragana?', _utf8mb4'全国 (ぜんこく) nghĩa là “toàn quốc”.', _utf8mb4'{"options":["ぜんこく","こくさい","おとこのひと","じなん"],"correctAnswer":"ぜんこく"}', _utf8mb4'国'
@@ -10454,21 +10359,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 4
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 4 / KANJI / Bài 1 / Nhóm 3
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1051 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「東」 (phía đông) được đọc như thế nào bằng hiragana?' AS content, _utf8mb4'東 (ひがし) nghĩa là “phía đông”.' AS explanation, _utf8mb4'{"options":["ひがし","ひがしぐち","とうほく","きょうとふ"],"correctAnswer":"ひがし"}' AS answers, _utf8mb4'東' AS source_kanji
     UNION ALL SELECT 1052, _utf8mb4'MEDIUM', _utf8mb4'Chọn cách viết của 「ひがしぐち」 với nghĩa “cửa ra phía đông”.', _utf8mb4'東口 (ひがしぐち) nghĩa là “cửa ra phía đông”.', _utf8mb4'{"options":["京都駅","東口","東京","東西"],"correctAnswer":"東口"}', _utf8mb4'東'
@@ -10549,21 +10446,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 4
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 4 / KANJI / Bài 1 / Nhóm 4
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1126 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「国内」 có nghĩa gì trong tiếng Việt?' AS content, _utf8mb4'国内 (こくない) nghĩa là “trong nước”.' AS explanation, _utf8mb4'{"options":["quốc kỳ","con trai trưởng","trong nước","toàn quốc"],"correctAnswer":"trong nước"}' AS answers, _utf8mb4'国' AS source_kanji
     UNION ALL SELECT 1127, _utf8mb4'MEDIUM', _utf8mb4'Điền chữ Hán vào ô □ trong 「全□」 để được từ đọc là 「ぜんこく」 (toàn quốc).', _utf8mb4'全国 (ぜんこく) nghĩa là “toàn quốc”.', _utf8mb4'{"options":["男","女","区","国"],"correctAnswer":"国"}', _utf8mb4'国'
@@ -10644,21 +10533,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 4
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 5 / KANJI / Bài 1 / Nhóm 1
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Chọn cách đọc lần lượt của 「先週」 và 「毎晩」.' AS content, _utf8mb4'先週 (せんしゅう) nghĩa là “tuần trước”. 毎晩 (まいばん) nghĩa là “mỗi tối”.' AS explanation, _utf8mb4'{"options":["まいばん ／ せんしゅう","せんしゅう ／ まいばん","せんしゅう ／ せんじつ","いきさき ／ まいばん"],"correctAnswer":"せんしゅう ／ まいばん"}' AS answers, _utf8mb4'先' AS source_kanji
     UNION ALL SELECT 2, _utf8mb4'HARD', _utf8mb4'Hai từ nào lần lượt mang nghĩa “hôm nọ” và “hằng năm”?', _utf8mb4'先日 (せんじつ) nghĩa là “hôm nọ”. 毎年 (まいとし) nghĩa là “hằng năm”.', _utf8mb4'{"options":["先に帰る ／ 毎年","毎年 ／ 先日","先日 ／ 毎年","先日 ／ 先輩"],"correctAnswer":"先日 ／ 毎年"}', _utf8mb4'先'
@@ -10739,21 +10620,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 5
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 5 / KANJI / Bài 1 / Nhóm 2
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 76 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「見学」 (tham quan để học hỏi) được đọc như thế nào bằng hiragana?' AS content, _utf8mb4'見学 (けんがく) nghĩa là “tham quan để học hỏi”.' AS explanation, _utf8mb4'{"options":["けんぶつ","はなみ","たべもの","けんがく"],"correctAnswer":"けんがく"}' AS answers, _utf8mb4'見' AS source_kanji
     UNION ALL SELECT 77, _utf8mb4'MEDIUM', _utf8mb4'Chọn cách viết của 「けんぶつ」 với nghĩa “đi xem cảnh hoặc sự kiện”.', _utf8mb4'見物 (けんぶつ) nghĩa là “đi xem cảnh hoặc sự kiện”.', _utf8mb4'{"options":["見物","発見","食事","飲み物"],"correctAnswer":"見物"}', _utf8mb4'物'
@@ -10834,21 +10707,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 5
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 5 / KANJI / Bài 1 / Nhóm 3
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1051 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Chọn cách viết của 「せんしゅう」 với nghĩa “tuần trước”.' AS content, _utf8mb4'先週 (せんしゅう) nghĩa là “tuần trước”.' AS explanation, _utf8mb4'{"options":["先週","先日","行き先","毎週"],"correctAnswer":"先週"}' AS answers, _utf8mb4'先' AS source_kanji
     UNION ALL SELECT 1052, _utf8mb4'EASY', _utf8mb4'「先日」 có nghĩa gì trong tiếng Việt?', _utf8mb4'先日 (せんじつ) nghĩa là “hôm nọ”.', _utf8mb4'{"options":["hai tuần lễ","hôm nọ","người đi trước trong trường hoặc cơ quan","về trước"],"correctAnswer":"hôm nọ"}', _utf8mb4'先'
@@ -10929,21 +10794,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 5
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 5 / KANJI / Bài 1 / Nhóm 4
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1126 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Điền chữ Hán vào ô □ trong 「□学」 để được từ đọc là 「けんがく」 (tham quan để học hỏi).' AS content, _utf8mb4'見学 (けんがく) nghĩa là “tham quan để học hỏi”.' AS explanation, _utf8mb4'{"options":["飲","買","見","食"],"correctAnswer":"見"}' AS answers, _utf8mb4'見' AS source_kanji
     UNION ALL SELECT 1127, _utf8mb4'HARD', _utf8mb4'Chọn cách đọc lần lượt của 「見物」 và 「買い物」.', _utf8mb4'見物 (けんぶつ) nghĩa là “đi xem cảnh hoặc sự kiện”. 買い物 (かいもの) nghĩa là “việc mua sắm”.', _utf8mb4'{"options":["けんぶつ ／ はっけん","しょくじ ／ かいもの","かいもの ／ けんぶつ","けんぶつ ／ かいもの"],"correctAnswer":"けんぶつ ／ かいもの"}', _utf8mb4'物'
@@ -11024,21 +10881,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 5
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 6 / KANJI / Bài 1 / Nhóm 1
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Hai từ nào lần lượt mang nghĩa “tuần sau” và “buổi tụ tập uống rượu”?' AS content, _utf8mb4'来週 (らいしゅう) nghĩa là “tuần sau”. 飲み会 (のみかい) nghĩa là “buổi tụ tập uống rượu”.' AS explanation, _utf8mb4'{"options":["飲み会 ／ 来週","来週 ／ 飲み会","来週 ／ 来月","来客 ／ 飲み会"],"correctAnswer":"来週 ／ 飲み会"}' AS answers, _utf8mb4'来' AS source_kanji
     UNION ALL SELECT 2, _utf8mb4'EASY', _utf8mb4'「来月」 (tháng sau) được đọc như thế nào bằng hiragana?', _utf8mb4'来月 (らいげつ) nghĩa là “tháng sau”.', _utf8mb4'{"options":["きこく","かいしゃ","らいげつ","らいにち"],"correctAnswer":"らいげつ"}', _utf8mb4'来'
@@ -11119,21 +10968,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 6
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 6 / KANJI / Bài 1 / Nhóm 2
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 76 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Chọn cách viết của 「としょかん」 với nghĩa “thư viện”.' AS content, _utf8mb4'図書館 (としょかん) nghĩa là “thư viện”.' AS explanation, _utf8mb4'{"options":["書店","電話","お寺","図書館"],"correctAnswer":"図書館"}' AS answers, _utf8mb4'書' AS source_kanji
     UNION ALL SELECT 77, _utf8mb4'EASY', _utf8mb4'「書店」 có nghĩa gì trong tiếng Việt?', _utf8mb4'書店 (しょてん) nghĩa là “cửa hàng sách”.', _utf8mb4'{"options":["cửa hàng sách","cách viết","chuyện cổ tích","chùa Kinkaku-ji"],"correctAnswer":"cửa hàng sách"}', _utf8mb4'書'
@@ -11214,21 +11055,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 6
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 6 / KANJI / Bài 1 / Nhóm 3
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1051 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「来週」 có nghĩa gì trong tiếng Việt?' AS content, _utf8mb4'来週 (らいしゅう) nghĩa là “tuần sau”.' AS explanation, _utf8mb4'{"options":["tuần sau","tháng sau","khách đến thăm","đường về"],"correctAnswer":"tuần sau"}' AS answers, _utf8mb4'来' AS source_kanji
     UNION ALL SELECT 1052, _utf8mb4'MEDIUM', _utf8mb4'Điền chữ Hán vào ô □ trong 「□月」 để được từ đọc là 「らいげつ」 (tháng sau).', _utf8mb4'来月 (らいげつ) nghĩa là “tháng sau”.', _utf8mb4'{"options":["社","来","帰","会"],"correctAnswer":"来"}', _utf8mb4'来'
@@ -11309,21 +11142,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 6
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 6 / KANJI / Bài 1 / Nhóm 4
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1126 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Chọn cách đọc lần lượt của 「図書館」 và 「方言」.' AS content, _utf8mb4'図書館 (としょかん) nghĩa là “thư viện”. 方言 (ほうげん) nghĩa là “tiếng địa phương”.' AS explanation, _utf8mb4'{"options":["でんわ ／ ほうげん","ほうげん ／ としょかん","としょかん ／ ほうげん","としょかん ／ しょてん"],"correctAnswer":"としょかん ／ ほうげん"}' AS answers, _utf8mb4'書' AS source_kanji
     UNION ALL SELECT 1127, _utf8mb4'HARD', _utf8mb4'Hai từ nào lần lượt mang nghĩa “cửa hàng sách” và “việc phát biểu”?', _utf8mb4'書店 (しょてん) nghĩa là “cửa hàng sách”. 発言 (はつげん) nghĩa là “việc phát biểu”.', _utf8mb4'{"options":["書店 ／ 書き方","昔話 ／ 発言","発言 ／ 書店","書店 ／ 発言"],"correctAnswer":"書店 ／ 発言"}', _utf8mb4'書'
@@ -11404,21 +11229,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 6
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 7 / KANJI / Bài 1 / Nhóm 1
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「牛肉」 (thịt bò) được đọc như thế nào bằng hiragana?' AS content, _utf8mb4'牛肉 (ぎゅうにく) nghĩa là “thịt bò”.' AS explanation, _utf8mb4'{"options":["にくまん","ぎゅうにく","ぶたにく","やきにく"],"correctAnswer":"ぎゅうにく"}' AS answers, _utf8mb4'肉' AS source_kanji
     UNION ALL SELECT 2, _utf8mb4'MEDIUM', _utf8mb4'Chọn cách viết của 「ぶたにく」 với nghĩa “thịt lợn”.', _utf8mb4'豚肉 (ぶたにく) nghĩa là “thịt lợn”.', _utf8mb4'{"options":["肉屋","入場料","豚肉","鶏肉"],"correctAnswer":"豚肉"}', _utf8mb4'肉'
@@ -11499,21 +11316,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 7
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 7 / KANJI / Bài 1 / Nhóm 2
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 76 AS display_order, _utf8mb4'EASY' AS difficulty, _utf8mb4'「野外」 có nghĩa gì trong tiếng Việt?' AS content, _utf8mb4'野外 (やがい) nghĩa là “ngoài trời”.' AS explanation, _utf8mb4'{"options":["cánh đồng cỏ","trạng thái hoang dã","nửa ngày","ngoài trời"],"correctAnswer":"ngoài trời"}' AS answers, _utf8mb4'野' AS source_kanji
     UNION ALL SELECT 77, _utf8mb4'MEDIUM', _utf8mb4'Điền chữ Hán vào ô □ trong 「□原」 để được từ đọc là 「のはら」 (cánh đồng cỏ).', _utf8mb4'野原 (のはら) nghĩa là “cánh đồng cỏ”.', _utf8mb4'{"options":["野","半","大","小"],"correctAnswer":"野"}', _utf8mb4'野'
@@ -11594,21 +11403,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 7
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 7 / KANJI / Bài 1 / Nhóm 3
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1051 AS display_order, _utf8mb4'MEDIUM' AS difficulty, _utf8mb4'Điền chữ Hán vào ô □ trong 「牛□」 để được từ đọc là 「ぎゅうにく」 (thịt bò).' AS content, _utf8mb4'牛肉 (ぎゅうにく) nghĩa là “thịt bò”.' AS explanation, _utf8mb4'{"options":["肉","料","理","野"],"correctAnswer":"肉"}' AS answers, _utf8mb4'肉' AS source_kanji
     UNION ALL SELECT 1052, _utf8mb4'HARD', _utf8mb4'Chọn cách đọc lần lượt của 「豚肉」 và 「資料」.', _utf8mb4'豚肉 (ぶたにく) nghĩa là “thịt lợn”. 資料 (しりょう) nghĩa là “tài liệu tham khảo”.', _utf8mb4'{"options":["しりょう ／ ぶたにく","ぶたにく ／ しりょう","ぶたにく ／ とりにく","にくや ／ しりょう"],"correctAnswer":"ぶたにく ／ しりょう"}', _utf8mb4'肉'
@@ -11689,21 +11490,13 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 7
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
 -- JPD123 / Chương 7 / KANJI / Bài 1 / Nhóm 4
-INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
-                      difficulty, is_exercise_question, display_order, status)
-SELECT 'KANJI', 'MCQ', l.id, s.content, s.explanation,
-       CAST(s.answers AS JSON),
-       s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+INSERT INTO jtech_kanji_question_seed (lesson_id, display_order, source_kanji, content, explanation, answers, difficulty)
+SELECT l.id, s.display_order, s.source_kanji, s.content, s.explanation, CAST(s.answers AS JSON), s.difficulty
 FROM (
     SELECT 1126 AS display_order, _utf8mb4'HARD' AS difficulty, _utf8mb4'Hai từ nào lần lượt mang nghĩa “ngoài trời” và “to lớn”?' AS content, _utf8mb4'野外 (やがい) nghĩa là “ngoài trời”. 大きい (おおきい) nghĩa là “to lớn”.' AS explanation, _utf8mb4'{"options":["野生 ／ 大きい","大きい ／ 野外","野外 ／ 大きい","野外 ／ 野原"],"correctAnswer":"野外 ／ 大きい"}' AS answers, _utf8mb4'野' AS source_kanji
     UNION ALL SELECT 1127, _utf8mb4'EASY', _utf8mb4'「野原」 (cánh đồng cỏ) được đọc như thế nào bằng hiragana?', _utf8mb4'野原 (のはら) nghĩa là “cánh đồng cỏ”.', _utf8mb4'{"options":["ぶんや","いちじはん","はんぶんずつ","のはら"],"correctAnswer":"のはら"}', _utf8mb4'野'
@@ -11784,12 +11577,7 @@ FROM (
 JOIN course AS c ON c.code = _utf8mb4'JPD123' COLLATE utf8mb4_unicode_ci
 JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = 7
 JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'KANJI' AND l.lesson_no = 1
-LEFT JOIN question AS existing ON existing.skill = 'KANJI'
-                              AND existing.lesson_id = l.id
-                              AND existing.display_order = s.display_order
-                              AND existing.is_exercise_question = (s.display_order < 1000)
-WHERE existing.id IS NULL
-  AND EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
+WHERE EXISTS (SELECT 1 FROM kanji AS k WHERE k.lesson_id = l.id
               AND CAST(k.character_text AS BINARY) = CAST(s.source_kanji AS BINARY))
 ORDER BY s.display_order;
 
@@ -14430,6 +14218,69 @@ ORDER BY s.display_order;
 -- JPD113 & JPD123 (Tài liệu kanji)
 INSERT INTO `lesson` (`id`, `chapter_id`, `skill_type`, `lesson_no`, `title`, `description`, `documents`, `display_order`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES (151,1,'KANJI',3,'Kanji Bài 1.1 (Tư - Nhân - Tài - Học)','Nội dung Kanji của chương 1','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795538904/Jtech/Moderator/Kanji/Tai%20Lieu/47962b79-2bc5-4d39-8b4c-4de9d7c2d9b5.pdf\", \"name\": \"Kanji Bài 1.1 (Tư - Nhân - Tài - Học)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/47962b79-2bc5-4d39-8b4c-4de9d7c2d9b5.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:48:23','2026-11-24 23:48:25'),(152,1,'KANJI',4,'Kanji Bài 1.2 (Sinh - Hiệu - Nhật - Bản - Ngữ)','Nội dung Kanji của chương 1','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795538930/Jtech/Moderator/Kanji/Tai%20Lieu/ea909134-51fb-4ad4-ab9e-395e8947520a.pdf\", \"name\": \"Kanji Bài 1.2 (Sinh - Hiệu - Nhật - Bản - Ngữ)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/ea909134-51fb-4ad4-ab9e-395e8947520a.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:48:49','2026-11-24 23:48:51'),(153,2,'KANJI',2,'Kanji Bài 2.1 (Nhất - Nhị - Tam - Tứ - Ngũ)','Nội dung Kanji của chương 2','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539051/Jtech/Moderator/Kanji/Tai%20Lieu/affb51c2-c3d3-45b3-bb91-e843e0a0779a.pdf\", \"name\": \"Kanji Bài 2.1 (Nhất - Nhị - Tam - Tứ - Ngũ)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/affb51c2-c3d3-45b3-bb91-e843e0a0779a.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:50:50','2026-11-24 23:50:52'),(154,2,'KANJI',3,'Kanji Bài 2.2 (Lục - Thất - Bát - Cửu - Thập)','Nội dung Kanji của chương 2','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539061/Jtech/Moderator/Kanji/Tai%20Lieu/b78a10cd-f803-40f4-a554-bf61a98e6b0f.pdf\", \"name\": \"Kanji Bài 2.2 (Lục - Thất - Bát - Cửu - Thập)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/b78a10cd-f803-40f4-a554-bf61a98e6b0f.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:51:00','2026-11-24 23:51:02'),(155,2,'KANJI',4,'Kanji Bài 2.3 (Bách - Thiên - Vạn - Viên)','Nội dung Kanji của chương 2','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539075/Jtech/Moderator/Kanji/Tai%20Lieu/1a7ff946-20e6-4389-b93b-33af16ab0227.pdf\", \"name\": \"Kanji Bài 2.3 (Bách - Thiên - Vạn - Viên)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/1a7ff946-20e6-4389-b93b-33af16ab0227.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:51:14','2026-11-24 23:51:16'),(156,3,'KANJI',2,'Kanji Bài 3.1 (Nguyệt - Hỏa - Thủy - Mộc)','Nội dung Kanji của chương 3','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539096/Jtech/Moderator/Kanji/Tai%20Lieu/e885b3d3-87bd-45b8-bc14-44963a6ff61f.pdf\", \"name\": \"Kanji Bài 3.1 (Nguyệt - Hỏa - Thủy - Mộc)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/e885b3d3-87bd-45b8-bc14-44963a6ff61f.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:51:35','2026-11-24 23:51:37'),(157,3,'KANJI',3,'Kanji Bài 3.2 (Kim - Thổ - Diệu - Hà)','Nội dung Kanji của chương 3','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539111/Jtech/Moderator/Kanji/Tai%20Lieu/034edd51-7caf-4fa1-897b-adbdac74c622.pdf\", \"name\": \"Kanji Bài 3.2 (Kim - Thổ - Diệu - Hà)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/034edd51-7caf-4fa1-897b-adbdac74c622.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:51:50','2026-11-24 23:51:52'),(158,3,'KANJI',4,'Kanji Bài 3.3 (Niên - Thời - Gian - Phân)','Nội dung Kanji của chương 3','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539125/Jtech/Moderator/Kanji/Tai%20Lieu/b04e077d-3382-4518-a572-f6351fbb5d5d.pdf\", \"name\": \"Kanji Bài 3.3 (Niên - Thời - Gian - Phân)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/b04e077d-3382-4518-a572-f6351fbb5d5d.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:52:04','2026-11-24 23:52:06'),(159,4,'KANJI',2,'Kanji Bài 4.1 (Đông - Kinh - Danh - Tiền - Quốc)','Nội dung Kanji của chương 4','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539164/Jtech/Moderator/Kanji/Tai%20Lieu/92db9b46-27a1-4841-98e7-03e0f812a473.pdf\", \"name\": \"Kanji Bài 4.1 (Đông - Kinh - Danh - Tiền - Quốc)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/92db9b46-27a1-4841-98e7-03e0f812a473.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:52:43','2026-11-24 23:52:45'),(160,4,'KANJI',3,'Kanji Bài 4.2 (Nam - Nữ - Khu - Thị)','Nội dung Kanji của chương 4','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539200/Jtech/Moderator/Kanji/Tai%20Lieu/14dba2af-15b0-49d5-8544-ac9dca99c252.pdf\", \"name\": \"Kanji Bài 4.2 (Nam - Nữ - Khu - Thị)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/14dba2af-15b0-49d5-8544-ac9dca99c252.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:53:18','2026-11-24 23:53:21'),(161,5,'KANJI',2,'Kanji Bài 5.1 (Tiên - Chu - Mỗi - Ngọ)','Nội dung Kanji của chương 5','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539230/Jtech/Moderator/Kanji/Tai%20Lieu/dcb2b3bf-16f5-4502-82a7-367b6dfa8246.pdf\", \"name\": \"Kanji Bài 5.1 (Tiên - Chu - Mỗi - Ngọ)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/dcb2b3bf-16f5-4502-82a7-367b6dfa8246.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:53:48','2026-11-24 23:53:51'),(162,5,'KANJI',3,'Kanji Bài 5.2 (Hậu - Kiến - Thực - Ẩm)','Nội dung Kanji của chương 5','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539259/Jtech/Moderator/Kanji/Tai%20Lieu/4040d108-b831-41bf-ae39-d1dcde8b4a40.pdf\", \"name\": \"Kanji Bài 5.2 (Hậu - Kiến - Thực - Ẩm)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/4040d108-b831-41bf-ae39-d1dcde8b4a40.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:54:18','2026-11-24 23:54:20'),(163,5,'KANJI',4,'Kanji Bài 5.3 (Mãi - Vật - Hành - Hưu)','Nội dung Kanji của chương 5','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539272/Jtech/Moderator/Kanji/Tai%20Lieu/ae40fb0e-f879-4153-a408-b4a58e9e3d1e.pdf\", \"name\": \"Kanji Bài 5.3 (Mãi - Vật - Hành - Hưu)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/ae40fb0e-f879-4153-a408-b4a58e9e3d1e.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:54:31','2026-11-24 23:54:33'),(164,6,'KANJI',2,'Kanji Bài 6.1 (Lai - Quy - Hội - Xã - Văn)','Nội dung Kanji của chương 6','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539299/Jtech/Moderator/Kanji/Tai%20Lieu/714d94c8-e335-4f91-a292-e46dc763bb23.pdf\", \"name\": \"Kanji Bài 6.1 (Lai - Quy - Hội - Xã - Văn)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/714d94c8-e335-4f91-a292-e46dc763bb23.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:54:58','2026-11-24 23:55:00'),(165,6,'KANJI',3,'Kanji Bài 6.2 (Độc - Thư - Thoại - Tự - Ngôn)','Nội dung Kanji của chương 6','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539314/Jtech/Moderator/Kanji/Tai%20Lieu/7d6deef7-5b6c-4f51-8c40-da10099fa112.pdf\", \"name\": \"Kanji Bài 6.2 (Độc - Thư - Thoại - Tự - Ngôn)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/7d6deef7-5b6c-4f51-8c40-da10099fa112.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:55:12','2026-11-24 23:55:15'),(166,6,'KANJI',4,'Kanji Bài 6.3 (Bối - Điền - Lực - Môn)','Nội dung Kanji của chương 6','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539329/Jtech/Moderator/Kanji/Tai%20Lieu/290948ec-5d64-4cae-bdff-34980aace8f7.pdf\", \"name\": \"Kanji Bài 6.3 (Bối - Điền - Lực - Môn)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/290948ec-5d64-4cae-bdff-34980aace8f7.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:55:28','2026-11-24 23:55:30'),(167,7,'KANJI',2,'Kanji Bài 7.1 (Nhục - Liệu - Lý - Dã)','Nội dung Kanji của chương 7','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539383/Jtech/Moderator/Kanji/Tai%20Lieu/e79eebbf-1efc-4087-a167-c96c65885c67.pdf\", \"name\": \"Kanji Bài 7.1 (Nhục - Liệu - Lý - Dã)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/e79eebbf-1efc-4087-a167-c96c65885c67.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:56:21','2026-11-24 23:56:34'),(168,7,'KANJI',3,'Kanji Bài 7.2 (Bán - Đại - Tiểu)','Nội dung Kanji của chương 7','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539406/Jtech/Moderator/Kanji/Tai%20Lieu/c51ca389-3f6e-40aa-b4e2-a6496222ef99.pdf\", \"name\": \"Kanji Bài 7.2 (Bán - Đại - Tiểu)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/c51ca389-3f6e-40aa-b4e2-a6496222ef99.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:56:45','2026-11-24 23:56:48');
 
+
+-- Assign Kanji exercises to the document covering their source character.
+CREATE TEMPORARY TABLE jtech_kanji_document_topic (
+    title VARCHAR(200) PRIMARY KEY,
+    characters_taught VARCHAR(20) NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+INSERT INTO jtech_kanji_document_topic (title, characters_taught) VALUES
+    ('Kanji Bài 1.1 (Tư - Nhân - Tài - Học)', '私人才学'),
+    ('Kanji Bài 1.2 (Sinh - Hiệu - Nhật - Bản - Ngữ)', '生校日本語'),
+    ('Kanji Bài 2.1 (Nhất - Nhị - Tam - Tứ - Ngũ)', '一二三四五'),
+    ('Kanji Bài 2.2 (Lục - Thất - Bát - Cửu - Thập)', '六七八九十'),
+    ('Kanji Bài 2.3 (Bách - Thiên - Vạn - Viên)', '百千万円'),
+    ('Kanji Bài 3.1 (Nguyệt - Hỏa - Thủy - Mộc)', '月火水木'),
+    ('Kanji Bài 3.2 (Kim - Thổ - Diệu - Hà)', '金土曜何'),
+    ('Kanji Bài 3.3 (Niên - Thời - Gian - Phân)', '年時間分'),
+    ('Kanji Bài 4.1 (Đông - Kinh - Danh - Tiền - Quốc)', '東京名前国'),
+    ('Kanji Bài 4.2 (Nam - Nữ - Khu - Thị)', '男女区市'),
+    ('Kanji Bài 5.1 (Tiên - Chu - Mỗi - Ngọ)', '先週毎午'),
+    ('Kanji Bài 5.2 (Hậu - Kiến - Thực - Ẩm)', '後見食飲'),
+    ('Kanji Bài 5.3 (Mãi - Vật - Hành - Hưu)', '買物行休'),
+    ('Kanji Bài 6.1 (Lai - Quy - Hội - Xã - Văn)', '来帰会社聞'),
+    ('Kanji Bài 6.2 (Độc - Thư - Thoại - Tự - Ngôn)', '読書話寺言'),
+    ('Kanji Bài 6.3 (Bối - Điền - Lực - Môn)', '貝田力門'),
+    ('Kanji Bài 7.1 (Nhục - Liệu - Lý - Dã)', '肉料理野'),
+    ('Kanji Bài 7.2 (Bán - Đại - Tiểu)', '半大小');
+
+-- Each exercise must match exactly one document in its own chapter.
+-- The primary key rejects ambiguous matches and NOT NULL rejects missing ones.
+CREATE TEMPORARY TABLE jtech_kanji_exercise_target (
+    source_lesson_id BIGINT UNSIGNED NOT NULL,
+    display_order SMALLINT UNSIGNED NOT NULL,
+    document_lesson_id BIGINT UNSIGNED NOT NULL,
+    PRIMARY KEY (source_lesson_id, display_order)
+);
+
+INSERT INTO jtech_kanji_exercise_target (source_lesson_id, display_order, document_lesson_id)
+SELECT s.lesson_id, s.display_order, doc.id
+FROM jtech_kanji_question_seed s
+JOIN lesson src ON src.id = s.lesson_id
+LEFT JOIN (
+    SELECT l.id, l.chapter_id, topic.characters_taught
+    FROM lesson l JOIN jtech_kanji_document_topic topic ON topic.title = l.title
+    WHERE l.skill_type = 'KANJI' AND l.status = 'PUBLISHED'
+      AND JSON_LENGTH(l.documents) = 1
+      AND JSON_UNQUOTE(JSON_EXTRACT(l.documents, '$[0].url')) REGEXP '^https?://'
+) doc ON doc.chapter_id = src.chapter_id
+     AND LOCATE(CAST(s.source_kanji AS BINARY), CAST(doc.characters_taught AS BINARY)) > 0
+WHERE s.display_order < 1000;
+
+INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
+                      difficulty, is_exercise_question, display_order, status)
+SELECT 'KANJI', 'MCQ', COALESCE(t.document_lesson_id, s.lesson_id), s.content, s.explanation,
+       s.answers, s.difficulty, s.display_order < 1000, s.display_order, 'ACTIVE'
+FROM jtech_kanji_question_seed s
+LEFT JOIN jtech_kanji_exercise_target t ON t.source_lesson_id = s.lesson_id AND t.display_order = s.display_order
+LEFT JOIN question existing ON existing.lesson_id = COALESCE(t.document_lesson_id, s.lesson_id)
+                           AND existing.skill = 'KANJI' AND existing.display_order = s.display_order
+                           AND existing.is_exercise_question = (s.display_order < 1000)
+WHERE existing.id IS NULL
+ORDER BY s.lesson_id, s.display_order;
+
+DROP TEMPORARY TABLE jtech_kanji_exercise_target, jtech_kanji_document_topic, jtech_kanji_question_seed;
 
 -- JPD113 Grammar videos, chapters 1 and 2
 INSERT INTO grammar (

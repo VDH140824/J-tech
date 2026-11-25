@@ -194,3 +194,69 @@
     position: static;
   }
 }
+
+/* ===== Thiết kế mới (trang chủ J-Tech): nhóm menu, icon nét, mục đang chọn màu teal ===== */
+.dekiru-sidebar {
+  width: 232px;
+  padding: 18px 12px 76px; /* chừa chỗ dưới cho nút Nhạc Nhật */
+  border-right: 1px solid #e6e8ec;
+  gap: 16px;
+}
+
+.sidebar-brand {
+  padding: 0 8px;
+}
+
+.sidebar-nav-menu {
+  gap: 14px;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-group-label {
+  padding: 0 10px 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.nav-link-btn {
+  min-height: 36px;
+  padding: 0 10px;
+  gap: 10px;
+  border-radius: 8px;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.nav-link-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.nav-link-btn.active {
+  background-color: #e6f4f1;
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.nav-link-btn:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+svg.nav-link-icon {
+  flex: none;
+  width: 17px;
+  height: 17px;
+}
+
+.sidebar-feedback-btn {
+  color: #475569;
+}

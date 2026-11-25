@@ -74,7 +74,7 @@ class StudentKanjiFlashcardServiceTest {
   }
 
   @Test
-  void chapterTestsExcludeLegacyLessonTestsAndDrafts() {
+  void chapterTestsListOnlyPublishedKanjiMiniTestsForTheChapter() {
     student();
     when(
       db.queryForObject(
@@ -89,7 +89,8 @@ class StudentKanjiFlashcardServiceTest {
         sql ->
           sql.contains("chapter_id=?") &&
           sql.contains("lesson_id IS NULL") &&
-          sql.contains("test_type='CHAPTER_TEST'") &&
+          sql.contains("skill='KANJI'") &&
+          sql.contains("test_type='MINI_TEST'") &&
           sql.contains("status='PUBLISHED'")
       ),
       any(RowMapper.class),

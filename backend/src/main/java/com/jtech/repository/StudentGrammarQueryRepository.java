@@ -195,6 +195,36 @@ public class StudentGrammarQueryRepository {
                 Timestamp.valueOf(submittedAt), Timestamp.valueOf(submittedAt), attemptId);
     }
 
+    // ===== Tiến độ học (lesson_section_progress, section_type = GRAMMAR) =====
+    public record SectionProgress(boolean completed, BigDecimal bestScore) {
+    }
+
+    public SectionProgress sectionProgress(long userId, long lessonId) {
+        List<SectionProgress> rows = db.query("""
+                SELECT completed_at IS NOT NULL AS completed, best_exercise_score
+                FROM lesson_section_progress WHERE user_id = ? AND lesson_id = ? AND section_type = 'GRAMMAR'
+                """, (rs, row) -> new SectionProgress(rs.getBoolean("completed"), rs.getBigDecimal("best_exercise_score")),
+                userId, lessonId);
+        return rows.isEmpty() ? new SectionProgress(false, null) : rows.get(0);
+    }
+
+    /**
+     * Nộp bài tập: ghi exercise_completed_at và completed_at (giữ thời điểm nộp lần đầu) và điểm tốt nhất.
+     */
+    public void saveExerciseProgress(long userId, long lessonId, BigDecimal score, LocalDateTime at) {
+        Timestamp doneAt = Timestamp.valueOf(at);
+        db.update("""
+                INSERT INTO lesson_section_progress
+                  (user_id, lesson_id, section_type, exercise_completed_at, completed_at, best_exercise_score, updated_at)
+                VALUES (?, ?, 'GRAMMAR', ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                  exercise_completed_at = COALESCE(exercise_completed_at, VALUES(exercise_completed_at)),
+                  completed_at = COALESCE(completed_at, VALUES(completed_at)),
+                  best_exercise_score = GREATEST(COALESCE(best_exercise_score, 0), VALUES(best_exercise_score)),
+                  updated_at = VALUES(updated_at)
+                """, userId, lessonId, doneAt, doneAt, score, doneAt);
+    }
+
     // ===== Mapping =====
     private static QuestionRow question(ResultSet rs) throws SQLException {
         return new QuestionRow(rs.getLong("id"), rs.getString("question_type"), rs.getString("content"),

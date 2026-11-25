@@ -1,5 +1,5 @@
 package com.jtech.service;
-
+ 
 import com.jtech.dto.request.TestManagementRequest;
 import com.jtech.dto.response.TestManagementResponse;
 import com.jtech.entity.User;
@@ -20,6 +20,7 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+ 
 
 /**
  * Quản lý bài kiểm tra (Moderator): mini test theo bài học và test chương tổng hợp Kanji, Từ vựng, Ngữ pháp.
@@ -30,10 +31,10 @@ import org.springframework.web.server.ResponseStatusException;
  */
 @Service
 public class TestManagementService {
-
+ 
     static final List<String> SKILLS = List.of("VOCABULARY", "KANJI", "GRAMMAR");
     static final Map<String, String> SKILL_LABEL = Map.of("VOCABULARY", "Từ vựng", "KANJI", "Kanji", "GRAMMAR", "Ngữ pháp");
-
+ 
     static final String NOT_FOUND = "Không tìm thấy bài kiểm tra.";
     static final String LOCKED = "Bài kiểm tra đã có học viên làm nên không thể thay đổi câu hỏi, thời gian và điểm đạt.";
     static final String ARCHIVED = "Bài kiểm tra đã lưu trữ, không thể thay đổi.";
@@ -54,22 +55,20 @@ public class TestManagementService {
     static final String DUPLICATE_PUBLISHED_MINI = "Bài học này đã có mini test đang xuất bản.";
     static final String DUPLICATE_PUBLISHED_CHAPTER = "Chương này đã có test chương đang xuất bản.";
     static final String DUPLICATE_PUBLISHED_KANJI_MINI = "Chương này đã có mini test Kanji đang xuất bản.";
-
+ 
     private final TestManagementQueryRepository queries;
     private final UserRepository users;
-
+ 
     public TestManagementService(TestManagementQueryRepository queries, UserRepository users) {
         this.queries = queries;
         this.users = users;
     }
-
-    // ===== Bước 1–2: danh sách =====
+ 
     @Transactional(readOnly = true)
     public TestManagementResponse.Page search(TestManagementQueryRepository.Filter filter, int page, int size) {
         return queries.search(filter, Math.max(page, 0), Math.min(Math.max(size, 1), 100));
     }
-
-    // ===== A1: chi tiết =====
+ 
     @Transactional(readOnly = true)
     public TestManagementResponse.Detail detail(long id) {
         TestRow test = find(id);
@@ -78,8 +77,7 @@ public class TestManagementService {
         return new TestManagementResponse.Detail(summary, test.description(), queries.questionsOf(id),
                 summary.attemptCount() > 0);
     }
-
-    // ===== Bước 7–8: câu hỏi ngân hàng để chọn (BR-T1, BR-T2) =====
+ 
     @Transactional(readOnly = true)
     public List<TestManagementResponse.QuestionItem> candidates(Long testId, TestManagementRequest.TestType testType,
             String testSkill,
@@ -89,8 +87,7 @@ public class TestManagementService {
                 scope.lessonId(), scope.lessonId() == null ? scope.chapterId() : null, allowedSkills(scope),
                 trimToNull(skill), trimToNull(questionType), trimToNull(difficulty), keyword));
     }
-
-    // ===== Bước 3–11: tạo đề (lưu nháp) =====
+ 
     @Transactional
     public TestManagementResponse.Detail create(TestManagementRequest request, String moderatorEmail) {
         User moderator = findModerator(moderatorEmail);
@@ -105,15 +102,14 @@ public class TestManagementService {
         queries.replaceQuestions(id, questions);
         return detail(id);
     }
-
-    // ===== A2: sửa đề (BR-T6) =====
+ 
     @Transactional
     public TestManagementResponse.Detail update(long id, TestManagementRequest request, String moderatorEmail) {
         TestRow test = find(id);
         if ("ARCHIVED".equals(test.status())) throw conflict(ARCHIVED);
         User moderator = findModerator(moderatorEmail);
         validateInfo(request);
-
+ 
         List<Long> current = queries.questionsOf(id).stream().map(TestManagementResponse.QuestionItem::id).toList();
         List<Long> requested = request.questionIds() == null ? current : distinct(request.questionIds());
         boolean locked = queries.countAttempts(id) > 0;
@@ -121,19 +117,17 @@ public class TestManagementService {
                 || request.durationMinutes() != test.durationMinutes()
                 || request.passingScore().compareTo(test.passingScore()) != 0;
         if (locked && gradingChanged) throw conflict(LOCKED);
-
-        // Đề đã có lượt làm giữ nguyên câu hỏi / thời gian nên không kiểm tra lại giới hạn
+ 
         if (!locked) validateLimits(test, request.durationMinutes(), requested.size());
         List<TestManagementResponse.QuestionItem> questions = validateQuestions(test, requested, Set.copyOf(current));
         if (!locked && "PUBLISHED".equals(test.status())) checkPublishable(test, questions);
-
+ 
         queries.updateInfo(id, request.title().trim(), trimToNull(request.description()), request.durationMinutes(),
                 request.passingScore(), moderator.getUserId());
         if (!locked) queries.replaceQuestions(id, questions);
         return detail(id);
     }
-
-    // ===== A3: xuất bản (BR-T5, BR-T8) =====
+ 
     @Transactional
     public TestManagementResponse.Detail publish(long id, String moderatorEmail) {
         TestRow test = find(id);
@@ -148,8 +142,7 @@ public class TestManagementService {
         queries.updateStatus(id, "PUBLISHED", moderator.getUserId());
         return detail(id);
     }
-
-    // ===== A4: chuyển về nháp =====
+ 
     @Transactional
     public TestManagementResponse.Detail unpublish(long id, String moderatorEmail) {
         TestRow test = find(id);
@@ -159,8 +152,7 @@ public class TestManagementService {
         queries.updateStatus(id, "DRAFT", moderator.getUserId());
         return detail(id);
     }
-
-    // ===== A5: xóa / lưu trữ (BR-T7) =====
+ 
     @Transactional
     public TestManagementResponse.DeleteResult delete(long id, String moderatorEmail) {
         TestRow test = find(id);
@@ -172,14 +164,8 @@ public class TestManagementService {
         queries.delete(id);
         return new TestManagementResponse.DeleteResult(id, false, null);
     }
-
-    // ===== Quy tắc =====
-    /**
-     * Loại đề + phạm vi:
-     * - Mini test Từ vựng / Ngữ pháp: theo bài học (bài học phải đúng kỹ năng).
-     * - Mini test Kanji: theo chương (câu Kanji của các bài trong chương).
-     * - Test chương: theo chương, tổng hợp 3 kỹ năng (skill = ALL).
-     */
+ 
+   
     TestRow resolveScope(TestManagementRequest.TestType testType, String skill, Long lessonId, Long chapterId) {
         if (testType == null) throw badRequest("Vui lòng chọn loại bài kiểm tra.");
         if (testType == TestManagementRequest.TestType.MINI_TEST) {
@@ -202,17 +188,16 @@ public class TestManagementService {
         requireChapter(chapterId);
         return new TestRow(null, "CHAPTER_TEST", "ALL", null, chapterId, null, null, 0, null, "DRAFT");
     }
-
+ 
     private void requireChapter(Long chapterId) {
         if (chapterId == null) throw badRequest("Vui lòng chọn chương.");
         if (!queries.chapterExists(chapterId)) throw badRequest("Không tìm thấy chương.");
     }
-
+ 
     static List<String> allowedSkills(TestRow test) {
         return "ALL".equals(test.skill()) ? SKILLS : List.of(test.skill());
     }
-
-    /** BR-T1, BR-T2, BR-T9: câu hỏi hợp lệ theo thứ tự yêu cầu. Câu đã lưu trữ chỉ được giữ nếu vốn đã trong đề. */
+ 
     List<TestManagementResponse.QuestionItem> validateQuestions(TestRow test, List<Long> ids, Set<Long> alreadyInTest) {
         if (ids.isEmpty()) return List.of();
         Map<Long, TestManagementResponse.QuestionItem> found = queries.findQuestions(ids).stream()
@@ -235,8 +220,7 @@ public class TestManagementService {
         }
         return result;
     }
-
-    /** BR-T5: điều kiện để đề ở trạng thái xuất bản. */
+ 
     static void checkPublishable(TestRow test, List<TestManagementResponse.QuestionItem> questions) {
         if ("ALL".equals(test.skill())) {
             Set<String> present = questions.stream().map(TestManagementResponse.QuestionItem::skill)
@@ -251,8 +235,7 @@ public class TestManagementService {
             throw badRequest(LESSON_NOT_PUBLISHED.formatted(q.lessonTitle()));
         });
     }
-
-    /** BR-T4 (kiểm tra lại ở service vì request có thể không qua @Valid). */
+ 
     static void validateInfo(TestManagementRequest request) {
         if (request.title() == null || request.title().isBlank()) throw badRequest("Vui lòng nhập tên bài kiểm tra.");
         if (request.title().trim().length() > 200) throw badRequest("Tên bài kiểm tra tối đa 200 ký tự.");
@@ -265,8 +248,7 @@ public class TestManagementService {
             throw badRequest("Điểm đạt từ 0 đến 100.");
         }
     }
-
-    /** BR-T4: thời gian theo loại đề; BR-T5: số câu tối đa (kiểm tra cả khi lưu nháp). */
+ 
     static void validateLimits(TestRow test, int durationMinutes, int questionCount) {
         boolean mini = isMini(test);
         int minMinutes = mini ? MINI_MIN_MINUTES : CHAPTER_MIN_MINUTES;
@@ -277,47 +259,46 @@ public class TestManagementService {
         int max = mini ? MINI_MAX_QUESTIONS : CHAPTER_MAX_QUESTIONS;
         if (questionCount > max) throw badRequest(TOO_MANY.formatted(typeLabel(test), max, questionCount));
     }
-
+ 
     static boolean isMini(TestRow test) {
         return "MINI_TEST".equals(test.testType());
     }
-
+ 
     static String typeLabel(TestRow test) {
         return isMini(test) ? "Mini test" : "Test chương";
     }
-
-    // ===== Helpers =====
+ 
     private TestRow find(long id) {
         return queries.findTest(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND));
     }
-
+ 
     private User findModerator(String email) {
         return users.findByEmail(email)
                 .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Không tìm thấy tài khoản đăng nhập."));
     }
-
-    /** BR-T3: một câu chỉ xuất hiện một lần trong đề, giữ thứ tự chọn. */
+ 
     static List<Long> distinct(List<Long> ids) {
         if (ids == null) return List.of();
         Set<Long> set = new LinkedHashSet<>();
         ids.stream().filter(Objects::nonNull).forEach(set::add);
         return List.copyOf(set);
     }
-
+ 
     private static String shorten(String text) {
         if (text == null) return "";
         return text.length() > 60 ? text.substring(0, 57) + "..." : text;
     }
-
+ 
     private static String trimToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
     }
-
+ 
     private static ResponseStatusException badRequest(String message) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }
-
+ 
     private static ResponseStatusException conflict(String message) {
         return new ResponseStatusException(HttpStatus.CONFLICT, message);
     }
 }
+ 

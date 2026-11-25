@@ -32,13 +32,14 @@ export function StudentGrammarLessonPage({
   const documents = parseLessonDocuments(lesson.documents);
   const data = query.data;
 
-  // Mini test: màn riêng như cũ
+  // Mini test: màn riêng, mở từ thẻ "Mini test" ở màn danh sách bài
   if (view === "test" && data?.miniTest) {
     return (
       <StudentGrammarMiniTest
         lesson={data}
         onBack={() => {
-          onOpen("material");
+          // Mini test mở từ màn danh sách bài (ngoài) → quay lại màn đó
+          onBack();
           void query.refetch();
         }}
       />
@@ -87,19 +88,6 @@ export function StudentGrammarLessonPage({
         ← Quay lại ngữ pháp · Bài {lesson.lessonNo}
       </button>
       {header}
-      {data.miniTest && (
-        <p>
-          <button
-            type="button"
-            className="kanji-primary"
-            title={data.miniTest.title}
-            onClick={() => onOpen("test")}
-          >
-            Mini test · {data.miniTest.questionCount} câu · {data.miniTest.durationMinutes} phút
-            {data.miniTest.inProgressAttemptId ? " · Đang làm dở" : ""}
-          </button>
-        </p>
-      )}
       <div
         className="grammar-lesson-tabs"
         role="tablist"
@@ -143,7 +131,11 @@ export function StudentGrammarLessonPage({
                 ))}
               </div>
             )}
-            <StudentGrammarMaterial lesson={data} embedded />
+            <StudentGrammarMaterial
+              lesson={data}
+              embedded
+              onExercise={data.exerciseCount > 0 ? () => onOpen("exercise") : undefined}
+            />
           </>
         ) : data.exerciseCount > 0 ? (
           <StudentGrammarExercise key={data.id} lesson={data} embedded />

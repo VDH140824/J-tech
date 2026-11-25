@@ -17,10 +17,17 @@ export function StudentKanjiExercisePage({ lesson, documentIndex, onBack, onBack
   const [busy, setBusy] = useState(false);
   const guard = useRef(false);
   const [error, setError] = useState("");
-  const query = useQuery({ queryKey: ["student-kanji-exercises", lesson.id],
+  const [round, setRound] = useState(0);
+  const query = useQuery({ queryKey: ["student-kanji-exercises", lesson.id, round],
     queryFn: ({ signal }) => getStudentKanjiExercises(lesson.id, signal), enabled: !!document,
-    refetchOnWindowFocus: false });
+    staleTime: "static", gcTime: 0 });
   const questions = query.data ?? [];
+  function startNewRound() {
+    setAnswers({});
+    setResult(undefined);
+    setError("");
+    setRound(previous => previous + 1);
+  }
   return <section className="student-kanji-page kanji-student-exercises">
     <button type="button" className="kanji-text-button" disabled={busy} onClick={onBack}>← Quay lại tài liệu</button>
     {document && <nav className="kanji-lesson-switch" aria-label="Nội dung tài liệu Kanji">
@@ -68,12 +75,10 @@ export function StudentKanjiExercisePage({ lesson, documentIndex, onBack, onBack
             </article>;
           })}
         </fieldset>
-        {error && <div role="alert"><p>{error}</p><button type="button" disabled={busy} onClick={() => {
-          setAnswers({}); setResult(undefined); setError(""); void query.refetch();
-        }}>Tải lại bài tập</button></div>}
+        {error && <div role="alert"><p>{error}</p><button type="button" disabled={busy} onClick={startNewRound}>Tải lại bài tập</button></div>}
         <div className="kanji-document-reader-actions">
           {!result ? <button className="kanji-exercise-button" type="submit" disabled={busy}>{busy ? "Đang chấm bài…" : "Nộp bài"}</button>
-            : <button className="kanji-exercise-button" type="button" onClick={() => { setAnswers({}); setResult(undefined); setError(""); }}>Làm lại</button>}
+            : <button className="kanji-exercise-button" type="button" onClick={startNewRound}>Làm lại</button>}
           {result && <button type="button" className="kanji-exercise-button" onClick={onBackToChapter}>Quay lại chương</button>}
           <button type="button" className="kanji-text-button" disabled={busy} onClick={onBack}>Quay lại tài liệu</button>
         </div>

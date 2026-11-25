@@ -23,7 +23,9 @@ public final class StudentGrammarResponse {
             String description,
             List<GrammarPoint> grammars,
             int exerciseCount,
-            MiniTestInfo miniTest) {
+            MiniTestInfo miniTest,
+            boolean completed,
+            BigDecimal bestExerciseScore) {
     }
 
     public record GrammarPoint(
@@ -88,6 +90,15 @@ public final class StudentGrammarResponse {
     }
 
     public record CheckResult(int correctCount, int totalQuestions, BigDecimal score, List<QuestionResult> results) {
+    }
+
+    /**
+     * Kết quả nộp bài tập ngữ pháp. lessonCompleted = bài đã được tính hoàn thành trong tiến độ;
+     * firstCompletion = lần nộp này là lần đầu hoàn thành bài.
+     */
+    public record ExerciseResult(int correctCount, int totalQuestions, BigDecimal score,
+                                 boolean lessonCompleted, boolean firstCompletion, BigDecimal bestScore,
+                                 List<QuestionResult> results) {
     }
 
     /** Mini test Grammar: lượt làm đang diễn ra. */
