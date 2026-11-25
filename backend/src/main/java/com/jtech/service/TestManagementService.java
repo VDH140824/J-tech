@@ -24,7 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * Quản lý bài kiểm tra (Moderator): mini test theo bài học và test chương tổng hợp Kanji, Từ vựng, Ngữ pháp.
  * Câu hỏi chỉ chọn từ Ngân hàng câu hỏi (UC-39), không tạo câu mới.
- * Mini test: 5–20 câu, 5–20 phút. Test chương: 15–40 câu, 15–40 phút, đủ 3 kỹ năng.
+ * Mini test: 5–20 câu, 5–20 phút. Test chương: 10–15 câu, 15–40 phút, đủ 3 kỹ năng.
  * BR-T1 nguồn câu hỏi · BR-T2 phạm vi · BR-T3 không trùng · BR-T4 dữ liệu · BR-T5 xuất bản ·
  * BR-T6 khóa khi có lượt làm · BR-T7 xóa / lưu trữ · BR-T8 một đề xuất bản · BR-T9 câu đã lưu trữ.
  */
@@ -43,7 +43,7 @@ public class TestManagementService {
     static final String ARCHIVED_QUESTION = "Câu hỏi \"%s\" đã lưu trữ trong ngân hàng, không thể chọn vào đề.";
     // BR-T4, BR-T5: giới hạn số câu và thời gian theo loại đề
     static final int MINI_MIN_QUESTIONS = 5, MINI_MAX_QUESTIONS = 20, MINI_MIN_MINUTES = 5, MINI_MAX_MINUTES = 20;
-    static final int CHAPTER_MIN_QUESTIONS = 15, CHAPTER_MAX_QUESTIONS = 40;
+    static final int CHAPTER_MIN_QUESTIONS = 10, CHAPTER_MAX_QUESTIONS = 15;
     static final int CHAPTER_MIN_MINUTES = 15, CHAPTER_MAX_MINUTES = 40;
     static final String TOO_FEW = "%s cần ít nhất %d câu hỏi để xuất bản (hiện có %d câu).";
     static final String TOO_MANY = "%s tối đa %d câu hỏi (đang chọn %d câu).";

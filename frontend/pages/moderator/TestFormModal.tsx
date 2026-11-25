@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
 import {
   FORMAT_LABEL,
@@ -51,6 +51,50 @@ function errorMessage(error: unknown, fallback: string): string {
   return message || fallback;
 }
 
+function shuffled<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+  }
+  return result;
+}
+
+function randomChapterQuestionSample(
+  candidates: TestQuestionItem[],
+  requiredSkills: QuestionSkill[],
+  minQuestions: number,
+  maxQuestions: number,
+): { questions: TestQuestionItem[]; error?: string } {
+  const pool = candidates.filter((question) => question.status === "ACTIVE" && !question.exerciseQuestion);
+  if (pool.length < minQuestions) {
+    return { questions: [], error: `Question Bank cần ít nhất ${minQuestions} câu phù hợp để lấy ngẫu nhiên.` };
+  }
+
+  const required: TestQuestionItem[] = [];
+  const missingSkills: QuestionSkill[] = [];
+  for (const skill of requiredSkills) {
+    const question = shuffled(pool.filter((item) => item.skill === skill))[0];
+    if (question) required.push(question);
+    else missingSkills.push(skill);
+  }
+  if (missingSkills.length > 0) {
+    return {
+      questions: [],
+      error: `Câu hỏi đang lọc thiếu ${missingSkills.map((skill) => SKILL_LABEL[skill]).join(", ")}. Hãy bỏ bộ lọc rồi thử lại.`,
+    };
+  }
+
+  const targetCount = Math.min(
+    maxQuestions,
+    pool.length,
+    minQuestions + Math.floor(Math.random() * (maxQuestions - minQuestions + 1)),
+  );
+  const requiredIds = new Set(required.map((question) => question.id));
+  const rest = shuffled(pool.filter((question) => !requiredIds.has(question.id)));
+  return { questions: shuffled([...required, ...rest.slice(0, targetCount - required.length)]) };
+}
+
 export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props) {
   const isEdit = detail !== null;
   const locked = detail?.locked ?? false;
@@ -75,6 +119,8 @@ export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props
 
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [autoRandomizing, setAutoRandomizing] = useState(false);
+  const autoRandomizedTestId = useRef<number | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -84,6 +130,8 @@ export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props
     setCandidateLevel("");
     setKeywordInput("");
     setKeyword("");
+    autoRandomizedTestId.current = null;
+    setAutoRandomizing(false);
     if (!detail) {
       setTestType("MINI_TEST");
       setMiniSkill("VOCABULARY");
@@ -103,7 +151,10 @@ export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props
     setLessonId(s.lessonId ?? "");
     setDuration(String(s.durationMinutes));
     setPassing(String(s.passingScore));
-    setSelected(detail.questions);
+    const shouldAutoRandomize = s.testType === "CHAPTER_TEST" && !detail.locked &&
+      detail.questions.length > TEST_LIMITS.CHAPTER_TEST.maxQuestions;
+    setSelected(shouldAutoRandomize ? [] : detail.questions);
+    setAutoRandomizing(shouldAutoRandomize);
   }, [open, detail]);
 
   // Mini test Từ vựng / Ngữ pháp theo bài học; mini test Kanji và test chương theo chương
@@ -117,19 +168,39 @@ export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props
     }
     let cancelled = false;
     setLoadingCandidates(true);
+    const autoSamplePending = Boolean(
+      detail && detail.summary.testType === "CHAPTER_TEST" && !detail.locked &&
+      detail.questions.length > TEST_LIMITS.CHAPTER_TEST.maxQuestions &&
+      autoRandomizedTestId.current !== detail.summary.id,
+    );
     getTestCandidates({
       testId: detail?.summary.id,
       testType: detail ? undefined : testType,
       testSkill: detail || testType !== "MINI_TEST" ? undefined : miniSkill,
       lessonId: detail || !byLesson || lessonId === "" ? undefined : lessonId,
       chapterId: detail || byLesson || chapterId === "" ? undefined : chapterId,
-      skill: candidateSkill || undefined,
-      questionType: candidateFormat || undefined,
-      difficulty: candidateLevel || undefined,
-      keyword: keyword || undefined,
+      skill: autoSamplePending ? undefined : candidateSkill || undefined,
+      questionType: autoSamplePending ? undefined : candidateFormat || undefined,
+      difficulty: autoSamplePending ? undefined : candidateLevel || undefined,
+      keyword: autoSamplePending ? undefined : keyword || undefined,
     })
       .then((list) => {
-        if (!cancelled) setCandidates(list);
+        if (cancelled) return;
+        setCandidates(list);
+        if (autoSamplePending && detail && autoRandomizedTestId.current !== detail.summary.id) {
+          autoRandomizedTestId.current = detail.summary.id;
+          const requiredSkills: QuestionSkill[] = detail.summary.skill === "ALL"
+            ? SKILLS
+            : [detail.summary.skill];
+          const sample = randomChapterQuestionSample(
+            list,
+            requiredSkills,
+            TEST_LIMITS.CHAPTER_TEST.minQuestions,
+            TEST_LIMITS.CHAPTER_TEST.maxQuestions,
+          );
+          if (sample.error) setError(sample.error);
+          else setSelected(sample.questions);
+        }
       })
       .catch((e) => {
         if (!cancelled) {
@@ -138,7 +209,10 @@ export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props
         }
       })
       .finally(() => {
-        if (!cancelled) setLoadingCandidates(false);
+        if (!cancelled) {
+          setLoadingCandidates(false);
+          setAutoRandomizing(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -179,6 +253,17 @@ export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props
       if (prev.some((x) => x.id === q.id)) return prev.filter((x) => x.id !== q.id);
       return prev.length >= limits.maxQuestions ? prev : [...prev, q];
     });
+
+  const selectRandomChapterQuestions = () => {
+    const requiredSkills: QuestionSkill[] =
+      detail && detail.summary.skill !== "ALL" ? [detail.summary.skill] : SKILLS;
+    const sample = randomChapterQuestionSample(candidates, requiredSkills, limits.minQuestions, limits.maxQuestions);
+    if (sample.error) setError(sample.error);
+    else {
+      setSelected(sample.questions);
+      setError(null);
+    }
+  };
 
   const move = (index: number, delta: number) =>
     setSelected((prev) => {
@@ -403,6 +488,17 @@ export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props
               <div className="tm-pane-head">
                 <strong>Ngân hàng câu hỏi</strong>
                 <span className="cell-email">Câu kiểm tra đang dùng của {testType === "MINI_TEST" ? "bài học" : "chương"}</span>
+                {testType === "CHAPTER_TEST" && (
+                  <button
+                    type="button"
+                    className="btn-modal-submit"
+                    style={{ backgroundColor: MOD_COLOR, alignSelf: "flex-start" }}
+                    disabled={busy || locked || loadingCandidates}
+                    onClick={selectRandomChapterQuestions}
+                  >
+                    Chọn ngẫu nhiên 10–15 câu
+                  </button>
+                )}
               </div>
               <form className="tm-candidate-filters" onSubmit={handleKeyword}>
                 {testType === "CHAPTER_TEST" && (
@@ -438,7 +534,9 @@ export function TestFormModal({ open, detail, targets, onClose, onSaved }: Props
                   onChange={(e) => setKeywordInput(e.target.value)} />
               </form>
               <div className="tm-list">
-                {!hasScope ? (
+                {autoRandomizing ? (
+                  <p className="cell-email">Đang tự chọn ngẫu nhiên 10–15 câu từ Question Bank...</p>
+                ) : !hasScope ? (
                   <p className="cell-email">
                     {testType === "MINI_TEST" ? "Chọn bài học để xem câu hỏi." : "Chọn chương để xem câu hỏi."}
                   </p>

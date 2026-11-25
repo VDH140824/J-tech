@@ -13,7 +13,7 @@ public interface VocabularyTestQuestionRepository
     List<VocabularyTestQuestion> findForTest(Long testId);
 
     @Query(
-        "select q from VocabularyTestQuestion q join Lesson l on q.lessonId = l.id where l.chapter.id = :chapterId and q.skill = :skill and q.questionType = :type and q.status = :status and q.exerciseQuestion = false order by l.lessonNo, q.displayOrder, q.id"
+        "select q from VocabularyTestQuestion q join Lesson l on q.lessonId = l.id where l.chapter.id = :chapterId and q.skill = :skill and q.questionType = :type and q.status = :status order by l.lessonNo, q.displayOrder, q.id"
     )
     List<VocabularyTestQuestion> findBankForChapter(
         Long chapterId,

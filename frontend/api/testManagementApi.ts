@@ -154,7 +154,7 @@ export const TEST_LIMITS: Record<ManagedTestType, {
   defaultMinutes: number;
 }> = {
   MINI_TEST: { minQuestions: 5, maxQuestions: 20, minMinutes: 5, maxMinutes: 20, defaultMinutes: 15 },
-  CHAPTER_TEST: { minQuestions: 15, maxQuestions: 40, minMinutes: 15, maxMinutes: 40, defaultMinutes: 30 },
+  CHAPTER_TEST: { minQuestions: 10, maxQuestions: 15, minMinutes: 15, maxMinutes: 40, defaultMinutes: 30 },
 };
 
 export const TEST_TYPE_LABEL: Record<ManagedTestType, string> = {

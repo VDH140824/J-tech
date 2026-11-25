@@ -14640,6 +14640,241 @@ WHERE n.new_rank <= n.missing_count
   AND b.meaning_vi <> d.meaning_vi
 ORDER BY n.chapter_id, n.sort_no;
 
+-- Generate 2-3 shared Vocabulary questions for every published word.
+-- Questions use only existing vocabulary fields and are stored in the existing question table.
+INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
+                      difficulty, is_exercise_question, display_order, status)
+WITH
+seed_words AS (
+    SELECT ch.id AS chapter_id, ch.chapter_no, c.code AS course_code,
+           l.id AS lesson_id, l.lesson_no, l.title AS lesson_title,
+           v.id AS vocabulary_id, v.word, v.reading, v.meaning_vi, v.example_jp, v.example_vi,
+           v.display_order AS word_order,
+           ROW_NUMBER() OVER (
+               PARTITION BY ch.id ORDER BY l.lesson_no, l.display_order, v.display_order, v.id
+           ) AS chapter_word_order
+    FROM course c
+    JOIN chapter ch ON ch.course_id = c.id AND ch.status = 'PUBLISHED'
+    JOIN lesson l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.status = 'PUBLISHED'
+    JOIN vocabulary v ON v.lesson_id = l.id AND v.status = 'PUBLISHED'
+    WHERE c.code IN ('JPD113', 'JPD123') AND c.status = 'PUBLISHED' AND c.deleted_at IS NULL
+),
+chapter_stats AS (
+    SELECT chapter_id,
+           COUNT(DISTINCT NULLIF(TRIM(meaning_vi), '')) AS meaning_count,
+           COUNT(DISTINCT NULLIF(TRIM(reading), '')) AS reading_count,
+           COUNT(DISTINCT CASE WHEN TRIM(COALESCE(example_jp, '')) <> ''
+                                    AND TRIM(COALESCE(example_vi, '')) <> '' THEN example_jp END) AS example_count
+    FROM seed_words GROUP BY chapter_id
+),
+meaning_values AS (
+    SELECT DISTINCT chapter_id, meaning_vi AS choice FROM seed_words WHERE TRIM(meaning_vi) <> ''
+),
+reading_values AS (
+    SELECT DISTINCT chapter_id, reading AS choice FROM seed_words WHERE TRIM(reading) <> ''
+),
+example_values AS (
+    SELECT DISTINCT chapter_id, example_jp AS choice FROM seed_words
+    WHERE TRIM(COALESCE(example_jp, '')) <> '' AND TRIM(COALESCE(example_vi, '')) <> ''
+),
+term_values AS (
+    SELECT chapter_id, word AS choice, MIN(meaning_vi) AS meaning_vi
+    FROM seed_words WHERE TRIM(word) <> '' GROUP BY chapter_id, word
+),
+ranked_distractors AS (
+    SELECT w.vocabulary_id, 'MEANING' AS choice_type, v.choice,
+           ROW_NUMBER() OVER (PARTITION BY w.vocabulary_id ORDER BY v.choice) AS choice_no
+    FROM seed_words w JOIN meaning_values v ON v.chapter_id = w.chapter_id AND v.choice <> w.meaning_vi
+    UNION ALL
+    SELECT w.vocabulary_id, 'READING', v.choice,
+           ROW_NUMBER() OVER (PARTITION BY w.vocabulary_id ORDER BY v.choice)
+    FROM seed_words w JOIN reading_values v ON v.chapter_id = w.chapter_id AND v.choice <> w.reading
+    UNION ALL
+    SELECT w.vocabulary_id, 'EXAMPLE', v.choice,
+           ROW_NUMBER() OVER (PARTITION BY w.vocabulary_id ORDER BY v.choice)
+    FROM seed_words w JOIN example_values v ON v.chapter_id = w.chapter_id AND v.choice <> w.example_jp
+    UNION ALL
+    SELECT w.vocabulary_id, 'TERM', v.choice,
+           ROW_NUMBER() OVER (PARTITION BY w.vocabulary_id ORDER BY v.choice)
+    FROM seed_words w
+    JOIN term_values v ON v.chapter_id = w.chapter_id AND v.choice <> w.word AND v.meaning_vi <> w.meaning_vi
+),
+distractors AS (
+    SELECT vocabulary_id, choice_type,
+           MAX(IF(choice_no = 1, choice, NULL)) AS option_1,
+           MAX(IF(choice_no = 2, choice, NULL)) AS option_2,
+           MAX(IF(choice_no = 3, choice, NULL)) AS option_3
+    FROM ranked_distractors
+    WHERE choice_no <= 3
+    GROUP BY vocabulary_id, choice_type
+),
+variants AS (
+    SELECT 1 AS variant_no UNION ALL SELECT 2 UNION ALL SELECT 3
+),
+question_specs AS (
+    SELECT w.*, stats.meaning_count, stats.reading_count, stats.example_count,
+           variants.variant_no,
+           meaning_options.option_1 AS meaning_1, meaning_options.option_2 AS meaning_2, meaning_options.option_3 AS meaning_3,
+           reading_options.option_1 AS reading_1, reading_options.option_2 AS reading_2, reading_options.option_3 AS reading_3,
+           example_options.option_1 AS example_1, example_options.option_2 AS example_2, example_options.option_3 AS example_3,
+           term_options.option_1 AS term_1, term_options.option_2 AS term_2, term_options.option_3 AS term_3,
+           CASE
+               WHEN variants.variant_no = 1 THEN CONCAT('Từ 「', w.word, '」 có nghĩa là gì?')
+               WHEN variants.variant_no = 2 AND TRIM(COALESCE(w.reading, '')) <> '' AND stats.reading_count >= 4
+                   THEN CONCAT('Cách đọc của 「', w.word, '」 là gì?')
+               WHEN variants.variant_no = 2 AND example_options.option_1 IS NOT NULL
+                   THEN CONCAT('Chọn câu tiếng Nhật phù hợp với nghĩa: ', w.example_vi)
+               WHEN variants.variant_no = 2 THEN CONCAT('Từ tiếng Nhật nào có nghĩa là “', w.meaning_vi, '”?')
+               ELSE CONCAT('Chọn câu tiếng Nhật phù hợp với nghĩa: ', w.example_vi)
+           END AS question_content,
+           CASE
+               WHEN variants.variant_no = 1 THEN CONCAT('「', w.word, '」 nghĩa là “', w.meaning_vi, '”.')
+               WHEN variants.variant_no = 2 AND TRIM(COALESCE(w.reading, '')) <> '' AND stats.reading_count >= 4
+                   THEN CONCAT('「', w.word, '」 được đọc là ', w.reading, ', nghĩa là “', w.meaning_vi, '”.')
+               WHEN variants.variant_no = 2 AND example_options.option_1 IS NOT NULL
+                   THEN CONCAT('Ví dụ của 「', w.word, '」: ', w.example_jp, ' — ', w.example_vi)
+               WHEN variants.variant_no = 2 THEN CONCAT('「', w.word, '」 có nghĩa là “', w.meaning_vi, '”.')
+               ELSE CONCAT('Ví dụ của 「', w.word, '」: ', w.example_jp, ' — ', w.example_vi)
+           END AS question_explanation,
+           CASE
+               WHEN variants.variant_no = 1 THEN w.meaning_vi
+               WHEN variants.variant_no = 2 AND TRIM(COALESCE(w.reading, '')) <> '' AND stats.reading_count >= 4 THEN w.reading
+               WHEN variants.variant_no = 2 AND example_options.option_1 IS NOT NULL THEN w.example_jp
+               WHEN variants.variant_no = 2 THEN w.word
+               ELSE w.example_jp
+           END AS correct_answer
+    FROM seed_words w
+    JOIN chapter_stats stats ON stats.chapter_id = w.chapter_id
+    CROSS JOIN variants
+    LEFT JOIN distractors meaning_options ON meaning_options.vocabulary_id = w.vocabulary_id AND meaning_options.choice_type = 'MEANING'
+    LEFT JOIN distractors reading_options ON reading_options.vocabulary_id = w.vocabulary_id AND reading_options.choice_type = 'READING'
+    LEFT JOIN distractors example_options ON example_options.vocabulary_id = w.vocabulary_id AND example_options.choice_type = 'EXAMPLE'
+    LEFT JOIN distractors term_options ON term_options.vocabulary_id = w.vocabulary_id AND term_options.choice_type = 'TERM'
+    WHERE (variants.variant_no = 1 AND stats.meaning_count >= 4
+           AND meaning_options.option_1 IS NOT NULL AND meaning_options.option_2 IS NOT NULL AND meaning_options.option_3 IS NOT NULL)
+       OR (variants.variant_no = 2 AND (
+              (TRIM(COALESCE(w.reading, '')) <> '' AND stats.reading_count >= 4
+               AND reading_options.option_1 IS NOT NULL AND reading_options.option_2 IS NOT NULL AND reading_options.option_3 IS NOT NULL)
+              OR (NOT (TRIM(COALESCE(w.reading, '')) <> '' AND stats.reading_count >= 4)
+                  AND stats.example_count >= 4 AND example_options.option_1 IS NOT NULL
+                  AND example_options.option_2 IS NOT NULL AND example_options.option_3 IS NOT NULL)
+              OR (NOT (TRIM(COALESCE(w.reading, '')) <> '' AND stats.reading_count >= 4)
+                  AND NOT (stats.example_count >= 4 AND example_options.option_1 IS NOT NULL
+                          AND example_options.option_2 IS NOT NULL AND example_options.option_3 IS NOT NULL)
+                  AND term_options.option_1 IS NOT NULL AND term_options.option_2 IS NOT NULL AND term_options.option_3 IS NOT NULL)
+          ))
+       OR (variants.variant_no = 3
+           AND TRIM(COALESCE(w.reading, '')) <> '' AND stats.reading_count >= 4
+           AND stats.example_count >= 4 AND example_options.option_1 IS NOT NULL
+           AND example_options.option_2 IS NOT NULL AND example_options.option_3 IS NOT NULL)
+)
+SELECT 'VOCABULARY', 'MCQ', spec.lesson_id, spec.question_content, spec.question_explanation,
+       JSON_OBJECT(
+           'options', CAST(
+               CASE
+                   WHEN spec.variant_no = 1 THEN JSON_ARRAY(spec.meaning_vi, spec.meaning_1, spec.meaning_2, spec.meaning_3)
+                   WHEN spec.variant_no = 2 AND TRIM(COALESCE(spec.reading, '')) <> '' AND spec.reading_count >= 4
+                       THEN JSON_ARRAY(spec.reading, spec.reading_1, spec.reading_2, spec.reading_3)
+                   WHEN spec.variant_no = 2 AND spec.example_1 IS NOT NULL
+                       THEN JSON_ARRAY(spec.example_jp, spec.example_1, spec.example_2, spec.example_3)
+                   WHEN spec.variant_no = 2 THEN JSON_ARRAY(spec.word, spec.term_1, spec.term_2, spec.term_3)
+                   ELSE JSON_ARRAY(spec.example_jp, spec.example_1, spec.example_2, spec.example_3)
+               END AS JSON
+           ),
+           'correctAnswer', spec.correct_answer,
+           'matches', JSON_OBJECT(),
+           'sourceVocabularyId', spec.vocabulary_id,
+           'sourceVocabularyVariant', spec.variant_no
+       ),
+       CASE
+           WHEN spec.variant_no = 1 THEN 'EASY'
+           WHEN spec.variant_no = 2 AND MOD(spec.chapter_word_order, 5) = 0 THEN 'MEDIUM'
+           WHEN spec.variant_no = 2 THEN 'EASY'
+           WHEN MOD(spec.chapter_word_order, 10) = 0 THEN 'HARD'
+           ELSE 'MEDIUM'
+       END,
+       TRUE,
+       COALESCE((SELECT MAX(existing.display_order) FROM question existing WHERE existing.lesson_id = spec.lesson_id), 0)
+           + ROW_NUMBER() OVER (PARTITION BY spec.lesson_id ORDER BY spec.word_order, spec.variant_no),
+       'ACTIVE'
+FROM question_specs spec
+LEFT JOIN question existing
+  ON existing.skill = 'VOCABULARY' AND existing.lesson_id = spec.lesson_id
+ AND existing.is_exercise_question = TRUE AND existing.status = 'ACTIVE'
+ AND CAST(JSON_UNQUOTE(JSON_EXTRACT(existing.answer_data, '$.sourceVocabularyId')) AS UNSIGNED) = spec.vocabulary_id
+ AND CAST(JSON_UNQUOTE(JSON_EXTRACT(existing.answer_data, '$.sourceVocabularyVariant')) AS UNSIGNED) = spec.variant_no
+WHERE existing.id IS NULL;
+
+-- Reuse the existing test and test_question schema to publish and link the generated questions.
+INSERT INTO test (test_type, skill, lesson_id, chapter_id, title, description,
+                  duration_minutes, passing_score, status)
+SELECT 'MINI_TEST', 'VOCABULARY', l.id, NULL,
+       CONCAT('Exercise từ vựng - ', l.title),
+       'Câu hỏi lấy từ từ vựng đã xuất bản của bài học.', 20, 70, 'PUBLISHED'
+FROM course c
+JOIN chapter ch ON ch.course_id = c.id AND ch.status = 'PUBLISHED'
+JOIN lesson l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.status = 'PUBLISHED'
+WHERE c.code IN ('JPD113', 'JPD123') AND c.status = 'PUBLISHED' AND c.deleted_at IS NULL
+  AND EXISTS (SELECT 1 FROM vocabulary v WHERE v.lesson_id = l.id AND v.status = 'PUBLISHED')
+  AND NOT EXISTS (SELECT 1 FROM test existing WHERE existing.test_type = 'MINI_TEST'
+                  AND existing.skill = 'VOCABULARY' AND existing.lesson_id = l.id AND existing.status <> 'ARCHIVED');
+
+UPDATE test exercise
+JOIN lesson l ON l.id = exercise.lesson_id
+JOIN chapter ch ON ch.id = l.chapter_id
+JOIN course c ON c.id = ch.course_id
+SET exercise.status = 'PUBLISHED', exercise.updated_at = CURRENT_TIMESTAMP
+WHERE c.code IN ('JPD113', 'JPD123') AND exercise.test_type = 'MINI_TEST'
+  AND exercise.id > 0
+  AND exercise.skill = 'VOCABULARY' AND exercise.status = 'DRAFT'
+  AND l.skill_type = 'VOCABULARY' AND l.status = 'PUBLISHED';
+
+INSERT INTO test_question (test_id, question_id, part_type)
+SELECT tests.id, q.id, 'VOCABULARY'
+FROM test tests
+JOIN question q ON q.lesson_id = tests.lesson_id AND q.skill = 'VOCABULARY'
+             AND q.is_exercise_question = TRUE AND q.status = 'ACTIVE'
+             AND JSON_EXTRACT(q.answer_data, '$.sourceVocabularyVariant') IS NOT NULL
+WHERE tests.test_type = 'MINI_TEST' AND tests.skill = 'VOCABULARY' AND tests.status = 'PUBLISHED'
+  AND NOT EXISTS (SELECT 1 FROM test_question existing WHERE existing.test_id = tests.id AND existing.question_id = q.id);
+
+INSERT INTO test (test_type, skill, lesson_id, chapter_id, title, description,
+                  duration_minutes, passing_score, status)
+SELECT 'CHAPTER_TEST', 'VOCABULARY', NULL, ch.id,
+       CONCAT('Mini test Từ vựng · ', c.code, ' · Chương ', ch.chapter_no),
+       'Câu hỏi Từ vựng tổng hợp từ các bài trong chương.', 30, 70, 'PUBLISHED'
+FROM course c
+JOIN chapter ch ON ch.course_id = c.id AND ch.status = 'PUBLISHED'
+WHERE c.code IN ('JPD113', 'JPD123') AND c.status = 'PUBLISHED' AND c.deleted_at IS NULL
+  AND EXISTS (
+      SELECT 1 FROM lesson l JOIN vocabulary v ON v.lesson_id = l.id
+      WHERE l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY'
+        AND l.status = 'PUBLISHED' AND v.status = 'PUBLISHED'
+  )
+  AND NOT EXISTS (SELECT 1 FROM test existing WHERE existing.test_type = 'CHAPTER_TEST'
+                  AND existing.skill = 'VOCABULARY' AND existing.chapter_id = ch.id
+                  AND existing.lesson_id IS NULL AND existing.status <> 'ARCHIVED');
+
+UPDATE test chapter_test
+JOIN chapter ch ON ch.id = chapter_test.chapter_id
+JOIN course c ON c.id = ch.course_id
+SET chapter_test.status = 'PUBLISHED', chapter_test.updated_at = CURRENT_TIMESTAMP
+WHERE c.code IN ('JPD113', 'JPD123') AND chapter_test.test_type = 'CHAPTER_TEST'
+  AND chapter_test.id > 0
+  AND chapter_test.skill = 'VOCABULARY' AND chapter_test.lesson_id IS NULL
+  AND chapter_test.status = 'DRAFT';
+
+INSERT INTO test_question (test_id, question_id, part_type)
+SELECT tests.id, q.id, 'VOCABULARY'
+FROM test tests
+JOIN chapter ch ON ch.id = tests.chapter_id
+JOIN lesson l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY'
+JOIN question q ON q.lesson_id = l.id AND q.skill = 'VOCABULARY'
+             AND q.is_exercise_question = TRUE AND q.status = 'ACTIVE'
+             AND JSON_EXTRACT(q.answer_data, '$.sourceVocabularyVariant') IS NOT NULL
+WHERE tests.test_type = 'CHAPTER_TEST' AND tests.skill = 'VOCABULARY'
+  AND tests.lesson_id IS NULL AND tests.status = 'PUBLISHED'
+  AND NOT EXISTS (SELECT 1 FROM test_question existing WHERE existing.test_id = tests.id AND existing.question_id = q.id);
 -- Pick one anchor lesson per Grammar group. Student attempts load all linked questions by test ID.
 CREATE TEMPORARY TABLE jtech_exam_seed_target AS
 WITH chapters AS (
