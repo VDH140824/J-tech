@@ -7,6 +7,7 @@ import { ModeratorVocabularyListPage } from "./ModeratorVocabularyListPage";
 import { VocabularyExerciseTab } from "./VocabularyExerciseTab";
 import { StudentVocabularyExerciseTab } from "../../home/StudentVocabularyExerciseTab";
 import { StudentVocabularyList } from "../../home/StudentVocabularyList";
+import { getPdfPreviewUrl } from "../../../utils/lessonDocuments";
 import "../ModeratorContent.css";
 
 interface Props {
@@ -374,7 +375,7 @@ export function ModeratorVocabularyLessonPage({
                   key={document.url}
                   title={`Tài liệu ${lesson.title}`}
                   className="mod-vocab-pdf-frame"
-                  src={document.url}
+                  src={getPdfPreviewUrl(document.url)}
                   referrerPolicy="no-referrer"
                 />
                 <p className="mod-vocab-pdf-hint">

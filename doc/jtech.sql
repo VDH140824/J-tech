@@ -2258,6 +2258,59 @@ WHERE NOT EXISTS (
       AND l.skill_type = 'VOCABULARY' AND l.lesson_no = seed.lesson_no
 );
 
+-- Tài liệu PDF Cloudinary cho 21 bài từ vựng.
+UPDATE lesson AS l
+JOIN chapter AS ch ON ch.id = l.chapter_id
+JOIN course AS c ON c.id = ch.course_id
+JOIN (
+    SELECT 'JPD113' AS course_code, 1 AS chapter_no, 1 AS lesson_no, 'Từ vựng Chương 1 - Phần 1' AS doc_name, 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590760/vocab/JPD113_Chuong_01_Phan_01_78d6c0e33ca1.pdf' AS doc_url, 'vocab/JPD113_Chuong_01_Phan_01_78d6c0e33ca1.pdf' AS public_id, 'raw' AS resource_type, 'vocab' AS asset_folder
+    UNION ALL
+    SELECT 'JPD113', 1, 2, 'Từ vựng Chương 1 - Phần 2', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590760/vocab/JPD113_Chuong_01_Phan_02_4193b0c13c6d.pdf', 'vocab/JPD113_Chuong_01_Phan_02_4193b0c13c6d.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD113', 1, 3, 'Từ vựng Chương 1 - Phần 3', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590760/vocab/JPD113_Chuong_01_Phan_03_b5ba03a2a0af.pdf', 'vocab/JPD113_Chuong_01_Phan_03_b5ba03a2a0af.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD113', 2, 1, 'Từ vựng Chương 2 - Phần 1', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590760/vocab/JPD113_Chuong_02_Phan_01_4091a5f0be86.pdf', 'vocab/JPD113_Chuong_02_Phan_01_4091a5f0be86.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD113', 2, 2, 'Từ vựng Chương 2 - Phần 2', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590760/vocab/JPD113_Chuong_02_Phan_02_c936063a1b1e.pdf', 'vocab/JPD113_Chuong_02_Phan_02_c936063a1b1e.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD113', 2, 3, 'Từ vựng Chương 2 - Phần 3', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590762/vocab/JPD113_Chuong_02_Phan_03_25d56452fdcc.pdf', 'vocab/JPD113_Chuong_02_Phan_03_25d56452fdcc.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD113', 3, 1, 'Từ vựng Chương 3 - Phần 1', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590762/vocab/JPD113_Chuong_03_Phan_01_0ee4e5147398.pdf', 'vocab/JPD113_Chuong_03_Phan_01_0ee4e5147398.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD113', 3, 2, 'Từ vựng Chương 3 - Phần 2', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590762/vocab/JPD113_Chuong_03_Phan_02_5c8aec7f690b.pdf', 'vocab/JPD113_Chuong_03_Phan_02_5c8aec7f690b.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD113', 3, 3, 'Từ vựng Chương 3 - Phần 3', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590762/vocab/JPD113_Chuong_03_Phan_03_44f1f228eee2.pdf', 'vocab/JPD113_Chuong_03_Phan_03_44f1f228eee2.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 4, 1, 'Từ vựng Chương 4 - Phần 1', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590763/vocab/JPD123_Chuong_04_Phan_01_a973958741f9.pdf', 'vocab/JPD123_Chuong_04_Phan_01_a973958741f9.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 4, 2, 'Từ vựng Chương 4 - Phần 2', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590764/vocab/JPD123_Chuong_04_Phan_02_abc03386e346.pdf', 'vocab/JPD123_Chuong_04_Phan_02_abc03386e346.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 4, 3, 'Từ vựng Chương 4 - Phần 3', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590765/vocab/JPD123_Chuong_04_Phan_03_bb30cc262bb2.pdf', 'vocab/JPD123_Chuong_04_Phan_03_bb30cc262bb2.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 5, 1, 'Từ vựng Chương 5 - Phần 1', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590765/vocab/JPD123_Chuong_05_Phan_01_ea4f1da51b80.pdf', 'vocab/JPD123_Chuong_05_Phan_01_ea4f1da51b80.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 5, 2, 'Từ vựng Chương 5 - Phần 2', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590765/vocab/JPD123_Chuong_05_Phan_02_f5b845b62d78.pdf', 'vocab/JPD123_Chuong_05_Phan_02_f5b845b62d78.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 5, 3, 'Từ vựng Chương 5 - Phần 3', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590765/vocab/JPD123_Chuong_05_Phan_03_fd1de9c01ce4.pdf', 'vocab/JPD123_Chuong_05_Phan_03_fd1de9c01ce4.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 6, 1, 'Từ vựng Chương 6 - Phần 1', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590767/vocab/JPD123_Chuong_06_Phan_01_e3adbd536d8c.pdf', 'vocab/JPD123_Chuong_06_Phan_01_e3adbd536d8c.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 6, 2, 'Từ vựng Chương 6 - Phần 2', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590767/vocab/JPD123_Chuong_06_Phan_02_f88a1b3e5f3b.pdf', 'vocab/JPD123_Chuong_06_Phan_02_f88a1b3e5f3b.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 6, 3, 'Từ vựng Chương 6 - Phần 3', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590767/vocab/JPD123_Chuong_06_Phan_03_d7d7f5d742de.pdf', 'vocab/JPD123_Chuong_06_Phan_03_d7d7f5d742de.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 7, 1, 'Từ vựng Chương 7 - Phần 1', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590767/vocab/JPD123_Chuong_07_Phan_01_48311b98af48.pdf', 'vocab/JPD123_Chuong_07_Phan_01_48311b98af48.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 7, 2, 'Từ vựng Chương 7 - Phần 2', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590767/vocab/JPD123_Chuong_07_Phan_02_c9dbf27db56d.pdf', 'vocab/JPD123_Chuong_07_Phan_02_c9dbf27db56d.pdf', 'raw', 'vocab'
+    UNION ALL
+    SELECT 'JPD123', 7, 3, 'Từ vựng Chương 7 - Phần 3', 'https://res.cloudinary.com/keticbsk/raw/upload/v1795590769/vocab/JPD123_Chuong_07_Phan_03_124747da458f.pdf', 'vocab/JPD123_Chuong_07_Phan_03_124747da458f.pdf', 'raw', 'vocab'
+) AS pdf ON pdf.course_code = c.code AND pdf.chapter_no = ch.chapter_no AND pdf.lesson_no = l.lesson_no
+SET l.documents = JSON_ARRAY(JSON_OBJECT(
+    'name', pdf.doc_name, 'url', pdf.doc_url, 'publicId', pdf.public_id,
+    'resourceType', pdf.resource_type, 'assetFolder', pdf.asset_folder
+))
+WHERE l.skill_type = 'VOCABULARY' AND l.documents IS NULL;
+
 -- JPD113 / Chapter 1 / Từ vựng: 47 mục.
 INSERT INTO vocabulary (lesson_id, word, reading, meaning_vi, word_type, example_jp, example_vi, display_order, status)
 SELECT l.id, seed.word, seed.reading, seed.meaning_vi, seed.word_type, seed.example_jp, seed.example_vi, seed.display_order, seed.status
