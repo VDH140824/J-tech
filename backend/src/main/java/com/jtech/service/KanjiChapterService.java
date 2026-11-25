@@ -121,8 +121,8 @@ public class KanjiChapterService {
     public Content content(Principal principal, long chapterId) {
         Chapter chapter = chapter(principal, chapterId, false);
         var documents = mapper.createArrayNode();
-        var counts = em.createQuery("SELECT q.lessonId,COUNT(q) FROM Question q WHERE q.skill=:skill AND q.isExerciseQuestion=true AND q.status=:status AND q.lessonId IN (SELECT l.id FROM Lesson l WHERE l.chapter.id=:chapter AND l.skillType=:lessonSkill) GROUP BY q.lessonId", Object[].class)
-            .setParameter("skill", Question.Skill.KANJI).setParameter("status", Question.QuestionStatus.ACTIVE)
+        var counts = em.createQuery("SELECT q.lessonId,COUNT(q) FROM Question q WHERE q.skill=:skill AND q.isExerciseQuestion=true AND q.lessonId IN (SELECT l.id FROM Lesson l WHERE l.chapter.id=:chapter AND l.skillType=:lessonSkill) GROUP BY q.lessonId", Object[].class)
+            .setParameter("skill", Question.Skill.KANJI)
             .setParameter("chapter", chapterId).setParameter("lessonSkill", Lesson.SkillType.KANJI).getResultList();
         Map<Long, Long> exerciseCounts = new LinkedHashMap<>();
         for (Object[] row : counts) exerciseCounts.put((Long) row[0], (Long) row[1]);
@@ -261,18 +261,8 @@ public class KanjiChapterService {
             if (!lesson.getId().equals(targetId)) continue;
             em.lock(lesson, LockModeType.PESSIMISTIC_WRITE);
             em.refresh(lesson);
-            var questions = em.createQuery("SELECT q FROM Question q WHERE q.lessonId=:lesson AND q.skill=:skill AND q.isExerciseQuestion=true AND q.status=:status", Question.class)
-                .setParameter("lesson", lesson.getId()).setParameter("skill", Question.Skill.KANJI)
-                .setParameter("status", Question.QuestionStatus.ACTIVE).setLockMode(LockModeType.PESSIMISTIC_WRITE).getResultList();
-            if (!questions.isEmpty() && !archiveExercises) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Tài liệu có bài tập. Vui lòng xác nhận lưu trữ các câu hỏi khi xóa.");
-            }
-            long actor = access.actor(principal, "MODERATOR").getUserId();
-            for (Question question : questions) {
-                question.setStatus(Question.QuestionStatus.ARCHIVED);
-                question.setUpdatedBy(actor);
-                question.setUpdatedAt(java.time.LocalDateTime.now());
-            }
+            // Keep the lesson and all question IDs/statuses intact. Removing its document
+            // makes these questions appear in the chapter's unassigned exercise list.
             ArrayNode entries = documentEntries(lesson.getDocuments());
             ArrayNode remaining = mapper.createArrayNode();
             for (JsonNode document : entries) {
@@ -473,6 +463,18 @@ public class KanjiChapterService {
     }
 
     @Transactional
+    public KanjiExerciseResponse changeExerciseStatus(Principal p, long chapterId, long id,
+        Question.QuestionStatus status, Long documentLessonId) {
+        Question question = question(p, chapterId, id, true);
+        if (documentLessonId != null) {
+            singleDocument(p, chapterId, documentLessonId, true);
+            if (!question.getLessonId().equals(documentLessonId)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Câu hỏi không thuộc tài liệu này.");
+        }
+        documentLesson(p, chapterId, question.getLessonId(), true);
+        return exercises.changeStatus(p, question.getLessonId(), id, status);
+    }
+
+    @Transactional
     public KanjiExerciseResponse assignExercise(Principal p, long chapterId, long id, long targetLessonId) {
         Lesson target = singleDocument(p, chapterId, targetLessonId, true);
         Question question = question(p, chapterId, id, true);
@@ -481,11 +483,6 @@ public class KanjiChapterService {
         if (validDocuments(source).size() == 1 || question.getStatus() != Question.QuestionStatus.ACTIVE) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Câu hỏi đã được gán hoặc đã lưu trữ. Vui lòng tải lại.");
         }
-        var old = exercises.detail(p, source.getId(), id);
-        var request = new KanjiExerciseRequest(old.questionType(), old.content(), old.explanation(), old.difficulty(),
-            old.displayOrder(), old.options(), old.correctAnswer(), old.matches());
-        var assigned = exercises.save(p, target.getId(), null, request);
-        exercises.delete(p, source.getId(), id);
-        return assigned;
+        return exercises.assign(p, source.getId(), id, target.getId());
     }
 }

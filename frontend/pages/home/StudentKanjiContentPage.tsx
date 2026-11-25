@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { LessonSummary } from "../../api/lessonApi";
-import { getStudentKanjiCards } from "../../api/studentKanjiApi";
+import { getStudentKanjiCards, getStudentKanjiExercises } from "../../api/studentKanjiApi";
 import { getPdfPreviewUrl, parseLessonDocuments } from "../../utils/lessonDocuments";
 import "./StudentKanjiFlashcards.css";
 
@@ -33,6 +33,12 @@ export function StudentKanjiContentPage({
     enabled: !isDocument,
   });
   const card = query.data?.find((item) => String(item.id) === kanjiId);
+  const exercises = useQuery({
+    queryKey: ["student-kanji-exercises", lesson.id],
+    queryFn: ({ signal }) => getStudentKanjiExercises(lesson.id, signal),
+    enabled: !!document,
+    refetchOnWindowFocus: false,
+  });
   return (
     <section className="student-kanji-page">
       <button type="button" className="kanji-text-button" onClick={onBack}>
@@ -42,8 +48,10 @@ export function StudentKanjiContentPage({
         {document?.name ?? "Chữ Hán"}
       </p>
       {document && <nav className="kanji-lesson-switch" aria-label="Nội dung tài liệu Kanji">
-        <button type="button" aria-current="page">Bài học</button>
-        <button type="button" onClick={onExercise}><span className="kanji-lesson-switch-dot" aria-hidden="true" />Bài tập</button>
+        <button type="button" aria-current="page"><span aria-hidden="true">📄</span>Tài liệu</button>
+        <button type="button" onClick={onExercise}><span aria-hidden="true">✏️</span>Bài tập
+          {exercises.isSuccess && <span className="kanji-lesson-question-count">{exercises.data.length} câu</span>}
+        </button>
       </nav>}
       {isDocument ? (
         document ? (
