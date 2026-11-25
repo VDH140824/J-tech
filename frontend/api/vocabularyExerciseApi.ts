@@ -21,6 +21,9 @@ export interface ExerciseInput {
   status: ExerciseStatus;
   questions: ExerciseQuestionInput[];
 }
+export interface ExerciseQuestionBankInput extends Omit<ExerciseInput, "questions"> {
+  questionIds: number[];
+}
 export interface ExerciseQuestion extends ExerciseQuestionInput {
   id: number;
 }
@@ -84,6 +87,15 @@ export async function saveExercise(
 ) {
   return (await apiClient.post<VocabularyExercise>(`${base}/lessons/${lessonId}/mini-tests`, input))
     .data;
+}
+export async function addQuestionBankItemsToExercise(
+  lessonId: number,
+  input: ExerciseQuestionBankInput,
+) {
+  return (await apiClient.post<VocabularyExercise>(
+    `${base}/lessons/${lessonId}/mini-tests/question-bank`,
+    input,
+  )).data;
 }
 export async function importExerciseQuestions(lessonId: number, file: File) {
   const form = new FormData();
