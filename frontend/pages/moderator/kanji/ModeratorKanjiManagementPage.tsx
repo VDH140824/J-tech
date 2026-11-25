@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getCourses, getCourse, type CourseSummary, type ChapterSummary } from "../../../api/courseApi";
 import { ModeratorKanjiPage } from "./ModeratorKanjiPage";
 
 export function ModeratorKanjiManagementPage() {
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const courseId = Number(params.get("courseId")) || 0;
   const chapterId = Number(params.get("chapterId")) || 0;
@@ -40,7 +41,12 @@ export function ModeratorKanjiManagementPage() {
     if (chapter) next.set("chapterId", String(chapter));
     setParams(next);
   };
-  if (chapterId && !loading && !error && chapters.some(chapter => chapter.id === chapterId)) return <ModeratorKanjiPage key={chapterId} chapterId={chapterId} onBack={() => choose(courseId)} />;
+  const selectedChapter = chapters.find(chapter => chapter.id === chapterId);
+  if (selectedChapter && !loading && !error) return <ModeratorKanjiPage key={chapterId} chapterId={chapterId}
+    courseName={courses.find(course => course.id === courseId)?.name ?? `Nhật ${courseId}`}
+    chapterNo={selectedChapter.chapterNo} chapterTitle={selectedChapter.title}
+    onBack={() => navigate(`/moderator/courses/${courseId}/chapters/${chapterId}`)}
+    onSelectSection={section => navigate(`/moderator/courses/${courseId}/chapters/${chapterId}?skill=${section}`)} />;
   return <div className="admin-page-container kanji-page">
     <div className="admin-page-header"><div><h2 className="admin-main-title">Quản lý Kanji</h2>
       <p className="admin-main-subtitle">Chọn chương để tải tài liệu, tạo bài tập và flashcard Kanji.</p></div></div>

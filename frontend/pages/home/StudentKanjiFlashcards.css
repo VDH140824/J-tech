@@ -122,6 +122,7 @@
   font-size: 1.5rem;
 }
 .kanji-study-card {
+  cursor: pointer;
   background: white;
   border-radius: 32px;
   box-shadow: 0 6px 16px #142f3329;
@@ -168,6 +169,19 @@
   flex: 1;
   padding: 0 10px 16px;
 }
+.kanji-study-card:focus-visible{outline:3px solid #0d9488;outline-offset:4px}
+.kanji-study-card[aria-disabled="true"]{cursor:wait}
+.kanji-back-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+.kanji-back-layout--illustrated{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+.kanji-back-details,.kanji-back-layout>.kanji-mnemonic{min-width:0}
+.kanji-back-layout>.kanji-mnemonic{margin:0;padding:16px;align-self:start}
+.kanji-back-layout>.kanji-mnemonic img{display:block;width:100%;max-width:100%;height:auto;max-height:320px;object-fit:contain;margin:0 auto}
+.kanji-card-readings{display:flex;flex-wrap:wrap;gap:12px 24px;margin:16px 0}
+.kanji-card-readings div{flex:1;min-width:100px}
+.kanji-card-readings dt{font-weight:700;color:#64748b}
+.kanji-card-readings dd{margin:4px 0;overflow-wrap:anywhere}
+.kanji-card-flip-hint{text-align:center;margin:16px 0 0}
+@media(max-width:640px){.kanji-back-layout--illustrated{grid-template-columns:minmax(0,1fr)}}
 .kanji-meaning {
   text-align: center;
   color: #66727b;

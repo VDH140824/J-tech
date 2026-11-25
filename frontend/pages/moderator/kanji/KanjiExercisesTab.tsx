@@ -1,5 +1,5 @@
 import { KanjiExerciseImportModal, useKanjiDialog } from "./KanjiExerciseImportModal";
-import { deleteChapterKanjiExercise, getChapterKanjiExercise, listChapterKanjiExercises, saveChapterKanjiExercise,
+import { deleteChapterKanjiExercise, listChapterKanjiExercises, saveChapterKanjiExercise,
   changeChapterKanjiExerciseStatus, downloadKanjiExcel, prepareKanjiDocument, assignKanjiExercise, type KanjiDocument } from "../../../api/kanjiChapterApi";
 import { useEffect, useState, type FormEvent } from "react";
 import {
@@ -60,14 +60,17 @@ export function KanjiExercisesTab({
   const [notice, setNotice] = useState("");
   const [draft, setDraft] = useState<KanjiExerciseInput>();
   const [editingId, setEditingId] = useState<number>();
+  const [editingItem, setEditingItem] = useState<KanjiExercise>();
   const [pairs, setPairs] = useState<Pair[]>([]);
-  const [preview, setPreview] = useState<KanjiExercise>();
-  const [answer, setAnswer] = useState("");
-  const [matchingAnswers, setMatchingAnswers] = useState<
-    Record<string, string>
-  >({});
-  const [checked, setChecked] = useState(false);
   const [assignmentTarget, setAssignmentTarget] = useState("");
+  const hasUnsavedChanges = !!editingItem && !!draft && (
+    (["questionType", "content", "explanation", "difficulty", "displayOrder", "correctAnswer"] as const)
+      .some(key => draft[key] !== editingItem[key]) ||
+    JSON.stringify(draft.options) !== JSON.stringify(editingItem.options) ||
+    (draft.questionType === "MATCHING" && JSON.stringify(pairs) !== JSON.stringify(
+      Object.entries(editingItem.matches).map(([left, right]) => ({ left, right }))
+    ))
+  );
   const editorDialog = useKanjiDialog(!!draft, () => setDraft(undefined), busy);
   const deleteDialog = useKanjiDialog(!!deleting, () => setDeleting(undefined), busy);
 
@@ -99,7 +102,9 @@ export function KanjiExercisesTab({
 
   function edit(item?: KanjiExercise) {
     setEditingId(item?.id);
-    setPreview(undefined);
+    setEditingItem(item);
+    setAssignmentTarget("");
+
     setError("");
     setNotice("");
     setDraft(
@@ -120,24 +125,10 @@ export function KanjiExercisesTab({
           ],
     );
   }
-  async function open(id: number) {
-    setBusy(true);
-    setError("");
-    setChecked(false);
-    setAnswer("");
-    setMatchingAnswers({});
-    try {
-      setPreview(await getChapterKanjiExercise(chapterId, id, documentLessonId));
-      setDraft(undefined);
-    } catch (e) {
-      setError(kanjiExerciseError(e));
-    } finally {
-      setBusy(false);
-    }
-  }
   async function save(event: FormEvent) {
     event.preventDefault();
     if (!draft || busy) return;
+    if (readOnly || editingItem?.status === "ARCHIVED") return;
     const input = {
       ...draft,
       content: draft.content.trim(),
@@ -203,7 +194,7 @@ export function KanjiExercisesTab({
     setError("");
     try {
       await deleteChapterKanjiExercise(chapterId, item.id, documentLessonId);
-      setPreview(undefined);
+
       setReload((n) => n + 1);
       setDeleting(undefined);
       setNotice("Đã xóa câu hỏi.");
@@ -225,7 +216,7 @@ export function KanjiExercisesTab({
       const prepared = await prepareKanjiDocument(chapterId, target);
       await assignKanjiExercise(chapterId, item.id, prepared.lessonId);
       setAssignmentTarget("");
-      setPreview(undefined);
+
       setDraft(undefined);
       setReload(value => value + 1);
       setNotice(`Đã gán câu hỏi vào tài liệu “${target.name}”.`);
@@ -243,7 +234,8 @@ export function KanjiExercisesTab({
     setBusy(true); setError(""); setNotice("");
     try {
       await changeChapterKanjiExerciseStatus(chapterId, item.id, nextStatus, documentLessonId);
-      setPreview(undefined);
+      setDraft(undefined);
+
       setReload(n => n + 1);
       setNotice(nextStatus === "ACTIVE" ? (unassigned ? "Đã xuất bản câu hỏi. Hãy chọn tài liệu để gán." : "Đã xuất bản câu hỏi.") : "Đã chuyển câu hỏi sang Lưu trữ.");
       await onChanged?.();
@@ -298,14 +290,6 @@ export function KanjiExercisesTab({
           Tải lại
         </button>
       </div>
-      {unassigned && <label className="kanji-document-toolbar">Tài liệu nhận câu hỏi{" "}
-        <select aria-label="Tài liệu nhận câu hỏi" value={assignmentTarget} disabled={busy || readOnly}
-          onChange={event => setAssignmentTarget(event.target.value)}>
-          <option value="">Chọn tài liệu</option>
-          {documents.map((document, index) => <option key={`${document.lessonId}-${index}`} value={index}>{document.name}</option>)}
-        </select>
-        {!documents.length && <span>Upload tài liệu để gán các câu hỏi này.</span>}
-      </label>}
       {error && !draft && !deleting && (
         <p role="alert" className="kanji-error">
           {error}
@@ -319,7 +303,32 @@ export function KanjiExercisesTab({
           <h3 className="modal-title">{editingId ? "Chỉnh sửa câu hỏi Kanji" : "Thêm câu hỏi Kanji"}</h3>
           <p><strong>Tài liệu: {documentName || "Câu hỏi chưa gán tài liệu"}</strong></p>
           {error && <p role="alert" className="kanji-error">{error}</p>}
-          <fieldset disabled={busy || readOnly}>
+          {editingItem && <div className="kanji-question-management">
+            <p>Trạng thái: <strong>{editingItem.status === "ACTIVE" ? "Đã xuất bản" : "Lưu trữ"}</strong></p>
+            {hasUnsavedChanges && <p role="status">Lưu thay đổi nội dung trước khi chuyển trạng thái hoặc gán tài liệu.</p>}
+            <div className="kanji-exercise-actions">
+              <button type="button" className="mod-btn-add mod-question-btn--secondary"
+                disabled={busy || readOnly || hasUnsavedChanges} onClick={() => void changeStatus(editingItem)}>
+                {editingItem.status === "ACTIVE" ? "Lưu trữ" : "Xuất bản"}
+              </button>
+            </div>
+            {unassigned && <div className="kanji-question-assignment">
+              <label>Tài liệu nhận câu hỏi
+                <select aria-label="Tài liệu nhận câu hỏi" value={assignmentTarget}
+                  disabled={busy || readOnly || hasUnsavedChanges || editingItem.status !== "ACTIVE"}
+                  onChange={event => setAssignmentTarget(event.target.value)}>
+                  <option value="">Chọn tài liệu</option>
+                  {documents.map((document, index) => <option key={`${document.lessonId}-${index}`} value={index}>{document.name}</option>)}
+                </select>
+              </label>
+              <button type="button" className="mod-btn-add mod-question-btn--secondary"
+                disabled={busy || readOnly || hasUnsavedChanges || assignmentTarget === "" || editingItem.status !== "ACTIVE"}
+                onClick={() => void assign(editingItem)}>Gán tài liệu</button>
+              {!documents.length && <p>Upload tài liệu để gán câu hỏi này.</p>}
+              {editingItem.status === "ARCHIVED" && <p>Xuất bản câu hỏi trước khi gán sang tài liệu khác.</p>}
+            </div>}
+          </div>}
+          <fieldset disabled={busy || readOnly || editingItem?.status === "ARCHIVED"}>
             <label>
               Dạng câu hỏi
               <select
@@ -524,113 +533,10 @@ export function KanjiExercisesTab({
               <button type="submit" className="mod-btn-add">
                 {busy ? "Đang lưu…" : "Lưu câu hỏi"}
               </button>
-              <button type="button" onClick={() => setDraft(undefined)}>
-                Hủy
-              </button>
             </div>
           </fieldset>
+          <button type="button" className="btn-modal-cancel" disabled={busy} onClick={() => setDraft(undefined)}>Hủy</button>
         </form></section></div>
-      )}
-      {preview && (
-        <section
-          className="kanji-exercise-preview"
-          aria-label="Xem trước câu hỏi"
-        >
-          <h3>Xem trước · {typeNames[preview.questionType]}</h3>
-          <p className="kanji-exercise-text">{preview.content}</p>
-          {preview.questionType === "MCQ" &&
-            (preview.options ?? []).map((option, index) => (
-              <label className="kanji-exercise-option" key={index}>
-                <input
-                  type="radio"
-                  name="previewAnswer"
-                  value={option}
-                  checked={answer === option}
-                  onChange={(e) => {
-                    setAnswer(e.target.value);
-                    setChecked(false);
-                  }}
-                />
-                {option}
-              </label>
-            ))}
-          {preview.questionType === "FILL_IN" && (
-            <label>
-              Đáp án thử
-              <input
-                maxLength={1000}
-                value={answer}
-                onChange={(e) => {
-                  setAnswer(e.target.value);
-                  setChecked(false);
-                }}
-              />
-            </label>
-          )}
-          {preview.questionType === "MATCHING" &&
-            Object.keys(preview.matches).map((left) => (
-              <label key={left}>
-                {left}
-                <select
-                  value={matchingAnswers[left] ?? ""}
-                  onChange={(e) => {
-                    setMatchingAnswers({
-                      ...matchingAnswers,
-                      [left]: e.target.value,
-                    });
-                    setChecked(false);
-                  }}
-                >
-                  <option value="">Chọn vế phải</option>
-                  {Object.values(preview.matches)
-                    .sort((a, b) => a.localeCompare(b))
-                    .map((right) => (
-                      <option key={right} value={right}>
-                        {right}
-                      </option>
-                    ))}
-                </select>
-              </label>
-            ))}
-          <div className="kanji-exercise-actions">
-            <button type="button" onClick={() => setChecked(true)}>
-              Kiểm tra đáp án
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setPreview(undefined)}
-            >
-              Đóng xem trước
-            </button>
-          </div>
-          {checked && (
-            <div role="status">
-              <p>
-                {(
-                  preview.questionType === "MATCHING"
-                    ? Object.entries(preview.matches).every(
-                        ([left, right]) =>
-                          normalize(matchingAnswers[left] ?? "") ===
-                          normalize(right),
-                      )
-                    : normalize(answer) === normalize(preview.correctAnswer)
-                )
-                  ? "Chính xác!"
-                  : "Chưa chính xác."}
-              </p>
-              <p>
-                Đáp án:{" "}
-                {preview.questionType === "MATCHING"
-                  ? Object.entries(preview.matches)
-                      .map(([l, r]) => `${l} ↔ ${r}`)
-                      .join("; ")
-                  : preview.correctAnswer}
-              </p>
-              <p className="kanji-exercise-text">{preview.explanation}</p>
-            </div>
-          )}
-        </section>
       )}
       {loading ? (
         <p role="status">Đang tải bài tập…</p>
@@ -639,18 +545,18 @@ export function KanjiExercisesTab({
           <>
             <p>{data?.totalElements ?? 0} câu hỏi</p>
             {data?.content.length ? (
-              <div className="admin-table-card admin-table-responsive kanji-exercise-table">
+              <div className="admin-table-card">
+                <div className="admin-table-responsive kanji-exercise-table">
                 <table className="admin-dekiru-table">
                   <thead>
                     <tr>
-                      <th>Dạng</th>
-                      <th>Độ khó</th>
-                      <th>Nội dung</th>
-                      <th>Giải thích</th>
-                      <th>Đáp án</th>
-                      <th>Thứ tự hiển thị</th>
-                      <th>Trạng thái</th>
-                      <th>Thao tác</th>
+                      <th scope="col">Loại câu hỏi</th>
+                      <th scope="col">Độ khó</th>
+                      <th scope="col">Nội dung</th>
+                      <th scope="col">Giải thích</th>
+                      <th scope="col">Đáp án</th>
+                      <th scope="col">Thứ tự hiển thị</th>
+                      <th scope="col">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -665,36 +571,24 @@ export function KanjiExercisesTab({
                           : q.questionType === "MATCHING" ? Object.entries(q.matches).map(([left, right]) => left + " ↔ " + right).join("\n") : q.correctAnswer}</td>
                         <td>{q.displayOrder}</td>
                         <td>
-                          {q.status === "ACTIVE"
-                            ? "Đã xuất bản"
-                            : "Lưu trữ"}
-                        </td>
-                        <td>
-                          <div className="kanji-exercise-actions">
-                            {unassigned && <button disabled={busy || readOnly || assignmentTarget === "" || q.status !== "ACTIVE"}
-                              onClick={() => assign(q)}>Gán tài liệu</button>}
-                            <button className="mod-btn-add mod-question-btn--secondary" disabled={busy} onClick={() => open(q.id)}>
-                              Xem trước
-                            </button>
+                          <div className="kanji-exercise-actions kanji-question-row-actions">
                             <button
+                              type="button"
                               className="mod-btn-add mod-question-btn--secondary"
                               disabled={
-                                busy || readOnly || q.status === "ARCHIVED"
+                                busy || readOnly
                               }
                               onClick={() => edit(q)}
                             >
-                              Sửa
+                              Chỉnh sửa
                             </button>
                             <button
+                              type="button"
                               className="btn-modal-delete"
                               disabled={busy || readOnly}
                               onClick={() => { setError(""); setDeleting(q); }}
                             >
                               Xóa
-                            </button>
-                            <button type="button" className="mod-btn-add mod-question-btn--secondary"
-                              disabled={busy || readOnly} onClick={() => void changeStatus(q)}>
-                              {q.status === "ACTIVE" ? "Lưu trữ" : "Xuất bản"}
                             </button>
                           </div>
                         </td>
@@ -702,6 +596,7 @@ export function KanjiExercisesTab({
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             ) : (
               <p>Chưa có câu hỏi phù hợp.</p>
