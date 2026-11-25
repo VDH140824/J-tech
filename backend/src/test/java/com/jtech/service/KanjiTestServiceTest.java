@@ -288,7 +288,8 @@ class KanjiTestServiceTest {
         sql ->
           sql.contains("a.user_id=?") &&
           sql.contains("t.chapter_id=?") &&
-          sql.contains("t.test_type='CHAPTER_TEST'") &&
+          sql.contains("t.skill='KANJI'") &&
+          sql.contains("t.test_type='MINI_TEST'") &&
           sql.contains("t.lesson_id IS NULL") &&
           sql.contains("SUBMITTED") &&
           sql.contains("ORDER BY a.submitted_at DESC,a.id DESC LIMIT 1")
@@ -340,7 +341,13 @@ class KanjiTestServiceTest {
     when(test.getInt("passing_score")).thenReturn(70);
     when(test.getString("status")).thenReturn("PUBLISHED");
     when(
-      db.query(contains("WHERE t.chapter_id=?"), any(RowMapper.class), eq(10L))
+      db.query(
+        argThat((String sql) ->
+          sql.contains("t.chapter_id=?") && sql.contains("t.skill='KANJI'") &&
+          sql.contains("t.test_type=?") && sql.contains("t.lesson_id IS NULL")
+        ),
+        any(RowMapper.class), eq(10L), eq("MINI_TEST")
+      )
     ).thenAnswer(invocation -> {
       RowMapper<?> row = invocation.getArgument(1);
       return List.of(row.mapRow(test, 0));

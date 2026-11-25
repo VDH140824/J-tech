@@ -150,7 +150,7 @@ public class StudentKanjiFlashcardService {
     return db.query(
       """
       SELECT id,title,description,duration_minutes FROM test
-      WHERE chapter_id=? AND lesson_id IS NULL AND skill='KANJI' AND test_type='CHAPTER_TEST' AND status='PUBLISHED'
+      WHERE chapter_id=? AND lesson_id IS NULL AND skill='KANJI' AND test_type='MINI_TEST' AND status='PUBLISHED'
       ORDER BY id
       """,
       (rs, n) ->
