@@ -14463,4 +14463,335 @@ ON DUPLICATE KEY UPDATE
     video_public_id = seed.video_public_id,
     video_duration_sec = seed.video_duration_sec;
 
+-- JPD113 and JPD123 exam seed
+-- Chapter tests use 40 questions. Mini tests use 10. Only missing test scopes are seeded.
+DROP TEMPORARY TABLE IF EXISTS jtech_exam_seed_target, jtech_exam_seed_item,
+    jtech_exam_seed_ready, jtech_exam_seed_check;
+
+-- Fill the Vocabulary gaps with easy test questions based on published vocabulary.
+INSERT INTO question (skill, question_type, lesson_id, content, explanation, answer_data,
+                      difficulty, is_exercise_question, display_order, status)
+WITH source_words AS (
+    SELECT 3 AS chapter_no, 1 AS sort_no, _utf8mb4'今' AS word
+    UNION ALL SELECT 3, 2, _utf8mb4'午前'
+    UNION ALL SELECT 3, 3, _utf8mb4'午後'
+    UNION ALL SELECT 3, 4, _utf8mb4'昼'
+    UNION ALL SELECT 3, 5, _utf8mb4'銀行'
+    UNION ALL SELECT 3, 6, _utf8mb4'体育館'
+    UNION ALL SELECT 3, 7, _utf8mb4'図書館'
+    UNION ALL SELECT 3, 8, _utf8mb4'病院'
+    UNION ALL SELECT 3, 9, _utf8mb4'郵便局'
+    UNION ALL SELECT 3, 10, _utf8mb4'授業'
+    UNION ALL SELECT 4, 1, _utf8mb4'北'
+    UNION ALL SELECT 4, 2, _utf8mb4'南'
+    UNION ALL SELECT 4, 3, _utf8mb4'東'
+    UNION ALL SELECT 4, 4, _utf8mb4'西'
+    UNION ALL SELECT 4, 5, _utf8mb4'真ん中'
+    UNION ALL SELECT 4, 6, _utf8mb4'車'
+    UNION ALL SELECT 4, 7, _utf8mb4'新幹線'
+    UNION ALL SELECT 4, 8, _utf8mb4'電車'
+    UNION ALL SELECT 4, 9, _utf8mb4'飛行機'
+    UNION ALL SELECT 4, 10, _utf8mb4'駅'
+    UNION ALL SELECT 4, 11, _utf8mb4'～分'
+    UNION ALL SELECT 4, 12, _utf8mb4'歩いて'
+    UNION ALL SELECT 4, 13, _utf8mb4'～くらい'
+    UNION ALL SELECT 5, 1, _utf8mb4'今日'
+    UNION ALL SELECT 5, 2, _utf8mb4'明日'
+    UNION ALL SELECT 5, 3, _utf8mb4'あさって'
+    UNION ALL SELECT 5, 4, _utf8mb4'昨日'
+    UNION ALL SELECT 5, 5, _utf8mb4'おととい'
+    UNION ALL SELECT 5, 6, _utf8mb4'先週'
+    UNION ALL SELECT 5, 7, _utf8mb4'週末'
+    UNION ALL SELECT 7, 1, _utf8mb4'改札'
+    UNION ALL SELECT 7, 2, _utf8mb4'木'
+    UNION ALL SELECT 7, 3, _utf8mb4'交番'
+    UNION ALL SELECT 7, 4, _utf8mb4'自動販売機'
+    UNION ALL SELECT 7, 5, _utf8mb4'ポスト'
+    UNION ALL SELECT 7, 6, _utf8mb4'花'
+    UNION ALL SELECT 7, 7, _utf8mb4'犬'
+    UNION ALL SELECT 7, 8, _utf8mb4'間'
+    UNION ALL SELECT 7, 9, _utf8mb4'上'
+    UNION ALL SELECT 7, 10, _utf8mb4'下'
+    UNION ALL SELECT 7, 11, _utf8mb4'近く'
+    UNION ALL SELECT 7, 12, _utf8mb4'隣'
+),
+missing_vocabulary AS (
+    SELECT ch.id AS chapter_id, ch.chapter_no,
+           GREATEST(0, 13 - MAX(IF(q.difficulty = 'HARD', 1, 0))
+                          - SUM(IF(q.difficulty IN ('EASY', 'MEDIUM'), 1, 0))) AS missing_count
+    FROM course c
+    JOIN chapter ch ON ch.course_id = c.id AND ch.status = 'PUBLISHED'
+    LEFT JOIN lesson l ON l.chapter_id = ch.id AND l.skill_type = 'VOCABULARY' AND l.status = 'PUBLISHED'
+    LEFT JOIN question q ON q.lesson_id = l.id AND q.skill = 'VOCABULARY'
+        AND q.status = 'ACTIVE' AND q.is_exercise_question = FALSE
+    WHERE c.code IN ('JPD113', 'JPD123') AND c.status = 'PUBLISHED' AND c.deleted_at IS NULL
+      AND ch.chapter_no IN (3, 4, 5, 7)
+      AND NOT EXISTS (
+          SELECT 1 FROM test t WHERE t.chapter_id = ch.id
+            AND t.test_type = 'CHAPTER_TEST' AND t.skill = 'ALL' AND t.status <> 'ARCHIVED'
+      )
+    GROUP BY ch.id, ch.chapter_no
+),
+matching_words AS (
+    SELECT m.chapter_id, m.missing_count, s.sort_no, l.id AS lesson_id, v.word, v.meaning_vi,
+           ROW_NUMBER() OVER (
+               PARTITION BY m.chapter_id, s.sort_no ORDER BY l.display_order, v.display_order, v.id
+           ) AS word_match
+    FROM missing_vocabulary m
+    JOIN source_words s ON s.chapter_no = m.chapter_no
+    JOIN lesson l ON l.chapter_id = m.chapter_id AND l.skill_type = 'VOCABULARY' AND l.status = 'PUBLISHED'
+    JOIN vocabulary v ON v.lesson_id = l.id AND v.status = 'PUBLISHED'
+        AND CAST(v.word AS BINARY) = CAST(s.word AS BINARY)
+    WHERE m.missing_count > 0
+),
+word_choices AS (
+    SELECT w.*,
+           ROW_NUMBER() OVER (PARTITION BY chapter_id ORDER BY sort_no) AS choice_no,
+           COUNT(*) OVER (PARTITION BY chapter_id) AS choice_count
+    FROM matching_words w WHERE word_match = 1
+),
+new_questions AS (
+    SELECT w.*, CONCAT('Từ 「', w.word, '」 có nghĩa là gì?') AS content,
+           ROW_NUMBER() OVER (PARTITION BY w.chapter_id ORDER BY w.sort_no) AS new_rank
+    FROM word_choices w
+    WHERE NOT EXISTS (
+        SELECT 1 FROM question q JOIN lesson l ON l.id = q.lesson_id
+        WHERE l.chapter_id = w.chapter_id AND q.skill = 'VOCABULARY'
+          AND CAST(q.content AS BINARY) = CAST(CONCAT('Từ 「', w.word, '」 có nghĩa là gì?') AS BINARY)
+    )
+)
+SELECT 'VOCABULARY', 'MCQ', n.lesson_id, n.content,
+       CONCAT('「', n.word, '」 có nghĩa là ', n.meaning_vi, '.'),
+       JSON_OBJECT(
+           'correctAnswer', n.meaning_vi,
+           'options', CASE MOD(n.new_rank - 1, 4)
+               WHEN 0 THEN JSON_ARRAY(n.meaning_vi, a.meaning_vi, b.meaning_vi, d.meaning_vi)
+               WHEN 1 THEN JSON_ARRAY(a.meaning_vi, n.meaning_vi, b.meaning_vi, d.meaning_vi)
+               WHEN 2 THEN JSON_ARRAY(a.meaning_vi, b.meaning_vi, n.meaning_vi, d.meaning_vi)
+               ELSE JSON_ARRAY(a.meaning_vi, b.meaning_vi, d.meaning_vi, n.meaning_vi)
+           END
+       ),
+       'EASY', FALSE,
+       COALESCE((SELECT MAX(q.display_order) FROM question q WHERE q.lesson_id = n.lesson_id), 0)
+           + ROW_NUMBER() OVER (PARTITION BY n.lesson_id ORDER BY n.sort_no),
+       'ACTIVE'
+FROM new_questions n
+JOIN word_choices a ON a.chapter_id = n.chapter_id AND a.choice_no = MOD(n.choice_no, n.choice_count) + 1
+JOIN word_choices b ON b.chapter_id = n.chapter_id AND b.choice_no = MOD(n.choice_no + 1, n.choice_count) + 1
+JOIN word_choices d ON d.chapter_id = n.chapter_id AND d.choice_no = MOD(n.choice_no + 2, n.choice_count) + 1
+WHERE n.new_rank <= n.missing_count
+  AND n.choice_count >= 4
+  AND n.meaning_vi NOT IN (a.meaning_vi, b.meaning_vi, d.meaning_vi)
+  AND a.meaning_vi NOT IN (b.meaning_vi, d.meaning_vi)
+  AND b.meaning_vi <> d.meaning_vi
+ORDER BY n.chapter_id, n.sort_no;
+
+-- Pick one anchor lesson per Grammar group. Student attempts load all linked questions by test ID.
+CREATE TEMPORARY TABLE jtech_exam_seed_target AS
+WITH chapters AS (
+    SELECT ch.id AS chapter_id, ch.chapter_no, c.code AS course_code
+    FROM chapter ch JOIN course c ON c.id = ch.course_id
+    WHERE c.code IN ('JPD113', 'JPD123') AND c.status = 'PUBLISHED'
+      AND c.deleted_at IS NULL AND ch.status = 'PUBLISHED'
+),
+grammar_groups AS (
+    SELECT c.chapter_id, c.chapter_no, c.course_code, l.lesson_no, l.id AS anchor_id,
+           COUNT(*) OVER (PARTITION BY c.chapter_id, l.lesson_no) AS pattern_count,
+           ROW_NUMBER() OVER (
+               PARTITION BY c.chapter_id, l.lesson_no ORDER BY l.display_order, l.id, g.id
+           ) AS anchor_rank
+    FROM chapters c
+    JOIN lesson l ON l.chapter_id = c.chapter_id AND l.skill_type = 'GRAMMAR' AND l.status = 'PUBLISHED'
+    JOIN grammar g ON g.lesson_id = l.id AND g.status = 'PUBLISHED'
+),
+desired AS (
+    SELECT c.chapter_id, NULL AS lesson_no, NULL AS lesson_id, 0 AS pattern_count,
+           'CHAPTER_TEST' AS test_type, 'ALL' AS skill,
+           CONCAT('Test chương · ', c.course_code, ' · Chương ', c.chapter_no) AS title,
+           '40 câu xen kẽ Ngữ pháp, Từ vựng và Kanji.' AS description, 30 AS duration_minutes
+    FROM chapters c
+    UNION ALL
+    SELECT c.chapter_id, NULL, NULL, 0, 'MINI_TEST', 'KANJI',
+           CONCAT('Mini test Kanji · ', c.course_code, ' · Chương ', c.chapter_no),
+           '10 câu Kanji của chương.', 15
+    FROM chapters c
+    UNION ALL
+    SELECT g.chapter_id, g.lesson_no, g.anchor_id, g.pattern_count, 'MINI_TEST', 'GRAMMAR',
+           CONCAT('Mini test Ngữ pháp · ', g.course_code, ' · Chương ', g.chapter_no, ' · Bài ', g.lesson_no),
+           '10 câu bao phủ các mẫu ngữ pháp của bài.', 15
+    FROM grammar_groups g WHERE g.anchor_rank = 1
+)
+SELECT d.* FROM desired d
+WHERE NOT EXISTS (
+    SELECT 1 FROM test t LEFT JOIN lesson anchor ON anchor.id = t.lesson_id
+    WHERE t.test_type = d.test_type AND t.skill = d.skill AND t.status <> 'ARCHIVED'
+      AND (
+          (d.lesson_id IS NULL AND t.chapter_id = d.chapter_id AND t.lesson_id IS NULL)
+          OR (d.skill = 'GRAMMAR' AND anchor.chapter_id = d.chapter_id AND anchor.lesson_no = d.lesson_no)
+      )
+);
+
+-- Rank active bank questions, then interleave the chapter test skills.
+CREATE TEMPORARY TABLE jtech_exam_seed_item AS
+WITH question_pool AS (
+    SELECT q.id AS question_id, q.skill, q.difficulty, q.display_order AS bank_order,
+           l.chapter_id, l.lesson_no, l.display_order AS lesson_order, g.id AS grammar_id
+    FROM question q
+    LEFT JOIN grammar g ON g.id = q.grammar_id
+    JOIN lesson l ON l.id = COALESCE(q.lesson_id, g.lesson_id) AND l.status = 'PUBLISHED'
+    JOIN chapter ch ON ch.id = l.chapter_id AND ch.status = 'PUBLISHED'
+    JOIN course c ON c.id = ch.course_id
+    WHERE c.code IN ('JPD113', 'JPD123') AND c.status = 'PUBLISHED' AND c.deleted_at IS NULL
+      AND q.skill IN ('GRAMMAR', 'VOCABULARY', 'KANJI') AND q.status = 'ACTIVE'
+      AND q.is_exercise_question = FALSE AND l.skill_type = q.skill
+      AND (q.skill <> 'GRAMMAR' OR (g.status = 'PUBLISHED' AND g.lesson_id = l.id))
+),
+chapter_vocabulary_rank AS (
+    SELECT q.*,
+           MAX(IF(difficulty = 'HARD', 1, 0)) OVER (PARTITION BY chapter_id) AS has_hard,
+           ROW_NUMBER() OVER (
+               PARTITION BY chapter_id, (difficulty = 'HARD')
+               ORDER BY FIELD(difficulty, 'EASY', 'MEDIUM', 'HARD'), lesson_order, bank_order, question_id
+           ) AS bucket_rank
+    FROM question_pool q WHERE q.skill = 'VOCABULARY'
+),
+chapter_vocabulary AS (
+    SELECT chapter_id, question_id, skill, difficulty, bank_order, lesson_order
+    FROM chapter_vocabulary_rank
+    WHERE (difficulty <> 'HARD' AND bucket_rank <= 13 - has_hard)
+       OR (difficulty = 'HARD' AND bucket_rank = 1)
+),
+chapter_mix AS (
+    SELECT chapter_id, SUM(IF(difficulty = 'MEDIUM', 1, 0)) AS vocab_medium,
+           SUM(IF(difficulty = 'HARD', 1, 0)) AS vocab_hard
+    FROM chapter_vocabulary GROUP BY chapter_id
+),
+chapter_other_rank AS (
+    SELECT q.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY chapter_id, skill, difficulty ORDER BY lesson_order, bank_order, question_id
+           ) AS bucket_rank
+    FROM question_pool q WHERE q.skill IN ('GRAMMAR', 'KANJI')
+),
+chapter_picks AS (
+    SELECT * FROM chapter_vocabulary
+    UNION ALL
+    SELECT q.chapter_id, q.question_id, q.skill, q.difficulty, q.bank_order, q.lesson_order
+    FROM chapter_other_rank q JOIN chapter_mix m ON m.chapter_id = q.chapter_id
+    WHERE q.bucket_rank <= CASE
+        WHEN q.skill = 'GRAMMAR' AND q.difficulty = 'EASY' THEN 14 - CEIL((9 - m.vocab_medium) / 2)
+        WHEN q.skill = 'GRAMMAR' AND q.difficulty = 'MEDIUM' THEN CEIL((9 - m.vocab_medium) / 2)
+        WHEN q.skill = 'KANJI' AND q.difficulty = 'EASY' THEN 12 + m.vocab_hard - FLOOR((9 - m.vocab_medium) / 2)
+        WHEN q.skill = 'KANJI' AND q.difficulty = 'MEDIUM' THEN FLOOR((9 - m.vocab_medium) / 2)
+        WHEN q.skill = 'KANJI' AND q.difficulty = 'HARD' THEN 1 - m.vocab_hard
+        ELSE 0
+    END
+),
+chapter_skill_order AS (
+    SELECT q.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY chapter_id, skill
+               ORDER BY FIELD(difficulty, 'EASY', 'MEDIUM', 'HARD'), lesson_order, bank_order, question_id
+           ) AS skill_position
+    FROM chapter_picks q
+),
+kanji_mini_rank AS (
+    SELECT q.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY chapter_id, difficulty ORDER BY lesson_order, bank_order DESC, question_id
+           ) AS difficulty_rank
+    FROM question_pool q WHERE q.skill = 'KANJI' AND q.difficulty IN ('EASY', 'MEDIUM')
+),
+grammar_pattern_rank AS (
+    SELECT q.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY chapter_id, lesson_no, grammar_id, difficulty ORDER BY bank_order, question_id
+           ) AS pattern_position
+    FROM question_pool q WHERE q.skill = 'GRAMMAR' AND q.difficulty IN ('EASY', 'MEDIUM')
+),
+grammar_mini_rank AS (
+    SELECT q.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY chapter_id, lesson_no, difficulty
+               ORDER BY pattern_position, lesson_order, grammar_id, bank_order, question_id
+           ) AS difficulty_rank
+    FROM grammar_pattern_rank q
+)
+SELECT 'CHAPTER_TEST' AS test_type, 'ALL' AS test_skill, chapter_id, NULL AS lesson_no,
+       question_id, skill AS question_skill, difficulty, NULL AS grammar_id,
+       ROW_NUMBER() OVER (
+           PARTITION BY chapter_id ORDER BY skill_position, FIELD(skill, 'GRAMMAR', 'VOCABULARY', 'KANJI')
+       ) AS question_order
+FROM chapter_skill_order
+UNION ALL
+SELECT 'MINI_TEST', 'KANJI', chapter_id, NULL, question_id, skill, difficulty, NULL,
+       IF(difficulty = 'EASY', difficulty_rank, 8 + difficulty_rank)
+FROM kanji_mini_rank
+WHERE (difficulty = 'EASY' AND difficulty_rank <= 8) OR (difficulty = 'MEDIUM' AND difficulty_rank <= 2)
+UNION ALL
+SELECT 'MINI_TEST', 'GRAMMAR', chapter_id, lesson_no, question_id, skill, difficulty, grammar_id,
+       IF(difficulty = 'EASY', difficulty_rank, 8 + difficulty_rank)
+FROM grammar_mini_rank
+WHERE (difficulty = 'EASY' AND difficulty_rank <= 8) OR (difficulty = 'MEDIUM' AND difficulty_rank <= 2);
+
+-- Validate every intended test before publishing it.
+CREATE TEMPORARY TABLE jtech_exam_seed_ready AS
+SELECT t.*
+FROM jtech_exam_seed_target t
+JOIN (
+    SELECT test_type, test_skill, chapter_id, lesson_no,
+           COUNT(*) AS question_count, COUNT(DISTINCT question_id) AS unique_count,
+           COUNT(DISTINCT grammar_id) AS patterns,
+           SUM(question_skill = 'GRAMMAR') AS grammar_count,
+           SUM(question_skill = 'VOCABULARY') AS vocab_count,
+           SUM(question_skill = 'KANJI') AS kanji_count,
+           SUM(difficulty = 'EASY') AS easy_count,
+           SUM(difficulty = 'MEDIUM') AS medium_count,
+           SUM(difficulty = 'HARD') AS hard_count
+    FROM jtech_exam_seed_item
+    GROUP BY test_type, test_skill, chapter_id, lesson_no
+) q ON q.test_type = t.test_type AND q.test_skill = t.skill AND q.chapter_id = t.chapter_id
+    AND (q.lesson_no <=> t.lesson_no)
+WHERE q.question_count = q.unique_count
+  AND (
+      (t.test_type = 'CHAPTER_TEST' AND q.question_count = 40 AND q.grammar_count = 14
+       AND q.vocab_count = 13 AND q.kanji_count = 13
+       AND q.easy_count = 30 AND q.medium_count = 9 AND q.hard_count = 1)
+      OR
+      (t.test_type = 'MINI_TEST' AND q.question_count = 10 AND q.easy_count = 8 AND q.medium_count = 2
+       AND (t.skill <> 'GRAMMAR' OR q.patterns = t.pattern_count))
+  );
+
+CREATE TEMPORARY TABLE jtech_exam_seed_check (all_test_scopes_ready TINYINT PRIMARY KEY);
+INSERT INTO jtech_exam_seed_check VALUES (1);
+-- A duplicate key aborts the seed if any target lacks the required questions.
+INSERT INTO jtech_exam_seed_check
+SELECT 1
+FROM jtech_exam_seed_target t
+LEFT JOIN jtech_exam_seed_ready r ON r.chapter_id = t.chapter_id AND r.test_type = t.test_type
+    AND r.skill = t.skill AND (r.lesson_no <=> t.lesson_no)
+WHERE r.chapter_id IS NULL
+LIMIT 1;
+
+INSERT INTO test (test_type, skill, lesson_id, chapter_id, title, description,
+                  duration_minutes, passing_score, status)
+SELECT test_type, skill, lesson_id, IF(lesson_id IS NULL, chapter_id, NULL), title, description,
+       duration_minutes, 70, 'PUBLISHED'
+FROM jtech_exam_seed_ready
+ORDER BY chapter_id, FIELD(test_type, 'CHAPTER_TEST', 'MINI_TEST'), skill, lesson_no;
+
+INSERT INTO test_question (test_id, question_id, part_type)
+SELECT t.id, item.question_id, item.question_skill
+FROM jtech_exam_seed_ready r
+JOIN test t ON CAST(t.test_type AS BINARY) = CAST(r.test_type AS BINARY)
+    AND CAST(t.skill AS BINARY) = CAST(r.skill AS BINARY)
+    AND CAST(t.title AS BINARY) = CAST(r.title AS BINARY)
+    AND t.status = 'PUBLISHED' AND (t.lesson_id <=> r.lesson_id)
+    AND (t.chapter_id <=> IF(r.lesson_id IS NULL, r.chapter_id, NULL))
+JOIN jtech_exam_seed_item item ON item.chapter_id = r.chapter_id AND item.test_type = r.test_type
+    AND item.test_skill = r.skill AND (item.lesson_no <=> r.lesson_no)
+ORDER BY t.id, item.question_order;
+
+DROP TEMPORARY TABLE jtech_exam_seed_target, jtech_exam_seed_item, jtech_exam_seed_ready, jtech_exam_seed_check;
+
 COMMIT;
