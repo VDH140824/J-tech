@@ -14615,7 +14615,7 @@ new_questions AS (
 )
 SELECT 'VOCABULARY', 'MCQ', n.lesson_id, n.content,
        CONCAT('「', n.word, '」 có nghĩa là ', n.meaning_vi, '.'),
-       JSON_OBJECT
+       JSON_OBJECT(
            'matches', JSON_OBJECT(),
            'correctAnswer', n.meaning_vi,
            'options', CASE MOD(n.new_rank - 1, 4)
