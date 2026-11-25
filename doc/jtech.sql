@@ -14374,4 +14374,93 @@ LEFT JOIN question AS existing ON existing.skill = 'VOCABULARY'
 WHERE existing.id IS NULL
 ORDER BY s.display_order;
 
+-- JPD113 & JPD123 (Tài liệu kanji)
+INSERT INTO `lesson` (`id`, `chapter_id`, `skill_type`, `lesson_no`, `title`, `description`, `documents`, `display_order`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES (151,1,'KANJI',3,'Kanji Bài 1.1 (Tư - Nhân - Tài - Học)','Nội dung Kanji của chương 1','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795538904/Jtech/Moderator/Kanji/Tai%20Lieu/47962b79-2bc5-4d39-8b4c-4de9d7c2d9b5.pdf\", \"name\": \"Kanji Bài 1.1 (Tư - Nhân - Tài - Học)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/47962b79-2bc5-4d39-8b4c-4de9d7c2d9b5.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:48:23','2026-11-24 23:48:25'),(152,1,'KANJI',4,'Kanji Bài 1.2 (Sinh - Hiệu - Nhật - Bản - Ngữ)','Nội dung Kanji của chương 1','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795538930/Jtech/Moderator/Kanji/Tai%20Lieu/ea909134-51fb-4ad4-ab9e-395e8947520a.pdf\", \"name\": \"Kanji Bài 1.2 (Sinh - Hiệu - Nhật - Bản - Ngữ)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/ea909134-51fb-4ad4-ab9e-395e8947520a.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:48:49','2026-11-24 23:48:51'),(153,2,'KANJI',2,'Kanji Bài 2.1 (Nhất - Nhị - Tam - Tứ - Ngũ)','Nội dung Kanji của chương 2','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539051/Jtech/Moderator/Kanji/Tai%20Lieu/affb51c2-c3d3-45b3-bb91-e843e0a0779a.pdf\", \"name\": \"Kanji Bài 2.1 (Nhất - Nhị - Tam - Tứ - Ngũ)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/affb51c2-c3d3-45b3-bb91-e843e0a0779a.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:50:50','2026-11-24 23:50:52'),(154,2,'KANJI',3,'Kanji Bài 2.2 (Lục - Thất - Bát - Cửu - Thập)','Nội dung Kanji của chương 2','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539061/Jtech/Moderator/Kanji/Tai%20Lieu/b78a10cd-f803-40f4-a554-bf61a98e6b0f.pdf\", \"name\": \"Kanji Bài 2.2 (Lục - Thất - Bát - Cửu - Thập)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/b78a10cd-f803-40f4-a554-bf61a98e6b0f.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:51:00','2026-11-24 23:51:02'),(155,2,'KANJI',4,'Kanji Bài 2.3 (Bách - Thiên - Vạn - Viên)','Nội dung Kanji của chương 2','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539075/Jtech/Moderator/Kanji/Tai%20Lieu/1a7ff946-20e6-4389-b93b-33af16ab0227.pdf\", \"name\": \"Kanji Bài 2.3 (Bách - Thiên - Vạn - Viên)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/1a7ff946-20e6-4389-b93b-33af16ab0227.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:51:14','2026-11-24 23:51:16'),(156,3,'KANJI',2,'Kanji Bài 3.1 (Nguyệt - Hỏa - Thủy - Mộc)','Nội dung Kanji của chương 3','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539096/Jtech/Moderator/Kanji/Tai%20Lieu/e885b3d3-87bd-45b8-bc14-44963a6ff61f.pdf\", \"name\": \"Kanji Bài 3.1 (Nguyệt - Hỏa - Thủy - Mộc)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/e885b3d3-87bd-45b8-bc14-44963a6ff61f.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:51:35','2026-11-24 23:51:37'),(157,3,'KANJI',3,'Kanji Bài 3.2 (Kim - Thổ - Diệu - Hà)','Nội dung Kanji của chương 3','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539111/Jtech/Moderator/Kanji/Tai%20Lieu/034edd51-7caf-4fa1-897b-adbdac74c622.pdf\", \"name\": \"Kanji Bài 3.2 (Kim - Thổ - Diệu - Hà)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/034edd51-7caf-4fa1-897b-adbdac74c622.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:51:50','2026-11-24 23:51:52'),(158,3,'KANJI',4,'Kanji Bài 3.3 (Niên - Thời - Gian - Phân)','Nội dung Kanji của chương 3','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539125/Jtech/Moderator/Kanji/Tai%20Lieu/b04e077d-3382-4518-a572-f6351fbb5d5d.pdf\", \"name\": \"Kanji Bài 3.3 (Niên - Thời - Gian - Phân)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/b04e077d-3382-4518-a572-f6351fbb5d5d.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:52:04','2026-11-24 23:52:06'),(159,4,'KANJI',2,'Kanji Bài 4.1 (Đông - Kinh - Danh - Tiền - Quốc)','Nội dung Kanji của chương 4','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539164/Jtech/Moderator/Kanji/Tai%20Lieu/92db9b46-27a1-4841-98e7-03e0f812a473.pdf\", \"name\": \"Kanji Bài 4.1 (Đông - Kinh - Danh - Tiền - Quốc)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/92db9b46-27a1-4841-98e7-03e0f812a473.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:52:43','2026-11-24 23:52:45'),(160,4,'KANJI',3,'Kanji Bài 4.2 (Nam - Nữ - Khu - Thị)','Nội dung Kanji của chương 4','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539200/Jtech/Moderator/Kanji/Tai%20Lieu/14dba2af-15b0-49d5-8544-ac9dca99c252.pdf\", \"name\": \"Kanji Bài 4.2 (Nam - Nữ - Khu - Thị)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/14dba2af-15b0-49d5-8544-ac9dca99c252.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:53:18','2026-11-24 23:53:21'),(161,5,'KANJI',2,'Kanji Bài 5.1 (Tiên - Chu - Mỗi - Ngọ)','Nội dung Kanji của chương 5','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539230/Jtech/Moderator/Kanji/Tai%20Lieu/dcb2b3bf-16f5-4502-82a7-367b6dfa8246.pdf\", \"name\": \"Kanji Bài 5.1 (Tiên - Chu - Mỗi - Ngọ)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/dcb2b3bf-16f5-4502-82a7-367b6dfa8246.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:53:48','2026-11-24 23:53:51'),(162,5,'KANJI',3,'Kanji Bài 5.2 (Hậu - Kiến - Thực - Ẩm)','Nội dung Kanji của chương 5','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539259/Jtech/Moderator/Kanji/Tai%20Lieu/4040d108-b831-41bf-ae39-d1dcde8b4a40.pdf\", \"name\": \"Kanji Bài 5.2 (Hậu - Kiến - Thực - Ẩm)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/4040d108-b831-41bf-ae39-d1dcde8b4a40.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:54:18','2026-11-24 23:54:20'),(163,5,'KANJI',4,'Kanji Bài 5.3 (Mãi - Vật - Hành - Hưu)','Nội dung Kanji của chương 5','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539272/Jtech/Moderator/Kanji/Tai%20Lieu/ae40fb0e-f879-4153-a408-b4a58e9e3d1e.pdf\", \"name\": \"Kanji Bài 5.3 (Mãi - Vật - Hành - Hưu)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/ae40fb0e-f879-4153-a408-b4a58e9e3d1e.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:54:31','2026-11-24 23:54:33'),(164,6,'KANJI',2,'Kanji Bài 6.1 (Lai - Quy - Hội - Xã - Văn)','Nội dung Kanji của chương 6','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539299/Jtech/Moderator/Kanji/Tai%20Lieu/714d94c8-e335-4f91-a292-e46dc763bb23.pdf\", \"name\": \"Kanji Bài 6.1 (Lai - Quy - Hội - Xã - Văn)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/714d94c8-e335-4f91-a292-e46dc763bb23.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:54:58','2026-11-24 23:55:00'),(165,6,'KANJI',3,'Kanji Bài 6.2 (Độc - Thư - Thoại - Tự - Ngôn)','Nội dung Kanji của chương 6','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539314/Jtech/Moderator/Kanji/Tai%20Lieu/7d6deef7-5b6c-4f51-8c40-da10099fa112.pdf\", \"name\": \"Kanji Bài 6.2 (Độc - Thư - Thoại - Tự - Ngôn)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/7d6deef7-5b6c-4f51-8c40-da10099fa112.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:55:12','2026-11-24 23:55:15'),(166,6,'KANJI',4,'Kanji Bài 6.3 (Bối - Điền - Lực - Môn)','Nội dung Kanji của chương 6','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539329/Jtech/Moderator/Kanji/Tai%20Lieu/290948ec-5d64-4cae-bdff-34980aace8f7.pdf\", \"name\": \"Kanji Bài 6.3 (Bối - Điền - Lực - Môn)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/290948ec-5d64-4cae-bdff-34980aace8f7.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',4,'PUBLISHED',NULL,NULL,'2026-11-24 23:55:28','2026-11-24 23:55:30'),(167,7,'KANJI',2,'Kanji Bài 7.1 (Nhục - Liệu - Lý - Dã)','Nội dung Kanji của chương 7','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539383/Jtech/Moderator/Kanji/Tai%20Lieu/e79eebbf-1efc-4087-a167-c96c65885c67.pdf\", \"name\": \"Kanji Bài 7.1 (Nhục - Liệu - Lý - Dã)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/e79eebbf-1efc-4087-a167-c96c65885c67.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',2,'PUBLISHED',NULL,NULL,'2026-11-24 23:56:21','2026-11-24 23:56:34'),(168,7,'KANJI',3,'Kanji Bài 7.2 (Bán - Đại - Tiểu)','Nội dung Kanji của chương 7','[{\"url\": \"https://res.cloudinary.com/keticbsk/raw/upload/v1795539406/Jtech/Moderator/Kanji/Tai%20Lieu/c51ca389-3f6e-40aa-b4e2-a6496222ef99.pdf\", \"name\": \"Kanji Bài 7.2 (Bán - Đại - Tiểu)\", \"publicId\": \"Jtech/Moderator/Kanji/Tai Lieu/c51ca389-3f6e-40aa-b4e2-a6496222ef99.pdf\", \"assetFolder\": \"Jtech/Moderator/Kanji/Tai Lieu\", \"resourceType\": \"raw\"}]',3,'PUBLISHED',NULL,NULL,'2026-11-24 23:56:45','2026-11-24 23:56:48');
+
+
+-- JPD113 Grammar videos, chapters 1 and 2
+INSERT INTO grammar (
+    id, lesson_id, structure_name, meaning_vi, usage_explanation, example_jp, example_vi,
+    video_url, video_public_id, video_duration_sec
+)
+SELECT g.id, g.lesson_id, g.structure_name, g.meaning_vi, g.usage_explanation, g.example_jp,
+       g.example_vi, seed.video_url, seed.video_public_id, seed.video_duration_sec
+FROM (
+    SELECT 1 AS chapter_no, 1 AS lesson_order, 1 AS grammar_order,
+           _utf8mb4'Câu khẳng định danh từ' AS lesson_title, _utf8mb4'N1 は N2 です。' AS structure_name,
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795585761/Jtech/Moderator/Grammar/video/video-upload-9423277865050013296_yy6tf4.mp4' AS video_url,
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-9423277865050013296_yy6tf4' AS video_public_id, 19 AS video_duration_sec
+    UNION ALL SELECT 1, 2, 1,
+           _utf8mb4'Hỏi quốc gia, quê quán', _utf8mb4'おくには どちらですか。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795585785/Jtech/Moderator/Grammar/video/video-upload-13367319060252172688_mzk4cg.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-13367319060252172688_mzk4cg', 21
+    UNION ALL SELECT 1, 3, 1,
+           _utf8mb4'Câu phủ định danh từ', _utf8mb4'N1 は N2 じゃありません。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795585861/Jtech/Moderator/Grammar/video/video-upload-16939965041962206348_zgdzfu.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-16939965041962206348_zgdzfu', 19
+    UNION ALL SELECT 1, 4, 1,
+           _utf8mb4'Câu nghi vấn danh từ', _utf8mb4'N1 は N2 ですか。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795585884/Jtech/Moderator/Grammar/video/video-upload-17071417766189831387_fgjvh7.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-17071417766189831387_fgjvh7', 19
+    UNION ALL SELECT 1, 5, 1,
+           _utf8mb4'Trợ từ の – quan hệ sở thuộc', _utf8mb4'N1 は N2 の N3 です。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795585900/Jtech/Moderator/Grammar/video/video-upload-17360539366131154882_xdl9uv.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-17360539366131154882_xdl9uv', 19
+    UNION ALL SELECT 1, 6, 1,
+           _utf8mb4'Hỏi cái gì, sự việc gì', _utf8mb4'N は なんですか。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795585916/Jtech/Moderator/Grammar/video/video-upload-13744440850692188848_jz4sem.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-13744440850692188848_jz4sem', 19
+    UNION ALL SELECT 1, 7, 1,
+           _utf8mb4'Trợ từ と – liệt kê đầy đủ', _utf8mb4'N1 と N2',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795585930/Jtech/Moderator/Grammar/video/video-upload-18029552445199991651_z6cqtm.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-18029552445199991651_z6cqtm', 19
+    UNION ALL SELECT 1, 8, 1,
+           _utf8mb4'Trợ từ も – cũng', _utf8mb4'N1 は N2 です。N3 も N2 です。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795585946/Jtech/Moderator/Grammar/video/video-upload-15050203526225192432_djcdjl.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-15050203526225192432_djcdjl', 19
+    UNION ALL SELECT 2, 1, 1,
+           _utf8mb4'Nói vị trí tầng', _utf8mb4'N は số + かいです。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795586083/Jtech/Moderator/Grammar/video/video-upload-333362352573482252_dqtxe6.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-333362352573482252_dqtxe6', 19
+    UNION ALL SELECT 2, 2, 1,
+           _utf8mb4'Hỏi tầng', _utf8mb4'N は なんかいですか。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795586099/Jtech/Moderator/Grammar/video/video-upload-15223508784409283374_qbghpa.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-15223508784409283374_qbghpa', 19
+    UNION ALL SELECT 2, 3, 1,
+           _utf8mb4'Chỉ vị trí', _utf8mb4'N は ここ／そこ／あそこです。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795586115/Jtech/Moderator/Grammar/video/video-upload-14369841939374369388_nyezmv.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-14369841939374369388_nyezmv', 19
+    UNION ALL SELECT 2, 4, 1,
+           _utf8mb4'Hỏi vị trí', _utf8mb4'N は どこですか。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795586134/Jtech/Moderator/Grammar/video/video-upload-4371773379767615785_tn052s.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-4371773379767615785_tn052s', 19
+    UNION ALL SELECT 2, 5, 1,
+           _utf8mb4'Giới thiệu địa điểm', _utf8mb4'ここ／そこ／あそこ は N です。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795586150/Jtech/Moderator/Grammar/video/video-upload-5757467783058766579_cbfe5a.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-5757467783058766579_cbfe5a', 19
+    UNION ALL SELECT 2, 6, 1,
+           _utf8mb4'Chỉ phương hướng lịch sự', _utf8mb4'N は こちら／そちら／あちらです。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795586168/Jtech/Moderator/Grammar/video/video-upload-1381592628969729665_mkr4ib.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-1381592628969729665_mkr4ib', 19
+    UNION ALL SELECT 2, 7, 1,
+           _utf8mb4'Hỏi vị trí lịch sự', _utf8mb4'N は どちらですか。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795586185/Jtech/Moderator/Grammar/video/video-upload-7013001303594389232_sfvkbn.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-7013001303594389232_sfvkbn', 19
+    UNION ALL SELECT 2, 8, 1,
+           _utf8mb4'Đại từ chỉ thị', _utf8mb4'これ／それ／あれ は N です。',
+           _utf8mb4'https://res.cloudinary.com/keticbsk/video/upload/v1795586213/Jtech/Moderator/Grammar/video/video-upload-10166540093244804610_sadeal.mp4',
+           _utf8mb4'Jtech/Moderator/Grammar/video/video-upload-10166540093244804610_sadeal', 19
+) AS seed
+JOIN course AS c ON c.code = _utf8mb4'JPD113' COLLATE utf8mb4_unicode_ci
+JOIN chapter AS ch ON ch.course_id = c.id AND ch.chapter_no = seed.chapter_no
+JOIN lesson AS l ON l.chapter_id = ch.id AND l.skill_type = 'GRAMMAR'
+    AND l.display_order = seed.lesson_order
+    AND CAST(l.title AS BINARY) = CAST(seed.lesson_title AS BINARY)
+JOIN grammar AS g ON g.lesson_id = l.id AND g.display_order = seed.grammar_order
+    AND CAST(g.structure_name AS BINARY) = CAST(seed.structure_name AS BINARY)
+ON DUPLICATE KEY UPDATE
+    video_url = seed.video_url,
+    video_public_id = seed.video_public_id,
+    video_duration_sec = seed.video_duration_sec;
+
 COMMIT;

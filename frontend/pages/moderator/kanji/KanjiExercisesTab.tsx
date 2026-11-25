@@ -1,6 +1,6 @@
 import { KanjiExerciseImportModal, useKanjiDialog } from "./KanjiExerciseImportModal";
 import { deleteChapterKanjiExercise, getChapterKanjiExercise, listChapterKanjiExercises, saveChapterKanjiExercise,
-  downloadKanjiExcel, prepareKanjiDocument, assignKanjiExercise, type KanjiDocument } from "../../../api/kanjiChapterApi";
+  changeChapterKanjiExerciseStatus, downloadKanjiExcel, prepareKanjiDocument, assignKanjiExercise, type KanjiDocument } from "../../../api/kanjiChapterApi";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   kanjiExerciseError,
@@ -202,15 +202,11 @@ export function KanjiExercisesTab({
     setBusy(true);
     setError("");
     try {
-      const result = await deleteChapterKanjiExercise(chapterId, item.id, documentLessonId);
+      await deleteChapterKanjiExercise(chapterId, item.id, documentLessonId);
       setPreview(undefined);
       setReload((n) => n + 1);
       setDeleting(undefined);
-      setNotice(
-        result === "ARCHIVED"
-          ? "Đã lưu trữ câu hỏi và giữ lịch sử."
-          : "Đã xóa câu hỏi.",
-      );
+      setNotice("Đã xóa câu hỏi.");
       await onChanged?.();
     } catch (e) {
       setError(kanjiExerciseError(e));
@@ -239,6 +235,20 @@ export function KanjiExercisesTab({
     } finally {
       setBusy(false);
     }
+  }
+
+  async function changeStatus(item: KanjiExercise) {
+    if (busy || readOnly) return;
+    const nextStatus = item.status === "ACTIVE" ? "ARCHIVED" : "ACTIVE";
+    setBusy(true); setError(""); setNotice("");
+    try {
+      await changeChapterKanjiExerciseStatus(chapterId, item.id, nextStatus, documentLessonId);
+      setPreview(undefined);
+      setReload(n => n + 1);
+      setNotice(nextStatus === "ACTIVE" ? (unassigned ? "Đã xuất bản câu hỏi. Hãy chọn tài liệu để gán." : "Đã xuất bản câu hỏi.") : "Đã chuyển câu hỏi sang Lưu trữ.");
+      await onChanged?.();
+    } catch (e) { setError(kanjiExerciseError(e)); }
+    finally { setBusy(false); }
   }
 
   async function excel(template: boolean) {
@@ -275,8 +285,8 @@ export function KanjiExercisesTab({
               setPage(0);
             }}
           >
-            <option value="ACTIVE">Đang sử dụng</option>
-            <option value="ARCHIVED">Đã lưu trữ</option>
+            <option value="ACTIVE">Đã xuất bản</option>
+            <option value="ARCHIVED">Lưu trữ</option>
             <option value="">Tất cả</option>
           </select>
         </label>
@@ -656,8 +666,8 @@ export function KanjiExercisesTab({
                         <td>{q.displayOrder}</td>
                         <td>
                           {q.status === "ACTIVE"
-                            ? "Đang sử dụng"
-                            : "Đã lưu trữ"}
+                            ? "Đã xuất bản"
+                            : "Lưu trữ"}
                         </td>
                         <td>
                           <div className="kanji-exercise-actions">
@@ -677,12 +687,14 @@ export function KanjiExercisesTab({
                             </button>
                             <button
                               className="btn-modal-delete"
-                              disabled={
-                                busy || readOnly || q.status === "ARCHIVED"
-                              }
+                              disabled={busy || readOnly}
                               onClick={() => { setError(""); setDeleting(q); }}
                             >
-                              Xóa / Lưu trữ
+                              Xóa
+                            </button>
+                            <button type="button" className="mod-btn-add mod-question-btn--secondary"
+                              disabled={busy || readOnly} onClick={() => void changeStatus(q)}>
+                              {q.status === "ACTIVE" ? "Lưu trữ" : "Xuất bản"}
                             </button>
                           </div>
                         </td>
@@ -722,7 +734,7 @@ export function KanjiExercisesTab({
         }} />}
       {deleting && <div className="modal-overlay"><section ref={deleteDialog} className="modal-card kanji-excel-dialog" role="dialog" aria-modal="true" aria-labelledby="kanji-delete-title">
         <div className="modal-header"><h3 className="modal-title" id="kanji-delete-title">Xác nhận xóa câu hỏi</h3></div>
-        <div className="modal-form-body"><p>Bạn có chắc muốn xóa câu hỏi này? Câu đã sử dụng sẽ được lưu trữ để giữ lịch sử.</p>
+        <div className="modal-form-body"><p>Bạn có chắc muốn xóa câu hỏi này? Câu hỏi đã có dữ liệu sử dụng không thể xóa; hãy chọn Lưu trữ để giữ lịch sử.</p>
           <p className="kanji-exercise-text">{deleting.content}</p>
           {error && <p role="alert" className="kanji-error">{error}</p>}
           <div className="modal-actions-row"><button className="btn-modal-cancel" disabled={busy} onClick={() => setDeleting(undefined)}>Hủy</button>

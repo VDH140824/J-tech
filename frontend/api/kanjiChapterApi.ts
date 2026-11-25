@@ -43,7 +43,7 @@ export async function renameKanjiDocument(chapterId: number, document: KanjiDocu
 
 export async function deleteKanjiDocument(chapterId: number, document: KanjiDocument) {
   return (await apiClient.delete<{ content: KanjiChapterContent; warnings: string[] }>(
-    `${base(chapterId)}/documents`, { data: { url: document.url, lessonId: document.lessonId, archiveExercises: document.exerciseCount > 0 } },
+    `${base(chapterId)}/documents`, { data: { url: document.url, lessonId: document.lessonId } },
   )).data;
 }
 
@@ -106,6 +106,12 @@ export async function saveChapterKanjiExercise(chapterId: number, id: number | u
 
 export async function deleteChapterKanjiExercise(chapterId: number, id: number, documentLessonId?: number) {
   return (await apiClient.delete<{ result: "DELETED" | "ARCHIVED" }>(`${base(chapterId)}/exercises/${id}`, { params: { documentLessonId } })).data.result;
+}
+
+export async function changeChapterKanjiExerciseStatus(chapterId: number, id: number,
+  status: KanjiExercise["status"], documentLessonId?: number) {
+  return (await apiClient.patch<KanjiExercise>(`${base(chapterId)}/exercises/${id}/status`, { status },
+    { params: { documentLessonId } })).data;
 }
 
 export interface KanjiExcelError { row: number; column: string; message: string }

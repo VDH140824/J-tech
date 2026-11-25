@@ -207,18 +207,53 @@ public class KanjiExerciseService {
 
   @Transactional
   public String delete(Principal p, long lessonId, long id) {
-    long actor = actor(p);
+    actor(p);
     lesson(lessonId, true);
     Question q = question(lessonId, id, true);
-    if (q.getStatus() == Question.QuestionStatus.ARCHIVED || used(q)) {
-      q.setStatus(Question.QuestionStatus.ARCHIVED);
-      q.setUpdatedBy(actor);
-      q.setUpdatedAt(LocalDateTime.now());
-      return "ARCHIVED";
-    }
+    if (used(q)) throw error(HttpStatus.CONFLICT,
+      "Câu hỏi đã có dữ liệu sử dụng nên không thể xóa. Vui lòng chọn Lưu trữ.");
     em.remove(q);
     em.flush();
     return "DELETED";
+  }
+
+  @Transactional
+  public KanjiExerciseResponse changeStatus(Principal p, long lessonId, long id, Question.QuestionStatus status) {
+    long actor = actor(p);
+    lesson(lessonId, true);
+    if (status == null) throw error(HttpStatus.BAD_REQUEST, "Vui lòng chọn trạng thái bài tập.");
+    Question q = question(lessonId, id, true);
+    q.setStatus(status);
+    q.setUpdatedBy(actor);
+    q.setUpdatedAt(LocalDateTime.now());
+    em.flush();
+    return response(q);
+  }
+
+  @Transactional
+  public KanjiExerciseResponse assign(Principal p, long sourceLessonId, long id, long targetLessonId) {
+    long actor = actor(p);
+    lesson(sourceLessonId, true);
+    lesson(targetLessonId, true);
+    Question q = question(sourceLessonId, id, true);
+    if (q.getStatus() != Question.QuestionStatus.ACTIVE) throw error(HttpStatus.CONFLICT, "Hãy xuất bản câu hỏi trước khi gán tài liệu.");
+    if (used(q)) {
+      // Keep the original lesson reference for existing tests and practice history.
+      var old = response(q);
+      var request = new KanjiExerciseRequest(old.questionType(), old.content(), old.explanation(), old.difficulty(),
+        old.displayOrder(), old.options(), old.correctAnswer(), old.matches());
+      var assigned = save(p, targetLessonId, null, request);
+      q.setStatus(Question.QuestionStatus.ARCHIVED);
+      q.setUpdatedBy(actor);
+      q.setUpdatedAt(LocalDateTime.now());
+      em.flush();
+      return assigned;
+    }
+    q.setLessonId(targetLessonId);
+    q.setUpdatedBy(actor);
+    q.setUpdatedAt(LocalDateTime.now());
+    em.flush();
+    return response(q);
   }
 
   private boolean used(Question q) {

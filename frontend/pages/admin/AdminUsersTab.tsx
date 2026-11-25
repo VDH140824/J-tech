@@ -129,6 +129,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   // Delete User state
   const [deletingUser, setDeletingUser] = useState<UserResponse | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   //Load to adminApi
@@ -248,6 +249,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   const handleDeleteUser = async () => {
     if (!deletingUser) return;
+    setDeleteError(null);
     try {
       setDeleteLoading(true);
       await deleteAdminUser(deletingUser.id);
@@ -256,7 +258,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       setDeletingUser(null);
       fetchUsers();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Không thể xóa tài khoản.");
+      setDeleteError(err?.response?.data?.message || "Không thể xóa tài khoản.");
     } finally {
       setDeleteLoading(false);
     }
@@ -495,7 +497,10 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                               type="button"
                               className="btn-icon-action btn-delete-user"
                               title="Xóa tài khoản"
-                              onClick={() => setDeletingUser(user)}
+                              onClick={() => {
+                                setDeleteError(null);
+                                setDeletingUser(user);
+                              }}
                             >
                               <span>🗑️</span>
                               <span className="delete-text">Xóa</span>
@@ -724,7 +729,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       {deletingUser && (
         <div
           className="admin-modal-backdrop"
-          onClick={() => setDeletingUser(null)}
+          onClick={deleteLoading ? undefined : () => setDeletingUser(null)}
         >
           <div
             className="admin-modal-dialog modal-danger"
@@ -735,6 +740,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
               <button
                 type="button"
                 className="btn-modal-close"
+                disabled={deleteLoading}
                 onClick={() => setDeletingUser(null)}
               >
                 ✕
@@ -745,10 +751,16 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                 Bạn có chắc chắn muốn xóa tài khoản <strong>{deletingUser.email}</strong> (#
                 {deletingUser.id}) không? Hành động này không thể hoàn tác.
               </p>
+              {deleteError && (
+                <div className="admin-alert-banner error" role="alert">
+                  {deleteError}
+                </div>
+              )}
               <div className="modal-actions-row">
                 <button
                   type="button"
                   className="btn-modal-cancel"
+                  disabled={deleteLoading}
                   onClick={() => setDeletingUser(null)}
                 >
                   Hủy bỏ

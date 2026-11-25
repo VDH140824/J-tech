@@ -178,7 +178,7 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
   async function removeDocument(document: KanjiDocument) {
     if (documentBusy || content?.status === "ARCHIVED" || document.status === "ARCHIVED") return;
     const questionNotice = document.exerciseCount > 0
-      ? ` Tài liệu có ${document.exerciseCount} câu hỏi. Các câu hỏi này sẽ được lưu trữ để giữ lịch sử.` : "";
+      ? ` Tài liệu có ${document.exerciseCount} câu hỏi. Các câu hỏi sẽ quay lại danh sách chưa gán tài liệu, giữ nguyên trạng thái và lịch sử.` : "";
     if (!window.confirm(`Xóa tài liệu “${document.name}” khỏi chương?${questionNotice}`)) return;
     setDeletingDocument(true);
     setDocumentError("");
@@ -187,8 +187,11 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
       const result = await deleteKanjiDocument(chapterId, document);
       setContent(result.content);
       if (viewedDocument?.lessonId === document.lessonId && viewedDocument.url === document.url) setViewedDocument(undefined);
-      if (exerciseLessonId === document.lessonId) setExerciseLessonId(undefined);
-      setDocumentNotice("Đã xóa tài liệu khỏi chương.");
+      if (exerciseLessonId === document.lessonId) {
+        setExerciseLessonId(undefined);
+        setUnassigned(result.content.unassignedExerciseCount > 0);
+      }
+      setDocumentNotice("Đã xóa tài liệu khỏi chương. Bài tập của tài liệu đã trở về danh sách chưa gán tài liệu.");
       if (result.warnings.length) setDocumentError(result.warnings.join(" "));
       if (renamingDocument?.lessonId === document.lessonId && renamingDocument.url === document.url) setRenamingDocument(undefined);
       await invalidateStudentContent();
@@ -303,8 +306,8 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
         </tr>)}</tbody>
       </table></div>}
       {content.unassignedExerciseCount > 0 && <p>
-        Có {content.unassignedExerciseCount} câu hỏi cũ chưa gán tài liệu.{" "}
-        <button type="button" disabled={documentBusy} onClick={() => { setUnassigned(true); setTab("exercise"); }}>Phân loại câu hỏi</button>
+        Có {content.unassignedExerciseCount} câu hỏi chưa gán tài liệu (gồm đã xuất bản và lưu trữ).{" "}
+        <button type="button" disabled={documentBusy} onClick={() => { setUnassigned(true); setTab("exercise"); }}>Bài tập chưa gán tài liệu</button>
       </p>}
       {selectedDocument ? <article className="kanji-document-reader" aria-label={`Tài liệu ${selectedDocument.name}`}>
         <h3>{selectedDocument.name}</h3>
