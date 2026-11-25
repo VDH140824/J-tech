@@ -33,9 +33,9 @@ export function StudentKanjiContentPage({
     enabled: !isDocument,
   });
   const card = query.data?.find((item) => String(item.id) === kanjiId);
-  const exercises = useQuery({
-    queryKey: ["student-kanji-exercises", lesson.id],
-    queryFn: ({ signal }) => getStudentKanjiExercises(lesson.id, signal),
+  const roundSize = useQuery({
+    queryKey: ["student-kanji-exercise-count", lesson.id],
+    queryFn: async ({ signal }) => (await getStudentKanjiExercises(lesson.id, signal)).length,
     enabled: !!document,
     refetchOnWindowFocus: false,
   });
@@ -50,7 +50,7 @@ export function StudentKanjiContentPage({
       {document && <nav className="kanji-lesson-switch" aria-label="Nội dung tài liệu Kanji">
         <button type="button" aria-current="page"><span aria-hidden="true">📄</span>Tài liệu</button>
         <button type="button" onClick={onExercise}><span aria-hidden="true">✏️</span>Bài tập
-          {exercises.isSuccess && <span className="kanji-lesson-question-count">{exercises.data.length} câu</span>}
+          {roundSize.isSuccess && <span className="kanji-lesson-question-count">{roundSize.data} câu/lượt</span>}
         </button>
       </nav>}
       {isDocument ? (

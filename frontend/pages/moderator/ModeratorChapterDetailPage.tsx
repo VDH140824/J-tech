@@ -248,7 +248,8 @@ export function ModeratorChapterDetailPage({
   if(activeConfig?.key==="kanji" && searchParams.get("kanjiChapterView")==="test")
     return <ModeratorKanjiTestPage key={chapterId} chapterId={chapterId} chapterNo={chapterNo} onBack={()=>setChapterView(null)}/>;
   if (activeConfig?.key === "kanji") {
-    return <ModeratorKanjiPage key={chapterId} chapterId={chapterId} onBack={() => handleSelectSection(null)} />;
+    return <ModeratorKanjiPage key={chapterId} chapterId={chapterId} courseName={courseName} chapterNo={chapterNo} chapterTitle={chapterTitle}
+      onBack={() => handleSelectSection(null)} onSelectSection={handleSelectSection} />;
   }
   if (activeConfig?.key === "vocabulary" && searchParams.get("vocabChapterView") === "flashcards") {
     return (

@@ -127,11 +127,11 @@ public class KanjiTestService {
     return rows.getFirst();
   }
 
-  private List<TestRow> testRows(long chapterId, boolean lock) {
+  private List<TestRow> testRows(long chapterId, String testType, boolean lock) {
     return db.query(
       """
       SELECT t.* FROM test t
-      WHERE t.chapter_id=? AND t.skill='KANJI' AND t.test_type='CHAPTER_TEST' AND t.lesson_id IS NULL
+      WHERE t.chapter_id=? AND t.skill='KANJI' AND t.test_type=? AND t.lesson_id IS NULL
       ORDER BY t.id DESC
       """ + (lock ? " FOR UPDATE" : ""),
       (rs, n) ->
@@ -143,7 +143,8 @@ public class KanjiTestService {
           rs.getInt("passing_score"),
           rs.getString("status")
         ),
-      chapterId
+      chapterId,
+      testType
     );
   }
 
@@ -238,7 +239,7 @@ public class KanjiTestService {
   public KanjiTestResponse setup(long chapterId, Principal p) {
     access.actor(p, "MODERATOR");
     chapter(chapterId, true, false);
-    var rows = testRows(chapterId, false);
+    var rows = testRows(chapterId, "CHAPTER_TEST", false);
     if (rows.isEmpty()) return new KanjiTestResponse(
       null,
       null,
@@ -304,7 +305,7 @@ public class KanjiTestService {
       ) throw new IllegalArgumentException("Không chọn trùng câu hỏi.");
       selected.add(match);
     }
-    var rows = testRows(chapterId, true);
+    var rows = testRows(chapterId, "CHAPTER_TEST", true);
     if (rows.size() > 1) throw new IllegalStateException(
       "Chương đang có nhiều Test Kanji; cần xử lý dữ liệu trước khi sửa."
     );
@@ -411,7 +412,7 @@ public class KanjiTestService {
       user
     );
     chapter(chapterId, false, false);
-    var test = testRows(chapterId, true)
+    var test = testRows(chapterId, "MINI_TEST", true)
       .stream()
       .filter(t -> t.id() == testId && t.status().equals("PUBLISHED"))
       .findFirst()
@@ -580,7 +581,7 @@ public class KanjiTestService {
     var ids = db.queryForList(
       """
       SELECT a.id FROM test_attempt a JOIN test t ON t.id=a.test_id
-      WHERE a.user_id=? AND t.chapter_id=? AND t.skill='KANJI' AND t.test_type='CHAPTER_TEST' AND t.lesson_id IS NULL
+      WHERE a.user_id=? AND t.chapter_id=? AND t.skill='KANJI' AND t.test_type='MINI_TEST' AND t.lesson_id IS NULL
         AND a.status IN ('SUBMITTED','AUTO_SUBMITTED') ORDER BY a.submitted_at DESC,a.id DESC LIMIT 1
       """,
       Long.class,

@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StudentKanjiExerciseService {
+    private static final int QUESTIONS_PER_ROUND = 5;
     private final JdbcTemplate db;
     private final EntityManager em;
     private final FeedbackService access;
@@ -71,8 +72,13 @@ public class StudentKanjiExerciseService {
 
     public List<ExerciseQuestion> questions(Principal p, long lessonId) {
         if (!requireDocument(p, lessonId)) return List.of();
-        return bank(lessonId).stream().map(q -> {
+        var pool = new ArrayList<>(bank(lessonId));
+        Collections.shuffle(pool);
+        return pool.stream().limit(QUESTIONS_PER_ROUND).map(q -> {
             var a = answer(q);
+            if (q.getQuestionType() != Question.QuestionType.MATCHING) {
+                return new ExerciseQuestion(q.getId(), q.getQuestionType(), q.getContent(), a.options(), List.of(), List.of());
+            }
             var left = new ArrayList<>(a.matches().keySet());
             var right = new ArrayList<>(a.matches().values());
             Collections.shuffle(right);
@@ -82,12 +88,14 @@ public class StudentKanjiExerciseService {
 
     public Result submit(Principal p, long lessonId, List<Long> questionIds, Map<Long, Answer> answers) {
         if (!requireDocument(p, lessonId)) throw new ResponseStatusException(HttpStatus.CONFLICT, "Tài liệu chưa có bộ bài tập riêng.");
-        var questions = bank(lessonId);
-        var expected = questions.stream().map(Question::getId).collect(java.util.stream.Collectors.toSet());
-        if (questionIds == null || questionIds.isEmpty() || new HashSet<>(questionIds).size() != questionIds.size()
-            || !expected.equals(new HashSet<>(questionIds)) || answers == null || !expected.containsAll(answers.keySet()))
+        var byId = new HashMap<Long, Question>();
+        for (var q : bank(lessonId)) byId.put(q.getId(), q);
+        var selectedIds = questionIds == null ? Set.<Long>of() : new HashSet<>(questionIds);
+        if (selectedIds.isEmpty() || selectedIds.size() != questionIds.size()
+            || selectedIds.size() != Math.min(QUESTIONS_PER_ROUND, byId.size())
+            || !byId.keySet().containsAll(selectedIds) || answers == null || !selectedIds.containsAll(answers.keySet()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Bộ câu hỏi đã thay đổi hoặc không thuộc tài liệu. Vui lòng tải lại bài tập.");
-        var reviews = questions.stream().map(q -> {
+        var reviews = questionIds.stream().map(byId::get).map(q -> {
             var correct = answer(q);
             var given = answers.get(q.getId());
             boolean ok = given != null && (q.getQuestionType() == Question.QuestionType.MATCHING

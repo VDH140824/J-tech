@@ -7,10 +7,14 @@ import { type KanjiInput, type KanjiItem, type KanjiPage } from "../../../api/ka
 import "./kanji.css";
 import { KanjiExercisesTab } from "./KanjiExercisesTab";
 import { getPdfPreviewUrl } from "../../../utils/lessonDocuments";
+import { SECTIONS, type LessonSection } from "../sectionConfig";
 
 const empty: KanjiInput = { characterText: "", sinoVietnamese: "", onyomi: "", kunyomi: "", meaningVi: "", examples: "", mnemonicStory: "", removeImage: false };
 const labels: Record<string, string> = { DRAFT: "Bản nháp", PUBLISHED: "Đã xuất bản", HIDDEN: "Ẩn", ARCHIVED: "Đã lưu trữ" };
-export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; onBack: () => void }) {
+export function ModeratorKanjiPage({ chapterId, courseName, chapterNo, chapterTitle, onBack, onSelectSection }: {
+  courseName: string; chapterNo: number; chapterTitle: string;
+  chapterId: number; onBack: () => void; onSelectSection: (section: LessonSection) => void;
+}) {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"document" | "kanji" | "exercise">("document");
   const [content, setContent] = useState<KanjiChapterContent>();
@@ -236,16 +240,35 @@ export function ModeratorKanjiPage({ chapterId, onBack }: { chapterId: number; o
       setNotice(result === "ARCHIVED" ? "Đã lưu trữ Kanji vì đã có dữ liệu học." : "Đã xóa Kanji.");
     } catch (e) { setError(message(e)); } finally { setBusy(false); }
   }
-  if (contentLoading) return <p role="status">Đang tải nội dung Kanji của chương…</p>;
+  const skillNavigation = <nav className="mod-skill-tabs-nav" aria-label="Chuyển kỹ năng" style={{ marginBottom: "16px" }}>
+    {SECTIONS.map(section => <button key={section.key} type="button"
+      className={`mod-skill-tab-btn ${section.key === "kanji" ? "active" : ""}`}
+      aria-current={section.key === "kanji" ? "page" : undefined}
+      style={section.key === "kanji" ? { backgroundColor: section.bgColor, color: section.color, borderColor: section.borderColor } : {}}
+      onClick={() => { if (section.key !== "kanji") onSelectSection(section.key); }}>
+      <span style={{ fontSize: "1.1rem" }} aria-hidden="true">{section.icon}</span>
+      <span>{section.label}</span>
+      <span style={{ fontSize: "0.8rem", opacity: 0.8 }}>({section.labelJp})</span>
+    </button>)}
+  </nav>;
+  const backNavigation = <div className="mod-chapter-back-row">
+    <button type="button" className="mod-btn-back" onClick={onBack}><span>←</span> Quay lại chọn kỹ năng</button>
+    <span className="mod-chapter-breadcrumb-pill">
+      {courseName} / Chương {chapterNo}: {chapterTitle} / Kanji
+    </span>
+  </div>;
+  if (contentLoading) return <div className="admin-page-container kanji-page">{backNavigation}{skillNavigation}<p role="status">Đang tải nội dung Kanji của chương…</p></div>;
   if (contentError || !content) return <div className="admin-page-container kanji-page">
-    <button className="mod-btn-back" onClick={onBack}>← Quay lại chương</button>
+    {backNavigation}
+    {skillNavigation}
     <p role="alert">{contentError || "Không tìm thấy nội dung Kanji của chương."}</p>
     <button onClick={() => setContentRetry(value => value + 1)}>Thử lại</button>
   </div>;
   return <div className="admin-page-container kanji-page">
-    <button className="mod-btn-back" onClick={onBack}>← Quay lại chương</button>
-    <div className="admin-page-header"><div><h2>Kanji · Chương {content.chapterNo}: {content.title}</h2>
-      <p>Quản lý tài liệu, bài tập và flashcard Kanji của chương.</p></div>
+    {backNavigation}
+    {skillNavigation}
+    <div className="admin-page-header"><div className="admin-header-titles"><h2 className="admin-main-title">Kanji · Chương {content.chapterNo}: {content.title}</h2>
+      <p className="admin-main-subtitle">Quản lý tài liệu, bài tập và flashcard Kanji của chương.</p></div>
       {tab === "kanji" && <button className="mod-btn-add" disabled={busy || content?.status === "ARCHIVED"} onClick={() => edit()}>+ Thêm flashcard Kanji</button>}</div>
     <nav className="kanji-content-tabs" aria-label="Nội dung Kanji của chương">
       <button type="button" aria-pressed={tab === "document"} onClick={() => setTab("document")}>Tài liệu Kanji</button>

@@ -52,8 +52,9 @@ class StudentKanjiExerciseServiceTest {
         document(); bank(List.of(question(1, Question.QuestionType.MCQ), question(2, Question.QuestionType.MATCHING)));
         var questions = service.questions(p, 7L);
         assertEquals(2, questions.size());
-        assertEquals(Set.of("日", "月"), new HashSet<>(questions.get(1).leftItems()));
-        assertEquals(Set.of("nhật", "nguyệt"), new HashSet<>(questions.get(1).rightItems()));
+        var matching = questions.stream().filter(q -> q.id() == 2L).findFirst().orElseThrow();
+        assertEquals(Set.of("日", "月"), new HashSet<>(matching.leftItems()));
+        assertEquals(Set.of("nhật", "nguyệt"), new HashSet<>(matching.rightItems()));
         String json = mapper.writeValueAsString(questions);
         assertFalse(json.contains("correctAnswer")); assertFalse(json.contains("explanation")); assertFalse(json.contains("matches"));
         verify(query).setParameter("lesson", 7L);
@@ -62,6 +63,51 @@ class StudentKanjiExerciseServiceTest {
         verify(em).createQuery(argThat(sql -> sql.contains("q.isExerciseQuestion=true")), eq(Question.class));
         verify(db).queryForList(argThat(sql -> sql.contains("l.status='PUBLISHED'") && sql.contains("ch.status='PUBLISHED'")
             && sql.contains("c.status='PUBLISHED'") && sql.contains("c.deleted_at IS NULL")), eq(String.class), eq(7L));
+    }
+
+    @Test void drawsFiveDistinctQuestionsAndGradesOnlyThoseQuestionsInOrder() throws Exception {
+        document();
+        var pool = new ArrayList<Question>();
+        for (long id = 1; id <= 12; id++) pool.add(question(id, Question.QuestionType.MCQ));
+        bank(pool);
+
+        var ids = service.questions(p, 7L).stream().map(StudentKanjiExerciseService.ExerciseQuestion::id).toList();
+        assertEquals(5, ids.size());
+        assertEquals(5, new HashSet<>(ids).size());
+        var answers = Map.of(ids.getFirst(), new StudentKanjiExerciseService.Answer("nhật", null));
+        var result = service.submit(p, 7L, ids, answers);
+        assertEquals(5, result.total());
+        assertEquals(1, result.correctCount());
+        assertEquals(ids, result.questions().stream().map(StudentKanjiExerciseService.Review::id).toList());
+    }
+
+    @Test void rejectsWrongRoundSizeAndIdsOutsideTheRound() throws Exception {
+        document();
+        var pool = new ArrayList<Question>();
+        for (long id = 1; id <= 6; id++) pool.add(question(id, Question.QuestionType.MCQ));
+        bank(pool);
+
+        for (var ids : List.of(List.of(1L, 2L, 3L, 4L), List.of(1L, 2L, 3L, 4L, 5L, 6L),
+                List.of(1L, 2L, 3L, 4L, 4L), List.of(1L, 2L, 3L, 4L, 99L))) {
+            assertThrows(ResponseStatusException.class, () -> service.submit(p, 7L, ids, Map.of()));
+        }
+        var ids = List.of(1L, 2L, 3L, 4L, 5L);
+        var answers = Map.of(6L, new StudentKanjiExerciseService.Answer("nhật", null));
+        assertThrows(ResponseStatusException.class, () -> service.submit(p, 7L, ids, answers));
+    }
+
+    @Test void loadsSeededMultipleChoiceExerciseWithoutMatches() throws Exception {
+        document();
+        var question = question(1, Question.QuestionType.MCQ);
+        question.setAnswerData("""
+            {"options":["にほんじん","わたし"],"correctAnswer":"わたし"}
+            """);
+        bank(List.of(question));
+
+        var exercise = service.questions(p, 7L).getFirst();
+        assertEquals(List.of("にほんじん", "わたし"), exercise.options());
+        assertTrue(exercise.leftItems().isEmpty());
+        assertTrue(exercise.rightItems().isEmpty());
     }
 
     @Test void rejectsUnpublishedOrMissingLesson() {
