@@ -21,7 +21,6 @@ public class LearningProgressRepository {
     }
 
     public boolean isPublished(ContentType type, long contentId) {
-        // Identifiers come exclusively from the enum, never from a supplied SQL fragment.
         String table = type.name().toLowerCase(java.util.Locale.ROOT);
         return Boolean.TRUE.equals(db.queryForObject(
             "SELECT EXISTS(SELECT 1 FROM " + table + " i JOIN lesson l ON l.id=i.lesson_id " +
@@ -82,11 +81,9 @@ public class LearningProgressRepository {
             (rs, row) -> rs.getLong(1), activityType).stream().findFirst();
     }
 
-        // ===== Luyện tập thể chia (học viên) — practice_attempt.activity_type = CONJUGATION =====
 
     public record ConjugationSummary(int attempts, java.math.BigDecimal bestScore) {}
 
-    /** Số lượt đã hoàn thành và điểm cao nhất của học viên theo từng thể chia (BR-101). */
     public Map<Long, ConjugationSummary> findConjugationSummaries(long studentId) {
         Map<Long, ConjugationSummary> result = new java.util.HashMap<>();
         db.query("""
@@ -121,7 +118,6 @@ public class LearningProgressRepository {
                 VALUES (?,'CONJUGATION','CONJUGATION',?,?,?,'COMPLETED',?,?,?,?,?,?)
                 """, Statement.RETURN_GENERATED_KEYS);
             statement.setLong(1, studentId);
-            // difficulty_level: EASY / MEDIUM / HARD theo lựa chọn của học viên; "Tất cả" lưu MIXED
             statement.setString(2, "ALL".equals(difficulty) ? "MIXED" : difficulty);
             statement.setLong(3, formId);
             statement.setInt(4, attemptNo);

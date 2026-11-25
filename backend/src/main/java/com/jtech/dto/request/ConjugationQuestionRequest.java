@@ -9,12 +9,7 @@ import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
-/**
- * UC-47 bước 5: Moderator thêm / sửa câu hỏi thể chia.
- * Nội dung câu hỏi được tự sinh: “Chia động từ {verb} ({reading}) sang {tên thể}.”
- * Học viên tự chọn làm bài kiểu nhập đáp án hoặc trắc nghiệm; options là phương án nhiễu cho trắc nghiệm
- * (bỏ trống thì hệ thống lấy đáp án đúng của câu khác làm nhiễu).
- */
+
 public record ConjugationQuestionRequest(
         @NotBlank(message = "Vui lòng nhập động từ.")
         @Size(max = 50, message = "Động từ tối đa 50 ký tự.") String verb,

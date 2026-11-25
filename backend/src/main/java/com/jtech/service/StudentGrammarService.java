@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jtech.dto.response.StudentGrammarResponse;
 import com.jtech.entity.User;
+import com.jtech.repository.LearningProgressRepository.ContentType;
 import com.jtech.repository.StudentGrammarQueryRepository;
 import com.jtech.repository.StudentGrammarQueryRepository.AttemptRow;
 import com.jtech.repository.StudentGrammarQueryRepository.QuestionRow;
@@ -50,6 +51,8 @@ public class StudentGrammarService {
     static final String ATTEMPT_NOT_FOUND = "Không tìm thấy lượt làm bài.";
     static final String EMPTY_TEST = "Mini test chưa có câu hỏi.";
     static final String FOREIGN_ANSWER = "Câu trả lời không thuộc bài này.";
+    /** Mỗi lượt bài tập ngữ pháp lấy ngẫu nhiên 5 câu từ các câu luyện tập của bài. */
+    static final int EXERCISE_SIZE = 5;
 
     /** Dữ liệu lưu trong test_attempt.answers_data: thứ tự câu hỏi lúc bắt đầu + câu trả lời. */
     public record Snapshot(List<Long> questionIds, Map<String, String> answers) {
@@ -63,11 +66,14 @@ public class StudentGrammarService {
     private final StudentGrammarQueryRepository queries;
     private final UserRepository users;
     private final ObjectMapper json;
+    private final LearningActivityService activity;
 
-    public StudentGrammarService(StudentGrammarQueryRepository queries, UserRepository users, ObjectMapper json) {
+    public StudentGrammarService(StudentGrammarQueryRepository queries, UserRepository users, ObjectMapper json,
+                                 LearningActivityService activity) {
         this.queries = queries;
         this.users = users;
         this.json = json;
+        this.activity = activity;
     }
 
     // ===== Material Grammar =====
@@ -77,29 +83,56 @@ public class StudentGrammarService {
         long userId = userId(email);
         StudentGrammarResponse.MiniTestInfo miniTest = queries.publishedMiniTest(lessonId)
                 .map(test -> miniTestInfo(test, userId)).orElse(null);
+        StudentGrammarQueryRepository.SectionProgress progress = queries.sectionProgress(userId, lessonId);
         return new StudentGrammarResponse.Lesson(lesson.id(), lesson.chapterId(), lesson.chapterNo(),
                 lesson.chapterTitle(), lesson.courseName(), lesson.lessonNo(), lesson.title(), lesson.description(),
-                queries.grammars(lessonId), queries.countExerciseQuestions(lessonId), miniTest);
+                queries.grammars(lessonId), Math.min(EXERCISE_SIZE, queries.countExerciseQuestions(lessonId)), miniTest,
+                progress.completed(), progress.bestScore());
     }
 
     // ===== Grammar Exercise =====
     @Transactional(readOnly = true)
     public StudentGrammarResponse.Exercise exercise(long lessonId) {
         requireLesson(lessonId);
-        List<StudentGrammarResponse.Question> items = queries.exerciseQuestions(lessonId).stream()
+        List<QuestionRow> pool = new ArrayList<>(queries.exerciseQuestions(lessonId));
+        java.util.Collections.shuffle(pool);
+        List<StudentGrammarResponse.Question> items = pool.stream().limit(EXERCISE_SIZE)
                 .map(this::toQuestion).toList();
         return new StudentGrammarResponse.Exercise(lessonId, items);
     }
 
-    @Transactional(readOnly = true)
-    public StudentGrammarResponse.CheckResult checkExercise(long lessonId, Map<String, String> answers) {
+    /**
+     * Chấm bài tập và cập nhật tiến độ. Bài tập ngữ pháp không có điểm yêu cầu (không có cột/cấu hình passing score),
+     * nên nộp bài tập là bài được tính hoàn thành; lần đầu nộp thì ghi nhận ngày học cho từng mẫu ngữ pháp
+     * (thay cho nút "Hoàn thành tài liệu" cũ).
+     */
+    @Transactional
+    public StudentGrammarResponse.ExerciseResult checkExercise(long lessonId, List<Long> questionIds,
+                                                               Map<String, String> answers, String email) {
         requireLesson(lessonId);
-        List<QuestionRow> items = queries.exerciseQuestions(lessonId);
-        if (items.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bài học chưa có câu luyện tập.");
+        long userId = userId(email);
+        List<QuestionRow> pool = queries.exerciseQuestions(lessonId);
+        if (pool.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bài học chưa có câu luyện tập.");
+        // Chỉ chấm các câu đã được phát (tối đa 5, đều thuộc bài này), theo đúng thứ tự đã phát.
+        if (questionIds == null || questionIds.isEmpty() || questionIds.size() > EXERCISE_SIZE
+                || questionIds.stream().distinct().count() != questionIds.size()) throw badRequest(FOREIGN_ANSWER);
+        Map<Long, QuestionRow> byId = pool.stream().collect(Collectors.toMap(QuestionRow::id, Function.identity(), (a, b) -> a));
+        if (!byId.keySet().containsAll(questionIds)) throw badRequest(FOREIGN_ANSWER);
+        List<QuestionRow> items = questionIds.stream().map(byId::get).toList();
         Map<String, String> supplied = answers == null ? Map.of() : answers;
         Set<String> ids = items.stream().map(q -> q.id().toString()).collect(Collectors.toSet());
         if (!ids.containsAll(supplied.keySet())) throw badRequest(FOREIGN_ANSWER);
-        return grade(items, supplied);
+        StudentGrammarResponse.CheckResult graded = grade(items, supplied);
+        boolean wasCompleted = queries.sectionProgress(userId, lessonId).completed();
+        queries.saveExerciseProgress(userId, lessonId, graded.score(), now());
+        if (!wasCompleted) {
+            for (StudentGrammarResponse.GrammarPoint g : queries.grammars(lessonId)) {
+                activity.recordContentCompletion(userId, ContentType.GRAMMAR, g.id());
+            }
+        }
+        StudentGrammarQueryRepository.SectionProgress after = queries.sectionProgress(userId, lessonId);
+        return new StudentGrammarResponse.ExerciseResult(graded.correctCount(), graded.totalQuestions(), graded.score(),
+                after.completed(), !wasCompleted, after.bestScore(), graded.results());
     }
 
     // ===== Mini test Grammar =====

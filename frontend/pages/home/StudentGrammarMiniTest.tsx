@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   getGrammarResult,
   grammarError,
@@ -155,6 +156,7 @@ export function StudentGrammarMiniTest({
   embedded?: boolean;
 }) {
   const test = lesson.miniTest!;
+  const cache = useQueryClient();
   const [attempt, setAttempt] = useState<GrammarAttempt | null>(null);
   const [result, setResult] = useState<GrammarAttemptResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -167,7 +169,11 @@ export function StudentGrammarMiniTest({
     try {
       const a = await startGrammarMiniTest(test.id);
       if (a.status === "IN_PROGRESS") setAttempt(a);
-      else setResult(await getGrammarResult(a.id));
+      else {
+        // Lượt cũ đã hết giờ và được tự nộp → làm mới lịch sử làm bài
+        setResult(await getGrammarResult(a.id));
+        void cache.invalidateQueries({ queryKey: ["student-grammar-lesson"] });
+      }
     } catch (e) {
       setError(grammarError(e, "Không thể bắt đầu bài làm."));
     } finally {
@@ -213,6 +219,10 @@ export function StudentGrammarMiniTest({
           onDone={(r) => {
             setAttempt(null);
             setResult(r);
+            // Tải lại bài học để "Lịch sử làm bài" có ngay lần vừa nộp (không cần F5),
+            // cùng các số liệu Mini test ở trang chủ / kết quả bài kiểm tra / chuỗi ngày học.
+            for (const key of ["student-grammar-lesson", "home-test-status", "test-results", "home-last-lesson", "progress-streak", "streak"])
+              void cache.invalidateQueries({ queryKey: [key] });
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         />

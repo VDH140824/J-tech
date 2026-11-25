@@ -35,22 +35,37 @@ import { StudentPostListPage } from "../pages/classroom/StudentPostListPage";
 import { PostDetailPage } from "../pages/classroom/PostDetailPage";
 import { ConjugationListPage } from "../pages/home/ConjugationListPage";
 import { ConjugationPracticePage } from "../pages/home/ConjugationPracticePage";
-import { ListeningIndexPage, ListeningPage } from "../pages/listening/ListeningPage";
+import {
+  ListeningIndexPage,
+  ListeningPage,
+} from "../pages/listening/ListeningPage";
 import { AiReadingPage } from "../pages/reading/AiReadingPage";
 import { AiReadingHistoryPage } from "../pages/reading/AiReadingHistoryPage";
+import { TestResultsPage } from "../pages/progress/TestResultsPage";
+import { LastLessonTracker } from "../components/ui/LastLessonTracker";
 
 const Campus3DPage = lazy(() => import("../game_3d/Campus3DPage"));
 
 function KanjiFruitRoute() {
   const { isLoading } = useCurrentUser();
-  if (isLoading) return <p role="status" style={{ padding: "2rem" }}>Đang kiểm tra tài khoản…</p>;
-  return <StudentProtectedRoute><KanjiFruitPage /></StudentProtectedRoute>;
+  if (isLoading)
+    return (
+      <p role="status" style={{ padding: "2rem" }}>
+        Đang kiểm tra tài khoản…
+      </p>
+    );
+  return (
+    <StudentProtectedRoute>
+      <KanjiFruitPage />
+    </StudentProtectedRoute>
+  );
 }
 
 export function AppRouter() {
   return (
     <>
       <BackgroundMusic />
+      <LastLessonTracker />
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
@@ -68,7 +83,22 @@ export function AppRouter() {
           }
         >
           <Route path="/home" element={<HomePage />} />
-          <Route path="/progress" element={<StudentProtectedRoute><LearningProgressPage /></StudentProtectedRoute>} />
+          <Route
+            path="/progress"
+            element={
+              <StudentProtectedRoute>
+                <LearningProgressPage />
+              </StudentProtectedRoute>
+            }
+          />
+          <Route
+            path="/progress/tests"
+            element={
+              <StudentProtectedRoute>
+                <TestResultsPage />
+              </StudentProtectedRoute>
+            }
+          />
           <Route path="/courses/:courseId" element={<CoursePage />} />
           <Route
             path="/courses/:courseId/chapters/:chapterId"
@@ -107,7 +137,13 @@ export function AppRouter() {
             path="/games/campus-3d"
             element={
               <StudentProtectedRoute>
-                <Suspense fallback={<p role="status" style={{ padding: "2rem" }}>Đang mở bản đồ 3D…</p>}>
+                <Suspense
+                  fallback={
+                    <p role="status" style={{ padding: "2rem" }}>
+                      Đang mở bản đồ 3D…
+                    </p>
+                  }
+                >
                   <Campus3DPage />
                 </Suspense>
               </StudentProtectedRoute>
@@ -121,10 +157,7 @@ export function AppRouter() {
               </StudentProtectedRoute>
             }
           />
-          <Route
-            path="/games/kanji-fruit"
-            element={<KanjiFruitRoute />}
-          />
+          <Route path="/games/kanji-fruit" element={<KanjiFruitRoute />} />
           <Route
             path="/feedback"
             element={

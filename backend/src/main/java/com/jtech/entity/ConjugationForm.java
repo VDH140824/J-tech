@@ -6,10 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-/**
- * Bảng conjugation_form trong doc/jtech.sql.
- * Dùng chung Course.Status (DRAFT / PUBLISHED / HIDDEN / ARCHIVED) như Lesson và Chapter.
- */
+
 @Entity
 @Table(name = "conjugation_form")
 @Getter
@@ -41,7 +38,6 @@ public class ConjugationForm {
     @Column(name = "material_content", nullable = false, columnDefinition = "MEDIUMTEXT")
     private String materialContent;
 
-    // SMALLINT UNSIGNED: khai báo columnDefinition giống Lesson.lessonNo để qua được ddl-auto: validate
     @Column(name = "questions_per_practice", nullable = false, columnDefinition = "SMALLINT UNSIGNED")
     @Builder.Default
     private Integer questionsPerPractice = 10;

@@ -25,17 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Thể chia phía học viên: Conjugation List (UC-21, UC-22) và Conjugation Practice (UC-23).
- *
- * Câu luyện tập là question (skill CONJUGATION, conjugation_form_id, is_exercise_question, ACTIVE). Vì bảng
- * question không có cột riêng cho động từ, answer_data của câu thể chia có dạng:
- * {"verb":"書く","reading":"かく","meaningVi":"viết","verbGroup":1,"correctAnswer":"書いて",
- *  "acceptedAnswers":["かいて"],"options":["書いて","書きて","書って","書かて"]}   (options không bắt buộc)
- *
- * Mỗi lượt luyện tập lấy ngẫu nhiên questions_per_practice câu (UC-47, BR-104) trong các câu luyện tập của
- * thể chia, sau khi lọc theo nhóm động từ (BR-95). Nếu số câu ít hơn thì lượt gồm tất cả các câu.
- */
+
 @Service
 public class StudentConjugationService {
     public static final BigDecimal PASSING_SCORE = BigDecimal.valueOf(80);
@@ -64,11 +54,9 @@ public class StudentConjugationService {
         this.json = json;
     }
 
-    /** Dữ liệu câu thể chia đọc từ answer_data. */
     record Item(Question question, String verb, String reading, String meaningVi, int verbGroup,
         String correctAnswer, List<String> acceptedAnswers, List<String> options) {}
 
-    // ===== UC-21: danh sách thể chia =====
     @Transactional(readOnly = true)
     public List<StudentConjugationResponse.FormCard> list(String keyword, int verbGroup, String difficulty, long studentId) {
         int group = group(verbGroup);
@@ -87,14 +75,12 @@ public class StudentConjugationService {
         return cards;
     }
 
-    // ===== UC-22: “Xem cách chia” =====
     @Transactional(readOnly = true)
     public StudentConjugationResponse.FormDetail detail(long formId, int verbGroup, String difficulty, long studentId) {
         ConjugationForm form = requirePublished(formId);
         int group = group(verbGroup);
         Question.Difficulty level = difficulty(difficulty);
         List<Item> all = items(formId, 0, null);
-        // Số câu theo nhóm (trong độ khó đang chọn) và theo độ khó (trong nhóm đang chọn) để làm mờ lựa chọn không có câu
         Map<Integer, Integer> counts = new LinkedHashMap<>();
         for (int g = 0; g <= 3; g++) {
             final int current = g;
@@ -114,7 +100,6 @@ public class StudentConjugationService {
             summary == null ? 0 : summary.attempts(), summary == null ? null : summary.bestScore(), passed(summary));
     }
 
-    // ===== UC-23: bắt đầu một lượt — lấy ngẫu nhiên N câu =====
     @Transactional(readOnly = true)
     public StudentConjugationResponse.PracticeSession start(long formId, int verbGroup, String difficulty, String mode) {
         ConjugationForm form = requirePublished(formId);
@@ -131,14 +116,12 @@ public class StudentConjugationService {
         List<StudentConjugationResponse.Question> list = picked.stream()
             .map(i -> new StudentConjugationResponse.Question(i.question().getId(), i.question().getContent(),
                 i.verb(), i.reading(), i.meaningVi(), i.verbGroup() == 0 ? null : i.verbGroup(),
-                // Luôn kèm phương án để học viên đổi “Nhập đáp án” ↔ “Trắc nghiệm” giữa chừng mà không mất lượt.
                 options(i, answersPool)))
             .toList();
         return new StudentConjugationResponse.PracticeSession(form.getId(), form.getNameVi(), form.getNameJp(),
             group, levelName(level), practiceMode, perSession(form), list);
     }
 
-    // ===== UC-23 bước 3–5: “Kiểm tra” một câu (BR-98) =====
     @Transactional(readOnly = true)
     public StudentConjugationResponse.CheckResult check(long formId, StudentConjugationResponse.CheckRequest request) {
         requirePublished(formId);
@@ -155,7 +138,6 @@ public class StudentConjugationService {
         return grade(item, request.answer());
     }
 
-    // ===== Hoàn thành lượt: chấm lại ở server, lưu lượt, ghi nhận ngày học, thưởng xu lần đạt đầu =====
     @Transactional
     public StudentConjugationResponse.Result submit(long formId, long studentId,
             StudentConjugationResponse.SubmitRequest request) {
@@ -164,7 +146,6 @@ public class StudentConjugationService {
         Question.Difficulty level = difficulty(request == null ? null : request.difficulty());
         String practiceMode = mode(request == null ? null : request.mode());
         Map<String, String> answers = request == null || request.answers() == null ? Map.of() : request.answers();
-        // Lượt không lưu trên server: kiểm tra các câu gửi lên đều thuộc thể chia + nhóm và đúng số câu một lượt.
         Map<Long, Item> pool = new LinkedHashMap<>();
         for (Item item : items(formId, group, level)) pool.put(item.question().getId(), item);
         int expected = Math.min(perSession(form), pool.size());
@@ -196,12 +177,10 @@ public class StudentConjugationService {
             PASSING_SCORE, passed, coinsAwarded, details);
     }
 
-    // ===== Helpers =====
     private long awardFirstPass(long studentId, long formId, long attemptId) {
         var amount = progress.findEnabledCoinReward(COIN_RULE);
         if (amount.isEmpty()) return 0;
         String key = "CONJUGATION:" + studentId + ":" + formId;
-        // Tài khoản đã được khóa dòng trong cùng transaction (recordConjugationPracticeCompletion).
         if (coinTransactions.findByAwardKey(key).isPresent()) return 0;
         coins.awardCoins(studentId,
             new CoinRewardService.ActivityRef(CoinRewardService.SourceType.PRACTICE, attemptId),
@@ -231,12 +210,10 @@ public class StudentConjugationService {
             item.acceptedAnswers(), item.question().getExplanation());
     }
 
-    /** BR-97: chuẩn hóa đáp án (xem ConjugationAnswerData.normalize). */
     static String normalize(String value) {
         return ConjugationAnswerData.normalize(value);
     }
 
-    /** Phương án trắc nghiệm: dùng options do Moderator nhập, thiếu thì lấy đáp án đúng của câu khác làm nhiễu. */
     private List<String> options(Item item, List<String> pool) {
         List<String> result = new ArrayList<>();
         result.add(item.correctAnswer());
@@ -249,7 +226,7 @@ public class StudentConjugationService {
                 result.add(option);
             }
         }
-        if (result.size() < 2) return null; // không đủ phương án → câu này dùng ô nhập
+        if (result.size() < 2) return null; 
         Collections.shuffle(result, random);
         return result;
     }
@@ -257,7 +234,6 @@ public class StudentConjugationService {
     private List<Item> items(long formId, int group, Question.Difficulty level) {
         List<Item> list = new ArrayList<>();
         for (Question q : questions.findStudentPracticeQuestions(formId, Question.QuestionStatus.ACTIVE)) {
-            // Câu đã gắn conjugation_form_id là câu thể chia (không loại theo skill để tránh lệch dữ liệu nhập tay).
             Item item = parse(q);
             if (item == null) continue;
             if ((group == 0 || item.verbGroup() == group) && matchesLevel(item, level)) list.add(item);
@@ -265,7 +241,6 @@ public class StudentConjugationService {
         return list;
     }
 
-    /** Đọc answer_data qua định dạng dùng chung (ConjugationAnswerData). null nếu không xác định được đáp án. */
     private Item parse(Question q) {
         ConjugationAnswerData.Data d = ConjugationAnswerData.read(q, json);
         return d == null ? null : new Item(q, d.verb(), d.reading(), d.meaningVi(), d.verbGroup(),
@@ -284,7 +259,6 @@ public class StudentConjugationService {
 
     private static final String ALL_LEVELS = "ALL";
 
-    /** null / "" / "ALL" = mọi độ khó; EASY / MEDIUM / HARD. */
     private static Question.Difficulty difficulty(String value) {
         if (value == null || value.isBlank() || ALL_LEVELS.equalsIgnoreCase(value.trim())) return null;
         try {

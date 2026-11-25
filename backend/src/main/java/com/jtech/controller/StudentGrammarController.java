@@ -3,6 +3,7 @@ package com.jtech.controller;
 import com.jtech.dto.response.StudentGrammarResponse;
 import com.jtech.service.StudentGrammarService;
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +23,10 @@ public class StudentGrammarController {
 
     /** Câu trả lời: questionId → đáp án (MCQ: khóa lựa chọn; điền: chữ; nối: JSON {vế trái: vế phải}). */
     public record Answers(Map<String, String> answers) {
+    }
+
+    /** Bài tập: các câu đã được phát (5 câu ngẫu nhiên) + câu trả lời. */
+    public record ExerciseAnswers(List<Long> questionIds, Map<String, String> answers) {
     }
 
     private final StudentGrammarService service;
@@ -44,9 +49,9 @@ public class StudentGrammarController {
 
     /** Grammar Exercise: chấm bài luyện tập. */
     @PostMapping("/lessons/{lessonId}/exercise/check")
-    public ResponseEntity<StudentGrammarResponse.CheckResult> check(@PathVariable long lessonId,
-            @RequestBody Answers body) {
-        return ResponseEntity.ok(service.checkExercise(lessonId, body.answers()));
+    public ResponseEntity<StudentGrammarResponse.ExerciseResult> check(@PathVariable long lessonId,
+            @RequestBody ExerciseAnswers body, Principal principal) {
+        return ResponseEntity.ok(service.checkExercise(lessonId, body.questionIds(), body.answers(), principal.getName()));
     }
 
     /** Mini test Grammar: bắt đầu hoặc tiếp tục lượt làm. */

@@ -11,10 +11,7 @@ import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-/**
- * UC-39 Manage Question Bank: truy vấn đọc trên bảng question có sẵn (không thêm bảng / cột).
- * Chỉ gồm câu hỏi Từ vựng, Kanji, Ngữ pháp; khóa học / chương / bài học suy ra từ lesson_id hoặc grammar.lesson_id.
- */
+
 @Repository
 public class QuestionBankQueryRepository {
 
@@ -37,7 +34,6 @@ public class QuestionBankQueryRepository {
                    l.id AS lesson_id, l.title AS lesson_title, g.structure_name
             """;
 
-    /** Kỹ năng thuộc ngân hàng câu hỏi (UC-39). */
     public static final String BANK_SKILLS = "q.skill IN ('VOCABULARY', 'KANJI', 'GRAMMAR')";
 
     private final JdbcTemplate db;
@@ -46,7 +42,6 @@ public class QuestionBankQueryRepository {
         this.db = db;
     }
 
-    /** A1: lọc theo khóa học, chương, bài học, kỹ năng, dạng câu, trạng thái, từ khóa; mới nhất trước. */
     public QuestionBankResponse.Page search(Filter filter, int page, int size) {
         List<Object> args = new ArrayList<>();
         String where = where(filter, args);
@@ -126,7 +121,6 @@ public class QuestionBankQueryRepository {
                 changed == null ? null : changed.toLocalDateTime());
     }
 
-    // ===== Dữ liệu cho bộ lọc / chọn nơi gắn câu hỏi =====
     public QuestionBankResponse.Targets targets() {
         return new QuestionBankResponse.Targets(
                 db.query("SELECT id, name FROM course WHERE deleted_at IS NULL ORDER BY display_order, id",
@@ -150,20 +144,17 @@ public class QuestionBankQueryRepository {
                                 rs.getString(4), (Long) rs.getObject(5, Long.class), (Long) rs.getObject(6, Long.class))));
     }
 
-    // ===== Kiểm tra nơi gắn câu hỏi =====
-    /** Loại kỹ năng của bài học (KANJI / VOCABULARY / ...), rỗng nếu bài học không tồn tại. */
+  
     public Optional<String> findLessonSkill(long lessonId) {
         return db.query("SELECT skill_type FROM lesson WHERE id = ?", (rs, i) -> rs.getString(1), lessonId)
                 .stream().findFirst();
     }
 
-    /** Bài học chứa điểm ngữ pháp, rỗng nếu điểm ngữ pháp không tồn tại. */
     public Optional<Long> findGrammarLesson(long grammarId) {
         return db.query("SELECT lesson_id FROM grammar WHERE id = ?", (rs, i) -> rs.getLong(1), grammarId)
                 .stream().findFirst();
     }
 
-    // ===== Đề kiểm tra đang chứa câu hỏi (chỉ đọc test_question) =====
     private static final String TEST_COLUMNS = """
             SELECT t.id, t.test_type, t.skill, t.title, t.status,
                    EXISTS(SELECT 1 FROM test_attempt ta WHERE ta.test_id = t.id) AS locked
@@ -174,7 +165,6 @@ public class QuestionBankQueryRepository {
                 rs.getString("title"), rs.getString("status"), rs.getBoolean("locked"));
     }
 
-    /** Các đề đang chứa câu hỏi. */
     public List<QuestionBankResponse.TestItem> linkedTests(long questionId) {
         return db.query(TEST_COLUMNS + """
                 FROM test_question tq JOIN test t ON t.id = tq.test_id
@@ -183,11 +173,7 @@ public class QuestionBankQueryRepository {
                 """, (rs, i) -> testItem(rs), questionId);
     }
 
-    // ===== BR-29 / BR-13 =====
-    /**
-     * BR-29: câu hỏi đã có học viên làm khi nằm trong bài kiểm tra đã có lượt làm (test_attempt),
-     * hoặc xuất hiện trong đáp án của một lượt luyện tập (practice_attempt.answers_data.answers lưu theo id câu).
-     */
+    
     public boolean hasAttempts(long questionId) {
         return Boolean.TRUE.equals(db.queryForObject("""
                 SELECT EXISTS(SELECT 1 FROM test_question tq JOIN test_attempt ta ON ta.test_id = tq.test_id
@@ -197,13 +183,11 @@ public class QuestionBankQueryRepository {
                 """, Boolean.class, questionId, String.valueOf(questionId)));
     }
 
-    /** Câu hỏi đang thuộc một bài kiểm tra (test_question tham chiếu khóa ngoại tới question). */
     public boolean isInTest(long questionId) {
         return Boolean.TRUE.equals(db.queryForObject(
                 "SELECT EXISTS(SELECT 1 FROM test_question WHERE question_id = ?)", Boolean.class, questionId));
     }
 
-    /** Có phản hồi của học viên về câu hỏi (feedback tham chiếu khóa ngoại tới question). */
     public boolean hasFeedback(long questionId) {
         return Boolean.TRUE.equals(db.queryForObject(
                 "SELECT EXISTS(SELECT 1 FROM feedback WHERE question_id = ?)", Boolean.class, questionId));
