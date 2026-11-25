@@ -724,10 +724,11 @@ public class VocabularyExerciseService {
             if (
                 data == null ||
                 data.options() == null ||
-                data.matches() == null ||
                 data.correctAnswer() == null
             ) throw new IllegalArgumentException();
-            return data;
+            return data.matches() == null
+                ? new AnswerData(data.options(), data.correctAnswer(), Map.of(), data.sourceVocabularyId())
+                : data;
         } catch (JsonProcessingException | IllegalArgumentException ex) {
             throw new IllegalStateException(
                 "Đáp án câu " + question.getId() + " chưa đúng định dạng exercise Vocab."
