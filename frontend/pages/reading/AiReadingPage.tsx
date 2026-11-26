@@ -292,7 +292,7 @@ export function AiReadingPage() {
         <p>Luyện đọc đoạn văn tiếng Nhật do AI soạn theo đúng phạm vi bạn đã học.</p>
       </header>
       <ScopePicker
-        key={detail?.id ?? "new"}
+        key={`picker-${detail?.id ?? "new"}`}
         initialCourseId={detail?.courseId}
         initialChapterId={detail?.chapterId}
         disabled={create.isPending}
@@ -323,7 +323,7 @@ export function AiReadingPage() {
       )}
       {detail ? (
         <ReadingExercise
-          key={detail.id}
+          key={`exercise-${detail.id}`}
           detail={detail}
           creating={create.isPending}
           onCreateAgain={() => create.mutate(scopeOf(detail))}
