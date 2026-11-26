@@ -81,10 +81,10 @@ export function StudentVocabularyChapterPage({
         {lessonNo === undefined && test.isSuccess && test.data.questions.length > 0 && (
           <button type="button" className="kanji-tile" onClick={() => onOpen("test")}>
             <div className="kanji-tile-banner kanji-banner-test">
-              <strong>TEST CHƯƠNG</strong>
+              <strong>MINI TEST</strong>
             </div>
             <div className="kanji-tile-body">
-              <h4>Test từ vựng chương {chapterNo}</h4>
+              <h4>Mini test từ vựng chương {chapterNo}</h4>
               <small>{test.data.questions.length} câu · {test.data.durationMinutes} phút</small>
             </div>
           </button>
