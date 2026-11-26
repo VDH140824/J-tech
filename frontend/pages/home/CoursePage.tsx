@@ -180,7 +180,9 @@ function ChapterCard({
                               ? `/listening/${l.id}`
                               : l.skillType === "READING"
                                 ? `/ai-reading?lessonId=${l.id}`
-                                : `/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "VOCABULARY" && l.id > 0 ? `&lessonId=${l.id}` : l.skillType === "GRAMMAR" || l.skillType === "VOCABULARY" ? `&lessonNo=${l.lessonNo}` : `&lessonId=${l.id}`}`
+                                : l.skillType === "VOCABULARY"
+                                  ? `/courses/${courseId}/chapters/${chapter.id}?skill=VOCABULARY`
+                                  : `/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : `&lessonId=${l.id}`}`
                           }
                           state={
                             l.skillType === "LISTENING"
