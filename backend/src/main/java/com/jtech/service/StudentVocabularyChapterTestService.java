@@ -34,6 +34,8 @@ import static com.jtech.dto.response.StudentVocabularyChapterTestResponse.*;
 @Service
 public class StudentVocabularyChapterTestService {
 
+    private final LearningActivityService activities;
+
     static final long SUBMIT_GRACE_SECONDS = 30;
     private static final ZoneId LEARNING_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private static final String ATTEMPT_NOT_FOUND = "Không tìm thấy lượt làm bài.";
@@ -86,7 +88,8 @@ public class StudentVocabularyChapterTestService {
         FeedbackService access,
         VocabularyChapterTestService chapterTests,
         VocabularyTestQuestionRepository questions,
-        VocabularyExerciseService exercises
+        VocabularyExerciseService exercises,
+        LearningActivityService activities
     ) {
         this.db = db;
         this.json = json;
@@ -94,6 +97,7 @@ public class StudentVocabularyChapterTestService {
         this.chapterTests = chapterTests;
         this.questions = questions;
         this.exercises = exercises;
+        this.activities = activities;
     }
 
     @Transactional
@@ -250,6 +254,7 @@ public class StudentVocabularyChapterTestService {
             WHERE id=? AND status='IN_PROGRESS'
             """, status, answerData, correctCount, score, score.compareTo(snapshot.passingScore()) >= 0,
             submittedAt, submittedAt, submittedAt, row.id());
+        activities.recordTestAttemptCompletion(row.userId(), row.id(), submittedAt);
         return owned(row.id(), row.chapterId(), row.userId());
     }
 

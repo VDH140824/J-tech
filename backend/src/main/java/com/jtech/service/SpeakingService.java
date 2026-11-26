@@ -13,6 +13,7 @@ import com.jtech.dto.response.SpeakingResponses.WordScore;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,14 +44,22 @@ public class SpeakingService {
     private final TransactionTemplate tx;
     private final AzurePronunciationClient azure;
     private final SpeakingFeedbackClient feedback;
+    private final LearningActivityService activities;
 
+    @Autowired
     public SpeakingService(JdbcTemplate jdbc, ObjectMapper json, TransactionTemplate tx,
-            AzurePronunciationClient azure, SpeakingFeedbackClient feedback) {
+            AzurePronunciationClient azure, SpeakingFeedbackClient feedback, LearningActivityService activities) {
         this.jdbc = jdbc;
         this.json = json;
         this.tx = tx;
         this.azure = azure;
         this.feedback = feedback;
+        this.activities = activities;
+    }
+
+    SpeakingService(JdbcTemplate jdbc, ObjectMapper json, TransactionTemplate tx,
+            AzurePronunciationClient azure, SpeakingFeedbackClient feedback) {
+        this(jdbc, json, tx, azure, feedback, null);
     }
 
     /** Published scenarios of a published chapter that have a usable script. */
@@ -159,7 +168,10 @@ public class SpeakingService {
     /** Ends the session with an overall review. Finishing twice returns the same result. */
     public SessionResult finish(long sessionId, String email) {
         Session session = session(sessionId, userId(email));
-        if ("COMPLETED".equals(session.status())) return result(session);
+        if ("COMPLETED".equals(session.status())) {
+            if (activities != null) activities.recordSpeakingCompletion(session.userId(), sessionId, session.endedAt());
+            return result(session);
+        }
         if (!"IN_PROGRESS".equals(session.status()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Phiên luyện nói này đã kết thúc.");
         if (session.turns().isEmpty())
@@ -173,7 +185,9 @@ public class SpeakingService {
                 WHERE id = ? AND status = 'IN_PROGRESS'
                 """, review == null ? null : review.value(), review == null ? 0 : review.inputTokens(),
                 review == null ? 0 : review.outputTokens(), sessionId);
-        return result(session(sessionId, session.userId()));
+        Session completed = session(sessionId, session.userId());
+        if (activities != null) activities.recordSpeakingCompletion(completed.userId(), sessionId, completed.endedAt());
+        return result(completed);
     }
 
     public SessionResult get(long sessionId, String email) {
@@ -192,12 +206,13 @@ public class SpeakingService {
     }
 
     private record Session(long id, long userId, long scenarioId, String status, String overallFeedback,
+            java.time.LocalDateTime endedAt,
             List<TurnResult> turns, SpeakingFeedbackClient.Context context) {}
 
     /** Loads a session of {@code userId}; another learner's session is reported as not found. */
     private Session session(long sessionId, long userId) {
         var sessions = jdbc.query("""
-                SELECT s.id, s.user_id, s.scenario_id, s.status, s.overall_feedback, s.turns_data, s.swapped,
+                SELECT s.id, s.user_id, s.scenario_id, s.status, s.overall_feedback, s.ended_at, s.turns_data, s.swapped,
                   sc.title, sc.situation, sc.ai_role, sc.student_role, sc.sample_script
                 FROM speaking_session s JOIN speaking_scenario sc ON sc.id = s.scenario_id
                 WHERE s.id = ? AND s.user_id = ?
@@ -212,7 +227,9 @@ public class SpeakingService {
                     : new SpeakingFeedbackClient.Context(rs.getString("title"), rs.getString("situation"),
                             rs.getString("ai_role"), rs.getString("student_role"), script);
             return new Session(rs.getLong("id"), rs.getLong("user_id"), rs.getLong("scenario_id"),
-                    rs.getString("status"), rs.getString("overall_feedback"), readTurns(rs.getString("turns_data")),
+                    rs.getString("status"), rs.getString("overall_feedback"),
+                    rs.getTimestamp("ended_at") == null ? null : rs.getTimestamp("ended_at").toLocalDateTime(),
+                    readTurns(rs.getString("turns_data")),
                     context);
         }, sessionId, userId);
         if (sessions.isEmpty()) throw notFound("Không tìm thấy phiên luyện nói.");

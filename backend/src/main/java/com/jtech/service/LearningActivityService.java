@@ -63,6 +63,24 @@ public class LearningActivityService {
     }
 
     @Transactional
+    public CompletionResult recordTestAttemptCompletion(long studentId, long attemptId, LocalDateTime submitted) {
+        balances.lockAccount(studentId);
+        return recordDay(studentId, submitted, "TEST", "test_attempt_id", attemptId);
+    }
+
+    @Transactional
+    public CompletionResult recordSpeakingCompletion(long studentId, long sessionId, LocalDateTime completed) {
+        balances.lockAccount(studentId);
+        return recordStandaloneDay(studentId, completed, "PRACTICE", "SPEAKING_SESSION:" + sessionId);
+    }
+
+    @Transactional
+    public CompletionResult recordKanjiExerciseCompletion(long studentId, long lessonId, LocalDateTime completed) {
+        balances.lockAccount(studentId);
+        return recordStandaloneDay(studentId, completed, "PRACTICE", "KANJI_EXERCISE:" + lessonId);
+    }
+
+    @Transactional
     public CompletionResult recordExerciseCompletion(long studentId, long exerciseId, long lessonId,
             VocabularyTestResponse.Result result, Map<String, String> answers) {
         balances.lockAccount(studentId);

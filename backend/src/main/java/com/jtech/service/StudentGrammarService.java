@@ -305,6 +305,7 @@ public class StudentGrammarService {
         boolean passed = graded.score().compareTo(test.passingScore()) >= 0;
         queries.finish(row.id(), status, write(new Snapshot(snapshot.questionIds(), answers)), graded.correctCount(),
                 graded.score(), passed, now);
+        activity.recordTestAttemptCompletion(row.userId(), row.id(), now);
     }
 
     private StudentGrammarResponse.Attempt attemptView(TestRow test, AttemptRow row, LocalDateTime now) {

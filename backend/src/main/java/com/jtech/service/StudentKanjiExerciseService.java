@@ -8,7 +8,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.text.Normalizer;
 import java.util.*;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StudentKanjiExerciseService {
     private static final int QUESTIONS_PER_ROUND = 5;
@@ -24,6 +23,21 @@ public class StudentKanjiExerciseService {
     private final EntityManager em;
     private final FeedbackService access;
     private final ObjectMapper mapper;
+    private final LearningActivityService activities;
+
+    @Autowired
+    public StudentKanjiExerciseService(JdbcTemplate db, EntityManager em, FeedbackService access,
+            ObjectMapper mapper, LearningActivityService activities) {
+        this.db = db;
+        this.em = em;
+        this.access = access;
+        this.mapper = mapper;
+        this.activities = activities;
+    }
+
+    StudentKanjiExerciseService(JdbcTemplate db, EntityManager em, FeedbackService access, ObjectMapper mapper) {
+        this(db, em, access, mapper, null);
+    }
 
     public record ExerciseQuestion(long id, Question.QuestionType questionType, String content,
         List<String> options, List<String> leftItems, List<String> rightItems) {}
@@ -86,6 +100,7 @@ public class StudentKanjiExerciseService {
         }).toList();
     }
 
+    @Transactional
     public Result submit(Principal p, long lessonId, List<Long> questionIds, Map<Long, Answer> answers) {
         if (!requireDocument(p, lessonId)) throw new ResponseStatusException(HttpStatus.CONFLICT, "Tài liệu chưa có bộ bài tập riêng.");
         var byId = new HashMap<Long, Question>();
@@ -104,7 +119,10 @@ public class StudentKanjiExerciseService {
                 : !normalize(given.value()).isEmpty() && normalize(given.value()).equals(normalize(correct.correctAnswer())));
             return new Review(q.getId(), ok, correct.correctAnswer(), correct.matches(), q.getExplanation());
         }).toList();
-        return new Result((int) reviews.stream().filter(Review::correct).count(), reviews.size(), reviews);
+        Result result = new Result((int) reviews.stream().filter(Review::correct).count(), reviews.size(), reviews);
+        if (activities != null) activities.recordKanjiExerciseCompletion(access.actor(p, "STUDENT").getUserId(), lessonId,
+            java.time.LocalDateTime.now(StreakService.LEARNING_ZONE));
+        return result;
     }
 
     private String normalize(String value) {
