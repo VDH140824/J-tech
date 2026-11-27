@@ -2,8 +2,17 @@ spring:
   application:
     name: jtech-backend
 
+  config:
+    import: "optional:file:./.env[.properties],optional:file:./backend/.env[.properties]"
+
   mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
     properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
       mail.smtp.connectiontimeout: 5000
       mail.smtp.timeout: 5000
       mail.smtp.writetimeout: 5000
@@ -61,6 +70,22 @@ app:
     secure: ${APP_COOKIE_SECURE:false}
     same-site: Lax
     path: /api/auth
+  speaking:
+    # Keys come from the environment only; leave them unset to disable scoring or feedback.
+    azure:
+      key: ${AZURE_SPEECH_KEY:}
+      region: ${AZURE_SPEECH_REGION:}
+      language: ja-JP
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:gemini-3.1-flash-lite}
+      timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:60}
+  reading:
+    # Shares GEMINI_API_KEY with speaking; daily-limit counts AI passages a student may create per day.
+    gemini:
+      model: ${READING_GEMINI_MODEL:${GEMINI_MODEL:gemini-3.1-flash-lite}}
+      timeout-seconds: ${READING_GEMINI_TIMEOUT_SECONDS:60}
+    daily-limit: ${READING_DAILY_LIMIT:10}
 
 logging:
   level:

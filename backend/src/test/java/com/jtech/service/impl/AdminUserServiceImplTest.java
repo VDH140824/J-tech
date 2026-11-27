@@ -20,10 +20,13 @@ import org.mockito.Mock;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -251,13 +254,13 @@ void UTCID03() {
         verify(userRepository, never()).save(any(User.class));
     }
 
-    // UTCID11: Chấp nhận lý do từ chối dài đúng 100 ký tự.
+    // UTCID11: Chấp nhận lý do từ chối dài đúng 500 ký tự.
     @Test
     void UTCID11() {
         user.setStatus(UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
-        String reason = "a".repeat(100);
+        String reason = "a".repeat(500);
         RejectUserRequest request = new RejectUserRequest();
         request.setStatusReason(reason);
 
@@ -268,18 +271,18 @@ void UTCID03() {
         verify(userRepository).save(user);
     }
 
-    // UTCID12: Từ chối lý do dài hơn 100 ký tự và không lưu thay đổi.
+    // UTCID12: Từ chối lý do dài hơn 500 ký tự và không lưu thay đổi.
     @Test
     void UTCID12() {
         user.setStatus(UserStatus.PENDING);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         RejectUserRequest request = new RejectUserRequest();
-        request.setStatusReason("a".repeat(101));
+        request.setStatusReason("a".repeat(501));
 
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> service.rejectUser(1L, request));
 
-        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals("Lý do không được vượt quá 500 ký tự", error.getMessage());
         assertEquals(UserStatus.PENDING, user.getStatus());
         verify(userRepository, never()).save(any(User.class));
     }
@@ -335,12 +338,12 @@ void UTCID03() {
         verify(userRepository, never()).save(any(User.class));
     }
 
-    // UTCID16: Chấp nhận lý do khóa dài đúng 100 ký tự.
+    // UTCID16: Chấp nhận lý do khóa dài đúng 500 ký tự.
     @Test
     void UTCID16() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
-        String reason = "a".repeat(100);
+        String reason = "a".repeat(500);
         AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
         request.setStatusReason(reason);
 
@@ -351,27 +354,27 @@ void UTCID03() {
         verify(userRepository).save(user);
     }
 
-    // UTCID17: Từ chối lý do khóa dài hơn 100 ký tự.
+    // UTCID17: Từ chối lý do khóa dài hơn 500 ký tự.
     @Test
     void UTCID17() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         AdminUserStatusRequest request = new AdminUserStatusRequest("LOCKED");
-        request.setStatusReason("a".repeat(101));
+        request.setStatusReason("a".repeat(501));
 
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> service.updateUserStatus(1L, request));
 
-        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals("Lý do không được vượt quá 500 ký tự", error.getMessage());
         assertEquals(UserStatus.ACTIVE, user.getStatus());
         verify(userRepository, never()).save(any(User.class));
     }
 
-    // UTCID18: Chấp nhận lý do đổi sang REJECTED dài đúng 100 ký tự.
+    // UTCID18: Chấp nhận lý do đổi sang REJECTED dài đúng 500 ký tự.
     @Test
     void UTCID18() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
-        String reason = "a".repeat(100);
+        String reason = "a".repeat(500);
         AdminUserStatusRequest request = new AdminUserStatusRequest("REJECTED");
         request.setStatusReason(reason);
 
@@ -382,17 +385,17 @@ void UTCID03() {
         verify(userRepository).save(user);
     }
 
-    // UTCID19: Từ chối lý do đổi sang REJECTED dài hơn 100 ký tự.
+    // UTCID19: Từ chối lý do đổi sang REJECTED dài hơn 500 ký tự.
     @Test
     void UTCID19() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         AdminUserStatusRequest request = new AdminUserStatusRequest("REJECTED");
-        request.setStatusReason("a".repeat(101));
+        request.setStatusReason("a".repeat(501));
 
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> service.updateUserStatus(1L, request));
 
-        assertEquals("Lý do không được vượt quá 100 ký tự", error.getMessage());
+        assertEquals("Lý do không được vượt quá 500 ký tự", error.getMessage());
         assertEquals(UserStatus.ACTIVE, user.getStatus());
         verify(userRepository, never()).save(any(User.class));
     }
@@ -463,7 +466,9 @@ void UTCID03() {
 
         // Assert
         verify(userRepository).existsById(1L);
-        verify(userRepository).deleteById(1L);
+        var deletion = inOrder(userRepository);
+        deletion.verify(userRepository).deleteById(1L);
+        deletion.verify(userRepository).flush();
     }
 
     // UTCID24: Báo lỗi và không xóa khi ID người dùng không tồn tại.
@@ -479,6 +484,21 @@ void UTCID03() {
         // Assert
         assertEquals("Không tìm thấy người dùng với ID: 99", error.getMessage());
         verify(userRepository, never()).deleteById(anyLong());
+    }
+
+    // UTCID37: Báo lỗi 409 khi khóa ngoại refresh_token chặn xóa tài khoản.
+    @Test
+    void UTCID37() {
+        when(userRepository.existsById(1L)).thenReturn(true);
+        var constraintViolation = new DataIntegrityViolationException("refresh_token foreign key");
+        doThrow(constraintViolation).when(userRepository).flush();
+
+        var error = assertThrows(ResponseStatusException.class, () -> service.deleteUser(1L));
+
+        assertEquals(HttpStatus.CONFLICT, error.getStatusCode());
+        assertEquals("Không thể xóa tài khoản vì tài khoản có dữ liệu liên quan.", error.getReason());
+        assertSame(constraintViolation, error.getCause());
+        verify(userRepository).deleteById(1L);
     }
 
     // UTCID25: Tạo trước tài khoản MODERATOR với trạng thái ACTIVE và số xu bằng 0.

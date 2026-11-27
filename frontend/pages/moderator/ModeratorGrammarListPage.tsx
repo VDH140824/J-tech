@@ -83,8 +83,6 @@ export function ModeratorGrammarListPage({
   const handleOpenCreateModal = () => {
     if (readOnly) return;
     setEditingItem(null);
-    const nextOrder =
-      grammars.length > 0 ? Math.max(...grammars.map((g) => g.displayOrder || 0)) + 1 : 1;
     setFormData({
       structureName: "",
       meaningVi: "",
@@ -92,7 +90,7 @@ export function ModeratorGrammarListPage({
       exampleJp: "",
       exampleVi: "",
       videoUrl: "",
-      displayOrder: nextOrder,
+      displayOrder: 1,
       status: "PUBLISHED",
     });
     setIsModalOpen(true);
@@ -268,9 +266,9 @@ export function ModeratorGrammarListPage({
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="ALL">Tất cả trạng thái</option>
-              <option value="PUBLISHED">Đã xuất bản (PUBLISHED)</option>
-              <option value="DRAFT">Bản nháp (DRAFT)</option>
-              <option value="HIDDEN">Ẩn (HIDDEN)</option>
+              <option value="PUBLISHED">Đã xuất bản</option>
+              <option value="DRAFT">Bản nháp</option>
+              <option value="HIDDEN">Ẩn</option>
             </select>
           )}
         </div>
@@ -574,18 +572,6 @@ export function ModeratorGrammarListPage({
 
               <div className="modal-grid-2">
                 <div className="modal-field-group">
-                  <label className="modal-label">Thứ tự hiển thị</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="modal-input"
-                    value={formData.displayOrder ?? 1}
-                    onChange={(e) =>
-                      setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })
-                    }
-                  />
-                </div>
-                <div className="modal-field-group">
                   <label className="modal-label">Trạng thái phát hành</label>
                   <select
                     className="modal-input"
@@ -597,9 +583,9 @@ export function ModeratorGrammarListPage({
                       })
                     }
                   >
-                    <option value="PUBLISHED">Đã xuất bản (PUBLISHED)</option>
-                    <option value="DRAFT">Bản nháp (DRAFT)</option>
-                    <option value="HIDDEN">Ẩn (HIDDEN)</option>
+                    <option value="PUBLISHED">Đã xuất bản</option>
+                    <option value="DRAFT">Bản nháp</option>
+                    <option value="HIDDEN">Ẩn</option>
                   </select>
                 </div>
               </div>

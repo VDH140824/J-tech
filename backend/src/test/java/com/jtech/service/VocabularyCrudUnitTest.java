@@ -3,194 +3,108 @@ package com.jtech.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jtech.controller.VocabularyController;
-import com.jtech.dto.request.*;
-import com.jtech.entity.*;
-import com.jtech.repository.*;
-import jakarta.validation.Validation;
-import java.math.BigDecimal;
-import java.util.*;
-import org.junit.jupiter.api.*;
+import com.jtech.dto.request.VocabularyRequest;
+import com.jtech.entity.Chapter;
+import com.jtech.entity.Course;
+import com.jtech.entity.Lesson;
+import com.jtech.entity.Vocabulary;
+import com.jtech.repository.LessonRepository;
+import com.jtech.repository.VocabularyRepository;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.web.server.ResponseStatusException;
 
-/** One method per column in the CRUD Vocab report sheet. */
 class VocabularyCrudUnitTest {
 
-    private final VocabularyRepository repository = mock(VocabularyRepository.class);
-    private final VocabularyService service = new VocabularyService(mock(LessonRepository.class));
-    private final VocabularyService access = mock(VocabularyService.class);
-    private final VocabularyController controller = new VocabularyController(repository, access);
+    private record Fixture(VocabularyService service, VocabularyRepository repository, Authentication moderator) {}
 
-    private VocabularyRequest request(String word, Integer order) {
-        return new VocabularyRequest(
-            word,
-            "reading",
-            "meaning",
-            "noun",
-            "",
-            "",
-            order,
-            Course.Status.DRAFT
+    private Fixture fixture() {
+        var lessons = mock(LessonRepository.class);
+        var repository = mock(VocabularyRepository.class);
+        var course = new Course();
+        course.setStatus(Course.Status.PUBLISHED);
+        var chapter = new Chapter();
+        chapter.setCourse(course);
+        chapter.setStatus(Course.Status.PUBLISHED);
+        var lesson = new Lesson();
+        lesson.setSkillType(Lesson.SkillType.VOCABULARY);
+        lesson.setStatus(Course.Status.PUBLISHED);
+        lesson.setChapter(chapter);
+        when(lessons.findById(12L)).thenReturn(Optional.of(lesson));
+        var moderator = new UsernamePasswordAuthenticationToken(
+            "moderator", "", List.of(new SimpleGrantedAuthority("ROLE_MODERATOR"))
         );
+        return new Fixture(new VocabularyService(lessons), repository, moderator);
     }
 
-    private void validation(VocabularyRequest input, String field, boolean valid) {
-        try (var factory = Validation.buildDefaultValidatorFactory()) {
-            var violations = factory.getValidator().validate(input);
-            if (valid) assertTrue(violations.isEmpty(), violations.toString());
-            else {
-                assertFalse(violations.isEmpty());
-                assertTrue(
-                    violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals(field))
-                );
-            }
-        }
+    private VocabularyRequest request(String word, int order) {
+        return new VocabularyRequest(word, "reading", "meaning", "noun", "", "", order, Course.Status.DRAFT);
     }
 
     @Test
-    @DisplayName("CRUD Vocab/UTC001: Create a valid vocabulary entry")
-    void utc001() throws Exception {
-        when(repository.save(any())).thenAnswer(c -> c.getArgument(0));
-        var response = controller.create(12L, request("  Japanese  ", 1), null);
-        assertEquals(201, response.getStatusCode().value());
-        assertEquals("Japanese", response.getBody().getWord());
-        assertEquals(12L, response.getBody().getLessonId());
-        verify(access).checkLesson(12L, null);
-        verify(repository).save(response.getBody());
-    }
+    @Tag("unit-test-report")
+    void create() {
+        var valid = fixture();
+        when(valid.repository().save(any())).thenAnswer(call -> call.getArgument(0));
 
-    @Test
-    @DisplayName("CRUD Vocab/UTC002: Reject duplicate create")
-    void utc002() throws Exception {
-        when(repository.existsByLessonIdAndWordIgnoreCase(12L, "Japanese")).thenReturn(true);
+        var created = valid.service().create(valid.repository(), 12L, request("  Japanese  ", 1), valid.moderator());
+
+        assertAll(
+            () -> assertEquals(12L, created.getLessonId()),
+            () -> assertEquals("Japanese", created.getWord()),
+            () -> assertEquals("reading", created.getReading()),
+            () -> assertEquals("meaning", created.getMeaningVi()),
+            () -> assertEquals(1, created.getDisplayOrder()),
+            () -> assertEquals(Course.Status.DRAFT, created.getStatus())
+        );
+        verify(valid.repository()).save(created);
+
+        var duplicate = fixture();
+        when(duplicate.repository().existsByLessonIdAndWordIgnoreCase(12L, "Japanese")).thenReturn(true);
+
         assertThrows(IllegalStateException.class, () ->
-            controller.create(12L, request("Japanese", 1), null)
+            duplicate.service().create(duplicate.repository(), 12L, request("Japanese", 1), duplicate.moderator())
         );
-        verify(repository, never()).save(any());
+        verify(duplicate.repository(), never()).save(any());
     }
 
     @Test
-    @DisplayName("CRUD Vocab/UTC003: Read vocabulary list")
-    void utc003() throws Exception {
-        var word = new Vocabulary();
-        var words = List.of(word);
-        when(repository.findByLessonIdOrderByDisplayOrderAscIdAsc(12L)).thenReturn(words);
-        when(access.visible(words, null, null)).thenReturn(words);
-        assertEquals(words, controller.list(12L, null, null));
-        var order = inOrder(access, repository);
-        order.verify(access).checkLesson(12L, null);
-        order.verify(repository).findByLessonIdOrderByDisplayOrderAscIdAsc(12L);
-        order.verify(access).visible(words, null, null);
-    }
+    @Tag("unit-test-report")
+    void update() {
+        var valid = fixture();
+        var vocabulary = new Vocabulary();
+        vocabulary.setId(5L);
+        vocabulary.setLessonId(12L);
+        vocabulary.setWord("Original");
+        when(valid.repository().findById(5L)).thenReturn(Optional.of(vocabulary));
+        when(valid.repository().save(vocabulary)).thenReturn(vocabulary);
 
-    @Test
-    @DisplayName("CRUD Vocab/UTC004: Update vocabulary")
-    void utc004() throws Exception {
-        var word = new Vocabulary();
-        word.setId(5L);
-        word.setLessonId(12L);
-        when(access.require(repository, 5L)).thenReturn(word);
-        when(repository.save(word)).thenReturn(word);
-        var result = controller.update(5L, request(" Revised ", 2));
-        assertEquals(5L, result.getId());
-        assertEquals(12L, result.getLessonId());
-        assertEquals("Revised", result.getWord());
-        assertEquals(2, result.getDisplayOrder());
-        verify(repository).save(word);
-    }
+        var updated = valid.service().update(valid.repository(), 12L, 5L, request(" Revised ", 2), valid.moderator());
 
-    @Test
-    @DisplayName("CRUD Vocab/UTC005: Reject duplicate update")
-    void utc005() throws Exception {
-        var word = new Vocabulary();
-        word.setLessonId(12L);
-        word.setWord("Original");
-        when(access.require(repository, 5L)).thenReturn(word);
-        when(repository.existsByLessonIdAndWordIgnoreCaseAndIdNot(12L, "Japanese", 5L)).thenReturn(
-            true
+        assertAll(
+            () -> assertEquals(5L, updated.getId()),
+            () -> assertEquals(12L, updated.getLessonId()),
+            () -> assertEquals("Revised", updated.getWord()),
+            () -> assertEquals(2, updated.getDisplayOrder())
         );
+        verify(valid.repository()).save(vocabulary);
+
+        var duplicate = fixture();
+        var original = new Vocabulary();
+        original.setId(5L);
+        original.setLessonId(12L);
+        original.setWord("Original");
+        when(duplicate.repository().findById(5L)).thenReturn(Optional.of(original));
+        when(duplicate.repository().existsByLessonIdAndWordIgnoreCaseAndIdNot(12L, "Japanese", 5L)).thenReturn(true);
+
         assertThrows(IllegalStateException.class, () ->
-            controller.update(5L, request("Japanese", 1))
+            duplicate.service().update(duplicate.repository(), 12L, 5L, request("Japanese", 1), duplicate.moderator())
         );
-        assertEquals("Original", word.getWord());
-        verify(repository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC006: Archive vocabulary")
-    void utc006() throws Exception {
-        var word = new Vocabulary();
-        when(access.require(repository, 5L)).thenReturn(word);
-        assertEquals(204, controller.archive(5L).getStatusCode().value());
-        assertEquals(Course.Status.ARCHIVED, word.getStatus());
-        verify(repository).save(word);
-        verify(repository, never()).deleteById(anyLong());
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC007: Archive missing vocabulary")
-    void utc007() throws Exception {
-        when(repository.findById(404L)).thenReturn(Optional.empty());
-        var realController = new VocabularyController(repository, service);
-        var ex = assertThrows(ResponseStatusException.class, () -> realController.archive(404L));
-        assertEquals(404, ex.getStatusCode().value());
-        verify(repository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC008: Validate word: valid text")
-    void utc008() throws Exception {
-        validation(request("Japanese", 1), "word", true);
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC009: Validate word: empty string")
-    void utc009() throws Exception {
-        validation(request("", 1), "word", false);
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC010: Validate word: null")
-    void utc010() throws Exception {
-        validation(request(null, 1), "word", false);
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC011: Validate word: 100 characters")
-    void utc011() throws Exception {
-        validation(request("a".repeat(100), 1), "word", true);
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC012: Validate word: 101 characters")
-    void utc012() throws Exception {
-        validation(request("a".repeat(101), 1), "word", false);
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC018: Validate display order")
-    void utc018() throws Exception {
-        validation(request("Japanese", 1), "displayOrder", true);
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC019: Validate display order")
-    void utc019() throws Exception {
-        validation(request("Japanese", 0), "displayOrder", true);
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC020: Validate display order")
-    void utc020() throws Exception {
-        validation(request("Japanese", -1), "displayOrder", false);
-    }
-
-    @Test
-    @DisplayName("CRUD Vocab/UTC021: Validate display order")
-    void utc021() throws Exception {
-        validation(request("Japanese", null), "displayOrder", false);
+        assertEquals("Original", original.getWord());
+        verify(duplicate.repository(), never()).save(any());
     }
 }

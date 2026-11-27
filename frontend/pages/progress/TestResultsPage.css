@@ -1,0 +1,371 @@
+/* Kết quả bài kiểm tra — tiền tố tr- để không đụng CSS khác */
+.tr-page {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  color: #0f172a;
+}
+
+.tr-page a {
+  text-decoration: none;
+}
+
+.tr-muted {
+  color: #64748b;
+}
+
+.tr-small {
+  font-size: 13px;
+}
+
+.tr-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.tr-back {
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: #0f766e;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tr-back:hover {
+  text-decoration: underline;
+}
+
+.tr-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tr-eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #0f766e;
+}
+
+.tr-head h1 {
+  margin: 6px 0 6px;
+  font-size: 30px;
+  color: #0f172a;
+}
+
+.tr-head p {
+  margin: 0;
+}
+
+.tr-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.tr-select select {
+  min-width: 200px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d7dde5;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.tr-select--inline select {
+  min-width: 170px;
+}
+
+.tr-select select:focus-visible,
+.tr-tabs button:focus-visible,
+.tr-action:focus-visible,
+.tr-back:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.tr-state {
+  margin: 0;
+  padding: 28px;
+  border: 1px dashed #d7dde5;
+  border-radius: 14px;
+  background: #fff;
+  text-align: center;
+  color: #475569;
+}
+
+.tr-state button {
+  margin-left: 6px;
+  border: 0;
+  background: none;
+  color: #0f766e;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Tổng quan */
+.tr-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tr-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border: 1px solid #e6e8ec;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.tr-stat-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.tr-stat strong {
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.tr-stat small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.tr-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #e9edf2;
+  overflow: hidden;
+}
+
+.tr-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tr-tone);
+}
+
+.tr-tone--violet { --tr-tone: #7c3aed; }
+.tr-tone--slate { --tr-tone: #475569; }
+.tr-tone--teal { --tr-tone: #0f766e; }
+
+/* Bộ lọc */
+.tr-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tr-tabs {
+  display: inline-flex;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 12px;
+  background: #eef1f4;
+}
+
+.tr-tabs button {
+  border: 0;
+  padding: 8px 16px;
+  border-radius: 9px;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+}
+
+.tr-tabs button.is-active {
+  background: #fff;
+  color: #0f766e;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+/* Theo chương */
+.tr-chapter h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: 17px;
+  color: #0f172a;
+}
+
+.tr-chapter-no {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #e6f4f1;
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tr-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tr-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) 96px 110px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid #e6e8ec;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.tr-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tr-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.tr-type {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tr-type.is-mini {
+  background: #f3e8ff;
+  color: #6d28d9;
+}
+
+.tr-type.is-chapter {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.tr-title {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.tr-meta {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr 1fr;
+  gap: 12px;
+  margin: 0;
+}
+
+.tr-meta dt {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.tr-meta dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tr-meta small {
+  font-weight: 500;
+  color: #64748b;
+}
+
+.tr-status {
+  justify-self: start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tr-status--todo { background: #f1f5f9; color: #475569; }
+.tr-status--failed { background: #fef3c7; color: #92400e; }
+.tr-status--passed { background: #dcfce7; color: #166534; }
+
+.tr-action {
+  justify-self: end;
+  padding: 8px 14px;
+  border: 1px solid #0f766e;
+  border-radius: 10px;
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tr-action:hover {
+  background: #0f766e;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .tr-page {
+    padding: 20px 16px 40px;
+  }
+
+  .tr-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .tr-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .tr-meta {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .tr-status {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .tr-action {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    text-align: center;
+  }
+}

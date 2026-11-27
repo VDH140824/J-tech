@@ -1,5 +1,25 @@
 import { apiClient } from "../services/api";
 
+export interface GrammarQuestionImportResult {
+  grammarId: number;
+  importedCount: number;
+  message: string;
+}
+
+export interface GrammarQuestionImportError {
+  row: number;
+  column: string;
+  message: string;
+}
+
+export async function importGrammarQuestions(grammarId: number, file: File): Promise<GrammarQuestionImportResult> {
+  const form = new FormData();
+  form.append("grammarId", String(grammarId));
+  form.append("file", file);
+  const { data } = await apiClient.post<GrammarQuestionImportResult>("/grammar-questions/import", form);
+  return data;
+}
+
 export interface GrammarQuestion {
   id: number;
   skill: "GRAMMAR";

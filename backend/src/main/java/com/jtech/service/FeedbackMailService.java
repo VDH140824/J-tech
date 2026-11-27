@@ -15,13 +15,16 @@ public class FeedbackMailService {
     private static final Logger log = LoggerFactory.getLogger(FeedbackMailService.class);
     private final ObjectProvider<JavaMailSender> senders;
     private final String from;
+    private final SystemSettingService settings;
 
     public FeedbackMailService(
         ObjectProvider<JavaMailSender> senders,
-        @Value("${app.feedback.mail-from:no-reply@jtech.local}") String from
+        @Value("${app.feedback.mail-from:no-reply@jtech.local}") String from,
+        SystemSettingService settings
     ) {
         this.senders = senders;
         this.from = from;
+        this.settings = settings;
     }
 
     public record ResolutionMail(
@@ -36,6 +39,7 @@ public class FeedbackMailService {
     @TransactionalEventListener
     public void send(ResolutionMail event) {
         try {
+            if (!settings.feedbackEmailEnabled()) return;
             JavaMailSender sender = senders.getIfAvailable();
             if (sender == null) {
                 log.warn(
@@ -58,6 +62,25 @@ public class FeedbackMailService {
                 event.feedbackId(),
                 ex
             );
+        }
+    }
+
+    public void sendLearningReminder(String email, String studentName) {
+        try {
+            JavaMailSender sender = senders.getIfAvailable();
+            if (sender == null) {
+                log.warn("SMTP chưa được cấu hình; không gửi được email nhắc học tới {}", email);
+                return;
+            }
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(from);
+            message.setTo(email);
+            message.setSubject("J-Tech: Nhắc bạn duy trì thói quen học hôm nay");
+            message.setText("Chào " + (studentName == null || studentName.isBlank() ? "bạn" : studentName)
+                + ",\n\nHôm nay bạn chưa có hoạt động học được ghi nhận. Hãy dành ít phút học tiếng Nhật để duy trì chuỗi ngày học nhé!\n\nJ-Tech");
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Không gửi được email nhắc học tới {}", email, ex);
         }
     }
 }

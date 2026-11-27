@@ -1,0 +1,518 @@
+/* Trang chủ học viên (thiết kế mới) — tiền tố sh- để không đụng CSS khác */
+.sh-page {
+  /* Cha (.main-layout-page) là flex column: cần width 100% để không co về giữa theo nội dung. */
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 32px 40px;
+  color: var(--text-main, #0f172a);
+}
+
+.sh-main {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sh-aside {
+  flex: 1 1 300px;
+  min-width: 0;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sh-page a {
+  text-decoration: none;
+}
+
+.sh-muted {
+  color: var(--text-muted, #64748b);
+}
+
+.sh-small {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Lời chào */
+.sh-greeting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sh-greeting h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.sh-greeting p {
+  margin: 6px 0 0;
+  color: var(--text-body, #475569);
+  font-size: 15px;
+}
+
+.sh-chips {
+  display: flex;
+  gap: 10px;
+}
+
+.sh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.sh-chip--streak {
+  background: #fff4e6;
+  color: #9a3412;
+}
+
+.sh-chip--coin {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+/* Tiếp tục học */
+.sh-continue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px;
+  border-radius: 20px;
+  background: #0f3d3a;
+  color: #ffffff;
+}
+
+.sh-continue-text {
+  flex: 1 1 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sh-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #99f6e4;
+}
+
+.sh-continue h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1.3;
+}
+
+.sh-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sh-tags span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 13px;
+}
+
+.sh-tags .sh-tag-pass {
+  background: #bbf7d0;
+  color: #14532d;
+  font-weight: 600;
+}
+
+.sh-tags .sh-tag-test {
+  background: #fde68a;
+  color: #713f12;
+  font-weight: 600;
+}
+
+.sh-continue-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.sh-btn-light,
+.sh-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.sh-btn-light {
+  background: #ffffff;
+  color: #0f3d3a;
+}
+
+.sh-btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sh-btn-light:hover {
+  background: #ccfbf1;
+}
+
+.sh-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sh-donut {
+  flex: none;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.sh-donut > div {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: #0f3d3a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.sh-donut strong {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.sh-donut small {
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: #ccfbf1;
+}
+
+/* Khối chung */
+.sh-section {
+  scroll-margin-top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sh-section h2,
+.sh-panel h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.sh-panel h2 {
+  font-size: 16px;
+}
+
+.sh-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sh-section-head a,
+.sh-link-btn {
+  color: #0f766e;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sh-link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sh-card {
+  border: 1px solid var(--border-subtle, #e6e8ec);
+  border-radius: 16px;
+  background: var(--bg-surface, #ffffff);
+  color: inherit;
+}
+
+a.sh-card {
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+a.sh-card:hover {
+  border-color: #99f6e4;
+  box-shadow: 0 6px 18px rgba(15, 118, 110, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Khóa học */
+.sh-courses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.sh-course {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.sh-course-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sh-course-head > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sh-course-head strong {
+  font-size: 16px;
+}
+
+.sh-course-head small {
+  font-size: 13px;
+  color: var(--text-muted, #64748b);
+}
+
+.sh-course-mark {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.sh-mark-0 { background: #e6f4f1; color: #0f766e; }
+.sh-mark-1 { background: #fff4e6; color: #c2410c; }
+.sh-mark-2 { background: #e0f2fe; color: #0369a1; }
+.sh-mark-3 { background: #fce7f3; color: #be185d; }
+
+.sh-badge {
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e6f4f1;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sh-badge--idle {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sh-bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text-body, #475569);
+}
+
+.sh-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.sh-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0f766e;
+  transition: width 0.4s;
+}
+
+.sh-bar--thin {
+  height: 6px;
+}
+
+/* Cột phải */
+.sh-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.sh-skill .sh-bar-label {
+  font-size: 14px;
+  color: inherit;
+}
+
+.sh-streak-count {
+  color: #c2410c;
+  font-size: 15px;
+}
+
+.sh-week {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-body, #475569);
+}
+
+.sh-week li.is-today {
+  font-weight: 700;
+  color: var(--text-main, #0f172a);
+}
+
+.sh-week span {
+  display: block;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 4px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  box-sizing: border-box;
+}
+
+.sh-week span.is-learned {
+  background: #f97316;
+}
+
+.sh-week span.is-pending {
+  background: transparent;
+  border: 2px dashed #f97316;
+}
+
+.sh-class {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 -10px;
+  padding: 10px;
+  border-radius: 10px;
+  color: inherit;
+}
+
+.sh-class:hover {
+  background: var(--bg-subtle, #f8fafc);
+}
+
+.sh-class > span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.sh-class small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted, #64748b);
+}
+
+.sh-class-mark {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #dcfce7;
+  color: #15803d;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .sh-page {
+    padding: 20px 12px 32px;
+  }
+
+  .sh-greeting h1 {
+    font-size: 22px;
+  }
+
+  .sh-continue {
+    padding: 20px;
+  }
+
+  .sh-continue h2 {
+    font-size: 19px;
+  }
+
+  .sh-donut {
+    width: 88px;
+    height: 88px;
+  }
+
+  .sh-donut > div {
+    width: 68px;
+    height: 68px;
+  }
+
+  .sh-donut strong {
+    font-size: 18px;
+  }
+
+  .sh-aside {
+    max-width: none;
+  }
+}
+
+.sh-panel-link {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.sh-panel-link:hover {
+  text-decoration: underline;
+}

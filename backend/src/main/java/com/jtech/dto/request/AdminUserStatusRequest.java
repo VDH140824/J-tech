@@ -1,12 +1,14 @@
 package com.jtech.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class AdminUserStatusRequest {
 
     @NotBlank(message = "Trạng thái không được để trống")
     private String status;
 
+    @Size(max = 500, message = "Lý do không được vượt quá 500 ký tự")
     private String statusReason;
 
     public AdminUserStatusRequest() {}

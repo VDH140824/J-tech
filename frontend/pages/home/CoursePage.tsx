@@ -1,37 +1,366 @@
-import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { checkIsModerator } from "../../utils/auth";
-import { ModeratorCoursesTab } from "../moderator/ModeratorCoursesTab";
-import "./StudentLearningPage.css";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link, Navigate, useLocation, useParams } from "react-router-dom";
+import { getSpeakingScenarios } from "../../api/speakingApi";
+import {
+  getStudentChapters,
+  type StudentChapterList,
+  type StudentChapter,
+  type StudentLesson,
+} from "../../api/studentChapterApi";
+import "./CoursePage.css";
+import { parseLessonDocuments } from "../../utils/lessonDocuments";
+const skills: Record<string, string> = {
+  KANJI: "Chữ Hán",
+  VOCABULARY: "Từ vựng",
+  GRAMMAR: "Ngữ pháp",
+  LISTENING: "Nghe hiểu",
+  READING: "Đọc hiểu",
+};
+type StudyItem = StudentLesson & { documentIndex?: number };
 
+function studyItems(lessons: StudentLesson[]): StudyItem[] {
+  return lessons.flatMap(lesson => {
+    if (lesson.skillType !== "KANJI") return [lesson];
+    return parseLessonDocuments(lesson.documents).map((document, index) => ({
+      ...lesson,
+      title: document.name,
+      documentIndex: index,
+    }));
+  });
+}
+
+// Each grammar row represents one lesson number within the current chapter.
+function groupGrammarLessons(lessons: StudentLesson[]): StudentLesson[] {
+  const rows: StudentLesson[] = [];
+  const grammarGroups = new Map<number, StudentLesson>();
+  for (const lesson of lessons) {
+    if (lesson.skillType !== "GRAMMAR") {
+      rows.push(lesson);
+      continue;
+    }
+    const group = grammarGroups.get(lesson.lessonNo);
+    if (group) {
+      group.itemCount += lesson.itemCount;
+      group.videoCount += lesson.videoCount;
+      group.durationSeconds += lesson.durationSeconds;
+      group.exerciseCount += lesson.exerciseCount;
+      group.testCount += lesson.testCount;
+      group.completed = group.completed && lesson.completed;
+    } else {
+      const row = { ...lesson, title: `Ngữ pháp bài ${lesson.lessonNo}` };
+      grammarGroups.set(lesson.lessonNo, row);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
+function Progress({ lessons }: { lessons: StudentLesson[] }) {
+  const done = lessons.filter((l) => l.completed).length;
+  return (
+    <div className="chapter-progress">
+      <div>
+        <span>
+          {done}/{lessons.length} phần học hoàn thành
+        </span>
+        <strong>
+          {lessons.length ? Math.round((done / lessons.length) * 100) : 0}%
+        </strong>
+      </div>
+      <progress
+        aria-label="Tiến độ hoàn thành"
+        value={done}
+        max={lessons.length || 1}
+      />
+    </div>
+  );
+}
+function ChapterCard({
+  chapter,
+  expanded,
+  courseId,
+}: {
+  chapter: StudentChapter;
+  expanded: boolean;
+  courseId: number;
+}) {
+  const items = studyItems(chapter.lessons);
+  const sources = Array.from(new Map(items.map(item => [item.id, item])).values());
+  const sum = (field: "videoCount" | "exerciseCount" | "testCount") =>
+    sources.reduce((n, l) => n + l[field], 0);
+  const groups = new Map<number, StudentLesson[]>();
+  const vocabularyLessons = items.filter((item) => item.skillType === "VOCABULARY");
+  items
+    .filter((item) => item.skillType !== "KANJI" && item.skillType !== "VOCABULARY")
+    .forEach((lesson) => {
+      groups.set(lesson.lessonNo, [...(groups.get(lesson.lessonNo) ?? []), lesson]);
+    });
+  for (const lesson of vocabularyLessons) {
+    if (!groups.has(lesson.lessonNo)) groups.set(lesson.lessonNo, []);
+  }
+  for (const [groupNo, lessons] of groups) {
+    const matchingVocabulary = vocabularyLessons.filter((lesson) => lesson.lessonNo === groupNo);
+    const vocabularyBase = matchingVocabulary[0] ?? lessons[0] ?? items[0];
+    if (!vocabularyBase) continue;
+    const vocabularySection: StudentLesson = {
+      ...vocabularyBase,
+      id: matchingVocabulary[0]?.id ?? -(chapter.id * 1000 + groupNo),
+      lessonNo: groupNo,
+      skillType: "VOCABULARY",
+      title: `Từ vựng bài ${groupNo}`,
+      itemCount: matchingVocabulary.reduce((total, lesson) => total + lesson.itemCount, 0),
+      videoCount: matchingVocabulary.reduce((total, lesson) => total + lesson.videoCount, 0),
+      durationSeconds: matchingVocabulary.reduce((total, lesson) => total + lesson.durationSeconds, 0),
+      exerciseCount: matchingVocabulary.reduce((total, lesson) => total + lesson.exerciseCount, 0),
+      testCount: matchingVocabulary.reduce((total, lesson) => total + lesson.testCount, 0),
+      completed: matchingVocabulary.length > 0 && matchingVocabulary.every((lesson) => lesson.completed),
+    };
+    groups.set(groupNo, [...lessons, vocabularySection]);
+  }
+  const speaking = useQuery({
+    queryKey: ["speaking-scenarios", chapter.id],
+    queryFn: () => getSpeakingScenarios(chapter.id),
+  });
+  const scenarios = speaking.data ?? [];
+  const practicedScenarios = scenarios.filter((s) => s.completedCount > 0).length;
+  const speakingDone = scenarios.length > 0 && practicedScenarios === scenarios.length;
+  return (
+    <details
+      className="student-chapter-card"
+      id={`chapter-${chapter.id}`}
+      open={expanded}
+    >
+      <summary className="chapter-heading">
+        <span className="chapter-number" aria-hidden="true">
+          {String(chapter.chapterNo).padStart(2, "0")}
+        </span>
+        <div className="chapter-heading-content">
+          <h2>
+            Chương {chapter.chapterNo}: {chapter.title}
+          </h2>
+          <p>
+            {sum("videoCount")} video · {sum("exerciseCount")} bài tập ·{" "}
+            {chapter.testCount + sum("testCount")} bài kiểm tra
+          </p>
+          <Progress lessons={items} />
+        </div>
+        <span aria-hidden="true">⌄</span>
+      </summary>
+      <div className="chapter-body">
+        {chapter.description && <p>{chapter.description}</p>}
+        {!items.length && !scenarios.length && (
+          <p>Chưa có tài liệu hoặc bài học được xuất bản trong chương này.</p>
+        )}
+        {Array.from(groups)
+          .sort(([a], [b]) => a - b)
+          .map(([number, lessons]) => (
+            <details className="chapter-lesson" key={number} open>
+              <summary>
+                <strong>Bài {number}</strong>
+                <span>
+                  {lessons.filter((l) => l.completed).length}/{lessons.length}{" "}
+                  hoàn thành
+                </span>
+                <span aria-hidden="true">⌄</span>
+              </summary>
+              <ul>
+                {groupGrammarLessons(lessons).map((l) => (
+                  <li key={l.id}>
+                    <span className="lesson-icon" aria-hidden="true">
+                      {l.completed ? "✓" : "▷"}
+                    </span>
+                    <div className="lesson-content">
+                      <h3>
+                        <Link
+                          to={
+                            l.skillType === "LISTENING"
+                              ? `/listening/${l.id}`
+                              : l.skillType === "READING"
+                                ? `/ai-reading?lessonId=${l.id}`
+                                : l.skillType === "VOCABULARY"
+                                  ? `/courses/${courseId}/chapters/${chapter.id}?skill=VOCABULARY`
+                                  : `/courses/${courseId}/chapters/${chapter.id}?skill=${encodeURIComponent(l.skillType)}${l.skillType === "GRAMMAR" ? `&lessonNo=${l.lessonNo}` : `&lessonId=${l.id}`}`
+                          }
+                          state={
+                            l.skillType === "LISTENING"
+                              ? { from: `/courses/${courseId}#chapter-${chapter.id}` }
+                              : undefined
+                          }
+                        >
+                          {skills[l.skillType] ?? l.skillType}
+                        </Link>
+                      </h3>
+                      <p>{l.title}</p>
+                      <small>
+                        {l.itemCount} nội dung · {l.videoCount} video ·{" "}
+                        {Math.ceil(l.durationSeconds / 60)} phút video ·{" "}
+                        {l.exerciseCount} bài tập · {l.testCount} bài kiểm tra
+                      </small>
+                    </div>
+                    <span
+                      className={`lesson-status ${l.completed ? "completed" : ""}`}
+                    >
+                      {l.completed ? "Hoàn thành" : "Chưa hoàn thành"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        {/* Chỉ hiện với chương có tình huống luyện nói; không phụ thuộc bài học đã xuất bản. */}
+        {scenarios.length > 0 && (
+          <details className="chapter-lesson" open>
+            <summary>
+              <strong>Luyện nói</strong>
+              <span>
+                {practicedScenarios}/{scenarios.length} đã luyện
+              </span>
+              <span aria-hidden="true">⌄</span>
+            </summary>
+            <ul>
+              <li>
+                <span className="lesson-icon" aria-hidden="true">
+                  {speakingDone ? "✓" : "▷"}
+                </span>
+                <div className="lesson-content">
+                  <h3>
+                    <Link
+                      to={`/courses/${courseId}/chapters/${chapter.id}/speaking`}
+                      state={{ from: `/courses/${courseId}#chapter-${chapter.id}` }}
+                    >
+                      Luyện nói với AI
+                    </Link>
+                  </h3>
+                  <p>Hội thoại theo tình huống cùng AI</p>
+                  <small>{scenarios.length} tình huống hội thoại</small>
+                </div>
+                <span className={`lesson-status ${speakingDone ? "completed" : ""}`}>
+                  {speakingDone ? "Hoàn thành" : "Chưa hoàn thành"}
+                </span>
+              </li>
+            </ul>
+          </details>
+        )}
+        {chapter.lessons.some(lesson => lesson.skillType === "KANJI") && (
+          <Link className="chapter-kanji-link" to={`/courses/${courseId}/chapters/${chapter.id}?skill=KANJI`}>
+            <span className="chapter-kanji-play" aria-hidden="true">▷</span>
+            <span>Chữ Hán</span>
+          </Link>
+        )}
+      </div>
+    </details>
+  );
+}
 export function CoursePage() {
   const { courseId } = useParams();
-  const navigate = useNavigate();
-  const id = Number(courseId);
-  const valid = Number.isSafeInteger(id) && id > 0;
+  const { hash } = useLocation();
   const user = useAuthStore((state) => state.user);
-
-  if (valid && checkIsModerator(user))
-    return (
-      <Navigate
-        to={`/moderator/courses?courseId=${id}`}
-        replace
-      />
-    );
-
+  const isModerator = checkIsModerator(user);
+  const [course, setCourse] = useState<StudentChapterList>();
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  const targetChapter = course?.chapters.find(chapter => hash === `#chapter-${chapter.id}`);
+  useEffect(() => {
+    if (!targetChapter) return;
+    const element = document.getElementById(`chapter-${targetChapter.id}`);
+    element?.setAttribute("open", "");
+    element?.scrollIntoView({ block: "start" });
+  }, [targetChapter]);
+  useEffect(() => {
+    const controller = new AbortController();
+    setCourse(undefined);
+    setError("");
+    const id = Number(courseId);
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      setError("Khóa học không hợp lệ.");
+      return;
+    }
+    if (isModerator) return;
+    getStudentChapters(id, controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) setCourse(data);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted)
+          setError(
+            err.response?.status === 404
+              ? "Không tìm thấy khóa học hoặc khóa học chưa được xuất bản."
+              : err.response?.status === 403
+                ? "Trang này dành cho học viên."
+                : "Không thể tải danh sách chương. Vui lòng thử lại.",
+          );
+      });
+    return () => controller.abort();
+  }, [courseId, attempt, isModerator]);
+  useEffect(() => {
+    if (isModerator) return;
+    const refresh = () => setAttempt(value => value + 1);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [isModerator]);
+  const learningItems = course?.chapters.flatMap(chapter => studyItems(chapter.lessons)) ?? [];
+  if (
+    isModerator &&
+    Number.isSafeInteger(Number(courseId)) &&
+    Number(courseId) > 0
+  )
+    return <Navigate to={`/moderator/courses?courseId=${courseId}`} replace />;
   return (
-    <div className="student-learning-page">
-      {!valid ? (
-        <p role="alert">Mã môn học không hợp lệ.</p>
+    <main className="student-course-page">
+      <Link className="chapter-back" to="/home">
+        ← Lộ trình học
+      </Link>
+      {error ? (
+        <div className="chapter-state" role="alert">
+          <p>{error}</p>
+          <button onClick={() => setAttempt((a) => a + 1)}>Thử lại</button>
+        </div>
+      ) : !course ? (
+        <div className="chapter-state" role="status">
+          Đang tải danh sách chương…
+        </div>
       ) : (
-        <ModeratorCoursesTab
-          readOnly
-          initialCourseId={id}
-          onViewChapter={({ courseId: selectedCourse, chapterId }) =>
-            navigate(`/courses/${selectedCourse}/chapters/${chapterId}`)
-          }
-        />
+        <>
+          <header className="student-course-header">
+            <span>LỘ TRÌNH HỌC TẬP</span>
+            <h1>{course.name}</h1>
+            <p>{course.description}</p>
+          </header>
+          <section
+            className="course-progress-panel"
+            aria-label="Tổng quan khóa học"
+          >
+            <div>
+              <h2>Tiến độ khóa học</h2>
+              <p>
+                {course.chapters.length} chương ·{" "}
+                {learningItems.length} phần
+                học
+              </p>
+            </div>
+            <Progress lessons={learningItems} />
+          </section>
+          <section aria-label="Danh sách chương">
+            {!course.chapters.length ? (
+              <div className="chapter-state">
+                Khóa học chưa có chương được xuất bản.
+              </div>
+            ) : (
+              course.chapters.map((chapter, i) => (
+                <ChapterCard
+                  key={chapter.id}
+                  chapter={chapter}
+                  courseId={Number(courseId)}
+                  expanded={targetChapter ? targetChapter.id === chapter.id : i === 0}
+                />
+              ))
+            )}
+          </section>
+        </>
       )}
-    </div>
+    </main>
   );
 }

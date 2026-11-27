@@ -24,3 +24,44 @@ export function parseMaterialContent(text = ""): VerbGroupRules {
   }
   return result;
 }
+
+// ===== Hiển thị tài liệu cho học viên (3.6.25: bảng Quy tắc / Ví dụ / Kết quả) =====
+
+export interface MaterialRow {
+  rule: string;
+  example: string;
+  result: string;
+}
+
+export interface GroupMaterial {
+  notes: string[];
+  rows: MaterialRow[];
+}
+
+/**
+ * Tách phần quy tắc của một nhóm: dòng có “→” (hoặc “->”, “⇒”) là ví dụ “書く → 書いて”, các dòng khác là
+ * quy tắc. Mỗi ví dụ gắn với quy tắc gần nhất phía trên. Ghi chú trong ngoặc sau kết quả (ngoại lệ) được giữ nguyên.
+ */
+export function parseGroupMaterial(text = ""): GroupMaterial {
+  const notes: string[] = [];
+  const rows: MaterialRow[] = [];
+  let rule = "";
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim().replace(/^[-•・*]\s*/, "");
+    if (!line) continue;
+    const parts = line.split(/\s*(?:→|->|⇒|＝>)\s*/);
+    if (parts.length >= 2 && parts[0] && parts[1]) {
+      rows.push({ rule, example: parts[0], result: parts.slice(1).join(" → ") });
+    } else {
+      rule = line.replace(/[:：]$/, "");
+      notes.push(line);
+    }
+  }
+  return { notes, rows };
+}
+
+export const VERB_GROUP_INFO: Record<VerbGroupKey, string> = {
+  group1: "Động từ nhóm I (五段動詞): kết thúc bằng âm cột う như う, く, ぐ, す, つ, ぬ, ぶ, む, る. Ví dụ: 書く, 飲む, 話す.",
+  group2: "Động từ nhóm II (一段動詞): kết thúc bằng る, âm trước る thuộc cột い hoặc え. Ví dụ: 食べる, 見る, 寝る (ngoại lệ thuộc nhóm I: 帰る, 入る, 走る…).",
+  group3: "Động từ nhóm III (bất quy tắc): する, 来る(くる) và các động từ dạng danh từ + する như 勉強する.",
+};

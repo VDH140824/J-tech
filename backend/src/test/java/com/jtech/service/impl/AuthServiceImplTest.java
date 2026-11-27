@@ -104,6 +104,7 @@ class AuthServiceImplTest {
         SecurityContextHolder.clearContext();
     }
 
+    @DisplayName("UTCID01 - Refreshes the access token for a valid refresh token")
     @Test void refreshToken_success() {
         foundToken();
         when(jwt.generateToken(EMAIL)).thenReturn("new-access");
@@ -115,23 +116,27 @@ class AuthServiceImplTest {
         verify(tokens, never()).save(any());
     }
 
+    @DisplayName("UTCID02–UTCID03 - Rejects a null or empty refresh token")
     @ParameterizedTest @NullAndEmptySource
     void refreshToken_emptyToken(String value) {
         assertIllegal("Refresh token is required", () -> service.refreshToken(value));
         verifyNoInteractions(tokens, jwt);
     }
 
+    @DisplayName("UTCID04–UTCID05 - Rejects a whitespace-only refresh token")
     @ParameterizedTest @ValueSource(strings = {" ", "\t\r\n"})
     void refreshToken_blankToken(String value) {
         assertIllegal("Refresh token is required", () -> service.refreshToken(value));
         verifyNoInteractions(tokens, jwt);
     }
 
+    @DisplayName("UTCID06 - Rejects a refresh token that is not stored")
     @Test void refreshToken_notFound() {
         assertIllegal("Invalid or expired refresh token", () -> service.refreshToken(TOKEN));
         verify(jwt, never()).generateToken(any());
     }
 
+    @DisplayName("UTCID07 - Rejects and saves a revoked refresh token without issuing an access token")
     @Test void refreshToken_revoked() {
         token.setRevoked(true);
         foundToken();
@@ -140,6 +145,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(jwt);
     }
 
+    @DisplayName("UTCID08 - Revokes an expired refresh token without issuing an access token")
     @Test void refreshToken_expired() {
         token.setExpiresAt(LocalDateTime.now().minusDays(1));
         foundToken();
@@ -149,6 +155,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(jwt);
     }
 
+    @DisplayName("UTCID09 - Revokes the refresh token when its user is missing")
     @Test void refreshToken_missingUser() {
         token.setUser(null);
         foundToken();
@@ -158,6 +165,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(jwt);
     }
 
+    @DisplayName("UTCID10–UTCID13 - Revokes the refresh token when the account is not active")
     @ParameterizedTest @NullSource
     @EnumSource(value = UserStatus.class, names = "ACTIVE", mode = EnumSource.Mode.EXCLUDE)
     void refreshToken_inactiveUser(UserStatus status) {
@@ -169,6 +177,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(jwt);
     }
 
+    @DisplayName("UTCID14 - Refreshes the access token when the revocation flag is null")
     @Test void refreshToken_nullRevoked() {
         token.setRevoked(null);
         foundToken();
@@ -176,6 +185,7 @@ class AuthServiceImplTest {
         assertEquals("access", service.refreshToken(TOKEN).getAccessToken());
     }
 
+    @DisplayName("UTCID15 - Refreshes the access token when the expiration is null")
     @Test void refreshToken_nullExpiry() {
         // Characterizes the nullable branch; schema declares expires_at NOT NULL.
         token.setExpiresAt(null);
@@ -184,6 +194,7 @@ class AuthServiceImplTest {
         assertEquals("access", service.refreshToken(TOKEN).getAccessToken());
     }
 
+    @DisplayName("UTCID16 - Propagates a refresh token save failure")
     @Test void refreshToken_saveFailed() {
         token.setRevoked(true);
         foundToken();
@@ -193,6 +204,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(jwt);
     }
 
+    @DisplayName("UTCID17 - Propagates an access token generation failure")
     @Test void refreshToken_generateFailed() {
         foundToken();
         var failure = new IllegalStateException("JWT unavailable");
@@ -200,6 +212,7 @@ class AuthServiceImplTest {
         assertSame(failure, assertThrows(IllegalStateException.class, () -> service.refreshToken(TOKEN)));
     }
 
+    @DisplayName("UTCID01 - Refreshes the access token using the token in the request")
     @Test void refreshTokenRequest_success() {
         foundToken();
         when(jwt.generateToken(EMAIL)).thenReturn("access");
@@ -209,28 +222,33 @@ class AuthServiceImplTest {
         verify(tokens).findByToken(TOKEN);
     }
 
+    @DisplayName("UTCID02 - Rejects a null refresh request")
     @Test void refreshTokenRequest_nullRequest() {
         assertIllegal("Refresh token is required", () -> service.refreshToken((RefreshTokenRequest) null));
         verifyNoInteractions(tokens, jwt);
     }
 
+    @DisplayName("UTCID03–UTCID04 - Rejects a refresh request with a null or empty token")
     @ParameterizedTest @NullAndEmptySource
     void refreshTokenRequest_emptyToken(String value) {
         assertIllegal("Refresh token is required", () -> service.refreshToken(new RefreshTokenRequest(value)));
         verifyNoInteractions(tokens, jwt);
     }
 
+    @DisplayName("UTCID05–UTCID06 - Rejects a refresh request with a whitespace-only token")
     @ParameterizedTest @ValueSource(strings = {" ", "\t\r\n"})
     void refreshTokenRequest_blankToken(String value) {
         assertIllegal("Refresh token is required", () -> service.refreshToken(new RefreshTokenRequest(value)));
         verifyNoInteractions(tokens, jwt);
     }
 
+    @DisplayName("UTCID07 - Rejects a refresh request with a token that is not stored")
     @Test void refreshTokenRequest_invalidToken() {
         assertIllegal("Invalid or expired refresh token", () -> service.refreshToken(new RefreshTokenRequest(TOKEN)));
         verifyNoInteractions(jwt);
     }
 
+    @DisplayName("UTCID01 - Revokes and saves the refresh token on logout")
     @Test void logout_success() {
         foundToken();
         service.logout(TOKEN);
@@ -238,23 +256,27 @@ class AuthServiceImplTest {
         verify(tokens).save(token);
     }
 
+    @DisplayName("UTCID02–UTCID03 - Ignores a null or empty token on logout")
     @ParameterizedTest @NullAndEmptySource
     void logout_emptyToken(String value) {
         assertDoesNotThrow(() -> service.logout(value));
         verifyNoInteractions(tokens);
     }
 
+    @DisplayName("UTCID04–UTCID05 - Ignores a whitespace-only token on logout")
     @ParameterizedTest @ValueSource(strings = {" ", "\t\r\n"})
     void logout_blankToken(String value) {
         service.logout(value);
         verifyNoInteractions(tokens);
     }
 
+    @DisplayName("UTCID06 - Completes logout without saving when the token is not stored")
     @Test void logout_notFound() {
         assertDoesNotThrow(() -> service.logout(TOKEN));
         verify(tokens, never()).save(any());
     }
 
+    @DisplayName("UTCID07 - Saves the already revoked token on logout")
     @Test void logout_alreadyRevoked() {
         token.setRevoked(true);
         foundToken();
@@ -263,6 +285,7 @@ class AuthServiceImplTest {
         verify(tokens).save(token);
     }
 
+    @DisplayName("UTCID08 - Propagates a refresh token save failure during logout")
     @Test void logout_saveFailed() {
         foundToken();
         var failure = new DataIntegrityViolationException("save failed");
@@ -270,62 +293,73 @@ class AuthServiceImplTest {
         assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.logout(TOKEN)));
     }
 
+    @DisplayName("UTCID01 - Finds the current user by the authenticated email")
     @Test void getCurrentUser_success() {
         authenticatedUser();
         assertEquals(USER_ID, service.getCurrentUser(PRINCIPAL).getId());
         verify(users).findByEmail(EMAIL);
     }
 
+    @DisplayName("UTCID02 - Rejects a current-user request without a principal")
     @Test void getCurrentUser_nullPrincipal() {
         assertIllegal("Unauthenticated user", () -> service.getCurrentUser(null));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID03–UTCID04 - Rejects a principal with a null or empty name")
     @ParameterizedTest @NullAndEmptySource
     void getCurrentUser_emptyName(String name) {
         assertIllegal("Unauthenticated user", () -> service.getCurrentUser(() -> name));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID05–UTCID06 - Rejects a principal with a whitespace-only name")
     @ParameterizedTest @ValueSource(strings = {" ", "\t\r\n"})
     void getCurrentUser_blankName(String name) {
         assertIllegal("Unauthenticated user", () -> service.getCurrentUser(() -> name));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID07 - Finds the current user by the OAuth2 email")
     @Test void getCurrentUser_oauthSuccess() {
         when(users.findByEmail(EMAIL)).thenReturn(Optional.of(user));
         assertEquals(USER_ID, service.getCurrentUser(oauth(EMAIL)).getId());
         verify(users).findByEmail(EMAIL);
     }
 
+    @DisplayName("UTCID08–UTCID09 - Rejects a null or empty OAuth2 email")
     @ParameterizedTest @NullAndEmptySource
     void getCurrentUser_oauthEmptyEmail(String email) {
         assertIllegal("OAuth2 account email not found", () -> service.getCurrentUser(oauth(email)));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID10–UTCID11 - Rejects a whitespace-only OAuth2 email")
     @ParameterizedTest @ValueSource(strings = {" ", "\t\r\n"})
     void getCurrentUser_oauthBlankEmail(String email) {
         assertIllegal("OAuth2 account email not found", () -> service.getCurrentUser(oauth(email)));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID12 - Rejects an OAuth2 current-user request when no account matches the email")
     @Test void getCurrentUser_oauthUserNotFound() {
         assertIllegal("User not found", () -> service.getCurrentUser(oauth(EMAIL)));
     }
 
+    @DisplayName("UTCID13 - Rejects a current-user request without authentication")
     @Test void getCurrentUser_noAuthentication() {
         assertCredentials(() -> service.getCurrentUser(PRINCIPAL));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID14 - Rejects a current-user request with unauthenticated credentials")
     @Test void getCurrentUser_notAuthenticated() {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(EMAIL, "unused"));
         assertCredentials(() -> service.getCurrentUser(PRINCIPAL));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID15 - Finds the current user by the username in UserDetails")
     @Test void getCurrentUser_userDetails() {
         UserDetails details = mock(UserDetails.class);
         when(details.getUsername()).thenReturn(EMAIL);
@@ -335,12 +369,14 @@ class AuthServiceImplTest {
         assertEquals(USER_ID, service.getCurrentUser(PRINCIPAL).getId());
     }
 
+    @DisplayName("UTCID16 - Uses the authentication name when it differs from the principal name")
     @Test void getCurrentUser_authenticationName() {
         authenticatedUser();
         // The argument confirms a principal exists; identity comes from SecurityContext.
         assertEquals(EMAIL, service.getCurrentUser(() -> "different-principal").getEmail());
     }
 
+    @DisplayName("UTCID17–UTCID18 - Rejects a null or empty email from the security context")
     @ParameterizedTest @NullAndEmptySource
     void getCurrentUser_emptyEmail(String email) {
         authenticationWithName(email);
@@ -348,6 +384,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID19–UTCID20 - Rejects a whitespace-only email from the security context")
     @ParameterizedTest @ValueSource(strings = {" ", "\t\r\n"})
     void getCurrentUser_blankEmail(String email) {
         authenticationWithName(email);
@@ -355,11 +392,13 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID21 - Rejects a current-user request when no account matches the authenticated email")
     @Test void getCurrentUser_userNotFound() {
         authenticate();
         assertIllegal("User not found", () -> service.getCurrentUser(PRINCIPAL));
     }
 
+    @DisplayName("UTCID22 - Rejects an anonymous current-user request")
     @Test @Tag("known-gap")
     void getCurrentUser_anonymous() {
         SecurityContextHolder.getContext().setAuthentication(new AnonymousAuthenticationToken(
@@ -368,6 +407,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID01 - Saves profile changes and returns the updated fields")
     @Test void updateProfile_success() {
         profileUser();
         var request = new UpdateProfileRequest("Tên mới", LocalDate.of(2001, 6, 15));
@@ -383,6 +423,7 @@ class AuthServiceImplTest {
         verify(users).save(user);
     }
 
+    @DisplayName("UTCID02 - Updates the authenticated profile when the user ID is omitted")
     @Test void updateProfile_currentUser() {
         authenticatedUser();
         saveReturnsUser();
@@ -391,27 +432,32 @@ class AuthServiceImplTest {
         verify(users).save(user);
     }
 
+    @DisplayName("UTCID03 - Rejects a profile update when the target account is missing")
     @Test void updateProfile_userNotFound() {
         assertIllegal("User not found", () -> service.updateProfile(USER_ID, new UpdateProfileRequest("Tên mới", null)));
         verify(users, never()).save(any());
     }
 
+    @DisplayName("UTCID04 - Rejects a profile update without authentication or a user ID")
     @Test void updateProfile_unauthenticated() {
         assertCredentials(() -> service.updateProfile(null, new UpdateProfileRequest("Tên mới", null)));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID05 - Trims surrounding whitespace from the full name")
     @Test void updateProfile_trimFullName() {
         profileUser();
         assertEquals("Tên mới", service.updateProfile(USER_ID, new UpdateProfileRequest(" \tTên mới \r\n", null)).getFullName());
     }
 
+    @DisplayName("UTCID06 - Preserves spaces within the full name")
     @Test void updateProfile_fullNameSpaces() {
         profileUser();
         assertEquals("Nguyễn  Văn An", service.updateProfile(USER_ID,
                 new UpdateProfileRequest("Nguyễn  Văn An", null)).getFullName());
     }
 
+    @DisplayName("UTCID07 - Uses the display name when the full name is omitted")
     @Test void updateProfile_displayNameFallback() {
         profileUser();
         var request = new UpdateProfileRequest();
@@ -419,6 +465,7 @@ class AuthServiceImplTest {
         assertEquals("Tên hiển thị", service.updateProfile(USER_ID, request).getFullName());
     }
 
+    @DisplayName("UTCID08 - Uses the full name when both names are provided")
     @Test void updateProfile_fullNamePriority() {
         profileUser();
         var request = new UpdateProfileRequest("Họ tên", null);
@@ -426,6 +473,7 @@ class AuthServiceImplTest {
         assertEquals("Họ tên", service.updateProfile(USER_ID, request).getFullName());
     }
 
+    @DisplayName("UTCID09 - Preserves optional profile fields when their updates are omitted")
     @Test void updateProfile_keepNullFields() {
         profileUser();
         var result = service.updateProfile(USER_ID, new UpdateProfileRequest("Nguyễn Văn An", null));
@@ -435,6 +483,7 @@ class AuthServiceImplTest {
                 () -> assertEquals("old-avatar", result.getAvatarPublicId()));
     }
 
+    @DisplayName("UTCID10 - Trims surrounding whitespace from the avatar URL and public ID")
     @Test void updateProfile_trimAvatar() {
         profileUser();
         var request = new UpdateProfileRequest("Nguyễn Văn An", null);
@@ -450,6 +499,7 @@ class AuthServiceImplTest {
                 Stream.of("", "   ", "\t\r\n").map(value -> Arguments.of(url, value)));
     }
 
+    @DisplayName("UTCID11–UTCID16 - Clears only the avatar field set to an empty or blank value")
     @ParameterizedTest @MethodSource("emptyAvatarFields")
     void updateProfile_clearAvatar(boolean url, String value) {
         profileUser();
@@ -466,7 +516,9 @@ class AuthServiceImplTest {
         }
     }
 
+    @DisplayName("UTCID17 - Propagates a profile save failure")
     @Test void updateProfile_saveFailed() {
+        authenticatedUser();
         when(users.findById(USER_ID)).thenReturn(Optional.of(user));
         var failure = new DataIntegrityViolationException("save failed");
         when(users.save(user)).thenThrow(failure);
@@ -474,27 +526,32 @@ class AuthServiceImplTest {
                 () -> service.updateProfile(USER_ID, new UpdateProfileRequest("Tên mới", null))));
     }
 
+    @DisplayName("UTCID18–UTCID20 - Accepts a full name of 50 characters")
     @ParameterizedTest @ValueSource(strings = {"a", "ế", "語"})
     void updateProfile_fullNameMaxLength(String character) {
         var request = new UpdateProfileRequest(character.repeat(50), null);
         assertTrue(validatorFactory.getValidator().validate(request).isEmpty());
     }
 
+    @DisplayName("UTCID21–UTCID23 - Rejects a full name of 51 characters")
     @ParameterizedTest @ValueSource(strings = {"a", "ế", "語"})
     void updateProfile_fullNameTooLong(String character) {
         assertProfileRejected(new UpdateProfileRequest(character.repeat(51), null));
     }
 
+    @DisplayName("UTCID24 - Rejects an empty full name")
     @Test
     void updateProfile_emptyFullName() {
         assertProfileRejected(new UpdateProfileRequest("", null));
     }
 
+    @DisplayName("UTCID25–UTCID26 - Rejects a whitespace-only full name")
     @ParameterizedTest @ValueSource(strings = {"   ", "\t\r\n"})
     void updateProfile_blankFullName(String name) {
         assertProfileRejected(new UpdateProfileRequest(name, null));
     }
 
+    @DisplayName("UTCID27 - Rejects a display name of 51 characters")
     @Test
     void updateProfile_displayNameTooLong() {
         var request = new UpdateProfileRequest();
@@ -502,11 +559,13 @@ class AuthServiceImplTest {
         assertProfileRejected(request);
     }
 
+    @DisplayName("UTCID28 - Rejects a null profile update request")
     @Test
     void updateProfile_nullRequest() {
         assertProfileRejected(null);
     }
 
+    @DisplayName("UTCID29 - Denies a profile update targeting another user")
     @Test @Tag("known-gap")
     void updateProfile_otherUser() {
         authenticate();
@@ -520,30 +579,35 @@ class AuthServiceImplTest {
         verify(users, never()).save(any());
     }
 
+    @DisplayName("UTCID30 - Accepts an avatar URL of 500 characters")
     @Test void updateProfile_avatarUrlMaxLength() {
         var request = new UpdateProfileRequest("Nguyễn Văn An", null);
         request.setAvatarUrl("a".repeat(500));
         assertTrue(validatorFactory.getValidator().validate(request).isEmpty());
     }
 
+    @DisplayName("UTCID31 - Rejects an avatar URL of 501 characters")
     @Test void updateProfile_avatarUrlTooLong() {
         var request = new UpdateProfileRequest("Nguyễn Văn An", null);
         request.setAvatarUrl("a".repeat(501));
         assertInvalidField(request, "avatarUrl");
     }
 
+    @DisplayName("UTCID32 - Accepts an avatar public ID of 255 characters")
     @Test void updateProfile_avatarPublicIdMaxLength() {
         var request = new UpdateProfileRequest("Nguyễn Văn An", null);
         request.setAvatarPublicId("a".repeat(255));
         assertTrue(validatorFactory.getValidator().validate(request).isEmpty());
     }
 
+    @DisplayName("UTCID33 - Rejects an avatar public ID of 256 characters")
     @Test void updateProfile_avatarPublicIdTooLong() {
         var request = new UpdateProfileRequest("Nguyễn Văn An", null);
         request.setAvatarPublicId("a".repeat(256));
         assertInvalidField(request, "avatarPublicId");
     }
 
+    @DisplayName("UTCID34 - Saves a valid leap-day birth date")
     @Test void updateProfile_validBirthDate() {
         profileUser();
         var result = service.updateProfile(USER_ID,
@@ -551,12 +615,14 @@ class AuthServiceImplTest {
         assertEquals(LocalDate.of(2000, 2, 29), result.getDateOfBirth());
     }
 
+    @DisplayName("UTCID35 - Rejects a future birth date before accessing the repository")
     @Test void updateProfile_futureBirthDate() {
         var request = new UpdateProfileRequest("Nguyễn Văn An", LocalDate.now().plusDays(1));
         assertIllegal("Ngày sinh không được ở tương lai", () -> service.updateProfile(USER_ID, request));
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID36 - Returns HTTP 400 with the future birth date message")
     @Test void updateProfile_futureBirthDateMessage() throws Exception {
         String date = LocalDate.now().plusDays(1).toString();
         mvc().perform(put("/users/profile").param("userId", Long.toString(USER_ID))
@@ -568,6 +634,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID37–UTCID40 - Returns HTTP 400 with the invalid birth date message")
     @ParameterizedTest @ValueSource(strings = {"01/12/2000", "2000-13-01", "2000-02-30", "abc"})
     void updateProfile_invalidBirthDateMessage(String date) throws Exception {
         mvc().perform(put("/users/profile").param("userId", Long.toString(USER_ID))
@@ -580,6 +647,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID41–UTCID45 - Rejects invalid birth date strings in the profile service")
     @ParameterizedTest @ValueSource(strings = {"01/12/2000", "2000-13-01", "2000-02-30", "abc", " "})
     void updateProfile_invalidBirthDateInService(String date) {
         var request = new UpdateProfileRequest("Nguyễn Văn An", null);
@@ -589,6 +657,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID46 - Returns HTTP 400 with the whitespace-only full name message")
     @Test void updateProfile_emptyNameMessage() throws Exception {
         mvc().perform(put("/users/profile").param("userId", Long.toString(USER_ID))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -598,6 +667,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID01 - Uploads the avatar before saving its URL and public ID")
     @Test void updateAvatar_success() {
         authenticatedUser();
         saveReturnsUser();
@@ -613,11 +683,13 @@ class AuthServiceImplTest {
         order.verify(users).save(user);
     }
 
+    @DisplayName("UTCID02 - Rejects an avatar update without authentication")
     @Test void updateAvatar_unauthenticated() {
         assertCredentials(() -> service.updateAvatar(avatar()));
         verifyNoInteractions(users, cloudinary);
     }
 
+    @DisplayName("UTCID03 - Rejects an avatar update when the authenticated account is missing")
     @Test void updateAvatar_userNotFound() {
         authenticate();
         assertIllegal("User not found", () -> service.updateAvatar(avatar()));
@@ -625,6 +697,7 @@ class AuthServiceImplTest {
         verify(users, never()).save(any());
     }
 
+    @DisplayName("UTCID04 - Rejects an invalid avatar file without changing the saved avatar")
     @Test void updateAvatar_invalidFile() {
         authenticatedUser();
         MultipartFile file = avatar();
@@ -634,6 +707,7 @@ class AuthServiceImplTest {
         assertEquals("old-avatar", user.getAvatarPublicId());
     }
 
+    @DisplayName("UTCID05 - Propagates an avatar upload failure without saving the user")
     @Test void updateAvatar_uploadFailed() {
         authenticatedUser();
         MultipartFile file = avatar();
@@ -644,6 +718,7 @@ class AuthServiceImplTest {
         assertEquals("old-avatar", user.getAvatarPublicId());
     }
 
+    @DisplayName("UTCID06 - Propagates a user save failure after the avatar upload")
     @Test void updateAvatar_saveFailed() {
         authenticatedUser();
         MultipartFile file = avatar();
@@ -653,6 +728,7 @@ class AuthServiceImplTest {
         assertSame(failure, assertThrows(DataIntegrityViolationException.class, () -> service.updateAvatar(file)));
     }
 
+    @DisplayName("UTCID01 - Exchanges a valid OAuth2 code for the user and access token")
     @Test void exchangeOAuth2Code_success() {
         foundExchange();
         var result = service.exchangeOAuth2Code(CODE);
@@ -663,29 +739,34 @@ class AuthServiceImplTest {
         verifyNoInteractions(jwt, tokens);
     }
 
+    @DisplayName("UTCID02–UTCID03 - Rejects a null or empty OAuth2 exchange code")
     @ParameterizedTest @NullAndEmptySource
     void exchangeOAuth2Code_emptyCode(String code) {
         assertIllegal("Exchange code is required", () -> service.exchangeOAuth2Code(code));
         verifyNoInteractions(exchangeStore, users);
     }
 
+    @DisplayName("UTCID04–UTCID05 - Rejects a whitespace-only OAuth2 exchange code")
     @ParameterizedTest @ValueSource(strings = {" ", "\t\r\n"})
     void exchangeOAuth2Code_blankCode(String code) {
         assertIllegal("Exchange code is required", () -> service.exchangeOAuth2Code(code));
         verifyNoInteractions(exchangeStore, users);
     }
 
+    @DisplayName("UTCID06 - Rejects an OAuth2 exchange code when the store has no payload")
     @Test void exchangeOAuth2Code_invalidCode() {
         assertIllegal("Invalid or expired exchange code", () -> service.exchangeOAuth2Code(CODE));
         verifyNoInteractions(users, jwt);
     }
 
+    @DisplayName("UTCID07 - Rejects an OAuth2 exchange when the account is missing")
     @Test void exchangeOAuth2Code_userNotFound() {
         when(exchangeStore.consume(CODE)).thenReturn(exchangePayload());
         assertIllegal("User not found", () -> service.exchangeOAuth2Code(CODE));
         verifyNoInteractions(jwt);
     }
 
+    @DisplayName("UTCID08–UTCID11 - Rejects an OAuth2 exchange when the account is not active")
     @ParameterizedTest @NullSource
     @EnumSource(value = UserStatus.class, names = "ACTIVE", mode = EnumSource.Mode.EXCLUDE)
     void exchangeOAuth2Code_inactiveUser(UserStatus status) {
@@ -695,6 +776,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(jwt);
     }
 
+    @DisplayName("UTCID12 - Propagates an OAuth2 exchange store failure")
     @Test void exchangeOAuth2Code_storeFailed() {
         var failure = new IllegalStateException("Store unavailable");
         when(exchangeStore.consume(CODE)).thenThrow(failure);
@@ -702,6 +784,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID23 - Maps account and profile fields to the current-user response")
     @Test void getCurrentUser_mapFields() {
         authenticatedUser();
         var result = service.getCurrentUser(PRINCIPAL);
@@ -725,6 +808,7 @@ class AuthServiceImplTest {
                 () -> assertEquals(user.getUpdatedAt(), result.getUpdatedAt()));
     }
 
+    @DisplayName("UTCID24 - Maps the role ID, code, and name to the current-user response")
     @Test void getCurrentUser_mapRole() {
         authenticatedUser();
         var result = service.getCurrentUser(PRINCIPAL);
@@ -733,6 +817,7 @@ class AuthServiceImplTest {
         assertEquals("Học viên", result.getRoleName());
     }
 
+    @DisplayName("UTCID25 - Returns null role fields when the account has no role")
     @Test void getCurrentUser_nullRole() {
         user.setRole(null);
         authenticatedUser();
@@ -742,12 +827,14 @@ class AuthServiceImplTest {
         assertNull(result.getRoleName());
     }
 
+    @DisplayName("UTCID26 - Returns PENDING when the account status is missing")
     @Test void getCurrentUser_defaultStatus() {
         user.setStatus(null);
         authenticatedUser();
         assertEquals("PENDING", service.getCurrentUser(PRINCIPAL).getStatus());
     }
 
+    @DisplayName("UTCID27 - Returns null for missing optional profile fields")
     @Test void getCurrentUser_nullOptionalFields() {
         user = User.builder().userId(USER_ID).email(EMAIL).status(UserStatus.ACTIVE).build();
         authenticatedUser();
@@ -760,6 +847,7 @@ class AuthServiceImplTest {
                 () -> assertNull(result.getCreatedAt()), () -> assertNull(result.getUpdatedAt()));
     }
 
+    @DisplayName("UTCID28 - Returns the full name in both response name fields")
     @Test void getCurrentUser_nameAliases() {
         authenticatedUser();
         var result = service.getCurrentUser(PRINCIPAL);
@@ -767,6 +855,7 @@ class AuthServiceImplTest {
         assertEquals(user.getFullName(), result.getDisplayName());
     }
 
+    @DisplayName("UTCID29 - Returns the last login in both response login fields")
     @Test void getCurrentUser_loginAliases() {
         authenticatedUser();
         var result = service.getCurrentUser(PRINCIPAL);
@@ -774,6 +863,7 @@ class AuthServiceImplTest {
         assertEquals(user.getLastLogin(), result.getLastLogin());
     }
 
+    @DisplayName("UTCID30 - Returns the current-user response without access or refresh tokens")
     @Test void getCurrentUser_noTokens() {
         authenticatedUser();
         var result = service.getCurrentUser(PRINCIPAL);
@@ -786,6 +876,7 @@ class AuthServiceImplTest {
                 Arguments.of("avatarUrl", 501), Arguments.of("avatarPublicId", 256));
     }
 
+    @DisplayName("UTCID47–UTCID50 - Returns HTTP 400 with the validation message for an oversized profile field")
     @ParameterizedTest @MethodSource("profileHttpErrors")
     void updateProfile_validationMessage(String field, int length) throws Exception {
         var request = new UpdateProfileRequest("Nguyễn Văn An", null);
@@ -809,6 +900,7 @@ class AuthServiceImplTest {
         verifyNoInteractions(users);
     }
 
+    @DisplayName("UTCID51 - Returns HTTP 400 with the user-not-found message from the profile service")
     @Test void updateProfile_serviceErrorMessage() throws Exception {
         mvc().perform(put("/users/profile").param("userId", Long.toString(USER_ID))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"Tên mới\"}"))
@@ -817,6 +909,7 @@ class AuthServiceImplTest {
         verify(users, never()).save(any());
     }
 
+    @DisplayName("UTCID07 - Returns HTTP 400 with the upload validation message")
     @Test void updateAvatar_validationMessage() throws Exception {
         authenticatedUser();
         MockMultipartFile file = avatar();
@@ -865,6 +958,7 @@ class AuthServiceImplTest {
     }
 
     private void profileUser() {
+        authenticatedUser();
         when(users.findById(USER_ID)).thenReturn(Optional.of(user));
         saveReturnsUser();
     }

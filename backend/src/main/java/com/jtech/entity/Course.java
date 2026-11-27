@@ -6,6 +6,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "course")
+@org.hibernate.annotations.SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,6 +34,9 @@ public class Course {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status;
+
+    @Column(name = "deleted_at")
+    private java.time.LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     @OrderBy("displayOrder ASC, chapterNo ASC")

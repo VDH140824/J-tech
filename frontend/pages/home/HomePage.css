@@ -161,6 +161,9 @@
 }
 
 .course-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
   background-color: #ffffff;
   border-radius: 20px;
   border: 1px solid #f1f5f9;
@@ -169,6 +172,11 @@
   flex-direction: column;
   transition: all 0.25s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.course-card:focus-visible {
+  outline: 3px solid #0d9488;
+  outline-offset: 4px;
 }
 
 .course-card:hover {

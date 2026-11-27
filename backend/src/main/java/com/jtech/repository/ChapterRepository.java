@@ -5,6 +5,9 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
+    java.util.List<Chapter> findByCourseIdOrderByDisplayOrderAscChapterNoAscIdAsc(Long courseId);
+    boolean existsByCourseIdAndChapterNo(Long courseId, Integer chapterNo);
+    boolean existsByCourseIdAndChapterNoAndIdNot(Long courseId, Integer chapterNo, Long id);
     @org.springframework.data.jpa.repository.Lock(
         jakarta.persistence.LockModeType.PESSIMISTIC_WRITE
     )

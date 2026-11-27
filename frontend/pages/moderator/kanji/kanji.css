@@ -1,12 +1,70 @@
 .kanji-page input,.kanji-page select,.kanji-page textarea{padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;max-width:100%}
-.kanji-page button{cursor:pointer;border:none;border-radius:8px;padding:8px 16px;font:inherit;font-weight:500;transition:background .18s,opacity .18s,transform .1s}
-.kanji-page button:not(:disabled):active{transform:scale(.97)}
-.kanji-page button:disabled{cursor:default;opacity:.55}
+.kanji-content-tabs{display:flex;gap:12px;margin:20px 0;border-bottom:1px solid #cbd5e1;padding-bottom:12px}
+.kanji-content-tabs button[aria-pressed="true"]{background:#7c3aed;color:#fff}
+.kanji-content-tabs{flex-wrap:wrap}
+.kanji-document-panel{padding:24px;background:#fff;border:1px solid #cbd5e1;border-radius:12px}
+.kanji-document-upload{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.kanji-document-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px}
+.kanji-document-toolbar input,.kanji-document-toolbar select{min-width:0;max-width:100%}
+.kanji-document-toolbar a{overflow-wrap:anywhere}
+.kanji-document-list{margin-bottom:20px}
+.kanji-document-list td:first-child{overflow-wrap:anywhere;max-width:360px}
+.kanji-document-reader {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 960px;
+  margin: 24px auto 0;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+.kanji-document-reader h3 {
+  margin: 0 0 16px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.kanji-document-preview {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: clamp(360px, 78vh, 960px);
+  background: #f6f8f8;
+  border: 1px solid #cbd5e1;
+}
+.kanji-document-reader-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: .875rem;
+}
+@media (max-width: 640px) {
+  .kanji-document-reader { padding: 10px; }
+}
+@media(max-width:640px){.kanji-document-panel{padding:12px}.kanji-document-toolbar input,.kanji-document-toolbar select{width:100%}}
+.kanji-exercise-editor,.kanji-exercise-preview{padding:24px;margin:20px 0;background:#fff;border:1px solid #cbd5e1;border-radius:12px}
+.kanji-exercise-editor fieldset{border:0;padding:0;min-width:0}
+.kanji-exercise-editor label,.kanji-exercise-preview label{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.kanji-exercise-editor textarea{min-height:90px;resize:vertical}
+.kanji-exercise-option{display:flex;gap:10px;align-items:center;margin:10px 0}
+.kanji-exercise-option input:not([type="radio"]){flex:1;min-width:0}
+.kanji-exercise-preview label.kanji-exercise-option{flex-direction:row}
+.kanji-exercise-actions{display:flex;flex-wrap:wrap;gap:8px}
+.kanji-exercise-text{white-space:pre-wrap;overflow-wrap:anywhere}
+.kanji-exercise-summary{max-width:320px;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:640px){.kanji-exercise-editor,.kanji-exercise-preview{padding:12px}.kanji-exercise-option{flex-wrap:wrap}}
+.kanji-page button:not(.mod-btn-back):not(.mod-skill-tab-btn):not(.kanji-exercise-table button){cursor:pointer;border:none;border-radius:8px;padding:8px 16px;font:inherit;font-weight:500;transition:background .18s,opacity .18s,transform .1s}
+.kanji-page button:not(.kanji-exercise-table button):not(:disabled):active{transform:scale(.97)}
+.kanji-page button:not(.kanji-exercise-table button):disabled{cursor:default;opacity:.55}
 
 /* Nút + Thêm Kanji & Quản lý Kanji */
-.kanji-page .mod-btn-add{background:#7c3aed;color:#fff}
-.kanji-page .mod-btn-add:not(:disabled):hover{background:#6d28d9;transform:translateY(-1px);box-shadow:0 4px 14px rgba(109,40,217,.35)}
-.kanji-page .mod-btn-add:disabled{opacity:.55;cursor:default}
+.kanji-page .mod-btn-add:not(.kanji-exercise-table button){background:#7c3aed;color:#fff}
+.kanji-page .mod-btn-add:not(.kanji-exercise-table button):not(:disabled):hover{background:#6d28d9;transform:translateY(-1px);box-shadow:0 4px 14px rgba(109,40,217,.35)}
+.kanji-page .mod-btn-add:not(.kanji-exercise-table button):disabled{opacity:.55;cursor:default}
 
 /* Nút xem chi tiết trong bảng danh sách */
 .kanji-table button{background:#3b82f6;color:#fff}
@@ -40,3 +98,18 @@
 .kanji-dialog{position:relative;background:white;border-radius:16px;padding:28px;width:640px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px #0003}
 .kanji-dialog fieldset{border:0;padding:0}.kanji-dialog label{display:flex;flex-direction:column;gap:6px;margin:14px 0}.kanji-dialog textarea{min-height:90px;resize:vertical}
 .kanji-image{max-width:100%;max-height:220px;object-fit:contain}.kanji-dialog .kanji-check{flex-direction:row}.kanji-dialog dt{font-weight:700;margin-top:14px}.kanji-dialog dd{margin:6px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.kanji-exercise-modal,.kanji-excel-dialog{width:min(760px,calc(100vw - 32px));max-height:90vh;overflow:auto}
+.kanji-exercise-modal .kanji-exercise-editor{border:0;margin:0;border-radius:0}
+.kanji-exercises .mod-section-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.kanji-exercises .mod-section-toolbar h3{flex-basis:100%;font-size:24px}
+.kanji-exercise-table{overflow-x:auto}
+.kanji-exercise-table td:not(:last-child){min-width:110px;max-width:320px;overflow-wrap:anywhere;white-space:pre-wrap}
+.kanji-exercise-table .kanji-question-row-actions{flex-wrap:nowrap;gap:8px}
+.kanji-exercise-table .kanji-question-row-actions button{white-space:nowrap}
+.kanji-question-management{margin:16px 0;padding:16px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc}
+.kanji-question-management p{margin:0 0 12px}
+.kanji-question-assignment{margin-top:16px}
+.kanji-exercise-modal input:not([type="radio"]),.kanji-exercise-modal select,.kanji-exercise-modal textarea{padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;box-sizing:border-box;max-width:100%}
+.kanji-excel-dialog .modal-form-body{display:flex;flex-direction:column;gap:12px}
+.kanji-excel-dialog p{margin:0;line-height:1.6}

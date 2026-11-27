@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jtech.dto.request.QuestionGrammarCreateRequest;
 import com.jtech.dto.request.QuestionGrammarUpdateRequest;
 import com.jtech.dto.response.QuestionGrammarResponse;
+import com.jtech.exception.GrammarQuestionImportException;
 import com.jtech.entity.Grammar;
 import com.jtech.entity.Lesson;
 import com.jtech.entity.Question;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -29,8 +31,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -66,6 +75,236 @@ class QuestionGrammarServiceTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private QuestionGrammarService service;
     private Question existing;
+
+    static MockMultipartFile excelWorkbook(Consumer<Sheet> fill) throws Exception {
+        try (var workbook = new XSSFWorkbook(); var output = new ByteArrayOutputStream()) {
+            var sheet = workbook.createSheet("Sheet 1 - Import Template");
+            sheet.createRow(0).createCell(0).setCellValue("J-Tech");
+            var header = sheet.createRow(1);
+            String[] headers = {"STT", "Nội dung câu hỏi", "A", "B", "C", "D", "Đáp án đúng", "Giải thích", "Độ khó"};
+            for (int i = 0; i < headers.length; i++) header.createCell(i).setCellValue(headers[i]);
+            fill.accept(sheet);
+            workbook.write(output);
+            return new MockMultipartFile("file", "Form_question.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", output.toByteArray());
+        }
+    }
+
+    static void excelQuestion(Sheet sheet, int index) {
+        var row = sheet.createRow(index);
+        String[] data = {String.valueOf(index - 1), " わたし＿＿学生です。 ", "は", "を", "に", "で", "A", "は đánh dấu chủ đề.", "Dễ"};
+        for (int i = 0; i < data.length; i++) row.createCell(i).setCellValue(data[i]);
+    }
+
+    @Nested
+    @DisplayName("importGrammarQuestions: Excel validation through the service")
+    class ExcelValidation {
+        @BeforeEach
+        void prepareImportContext() {
+            when(grammarRepository.existsById(GRAMMAR_ID)).thenReturn(true);
+            var user = new User();
+            user.setUserId(USER_ID);
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        }
+
+        private List<Question> importExcel(MultipartFile file) {
+            var lesson = new Lesson();
+            lesson.setId(LESSON_ID);
+            lesson.setSkillType(Lesson.SkillType.GRAMMAR);
+            when(grammarRepository.findByIdForQuestionImport(GRAMMAR_ID))
+                    .thenReturn(Optional.of(Grammar.builder().id(GRAMMAR_ID).lesson(lesson).build()));
+            service.importGrammarQuestions(GRAMMAR_ID, file, EMAIL);
+            @SuppressWarnings("unchecked") ArgumentCaptor<List<Question>> captured = ArgumentCaptor.forClass(List.class);
+            verify(questionRepository, atLeastOnce()).saveAllAndFlush(captured.capture());
+            return captured.getValue();
+        }
+
+        private GrammarQuestionImportException rejectExcel(MultipartFile file) {
+            var exception = assertThrows(GrammarQuestionImportException.class,
+                    () -> service.importGrammarQuestions(GRAMMAR_ID, file, EMAIL));
+            verifyNoInteractions(questionRepository);
+            return exception;
+        }
+
+        @Test
+        void imports100QuestionsAndSkipsNumberedBlankRows() throws Exception {
+            var saved = importExcel(excelWorkbook(sheet -> {
+                for (int i = 2; i < 102; i++) excelQuestion(sheet, i);
+                sheet.createRow(102).createCell(0).setCellValue(999);
+                sheet.createRow(1012).createCell(0).setCellValue(1000);
+            }));
+            assertEquals(100, saved.size());
+            assertEquals("わたし＿＿学生です。", saved.getFirst().getContent());
+            assertEquals("は", objectMapper.readTree(saved.getFirst().getAnswerData()).path("options").path("A").asText());
+        }
+
+        @ParameterizedTest
+        @CsvSource({"Dễ,EASY", "Trung bình,MEDIUM", "Khó,HARD", "easy,EASY", "MEDIUM,MEDIUM", "HARD,HARD"})
+        void acceptsVietnameseAndEnglishDifficulty(String input, Question.Difficulty expected) throws Exception {
+            var saved = importExcel(excelWorkbook(sheet -> {
+                excelQuestion(sheet, 2);
+                sheet.getRow(2).getCell(8).setCellValue(input);
+                sheet.getRow(2).getCell(2).setCellValue(4);
+                sheet.getRow(2).getCell(6).setCellValue(" a ");
+            }));
+            assertEquals(expected, saved.getFirst().getDifficulty());
+            var answer = objectMapper.readTree(saved.getFirst().getAnswerData());
+            assertEquals("4", answer.path("options").path("A").asText());
+            assertEquals("A", answer.path("correctAnswer").asText());
+        }
+
+        @Test
+        void collectsErrorsAcrossRowsWithoutShiftingMissingCells() throws Exception {
+            var error = rejectExcel(excelWorkbook(sheet -> {
+                excelQuestion(sheet, 2);
+                sheet.getRow(2).removeCell(sheet.getRow(2).getCell(3));
+                sheet.getRow(2).getCell(1).setCellValue("a".repeat(101));
+                excelQuestion(sheet, 3);
+                sheet.getRow(3).getCell(6).setCellValue("2");
+                sheet.getRow(3).getCell(8).setCellValue("");
+            }));
+            assertEquals(4, error.getErrors().size());
+            assertTrue(error.getErrors().stream().anyMatch(e -> e.row() == 3 && e.column().equals("B")));
+            assertTrue(error.getErrors().stream().anyMatch(e -> e.row() == 4 && e.column().equals("Đáp án đúng")));
+        }
+
+        @Test
+        void handlesWhitespaceInHeaders() throws Exception {
+            assertEquals(1, importExcel(excelWorkbook(sheet -> {
+                excelQuestion(sheet, 2);
+                sheet.getRow(1).getCell(6).setCellValue(" Đáp án\nđúng ");
+            })).size());
+        }
+
+        @Test
+        void rejectsWrongHeaders() throws Exception {
+            rejectExcel(excelWorkbook(sheet -> sheet.getRow(1).getCell(2).setCellValue("X")));
+        }
+
+        @Test
+        void rejectsFormulaCellsEvenWhenOtherwiseEmpty() throws Exception {
+            var error = rejectExcel(excelWorkbook(sheet -> {
+                excelQuestion(sheet, 2);
+                sheet.getRow(2).getCell(2).setCellFormula("2+2");
+                sheet.createRow(4).createCell(1).setCellFormula("\"\"");
+            }));
+            assertTrue(error.getErrors().stream().anyMatch(e -> e.row() == 3 && e.message().contains("công thức")));
+            assertTrue(error.getErrors().stream().anyMatch(e -> e.row() == 5));
+        }
+
+        @Test
+        void rejectsBlankPartialAndExtraColumnData() throws Exception {
+            rejectExcel(excelWorkbook(sheet -> sheet.createRow(2).createCell(0).setCellValue(1)));
+            rejectExcel(excelWorkbook(sheet -> sheet.createRow(2).createCell(2).setCellValue("A")));
+            rejectExcel(excelWorkbook(sheet -> {
+                excelQuestion(sheet, 2);
+                sheet.getRow(2).createCell(9).setCellValue("extra");
+            }));
+        }
+
+        @Test
+        void acceptsMaximum500Questions() throws Exception {
+            assertEquals(500, importExcel(excelWorkbook(sheet -> {
+                for (int i = 2; i < 502; i++) excelQuestion(sheet, i);
+            })).size());
+        }
+
+        @Test
+        void rejectsOver500Questions() throws Exception {
+            rejectExcel(excelWorkbook(sheet -> { for (int i = 2; i < 503; i++) excelQuestion(sheet, i); }));
+        }
+
+        @Test
+        void rejectsCorruptWrongExtensionEmptyAndOversizedFiles() {
+            rejectExcel(null);
+            rejectExcel(new MockMultipartFile("file", new byte[0]));
+            rejectExcel(new MockMultipartFile("file", "file.xls", "", new byte[]{1}));
+            rejectExcel(new MockMultipartFile("file", "file.xlsx", "", "not a workbook".getBytes()));
+            var oversized = new MockMultipartFile("file", "file.xlsx", "", new byte[5 * 1024 * 1024 + 1]);
+            assertEquals(413, assertThrows(ResponseStatusException.class,
+                    () -> service.importGrammarQuestions(GRAMMAR_ID, oversized, EMAIL)).getStatusCode().value());
+            verifyNoInteractions(questionRepository);
+        }
+    }
+
+    @Nested
+    class ImportExcel {
+        private void prepare() {
+            var lesson = new Lesson();
+            lesson.setId(LESSON_ID);
+            lesson.setSkillType(Lesson.SkillType.GRAMMAR);
+            when(grammarRepository.existsById(GRAMMAR_ID)).thenReturn(true);
+            when(grammarRepository.findByIdForQuestionImport(GRAMMAR_ID))
+                    .thenReturn(Optional.of(Grammar.builder().id(GRAMMAR_ID).lesson(lesson).build()));
+            var user = new User();
+            user.setUserId(USER_ID);
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        }
+
+        @Test
+        void imports100AndAppendsOrderWithTrustedContext() throws Exception {
+            prepare();
+            when(questionRepository.findMaxDisplayOrderByGrammarId(GRAMMAR_ID, Question.Skill.GRAMMAR)).thenReturn(20);
+            var file = excelWorkbook(sheet -> {
+                for (int i = 2; i < 102; i++) excelQuestion(sheet, i);
+            });
+            var result = service.importGrammarQuestions(GRAMMAR_ID, file, EMAIL);
+            assertEquals(100, result.importedCount());
+            @SuppressWarnings("unchecked") ArgumentCaptor<List<Question>> captured = ArgumentCaptor.forClass(List.class);
+            verify(questionRepository).saveAllAndFlush(captured.capture());
+            var saved = captured.getValue();
+            assertEquals(21, saved.getFirst().getDisplayOrder());
+            assertEquals(120, saved.getLast().getDisplayOrder());
+            for (var q : saved) {
+                assertEquals(GRAMMAR_ID, q.getGrammarId());
+                assertEquals(LESSON_ID, q.getLessonId());
+                assertEquals(USER_ID, q.getCreatedBy());
+                assertEquals(Question.Skill.GRAMMAR, q.getSkill());
+                assertEquals(Question.QuestionType.MCQ, q.getQuestionType());
+                assertEquals(Question.QuestionStatus.ACTIVE, q.getStatus());
+                assertTrue(q.getIsExerciseQuestion());
+                assertNotNull(q.getCreatedAt());
+                assertEquals("A", objectMapper.readTree(q.getAnswerData()).path("correctAnswer").asText());
+            }
+            var order = inOrder(grammarRepository, questionRepository);
+            order.verify(grammarRepository).findByIdForQuestionImport(GRAMMAR_ID);
+            order.verify(questionRepository).findMaxDisplayOrderByGrammarId(GRAMMAR_ID, Question.Skill.GRAMMAR);
+            order.verify(questionRepository).saveAllAndFlush(anyList());
+        }
+
+        @Test
+        void invalidFileNeverLocksOrWrites() throws Exception {
+            when(grammarRepository.existsById(GRAMMAR_ID)).thenReturn(true);
+            var user = new User(); user.setUserId(USER_ID);
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+            var file = excelWorkbook(sheet -> {
+                excelQuestion(sheet, 2);
+                sheet.getRow(2).getCell(6).setCellValue("E");
+            });
+            assertThrows(com.jtech.exception.GrammarQuestionImportException.class,
+                    () -> service.importGrammarQuestions(GRAMMAR_ID, file, EMAIL));
+            verify(grammarRepository, never()).findByIdForQuestionImport(anyLong());
+            verifyNoInteractions(questionRepository);
+        }
+
+        @Test
+        void rejectsOverflowBeforeSaving() throws Exception {
+            prepare();
+            when(questionRepository.findMaxDisplayOrderByGrammarId(GRAMMAR_ID, Question.Skill.GRAMMAR)).thenReturn(65535);
+            var file = excelWorkbook(sheet -> excelQuestion(sheet, 2));
+            assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                    () -> service.importGrammarQuestions(GRAMMAR_ID, file, EMAIL));
+            verify(questionRepository, never()).saveAllAndFlush(anyList());
+        }
+
+        @Test
+        void rejectsUnknownOrInvalidGrammar() {
+            assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                    () -> service.importGrammarQuestions(0L, null, EMAIL));
+            assertEquals(404, assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                    () -> service.importGrammarQuestions(GRAMMAR_ID, null, EMAIL)).getStatusCode().value());
+            verifyNoInteractions(questionRepository, userRepository);
+        }
+    }
 
     @BeforeEach
     void setUp() {

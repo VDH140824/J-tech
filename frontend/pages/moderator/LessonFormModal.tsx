@@ -96,11 +96,7 @@ export function LessonFormModal({
       return;
     }
     if (!formData.lessonNo || formData.lessonNo < 1) {
-      setErrorMsg(
-        vietnameseOnly
-          ? "Số bài học phải lớn hơn hoặc bằng 1!"
-          : "Số bài học (lesson_no) phải lớn hơn hoặc bằng 1!",
-      );
+      setErrorMsg("Bài phải lớn hơn hoặc bằng 1!");
       return;
     }
 
@@ -137,7 +133,7 @@ export function LessonFormModal({
     try {
       setSubmitting(true);
       setErrorMsg(null);
-      await onSubmit(cleanPayload, vietnameseOnly ? documentFile : undefined);
+      await onSubmit(cleanPayload, vietnameseOnly || isVocabulary ? documentFile : undefined);
       onClose();
     } catch (err: unknown) {
       console.error("Lỗi khi lưu bài học:", err);
@@ -199,13 +195,7 @@ export function LessonFormModal({
                   color: "#64748b",
                 }}
               >
-                {vietnameseOnly ? (
-                  "Nhập thông tin và đính kèm tài liệu cho bài học chữ Hán."
-                ) : (
-                  <>
-                    Nhập các thông tin của bài học theo bảng cơ sở dữ liệu <code>lesson</code>
-                  </>
-                )}
+                Nhập thông tin bài học.
               </p>
             </div>
           </div>
@@ -247,7 +237,7 @@ export function LessonFormModal({
           <div className="modal-grid-2">
             <div className="modal-field-group">
               <label className="modal-label">
-                {vietnameseOnly ? "Số bài học" : "Số bài học (lesson_no)"}{" "}
+                Bài{" "}
                 <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <input
@@ -270,7 +260,7 @@ export function LessonFormModal({
 
             <div className="modal-field-group">
               <label className="modal-label">
-                {vietnameseOnly ? "Thứ tự sắp xếp" : "Thứ tự sắp xếp (display_order)"}{" "}
+                Thứ tự sắp xếp{" "}
                 <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <input
@@ -296,7 +286,7 @@ export function LessonFormModal({
           {/* Row 2: title */}
           <div className="modal-field-group">
             <label className="modal-label">
-              {vietnameseOnly ? "Tiêu đề bài học" : "Tiêu đề bài học (title)"}{" "}
+              Tiêu đề bài học{" "}
               <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <input
@@ -312,9 +302,7 @@ export function LessonFormModal({
           {/* Row 3: description */}
           <div className="modal-field-group">
             <label className="modal-label">
-              {vietnameseOnly
-                ? "Mô tả / Nội dung bài học"
-                : "Mô tả / Nội dung bài học (description)"}
+              Mô tả / Nội dung bài học
             </label>
             <textarea
               className="modal-textarea"
@@ -327,10 +315,10 @@ export function LessonFormModal({
           </div>
 
           {/* Row 4: status & documents */}
-          <div className={isGrammar ? undefined : "modal-grid-2"}>
+          <div className={isGrammar || isVocabulary ? undefined : "modal-grid-2"}>
             <div className="modal-field-group">
               <label className="modal-label">
-                {vietnameseOnly ? "Trạng thái phát hành" : "Trạng thái phát hành (status)"}
+                Trạng thái phát hành
               </label>
               <select
                 className="modal-input"
@@ -343,20 +331,20 @@ export function LessonFormModal({
                 }
               >
                 <option value="PUBLISHED">
-                  {vietnameseOnly ? "Đã xuất bản" : "Đã xuất bản (PUBLISHED)"}
+                  {vietnameseOnly ? "Đã xuất bản" : "Đã xuất bản"}
                 </option>
-                <option value="DRAFT">{vietnameseOnly ? "Bản nháp" : "Bản nháp (DRAFT)"}</option>
-                <option value="HIDDEN">{vietnameseOnly ? "Ẩn" : "Ẩn (HIDDEN)"}</option>
+                <option value="DRAFT">{vietnameseOnly ? "Bản nháp" : "Bản nháp"}</option>
+                <option value="HIDDEN">{vietnameseOnly ? "Ẩn" : "Ẩn"}</option>
                 <option value="ARCHIVED">
-                  {vietnameseOnly ? "Lưu trữ" : "Lưu trữ (ARCHIVED)"}
+                  {vietnameseOnly ? "Lưu trữ" : "Lưu trữ"}
                 </option>
               </select>
             </div>
 
-            {!isGrammar && (
+            {!isGrammar && !isVocabulary && (
               <div className="modal-field-group">
               <label className="modal-label">
-                {vietnameseOnly ? "Tài liệu đính kèm" : "Tài liệu đính kèm (documents) *"}
+                {vietnameseOnly ? "Tài liệu đính kèm" : "Tài liệu đính kèm *"}
               </label>
               {vietnameseOnly ? (
                 <>
@@ -465,6 +453,27 @@ export function LessonFormModal({
                   <span className="mod-content-form-hint">
                     Dán URL PDF trên Cloudinary. Mỗi dòng một tài liệu.
                   </span>
+                  {!editingLesson && (
+                    <label className="mod-content-form-hint">
+                      Chọn PDF từ máy
+                      <input
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        disabled={submitting}
+                        onChange={(e) => {
+                          const file = e.currentTarget.files?.[0];
+                          if (file && (!/\.pdf$/i.test(file.name) || file.size === 0)) {
+                            e.currentTarget.value = "";
+                            setDocumentFile(undefined);
+                            setErrorMsg("Vui lòng chọn tệp PDF có dữ liệu.");
+                            return;
+                          }
+                          setDocumentFile(file);
+                          setErrorMsg(null);
+                        }}
+                      />
+                    </label>
+                  )}
                 </>
               ) : (
                 <>

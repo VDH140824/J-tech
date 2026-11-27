@@ -84,10 +84,6 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
         return;
       }
     }
-    if (form.displayOrder == null || !Number.isInteger(form.displayOrder) || form.displayOrder < 1) {
-      setError("Thứ tự hiển thị phải là số nguyên từ 1 trở lên.");
-      return;
-    }
     setError(null);
 
     try {
@@ -190,10 +186,6 @@ export function GrammarCreateModal({ lessonId, onClose, onCreated }: GrammarCrea
             <textarea id="grammar-example-vi" className="modal-textarea" required rows={2} value={form.exampleVi} onChange={(e) => setForm({ ...form, exampleVi: e.target.value })} />
           </div>
           <div className="modal-grid-2">
-            <div className="modal-field-group">
-              <label className="modal-label" htmlFor="grammar-order">Thứ tự hiển thị</label>
-              <input id="grammar-order" className="modal-input" type="number" min="1" required value={form.displayOrder ?? 1} onChange={(e) => setForm({ ...form, displayOrder: Number(e.target.value) })} />
-            </div>
             <div className="modal-field-group">
               <label className="modal-label" htmlFor="grammar-status">Trạng thái</label>
               <select id="grammar-status" className="modal-input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as GrammarFormInput["status"] })}>

@@ -3,11 +3,12 @@ import {
   changeAdminUserRole,
   deleteAdminUser,
   getAdminUsers,
+  getAdminDashboardStats,
   preCreateAdminUser,
   updateAdminUserStatus,
 } from "../../api/adminApi";
 import type { UserResponse } from "../../types/auth";
-import type { AdminUserStatusRequest } from "../../types/admin";
+import type { AdminDashboardStatsResponse, AdminUserStatusRequest } from "../../types/admin";
 
 type UserStatus = AdminUserStatusRequest["status"];
 
@@ -100,6 +101,7 @@ interface AdminUsersTabProps {
 
 export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
   const [users, setUsers] = useState<UserResponse[]>([]);
+  const [stats, setStats] = useState<AdminDashboardStatsResponse | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
@@ -127,10 +129,12 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   // Delete User state
   const [deletingUser, setDeletingUser] = useState<UserResponse | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   //Load to adminApi
   const fetchUsers = async () => {
+    getAdminDashboardStats().then(setStats).catch(() => setStats(null));
     try {
       setLoading(true);
       setError(null);
@@ -184,6 +188,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
     try {
       setPreCreateLoading(true);
       await preCreateAdminUser({ email: preCreateEmail.trim(), role: preCreateRole });
+      window.dispatchEvent(new Event("admin-users-changed"));
       showNotification(`Đã tạo tài khoản ${preCreateEmail.trim()} với quyền ${preCreateRole}!`);
       setShowPreCreate(false);
       //reset input box
@@ -231,6 +236,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       } else if (needsReason && editingUser.statusReason !== reason) {
         await updateAdminUserStatus(id, { status: editStatus, statusReason: reason });
       }
+      window.dispatchEvent(new Event("admin-users-changed"));
       showNotification(`Đã cập nhật thông tin tài khoản #${id}!`);
       setEditingUser(null);
       fetchUsers();
@@ -243,23 +249,25 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
   const handleDeleteUser = async () => {
     if (!deletingUser) return;
+    setDeleteError(null);
     try {
       setDeleteLoading(true);
       await deleteAdminUser(deletingUser.id);
+      window.dispatchEvent(new Event("admin-users-changed"));
       showNotification("Đã xóa tài khoản thành công!");
       setDeletingUser(null);
       fetchUsers();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Không thể xóa tài khoản.");
+      setDeleteError(err?.response?.data?.message || "Không thể xóa tài khoản.");
     } finally {
       setDeleteLoading(false);
     }
   };
 
   // Quick stats calculation
-  const activeCount = users.filter((u) => u.status === "ACTIVE").length;
-  const pendingCount = users.filter((u) => u.status === "PENDING").length;
-  const lockedCount = users.filter((u) => u.status === "LOCKED" || u.status === "REJECTED").length;
+  const activeCount = stats?.activeUsers ?? "—";
+  const pendingCount = stats?.pendingUsers ?? "—";
+  const lockedCount = stats ? stats.lockedUsers + stats.rejectedUsers : "—";
 
   return (
     <div className="admin-page-container">
@@ -372,8 +380,8 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
 
         {/* Quick Stats Pill Row */}
         <div className="admin-quick-stats-row">
-          <span className="quick-stats-label">Thống kê nhanh:</span>
-          <span className="stat-pill pill-total">Tổng: {totalElements || users.length}</span>
+          <span className="quick-stats-label">Toàn hệ thống:</span>
+          <span className="stat-pill pill-total">Tổng: {stats?.totalUsers ?? "—"}</span>
           <span className="stat-pill pill-active">Đang hoạt động: {activeCount}</span>
           <span
             className="stat-pill pill-pending clickable"
@@ -382,7 +390,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
           >
             Chờ kích hoạt: {pendingCount}
           </span>
-          <span className="stat-pill pill-locked">Bị khóa: {lockedCount}</span>
+          <span className="stat-pill pill-locked">Khóa / Từ chối: {lockedCount}</span>
         </div>
       </div>
 
@@ -489,7 +497,10 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                               type="button"
                               className="btn-icon-action btn-delete-user"
                               title="Xóa tài khoản"
-                              onClick={() => setDeletingUser(user)}
+                              onClick={() => {
+                                setDeleteError(null);
+                                setDeletingUser(user);
+                              }}
                             >
                               <span>🗑️</span>
                               <span className="delete-text">Xóa</span>
@@ -687,6 +698,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                     className="modal-input"
                     aria-invalid={!!editStatusReasonError}
                   />
+                  <span>{editStatusReason.length}/500 ký tự</span>
                   {editStatusReasonError && <span className="modal-field-error" role="alert">{editStatusReasonError}</span>}
                 </label>
               )}
@@ -717,7 +729,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
       {deletingUser && (
         <div
           className="admin-modal-backdrop"
-          onClick={() => setDeletingUser(null)}
+          onClick={deleteLoading ? undefined : () => setDeletingUser(null)}
         >
           <div
             className="admin-modal-dialog modal-danger"
@@ -728,6 +740,7 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
               <button
                 type="button"
                 className="btn-modal-close"
+                disabled={deleteLoading}
                 onClick={() => setDeletingUser(null)}
               >
                 ✕
@@ -738,10 +751,16 @@ export function AdminUsersTab({ onNavigateToPending }: AdminUsersTabProps) {
                 Bạn có chắc chắn muốn xóa tài khoản <strong>{deletingUser.email}</strong> (#
                 {deletingUser.id}) không? Hành động này không thể hoàn tác.
               </p>
+              {deleteError && (
+                <div className="admin-alert-banner error" role="alert">
+                  {deleteError}
+                </div>
+              )}
               <div className="modal-actions-row">
                 <button
                   type="button"
                   className="btn-modal-cancel"
+                  disabled={deleteLoading}
                   onClick={() => setDeletingUser(null)}
                 >
                   Hủy bỏ

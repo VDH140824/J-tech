@@ -3,7 +3,6 @@ package com.jtech.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.jtech.entity.Vocabulary;
 import com.jtech.repository.*;
 import com.jtech.service.VocabularyService;
 import java.util.List;
@@ -40,7 +39,7 @@ class VocabularyAuthorizationTest {
                 )
             );
             assertThrows(AccessDeniedException.class, () ->
-                context.getBean(VocabularyController.class).archive(1L)
+                context.getBean(VocabularyController.class).archive(1L, 1L, null)
             );
             SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
@@ -50,13 +49,11 @@ class VocabularyAuthorizationTest {
                 )
             );
             var repository = context.getBean(VocabularyRepository.class);
-            when(context.getBean(VocabularyService.class).require(repository, 1L)).thenReturn(
-                new Vocabulary()
-            );
             assertEquals(
                 204,
-                context.getBean(VocabularyController.class).archive(1L).getStatusCode().value()
+                context.getBean(VocabularyController.class).archive(1L, 1L, null).getStatusCode().value()
             );
+            verify(context.getBean(VocabularyService.class)).archive(repository, 1L, 1L, null);
         } finally {
             SecurityContextHolder.clearContext();
         }

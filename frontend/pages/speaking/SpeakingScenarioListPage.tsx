@@ -1,0 +1,160 @@
+import { useQuery } from "@tanstack/react-query";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { getChapterStudy } from "../../api/courseApi";
+import { getSpeakingScenarios, type SpeakingScenario } from "../../api/speakingApi";
+import { DemoBanner, roleKanji } from "./SpeakingSessionPage";
+import "../home/StudentLearningPage.css";
+import "./SpeakingPage.css";
+
+function ScenarioCard({ scenario, onStart }: { scenario: SpeakingScenario; onStart: () => void }) {
+  return (
+    <article className="speaking-scn">
+      <h3>{scenario.title}</h3>
+      <p>{scenario.situation}</p>
+      <div className="speaking-roles">
+        <span
+          className="speaking-role"
+          lang="ja"
+          title="Vai của AI"
+        >
+          {roleKanji(scenario.aiRole)}
+        </span>
+        <span aria-hidden="true">↔</span>
+        <span
+          className="speaking-role me"
+          lang="ja"
+          title="Vai của bạn"
+        >
+          {roleKanji(scenario.studentRole)}
+        </span>
+      </div>
+      <footer>
+        <button
+          type="button"
+          className="speaking-btn"
+          onClick={onStart}
+        >
+          Bắt đầu →
+        </button>
+      </footer>
+    </article>
+  );
+}
+
+export function SpeakingScenarioListPage() {
+  const { courseId, chapterId } = useParams();
+  const navigate = useNavigate();
+  const valid = [courseId, chapterId].every(
+    (value) => Number.isSafeInteger(Number(value)) && Number(value) > 0,
+  );
+  const chapter = useQuery({
+    queryKey: ["chapter-study", Number(courseId), Number(chapterId)],
+    queryFn: () => getChapterStudy(Number(courseId), Number(chapterId)),
+    enabled: valid,
+  });
+  const scenarios = useQuery({
+    queryKey: ["speaking-scenarios", Number(chapterId)],
+    queryFn: () => getSpeakingScenarios(Number(chapterId)),
+    enabled: valid,
+  });
+  const chapterPath = `/courses/${courseId}/chapters/${chapterId}`;
+  // Quay về đúng trang người dùng đã vào (trang Luyện nói hoặc chương trong khóa học);
+  // mở trực tiếp bằng link thì mặc định về chương trong trang khóa học.
+  const { state } = useLocation();
+  const from: string =
+    typeof state?.from === "string" ? state.from : `/courses/${courseId}#chapter-${chapterId}`;
+  const backLabel = from === "/speaking" ? "Quay lại luyện nói" : "Quay lại chương";
+  const back = () => navigate(from);
+
+  let content;
+  if (!valid) content = <p role="alert">Mã khóa học hoặc chương không hợp lệ.</p>;
+  else if (chapter.isLoading || scenarios.isLoading)
+    content = (
+      <div
+        className="admin-loading-state"
+        role="status"
+      >
+        Đang tải tình huống luyện nói...
+      </div>
+    );
+  else if (chapter.isError || !chapter.data || scenarios.isError || !scenarios.data)
+    content = (
+      <div
+        className="admin-empty-state"
+        role="alert"
+      >
+        <h3>Không thể tải tình huống luyện nói</h3>
+        <p>Kết nối bị gián đoạn hoặc chương chưa được xuất bản.</p>
+        <button
+          className="mod-btn-back"
+          onClick={back}
+        >
+          ← {backLabel}
+        </button>
+        <button
+          className="mod-btn-back"
+          onClick={() => {
+            chapter.refetch();
+            scenarios.refetch();
+          }}
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  else
+    content = (
+      <div className="admin-page-container">
+        <div className="mod-chapter-back-row">
+          <button
+            type="button"
+            className="mod-btn-back"
+            onClick={back}
+          >
+            <span>←</span> {backLabel}
+          </button>
+          <span className="mod-chapter-breadcrumb-pill">
+            {chapter.data.courseName} / Chương {chapter.data.chapterNo} / Luyện nói
+          </span>
+        </div>
+
+        <div className="admin-page-header">
+          <div className="admin-header-titles">
+            <h2 className="admin-main-title">
+              Luyện nói với AI <span className="speaking-title-jp">会話</span>
+            </h2>
+            <p className="admin-main-subtitle">
+              Nói theo bài hội thoại; <span className="speaking-slot">phần tô vàng</span> có thể
+              thay bằng từ của bạn.
+            </p>
+          </div>
+        </div>
+
+        <DemoBanner />
+
+        {scenarios.data.length === 0 ? (
+          <div className="admin-empty-state">
+            <h3>Chương này chưa có tình huống luyện nói</h3>
+            <p>Hãy học các kỹ năng khác của chương trong lúc chờ bài hội thoại được thêm vào.</p>
+            <button
+              className="mod-btn-back"
+              onClick={back}
+            >
+              ← {backLabel}
+            </button>
+          </div>
+        ) : (
+          <div className="speaking-grid">
+            {scenarios.data.map((scenario) => (
+              <ScenarioCard
+                key={scenario.id}
+                scenario={scenario}
+                onStart={() => navigate(`${chapterPath}/speaking/${scenario.id}`, { state: { from } })}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  return <div className="student-learning-page speaking-page">{content}</div>;
+}

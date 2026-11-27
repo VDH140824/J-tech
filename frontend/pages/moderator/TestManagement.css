@@ -1,0 +1,111 @@
+/* Quản lý bài kiểm tra (Moderator) — dùng chung các lớp qb-* của QuestionBank.css */
+
+.tm-modal {
+  max-width: 1080px;
+  width: 96vw;
+}
+
+.tm-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tm-pane {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tm-pane-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tm-candidate-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tm-candidate-filters .admin-filter-select,
+.tm-candidate-filters .admin-filter-input {
+  flex: 1 1 130px;
+  min-width: 0;
+}
+
+.tm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.tm-list-plain {
+  max-height: 320px;
+}
+
+.tm-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fff;
+}
+
+.tm-item.is-selected {
+  border-color: #5eead4;
+  background: #f0fdfa;
+}
+
+.tm-item input[type="checkbox"] {
+  margin-top: 3px;
+}
+
+.tm-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tm-item-content {
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.tm-item-answer {
+  font-size: 0.8rem;
+  color: #0f766e;
+}
+
+.tm-item-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.tm-order {
+  min-width: 22px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.tm-detail-question {
+  padding: 6px 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.tm-limit-warn {
+  color: #b45309;
+}

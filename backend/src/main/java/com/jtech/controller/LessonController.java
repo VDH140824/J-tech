@@ -8,6 +8,7 @@ import com.jtech.service.LessonService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -77,6 +78,43 @@ public class LessonController {
         ) org.springframework.web.multipart.MultipartFile file
     ) {
         return ResponseEntity.ok(lessonService.updateLesson(id, request, file));
+    }
+
+    public record VocabularyDocumentNameRequest(
+        @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 4000) String url,
+        @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 200) String name
+    ) {}
+
+    public record VocabularyDocumentDeleteRequest(
+        @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 4000) String url
+    ) {}
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @PostMapping(value = "/moderator/vocabulary/lessons/{lessonId}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<LessonResponse> uploadVocabularyPdf(
+        @PathVariable Long lessonId,
+        @RequestPart("file") org.springframework.web.multipart.MultipartFile file,
+        @RequestPart("name") String name
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.uploadVocabularyPdf(lessonId, file, name));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @PatchMapping("/moderator/vocabulary/lessons/{lessonId}/documents/name")
+    public ResponseEntity<LessonResponse> renameVocabularyPdf(
+        @PathVariable Long lessonId,
+        @Valid @RequestBody VocabularyDocumentNameRequest request
+    ) {
+        return ResponseEntity.ok(lessonService.renameVocabularyPdf(lessonId, request.url(), request.name()));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")
+    @DeleteMapping("/moderator/vocabulary/lessons/{lessonId}/documents")
+    public ResponseEntity<LessonResponse> deleteVocabularyPdf(
+        @PathVariable Long lessonId,
+        @Valid @RequestBody VocabularyDocumentDeleteRequest request
+    ) {
+        return ResponseEntity.ok(lessonService.deleteVocabularyPdf(lessonId, request.url()));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MODERATOR', 'MODERATOR')")

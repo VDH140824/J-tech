@@ -48,24 +48,29 @@ interface AdminSidebarProps {
 export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [pendingCount, setPendingCount] = useState<number>(1);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
 
   // Fetch pending count for dynamic counter badge
   useEffect(() => {
     let isMounted = true;
-    getPendingAdminUsers({ size: 100 })
-      .then((res) => {
-        if (isMounted && res.content) {
-          setPendingCount(res.content.length);
-        }
-      })
-      .catch(() => {
-        // Fallback default
-      });
+    const refreshCount = () => {
+      getPendingAdminUsers({ size: 1 })
+        .then((res) => {
+          if (isMounted) {
+            setPendingCount(res.totalElements);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setPendingCount(null);
+        });
+    };
+    refreshCount();
+    window.addEventListener("admin-users-changed", refreshCount);
     return () => {
       isMounted = false;
+      window.removeEventListener("admin-users-changed", refreshCount);
     };
-  }, []);
+  }, [location.pathname]);
 
   // Determine current active item from URL or prop
   const currentPath = location.pathname;
@@ -107,6 +112,11 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
 
       {/* Nav Menu */}
       <nav className="admin-sidebar-menu">
+        <button type="button" className={`admin-nav-item ${currentTab === "system-logs" ? "active" : ""}`}
+          onClick={() => handleNavClick("system-logs", "/admin/system-logs")}>
+          <span className="admin-nav-icon" aria-hidden="true">📋</span>
+          <span className="admin-nav-label">Nhật ký hệ thống</span>
+        </button>
         {([["items", "Quản lý cửa hàng đổi quà"], ["rules", "Cấu hình điểm thưởng"], ["milestones", "Mốc chuỗi học tập"]] as const).map(([key,label]) => <button key={key} type="button" className={`admin-nav-item ${currentTab === key ? "active" : ""}`} onClick={() => handleNavClick(key, `/admin/rewards/${key}`)}><span className="admin-nav-label">{label}</span></button>)}
         <button
           type="button"
@@ -146,7 +156,7 @@ export function AdminSidebar({ activeTab, onSelectTab }: AdminSidebarProps) {
         >
           <span className="admin-nav-icon">⏳</span>
           <span className="admin-nav-label">Duyệt tài khoản sinh viên</span>
-          {pendingCount > 0 && <span className="admin-pending-count-badge">{pendingCount}</span>}
+          {pendingCount !== null && pendingCount > 0 && <span className="admin-pending-count-badge">{pendingCount}</span>}
         </button>
 
         {/* 5. Cấu hình hệ thống (Placeholder for future development) */}

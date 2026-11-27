@@ -1,0 +1,9 @@
+.student-class-page {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 28px 32px 48px;
+}
+
+@media (max-width: 768px) {
+  .student-class-page { padding: 16px; }
+}

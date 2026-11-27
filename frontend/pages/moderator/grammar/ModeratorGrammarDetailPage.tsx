@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { deleteGrammar, getGrammarById, getGrammarsByLesson, type GrammarItem } from "../../../api/grammarApi";
+import { deleteGrammar, getGrammarsByLesson, type GrammarItem } from "../../../api/grammarApi";
 import type { LessonSummary } from "../../../api/lessonApi";
 import { GrammarCreateModal } from "./GrammarCreateModal";
 import { GrammarEditModal } from "./GrammarEditModal";
@@ -52,10 +52,8 @@ export function ModeratorGrammarDetailPage({
           setGrammar(null);
           return;
         }
-        // Grammar detail
         setSelectedGrammarId(selected.id);
-        const detail = await getGrammarById(selected.id);
-        if (active) setGrammar(detail);
+        setGrammar(selected);
       } catch {
         if (active) {
           setGrammar(null);

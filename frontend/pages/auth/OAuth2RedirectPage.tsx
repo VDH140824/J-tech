@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { exchangeOAuth2Code } from "../../api/authApi";
+import { checkIsAdmin, checkIsModerator } from "../../utils/auth";
 
 export function OAuth2RedirectPage() {
   const [searchParams] = useSearchParams();
@@ -33,13 +34,14 @@ export function OAuth2RedirectPage() {
         setAuth(user, user.accessToken);
 
         const status = user.status?.toUpperCase();
-        const role = user.role?.toUpperCase();
         if (status === "PENDING") {
           navigate("/pending-approval", { replace: true });
         } else if (status === "REJECTED" || status === "LOCKED") {
           navigate("/account-rejected", { replace: true });
-        } else if (role === "ADMIN" || role === "ROLE_ADMIN") {
+        } else if (checkIsAdmin(user)) {
           navigate("/admin", { replace: true });
+        } else if (checkIsModerator(user)) {
+          navigate("/moderator", { replace: true });
         } else {
           navigate("/home", { replace: true });
         }
