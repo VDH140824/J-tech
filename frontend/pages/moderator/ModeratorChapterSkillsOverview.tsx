@@ -1,4 +1,5 @@
-import { SECTIONS, type LessonSection } from "./sectionConfig";
+import { formatChapterLabel } from "../../utils/chapterLabel";
+import { MODERATOR_SECTIONS, SECTIONS, type LessonSection } from "./sectionConfig";
 
 interface ModeratorChapterSkillsOverviewProps {
   courseName: string;
@@ -30,8 +31,10 @@ export function ModeratorChapterSkillsOverview({
   readOnly = false,
   onOpenSpeaking,
 }: ModeratorChapterSkillsOverviewProps) {
+  const chapterLabel = formatChapterLabel(chapterNo, chapterTitle);
+  const sections = readOnly ? SECTIONS : MODERATOR_SECTIONS;
   const cards = [
-    ...SECTIONS.map((sec) => ({
+    ...sections.map((sec) => ({
       ...sec,
       isNew: false,
       action: "Vào bài học →",
@@ -61,7 +64,7 @@ export function ModeratorChapterSkillsOverview({
           <span>←</span> Quay lại danh sách môn học
         </button>
         <span className="mod-chapter-breadcrumb-pill">
-          {courseName} / Chương {chapterNo}: {chapterTitle}
+          {courseName} / {chapterLabel}
         </span>
       </div>
 
@@ -69,12 +72,11 @@ export function ModeratorChapterSkillsOverview({
       <div className="admin-page-header">
         <div className="admin-header-titles">
           <h2 className="admin-main-title">
-            📖 Chương {chapterNo}: {chapterTitle}
+            📖 {chapterLabel}
           </h2>
           <p className="admin-main-subtitle">
             Chọn kỹ năng {readOnly ? "để học" : "cần quản lý bài học"} trong{" "}
-            <strong>{courseName}</strong> (Kanji, Từ vựng, Ngữ pháp, Nghe, Đọc hiểu
-            {onOpenSpeaking ? ", Luyện nói" : ""}).
+            <strong>{courseName}</strong> ({cards.map((card) => card.label).join(", ")}).
           </p>
         </div>
       </div>

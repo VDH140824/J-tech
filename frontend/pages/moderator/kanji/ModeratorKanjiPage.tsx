@@ -6,8 +6,9 @@ import { getKanjiChapter, uploadKanjiDocument, renameKanjiDocument, deleteKanjiD
 import { type KanjiInput, type KanjiItem, type KanjiPage } from "../../../api/kanjiApi";
 import "./kanji.css";
 import { KanjiExercisesTab } from "./KanjiExercisesTab";
+import { formatChapterLabel } from "../../../utils/chapterLabel";
 import { getPdfPreviewUrl } from "../../../utils/lessonDocuments";
-import { SECTIONS, type LessonSection } from "../sectionConfig";
+import { MODERATOR_SECTIONS, type LessonSection } from "../sectionConfig";
 
 const empty: KanjiInput = { characterText: "", sinoVietnamese: "", onyomi: "", kunyomi: "", meaningVi: "", examples: "", mnemonicStory: "", removeImage: false };
 const labels: Record<string, string> = { DRAFT: "Bản nháp", PUBLISHED: "Đã xuất bản", HIDDEN: "Ẩn", ARCHIVED: "Đã lưu trữ" };
@@ -241,7 +242,7 @@ export function ModeratorKanjiPage({ chapterId, courseName, chapterNo, chapterTi
     } catch (e) { setError(message(e)); } finally { setBusy(false); }
   }
   const skillNavigation = <nav className="mod-skill-tabs-nav" aria-label="Chuyển kỹ năng" style={{ marginBottom: "16px" }}>
-    {SECTIONS.map(section => <button key={section.key} type="button"
+    {MODERATOR_SECTIONS.map(section => <button key={section.key} type="button"
       className={`mod-skill-tab-btn ${section.key === "kanji" ? "active" : ""}`}
       aria-current={section.key === "kanji" ? "page" : undefined}
       style={section.key === "kanji" ? { backgroundColor: section.bgColor, color: section.color, borderColor: section.borderColor } : {}}
@@ -254,7 +255,7 @@ export function ModeratorKanjiPage({ chapterId, courseName, chapterNo, chapterTi
   const backNavigation = <div className="mod-chapter-back-row">
     <button type="button" className="mod-btn-back" onClick={onBack}><span>←</span> Quay lại chọn kỹ năng</button>
     <span className="mod-chapter-breadcrumb-pill">
-      {courseName} / Chương {chapterNo}: {chapterTitle} / Kanji
+      {courseName} / {formatChapterLabel(chapterNo, chapterTitle)} / Kanji
     </span>
   </div>;
   if (contentLoading) return <div className="admin-page-container kanji-page">{backNavigation}{skillNavigation}<p role="status">Đang tải nội dung Kanji của chương…</p></div>;
@@ -267,7 +268,7 @@ export function ModeratorKanjiPage({ chapterId, courseName, chapterNo, chapterTi
   return <div className="admin-page-container kanji-page">
     {backNavigation}
     {skillNavigation}
-    <div className="admin-page-header"><div className="admin-header-titles"><h2 className="admin-main-title">Kanji · Chương {content.chapterNo}: {content.title}</h2>
+    <div className="admin-page-header"><div className="admin-header-titles"><h2 className="admin-main-title">Kanji · {formatChapterLabel(content.chapterNo, content.title)}</h2>
       <p className="admin-main-subtitle">Quản lý tài liệu, bài tập và flashcard Kanji của chương.</p></div>
       {tab === "kanji" && <button className="mod-btn-add" disabled={busy || content?.status === "ARCHIVED"} onClick={() => edit()}>+ Thêm flashcard Kanji</button>}</div>
     <nav className="kanji-content-tabs" aria-label="Nội dung Kanji của chương">

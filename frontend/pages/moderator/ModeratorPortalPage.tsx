@@ -17,8 +17,9 @@ import { ModeratorConjugationTab } from "./ModeratorConjugationTab";
 import { QuestionBankTab } from "./QuestionBankTab";
 import { TestManagementTab } from "./TestManagementTab";
 import { FeedbackPage } from "../feedback/FeedbackPage";
-import { SECTIONS } from "./sectionConfig";
+import { MODERATOR_SECTIONS } from "./sectionConfig";
 import type { ChapterDetail } from "../../api/courseApi";
+import { formatChapterLabel } from "../../utils/chapterLabel";
 import "../admin/AdminPortalPage.css";
 import "./ModeratorPortalPage.css";
 
@@ -139,7 +140,7 @@ export function ModeratorPortalPage() {
 
   // Build clean breadcrumb based on loaded chapter data and optional skill query
   const skillParam = searchParams.get("skill");
-  const skillConfig = SECTIONS.find((s) => s.key === skillParam);
+  const skillConfig = MODERATOR_SECTIONS.find((s) => s.key === skillParam);
 
   let breadcrumb = "Trang chủ / Danh sách môn học";
   if (activeTab === "classes") breadcrumb = "Trang chủ / Quản lý lớp học";
@@ -150,7 +151,7 @@ export function ModeratorPortalPage() {
     breadcrumb = "Trang chủ / Quản lý lớp học / Danh sách học viên";
   if (activeTab === "chapter-detail") {
     if (chapterInfo && chapterInfo.courseName) {
-      breadcrumb = `Trang chủ / ${chapterInfo.courseName} / Chương ${chapterInfo.chapterNo}: ${chapterInfo.title}`;
+      breadcrumb = `Trang chủ / ${chapterInfo.courseName} / ${formatChapterLabel(chapterInfo.chapterNo, chapterInfo.title)}`;
     } else {
       breadcrumb = `Trang chủ / Danh sách môn học / Chi tiết chương`;
     }

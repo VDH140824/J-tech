@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { getCourses } from "../../api/courseApi";
 import { getCourseTestResults, type TestResult } from "../../api/studentHomeApi";
 import { useAuthStore } from "../../store/authStore";
+import { formatChapterLabel } from "../../utils/chapterLabel";
 import "./TestResultsPage.css";
 
 /**
@@ -200,7 +201,7 @@ export function TestResultsPage() {
               <section key={g.chapterId} className="tr-chapter" aria-labelledby={`tr-ch-${g.chapterId}`}>
                 <h2 id={`tr-ch-${g.chapterId}`}>
                   <span className="tr-chapter-no">{String(g.chapterNo).padStart(2, "0")}</span>
-                  Chương {g.chapterNo}: {g.chapterTitle}
+                  {formatChapterLabel(g.chapterNo, g.chapterTitle)}
                 </h2>
                 <ul className="tr-list">
                   {g.items.map((t) => {

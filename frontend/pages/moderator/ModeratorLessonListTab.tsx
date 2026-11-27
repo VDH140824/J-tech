@@ -8,7 +8,8 @@ import {
   type LessonSummary,
   type LessonFormInput,
 } from "../../api/lessonApi";
-import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
+import { formatChapterLabel } from "../../utils/chapterLabel";
+import { MODERATOR_SECTIONS, SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
 import { LessonFormModal } from "./LessonFormModal";
 import "./vocabulary/VocabularyExercises.css";
 
@@ -60,7 +61,9 @@ export function ModeratorLessonListTab({
   const [deletingLesson, setDeletingLesson] = useState<LessonSummary | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const activeConfig = SECTIONS.find((s) => s.key === selectedSection) || SECTIONS[0];
+  const sections = readOnly ? SECTIONS : MODERATOR_SECTIONS;
+  const activeConfig = sections.find((s) => s.key === selectedSection) || sections[0];
+  const chapterLabel = formatChapterLabel(chapterNo, chapterTitle);
 
   const showNotification = (msg: string) => {
     setActionSuccess(msg);
@@ -196,7 +199,7 @@ export function ModeratorLessonListTab({
           <span>←</span> Quay lại chọn kỹ năng
         </button>
         <span className="mod-chapter-breadcrumb-pill">
-          {courseName} / Chương {chapterNo}: {chapterTitle} / {activeConfig.label}
+          {courseName} / {chapterLabel} / {activeConfig.label}
         </span>
       </div>
 
@@ -205,7 +208,7 @@ export function ModeratorLessonListTab({
         className="mod-skill-tabs-nav"
         style={{ marginBottom: "16px" }}
       >
-        {SECTIONS.map((sec) => {
+        {sections.map((sec) => {
           const isActive = sec.key === selectedSection;
           return (
             <button
@@ -248,18 +251,11 @@ export function ModeratorLessonListTab({
                 {activeConfig.labelJp})
               </span>
             </h2>
-            <p className="admin-main-subtitle">
-              {readOnly ? (
-                `Chương ${chapterNo}: ${chapterTitle} — Danh sách bài học ${activeConfig.label}.`
-              ) : selectedSection === "kanji" ? (
-                `Chương ${chapterNo}: ${chapterTitle} — Danh sách bài học chữ Hán.`
-              ) : (
-                <>
-                  Chương {chapterNo}: {chapterTitle} — Danh sách bài học từ bảng <code>lesson</code>{" "}
-                  (skill: <strong>{activeConfig.skillType}</strong>).
-                </>
-              )}
-            </p>
+            {(readOnly || selectedSection === "kanji") && (
+              <p className="admin-main-subtitle">
+                {chapterLabel} — Danh sách bài học {readOnly ? activeConfig.label : "chữ Hán"}.
+              </p>
+            )}
           </div>
           {["vocabulary","kanji"].includes(activeConfig.key) && onOpenChapterFlashcards && (
             <button

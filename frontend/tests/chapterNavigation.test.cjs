@@ -81,8 +81,53 @@ test('student lesson table keeps the shared layout but hides authoring controls'
   const moderator = render(ModeratorLessonListTab, '/test', '/test', null, props);
   assert.match(student, /mod-skill-tabs-nav/);
   assert.match(moderator, /mod-skill-tabs-nav/);
+  assert.match(student, /Đọc hiểu/);
+  assert.doesNotMatch(moderator, /Đọc hiểu|読解/);
   assert.doesNotMatch(student, /Thêm bài học|Bản nháp \(DRAFT\)|Chỉnh sửa bài học|Xóa bài học/);
   assert.match(moderator, /Thêm bài học/);
+});
+
+test('lesson lists show one chapter prefix in navigation and student descriptions', () => {
+  for (const chapterTitle of ['Chương 1: はじめまして', 'はじめまして', 'Chương 1']) {
+    const expected = chapterTitle === 'Chương 1' ? chapterTitle : 'Chương 1: はじめまして';
+    const html = render(ModeratorLessonListTab, '/test', '/test', null, {
+      ...context, chapterTitle, chapterId: 2, selectedSection: 'vocabulary', readOnly: true,
+      publishedLessons: [], onSelectSection() {}, onBackToOverview() {}, onViewLessonItems() {},
+    });
+    assert.ok(html.includes(`Nhật 1 / ${expected} / Từ vựng`));
+    assert.ok(html.includes(`${expected} — Danh sách bài học Từ vựng.`));
+    assert.doesNotMatch(html, /Chương 1:\s*Chương 1/);
+  }
+});
+
+test('management lesson lists omit the database table and skill description', () => {
+  for (const selectedSection of ['grammar', 'vocabulary', 'listening']) {
+    const html = render(ModeratorLessonListTab, '/test', '/test', null, {
+      ...context, chapterTitle: 'Chương 1: はじめまして', chapterId: 2, selectedSection,
+      onSelectSection() {}, onBackToOverview() {}, onViewLessonItems() {},
+    });
+    assert.ok(html.includes('Nhật 1 / Chương 1: はじめまして / '));
+    assert.doesNotMatch(html, /Chương 1:\s*Chương 1|admin-main-subtitle|Danh sách bài học từ bảng|\(skill:/);
+  }
+});
+
+test('moderator chapter navigation hides reading and old reading links show the skill overview', () => {
+  const { ModeratorChapterDetailPage } = load('../pages/moderator/ModeratorChapterDetailPage.tsx');
+  const route = '/moderator/courses/:courseId/chapters/:chapterId';
+  const url = '/moderator/courses/1/chapters/2';
+  const props = { courseId: 1, chapterId: 2, onBack() {} };
+  for (const [query, view] of [
+    ['', /mod-skills-grid/],
+    ['?skill=grammar', /Quản lý bài học Ngữ pháp/],
+    ['?skill=kanji', /Đang tải nội dung Kanji của chương/],
+    ['?skill=reading', /mod-skills-grid/],
+    ['?skill=reading&lessonId=9', /mod-skills-grid/],
+  ]) {
+    const html = render(ModeratorChapterDetailPage, route, url + query, null, props);
+    assert.match(html, view, query);
+    assert.match(html, /聴解/, query);
+    assert.doesNotMatch(html, /Đọc hiểu|読解/, query);
+  }
 });
 
 test('student vocabulary uses the shared table page without create or edit controls', () => {
@@ -135,6 +180,13 @@ function courseWithLessons(chapters) {
 function studentLesson(lesson, overrides = {}) {
   return { ...lesson, itemCount: 1, videoCount: 0, durationSeconds: 0, exerciseCount: 0, testCount: 0, completed: false, ...overrides };
 }
+
+test('student course keeps the reading lesson link', () => {
+  const html = courseWithLessons([{ ...chapter, testCount: 0, lessons: [
+    studentLesson({ ...grammarLessons[0], id: 60, skillType: 'READING', title: 'Đọc bài giới thiệu' }),
+  ] }]);
+  assert.match(html, /href="\/ai-reading\?lessonId=60"/);
+});
 
 test('course groups grammar by chapter and lesson number, totals statistics, and keeps other skills', () => {
   const chapters = [{ ...chapter, testCount: 0, lessons: [

@@ -1,5 +1,6 @@
 import { useAuthStore } from "../../store/authStore";
 import { checkIsModerator } from "../../utils/auth";
+import { formatChapterLabel } from "../../utils/chapterLabel";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, Navigate, useLocation, useParams } from "react-router-dom";
@@ -139,7 +140,7 @@ function ChapterCard({
         </span>
         <div className="chapter-heading-content">
           <h2>
-            Chương {chapter.chapterNo}: {chapter.title}
+            {formatChapterLabel(chapter.chapterNo, chapter.title)}
           </h2>
           <p>
             {sum("videoCount")} video · {sum("exerciseCount")} bài tập ·{" "}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { deleteChapter, listChapters, saveChapter, type ChapterInput, type ModeratorChapter } from "../../api/moderatorChapterApi";
 import type { CourseStatus } from "../../api/moderatorCourseApi";
+import { stripChapterPrefix } from "../../utils/chapterLabel";
 import { courseError } from "./CourseFormModal";
 
 const statuses: Record<CourseStatus, string> = { DRAFT: "Bản nháp", PUBLISHED: "Đã xuất bản", HIDDEN: "Đã ẩn", ARCHIVED: "Đã lưu trữ" };
@@ -40,7 +41,12 @@ export function ModeratorChapterManager({ courseId, onView, onCountChange }: {
     {actionError && <p className="course-list-error" role="alert">{actionError}</p>}
     {editor && <ChapterForm key={editor.chapter?.id ?? "new"} courseId={courseId} chapter={editor.chapter} nextNumber={Math.max(0, ...chapters.map(c => c.chapterNo)) + 1} onClose={() => setEditor(null)} onSaved={() => { setEditor(null); setActionError(""); setRetry(n => n + 1); }} />}
     {loading ? <p role="status">Đang tải chương…</p> : error ? <p role="alert">{error} <button className="mod-btn-detail" onClick={() => setRetry(n => n + 1)}>Thử lại</button></p> : !chapters.length ? <p>Khóa học chưa có chương. Chọn “Thêm chương” để bắt đầu.</p> : <div className="mod-chapters-list">{chapters.map(ch => <div key={ch.id} className="mod-chapter-row">
-      <div className="mod-chapter-info"><span className="mod-chapter-no">Chương {ch.chapterNo}</span><span className="mod-chapter-title">{ch.title}</span>{ch.description && <span className="mod-chapter-desc">{ch.description}</span>}<small>Thứ tự: {ch.displayOrder} · {statuses[ch.status]}</small></div>
+      <div className="mod-chapter-info">
+        <span className="mod-chapter-no">Chương {ch.chapterNo}</span>
+        <span className="mod-chapter-title">{stripChapterPrefix(ch.chapterNo, ch.title)}</span>
+        {ch.description && <span className="mod-chapter-desc">{ch.description}</span>}
+        <small>Thứ tự: {ch.displayOrder} · {statuses[ch.status]}</small>
+      </div>
       <div className="chapter-manager-actions"><button className="mod-btn-view-chapter" onClick={() => onView(ch.id)}>Quản lý bài học</button><button className="mod-btn-detail" disabled={deleting !== null} onClick={() => setEditor({ chapter: ch })}>Sửa</button><button className="mod-btn-detail chapter-delete" disabled={deleting !== null} onClick={() => remove(ch)}>{deleting === ch.id ? "Đang xóa…" : "Xóa"}</button></div>
     </div>)}</div>}
   </section>;

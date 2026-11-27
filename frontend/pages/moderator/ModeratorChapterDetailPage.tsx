@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getLessonById, type LessonSummary } from "../../api/lessonApi";
 import { getChapter, getCourse, type ChapterDetail } from "../../api/courseApi";
-import { SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
+import { MODERATOR_SECTIONS, SECTIONS, type LessonSection, type SectionConfig } from "./sectionConfig";
 import { ModeratorChapterSkillsOverview } from "./ModeratorChapterSkillsOverview";
 import { ModeratorLessonListTab } from "./ModeratorLessonListTab";
 import { ModeratorGrammarDetailPage } from "./grammar/ModeratorGrammarDetailPage";
@@ -90,23 +90,11 @@ export function ModeratorChapterDetailPage({
     };
   }, [courseId, chapterId]);
 
-  // Read skill from URL (clean identifier only, e.g. skill=grammar)
-  const skillFromUrl = searchParams.get("skill") as LessonSection | null;
-  const validSkill = SECTIONS.some((s) => s.key === skillFromUrl) ? skillFromUrl : null;
-
-  const [selectedSection, setSelectedSectionState] = useState<LessonSection | null>(
-    () => validSkill,
-  );
-
-  // Sync if URL query changes
-  useEffect(() => {
-    if (validSkill !== selectedSection) {
-      setSelectedSectionState(validSkill);
-    }
-  }, [validSkill]);
+  const skillFromUrl = searchParams.get("skill");
+  const activeConfig = MODERATOR_SECTIONS.find((section) => section.key === skillFromUrl);
+  const selectedSection = activeConfig?.key;
 
   const handleSelectSection = (sec: LessonSection | null) => {
-    setSelectedSectionState(sec);
     if (sec) {
       setSearchParams(
         (prev) => {
@@ -137,7 +125,7 @@ export function ModeratorChapterDetailPage({
   };
 
   // Only show lesson sub-items if lessonId is explicitly in URL query
-  const lessonIdParam = searchParams.get("lessonId");
+  const lessonIdParam = skillFromUrl === "reading" ? null : searchParams.get("lessonId");
   const [activeLessonForItems, setActiveLessonForItemsState] = useState<LessonSummary | null>(
     () => {
       if (!lessonIdParam) return null;
@@ -161,21 +149,20 @@ export function ModeratorChapterDetailPage({
     let active = true;
     setLessonError("");
     setActiveLessonForItemsState(null);
-    if (!lessonIdParam || validSkill === "kanji") { setLessonLoading(false); return; }
+    if (!lessonIdParam || activeConfig?.key === "kanji") { setLessonLoading(false); return; }
     const id = Number(lessonIdParam);
     if (!Number.isSafeInteger(id) || id <= 0) { setLessonError("Bài học không hợp lệ."); return; }
     setLessonLoading(true);
     getLessonById(id).then(lesson => {
       if (!active) return;
-      const section = SECTIONS.find(s => s.key === validSkill);
-      if (lesson.chapterId !== chapterId || (section && lesson.skillType !== section.skillType)) {
+      if (lesson.chapterId !== chapterId || (activeConfig && lesson.skillType !== activeConfig.skillType)) {
         setLessonError("Bài học không thuộc chương hoặc kỹ năng đã chọn."); return;
       }
       setActiveLessonForItemsState(lesson);
     }).catch(() => { if (active) setLessonError("Không thể tải bài học. Vui lòng thử lại."); })
       .finally(() => { if (active) setLessonLoading(false); });
     return () => { active = false; };
-  }, [lessonIdParam, chapterId, validSkill, lessonRetry]);
+  }, [lessonIdParam, chapterId, activeConfig, lessonRetry]);
 
   // Sync if lessonId in URL is removed (e.g. user pressed back)
   useEffect(() => {
@@ -219,12 +206,11 @@ export function ModeratorChapterDetailPage({
   const courseName = chapterDetail?.courseName || initialCourseName || `Nhật ${courseId}`;
   const chapterNo = chapterDetail?.chapterNo || initialChapterNo || chapterId;
   const chapterTitle = chapterDetail?.title || initialChapterTitle || `Chương ${chapterNo}`;
-  const activeConfig = SECTIONS.find((s) => s.key === selectedSection);
   const grammarIdParam = searchParams.get("grammarId");
   const grammarId = grammarIdParam && /^\d+$/.test(grammarIdParam) ? Number(grammarIdParam) : null;
 
   // Show the selected lesson's grammar detail directly.
-  if (validSkill !== "kanji" && lessonIdParam && (lessonLoading || lessonError)) {
+  if (selectedSection !== "kanji" && lessonIdParam && (lessonLoading || lessonError)) {
     return <div className="admin-page-container">
       <button className="mod-btn-back" onClick={() => handleViewLessonItems(null)}>← Danh sách bài học</button>
       {lessonLoading ? <p role="status">Đang tải bài học…</p> : <p role="alert">{lessonError} <button onClick={() => setLessonRetry(n => n + 1)}>Thử lại</button></p>}
@@ -349,7 +335,7 @@ export function ModeratorChapterDetailPage({
     }
   }
 
-  // 2. VIEW 1 (Ảnh 2): SKILL OVERVIEW (Kanji, Từ vựng, Ngữ pháp, Nghe, Đọc hiểu)
+  // 2. VIEW 1 (Ảnh 2): SKILL OVERVIEW
   if (!selectedSection) {
     return (
       <ModeratorChapterSkillsOverview

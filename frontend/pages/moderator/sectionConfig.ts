@@ -77,3 +77,5 @@ export const SECTIONS: SectionConfig[] = [
     description: "Quản lý danh sách các bài học Đọc hiểu của chương",
   },
 ];
+
+export const MODERATOR_SECTIONS = SECTIONS.filter((section) => section.key !== "reading");

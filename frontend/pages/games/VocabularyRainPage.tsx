@@ -5,6 +5,7 @@ import { submitStudentGameResult } from "../../api/gameApi";
 import { getCourses } from "../../api/courseApi";
 import { getStudentChapters } from "../../api/studentChapterApi";
 import { getStudentChapterVocabularyCards, getVocabularies } from "../../api/vocabularyApi";
+import { formatChapterLabel } from "../../utils/chapterLabel";
 import { VocabularyRainGame } from "./vocabulary-rain/VocabularyRainGame";
 import { toRainWords, type RainWord } from "./vocabulary-rain/rainGameLogic";
 import "./GamesPage.css";
@@ -25,7 +26,8 @@ export function VocabularyRainPage() {
   const availableChapters = chapters.data?.chapters.filter((chapter) =>
     chapter.lessons.some((lesson) => lesson.skillType === "VOCABULARY"),
   ) ?? [];
-  const lessons = availableChapters.find((chapter) => chapter.id === chapterId)?.lessons
+  const selectedChapter = availableChapters.find((chapter) => chapter.id === chapterId);
+  const lessons = selectedChapter?.lessons
     .filter((lesson) => lesson.skillType === "VOCABULARY") ?? [];
   const lesson = lessons.find((item) => item.id === lessonId);
   const vocabulary = useQuery({
@@ -58,7 +60,6 @@ export function VocabularyRainPage() {
   }
 
   const activeVocabulary = mode === "lesson" ? vocabulary : chapterVocabulary;
-  const selectedChapter = availableChapters.find((item) => item.id === chapterId);
   const failedQuery = [courses, chapters, activeVocabulary].find((query) => query.isError);
   const loading = courses.isLoading || chapters.isLoading || activeVocabulary.isLoading;
   const words = activeVocabulary.data;
@@ -98,7 +99,7 @@ export function VocabularyRainPage() {
               setLessonId(0);
             }} disabled={!availableChapters.length}>
               <option value={0}>Chọn chương</option>
-              {availableChapters.map((item) => <option key={item.id} value={item.id}>Chương {item.chapterNo} · {item.title}</option>)}
+              {availableChapters.map((item) => <option key={item.id} value={item.id}>{formatChapterLabel(item.chapterNo, item.title, " · ")}</option>)}
             </select>
           </label>
           {mode === "lesson" && <label>
@@ -120,10 +121,10 @@ export function VocabularyRainPage() {
           type="button"
           disabled={!hasContentSelection || !words?.length || loading || !!failedQuery}
           onClick={() => {
-            if (!words?.length) return;
+            if (!words?.length || !selectedChapter) return;
             const title = mode === "lesson"
               ? lesson?.title ?? "Bài từ vựng"
-              : `Chương ${selectedChapter?.chapterNo}: ${selectedChapter?.title ?? ""}`;
+              : formatChapterLabel(selectedChapter.chapterNo, selectedChapter.title);
             setRound({ title, words });
           }}
         >

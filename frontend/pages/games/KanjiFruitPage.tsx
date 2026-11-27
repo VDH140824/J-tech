@@ -5,6 +5,7 @@ import { submitStudentGameResult } from "../../api/gameApi";
 import { getCourses } from "../../api/courseApi";
 import { getStudentChapters } from "../../api/studentChapterApi";
 import { getChapterKanjiCards } from "../../api/studentKanjiApi";
+import { formatChapterLabel } from "../../utils/chapterLabel";
 import { KanjiFruitGame } from "./kanji-fruit/KanjiFruitGame";
 import { toKanjiFruitCards, type KanjiFruitCard } from "./kanji-fruit/kanjiFruitLogic";
 import "./GamesPage.css";
@@ -51,7 +52,7 @@ export function KanjiFruitPage() {
             <option value={0}>Chọn khóa học</option>{courses.data?.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select></label>
           <label>Chương<select value={chapterId} onChange={(event) => setChapterId(Number(event.target.value))} disabled={!availableChapters.length}>
-            <option value={0}>Chọn chương</option>{availableChapters.map((item) => <option key={item.id} value={item.id}>Chương {item.chapterNo} · {item.title}</option>)}
+            <option value={0}>Chọn chương</option>{availableChapters.map((item) => <option key={item.id} value={item.id}>{formatChapterLabel(item.chapterNo, item.title, " · ")}</option>)}
           </select></label>
         </div>
         {loading && <p role="status">Đang tải nội dung…</p>}

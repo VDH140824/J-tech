@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getCourses, getCourse, type CourseSummary, type ChapterSummary } from "../../../api/courseApi";
+import { formatChapterLabel } from "../../../utils/chapterLabel";
 import { ModeratorKanjiPage } from "./ModeratorKanjiPage";
 
 export function ModeratorKanjiManagementPage() {
@@ -55,7 +56,7 @@ export function ModeratorKanjiManagementPage() {
         <option value={0}>Chọn môn học</option>{courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
       </select></label>
       <label>Chương <select aria-label="Chương" value={chapterId} disabled={!courseId || loading} onChange={e => choose(courseId, Number(e.target.value))}>
-        <option value={0}>Chọn chương</option>{chapters.map(c => <option key={c.id} value={c.id}>Chương {c.chapterNo}: {c.title}</option>)}
+        <option value={0}>Chọn chương</option>{chapters.map(c => <option key={c.id} value={c.id}>{formatChapterLabel(c.chapterNo, c.title)}</option>)}
       </select></label>
     </div>
     {loading ? <p role="status">Đang tải chương…</p> : error ? <p role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Thử lại</button></p> : <p>Chọn môn học và chương để quản lý Kanji.</p>}

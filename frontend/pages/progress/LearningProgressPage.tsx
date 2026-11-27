@@ -4,6 +4,7 @@ import { getCourses } from "../../api/courseApi";
 import { getStudentChapters, type StudentLesson } from "../../api/studentChapterApi";
 import { getStreakSummary } from "../../api/streakApi";
 import { useAuthStore } from "../../store/authStore";
+import { formatChapterLabel } from "../../utils/chapterLabel";
 import { parseLessonDocuments } from "../../utils/lessonDocuments";
 import "./LearningProgressPage.css";
 
@@ -91,7 +92,7 @@ export function LearningProgressPage() {
         <section aria-labelledby="lp-study-chapters-title"><div className="lp-study-section-title"><h2 id="lp-study-chapters-title">Lộ trình từng chương</h2><span>{chapters.length} chương</span></div>{!chapters.length ? <div className="lp-study-state">Khóa học chưa có chương được xuất bản.</div> : <div className="lp-study-chapters">{chapters.map(chapter => {
           const items = sections(chapter.lessons);
           const result = totals(items);
-          return <article className="lp-study-chapter" key={chapter.id}><span className="lp-study-chapter-number">{String(chapter.chapterNo).padStart(2, "0")}</span><div className="lp-study-chapter-content"><h3>Chương {chapter.chapterNo}: {chapter.title}</h3><ProgressBar lessons={items} label={`Tiến độ chương ${chapter.chapterNo}`} /></div><Link className="lp-study-outline" to={`/courses/${courseId}#chapter-${chapter.id}`}>{result.total && result.done === result.total ? "Ôn tập" : "Mở chương"} →</Link></article>;
+          return <article className="lp-study-chapter" key={chapter.id}><span className="lp-study-chapter-number">{String(chapter.chapterNo).padStart(2, "0")}</span><div className="lp-study-chapter-content"><h3>{formatChapterLabel(chapter.chapterNo, chapter.title)}</h3><ProgressBar lessons={items} label={`Tiến độ chương ${chapter.chapterNo}`} /></div><Link className="lp-study-outline" to={`/courses/${courseId}#chapter-${chapter.id}`}>{result.total && result.done === result.total ? "Ôn tập" : "Mở chương"} →</Link></article>;
         })}</div>}</section>
       </>}
   </main>;

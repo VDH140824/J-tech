@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { getCourses } from "../../api/courseApi";
 import { getSpeakingScenarios } from "../../api/speakingApi";
 import { getStudentChapters } from "../../api/studentChapterApi";
+import { formatChapterLabel } from "../../utils/chapterLabel";
 import "../home/StudentLearningPage.css";
 import "./SpeakingPage.css";
 
@@ -90,7 +91,7 @@ export function SpeakingIndexPage() {
                 return (
                   <article className="speaking-scn" key={chapter.id}>
                     <h3>
-                      Chương {chapter.chapterNo}: {chapter.title}
+                      {formatChapterLabel(chapter.chapterNo, chapter.title)}
                     </h3>
                     <p>
                       {scenarios.length} tình huống · đã luyện {practiced}/{scenarios.length}
